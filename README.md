@@ -12,17 +12,18 @@ Powered by Salmon AES CTR library.
 
 ## Features
 * Create portable file drives locked with a text password.
-* Drive all portable and can be decrypted with any device.
+* Drives are portable and can be decrypted with any device.
 * Unlike other solutions with Salmon there is no birthday problem.
-* Back up your drives as soon as you wish.
-* Fast hardware AES-NI encryption.
+* Back up your drives as often as you wish.
+* Devices can be authorized to import new files.
 * Encrypted multimedia playback for audio and video.
 * Built-in Text Editor for editing encrypting text files.
 * Allow editing with external Apps (Android only).
 
 ## Specs
 * AES-256 CTR Mode encryption with HMAC SHA-256 integrity.
-* Fast native AES-NI encryption.
+* SHA-256 Text password key derivation.
+* Fast hardware AES-NI encryption.
 * Protected nonce sequencer (Android only)
 * Protected nonce sequencer with SHA256 checksum anti-tampering (Windows only)
 * Protected account sequencer service (Windows only).
