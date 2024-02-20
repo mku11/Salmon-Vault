@@ -35,7 +35,7 @@ Salmon Vault app is offered on several different platforms:
 * Native Android
 * Android .NET
 
-[**Downloads**](https://github.com/mku11/Salmon-AES-CTR/releases)
+[**Downloads**](https://github.com/mku11/Salmon-Vault/releases)
 
 ---
 
