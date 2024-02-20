@@ -35,7 +35,6 @@ using Mku.Android.SalmonFS.Media;
 using Mku.SalmonFS;
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using Button = Android.Widget.Button;
 using ImageButton = Android.Widget.ImageButton;
 using Timer = Java.Util.Timer;
@@ -185,9 +184,9 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         mediaPlayer.Reset();
         mSurfaceView.PostDelayed(()=> {
             try {
-                loadContent(videos[pos]);
+                LoadContent(videos[pos]);
             } catch (Exception e) {
-                e.printStackTrace();
+                Console.Error.WriteLine(e);
             }
         },500);
     }
@@ -195,7 +194,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     protected void LoadContent(SalmonFile file)
     {
         mTitle.Text = file.BaseName;
-        source = new SalmonMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, MEDIA_THREADS, MEDIA_BACKOFFSET);
+        source = new SalmonMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
         mediaPlayer.SetDataSource(source);
         mediaPlayer.PrepareAsync();
     }
@@ -516,7 +515,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         }
     }
 
-    protected boolean OnDoubleTap(MotionEvent e) {
+    protected bool OnDoubleTap(MotionEvent e) {
         TogglePlay();
         return true;
     }

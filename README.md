@@ -1,4 +1,4 @@
-![alt text](https://github.com/mku11/Salmon-AES-CTR/blob/wip/common/common-res/icons/logo.png)
+![alt text](https://github.com/mku11/Salmon-Vault/blob/wip/common/common-res/icons/logo.png)
 
 # Salmon Vault
 Secure all your personal files in Salmon Vault with AES-256 encryption for your Android, Windows, Linux, MacOS devices. 
@@ -11,12 +11,13 @@ Powered by Salmon AES CTR library.
 <!-- [![GitHub Releases](https://img.shields.io/github/downloads/mku11/Salmon-Vault/latest/total?logo=github)](https://github.com/mku11/Salmon-Vault/releases) -->
 
 ## Features
-* Create portable file drives locked with a text password.
+* Create portable virtual file drives encrypted with a text password.
 * Drives are portable and can be decrypted with any device.
-* Unlike other solutions with Salmon there is no birthday problem.
+* Unlike other products with Salmon there is no birthday problem.
 * Back up your drives as often as you wish.
 * Devices can be authorized to import new files.
 * Encrypted multimedia playback for audio and video.
+* Image Viewer support for common formats Jpeg, Png, Bmp.
 * Built-in Text Editor for editing encrypting text files.
 * Allow editing with external Apps (Android only).
 
@@ -50,7 +51,7 @@ Code contributions are not accepted.
 Bug reports and security POCs are more than welcome!  
   
 ### License
-Salmon is released under MIT Licence, see [LICENSE](https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE) file.
+Salmon is released under MIT Licence, see [LICENSE](https://github.com/mku11/Salmon-Vault/blob/main/LICENSE) file.
 Make sure you read the LICENSE file and display proper attribution if you decide to use this software.
 Dependency libraries from Github, Maven, and NuGet are covered by their own license  
-see [NOTICE](https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE)  
+see [NOTICE](https://github.com/mku11/Salmon-Vault/blob/main/LICENSE)  
