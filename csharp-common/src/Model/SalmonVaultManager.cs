@@ -337,7 +337,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 SalmonDialogs.PromptSelectRoot();
                 return;
             }
-            if (!SalmonDriveManager.Drive.IsAuthenticated)
+            if (!SalmonDriveManager.Drive.IsUnlocked)
             {
                 CheckCredentials();
                 return;
@@ -608,7 +608,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void ExportSelectedFiles(bool deleteSource)
     {
-        if (SalmonDriveManager.Drive.VirtualRoot == null || !SalmonDriveManager.Drive.IsAuthenticated)
+        if (SalmonDriveManager.Drive.VirtualRoot == null || !SalmonDriveManager.Drive.IsUnlocked)
             return;
         ExportFiles(SelectedFiles.ToArray(), (files) =>
         {
@@ -636,7 +636,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             ClearCopiedFiles();
             SetPathText("");
             if (SalmonDriveManager.Drive != null)
-                SalmonDriveManager.CloseDrive();
+                SalmonDriveManager.LockDrive();
         }
         catch (Exception ex)
         {

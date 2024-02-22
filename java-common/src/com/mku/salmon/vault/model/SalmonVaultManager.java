@@ -323,7 +323,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 SalmonDialogs.promptSelectRoot();
                 return;
             }
-            if (!SalmonDriveManager.getDrive().isAuthenticated()) {
+            if (!SalmonDriveManager.getDrive().isUnlocked()) {
                 checkCredentials();
                 return;
             }
@@ -555,7 +555,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void exportSelectedFiles(boolean deleteSource) throws SalmonAuthException {
-        if (SalmonDriveManager.getDrive().getVirtualRoot() == null || !SalmonDriveManager.getDrive().isAuthenticated())
+        if (SalmonDriveManager.getDrive().getVirtualRoot() == null || !SalmonDriveManager.getDrive().isUnlocked())
             return;
         exportFiles(selectedFiles.toArray(new SalmonFile[0]), (files) ->
         {

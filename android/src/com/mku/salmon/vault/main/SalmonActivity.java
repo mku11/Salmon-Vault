@@ -654,7 +654,7 @@ public class SalmonActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         try {
-            if (SalmonDriveManager.getDrive().getVirtualRoot() == null || !SalmonDriveManager.getDrive().isAuthenticated())
+            if (SalmonDriveManager.getDrive().getVirtualRoot() == null || !SalmonDriveManager.getDrive().isUnlocked())
                 return;
         } catch (SalmonAuthException e) {
             SalmonDialog.promptDialog("Could not reimport shared file: " + e.getMessage());
@@ -770,7 +770,7 @@ public class SalmonActivity extends AppCompatActivity {
 
     private void Logout() {
         try {
-            SalmonDriveManager.getDrive().close();
+            SalmonDriveManager.getDrive().lock();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

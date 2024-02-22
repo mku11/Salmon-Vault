@@ -41,7 +41,7 @@ namespace Salmon.Vault.Dialog;
 
 public class SalmonDialogs
 {
-    public static void PromptPassword(Action OnAuthenticationSucceded)
+    public static void PromptPassword(Action OnUnlockSucceded)
     {
         SalmonDialog.PromptEdit("Vault", "Password", (password, option) =>
         {
@@ -49,9 +49,9 @@ public class SalmonDialogs
                 return;
             try
             {
-                SalmonDriveManager.Drive.Authenticate(password);
-                if (OnAuthenticationSucceded != null)
-                    OnAuthenticationSucceded();
+                SalmonDriveManager.Drive.Unlock(password);
+                if (OnUnlockSucceded != null)
+                    OnUnlockSucceded();
             }
             catch (SalmonAuthException)
             {

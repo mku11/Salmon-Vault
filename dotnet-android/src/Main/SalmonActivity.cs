@@ -703,7 +703,7 @@ public class SalmonActivity : AppCompatActivity
         {
             e.PrintStackTrace();
         }
-        if (SalmonDriveManager.Drive.VirtualRoot == null || !SalmonDriveManager.Drive.IsAuthenticated)
+        if (SalmonDriveManager.Drive.VirtualRoot == null || !SalmonDriveManager.Drive.IsUnlocked)
             return;
         DocumentFile docFile = DocumentFile.FromSingleUri(SalmonApplication.GetInstance().ApplicationContext, uri);
         IRealFile realFile = new AndroidFile(docFile, this);
@@ -825,7 +825,7 @@ public class SalmonActivity : AppCompatActivity
     {
         try
         {
-            SalmonDriveManager.Drive.Close();
+            SalmonDriveManager.Drive.Lock();
         }
         catch (Exception ex)
         {

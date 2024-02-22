@@ -18,7 +18,7 @@
     <string name="Refresh">Refresh</string>
     <string name="CouldNotParseConfig">Could not parse config file, choose another folder!</string>
     <string name="AboutText">Built with .NET Android\nReleased under MIT License</string>
-    <string name="Authenticate">Authenticate</string>
+    <string name="Authorize">Authorize</string>
     <string name="Password">Password</string>
     <string name="RetypePassword">Retype Password</string>
     <string name="SetPassword">Set Password</string>

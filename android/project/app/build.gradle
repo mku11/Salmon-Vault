@@ -43,8 +43,8 @@ android {
         main {
             java {
                 srcDirs += '../../src'
-                srcDirs += '../../../salmon-vault-java-common/src'
-                srcDirs += '../../../salmon-vault-android-common/src'
+                srcDirs += '../../../java-common/src'
+                srcDirs += '../../../android-common/src'
             }
         }
         main.res.srcDirs += '../../res'

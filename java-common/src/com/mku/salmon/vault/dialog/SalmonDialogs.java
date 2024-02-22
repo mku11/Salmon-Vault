@@ -44,15 +44,15 @@ import java.util.HashMap;
 import java.util.List;
 
 public class SalmonDialogs {
-    public static void promptPassword(Runnable onAuthenticationSucceded) {
+    public static void promptPassword(Runnable onUnlockSucceded) {
         SalmonDialog.promptEdit("Vault", "Password", (password, option) ->
         {
             if (password == null)
                 return;
             try {
-                SalmonDriveManager.getDrive().authenticate(password);
-                if (onAuthenticationSucceded != null)
-                    onAuthenticationSucceded.run();
+                SalmonDriveManager.getDrive().unlock(password);
+                if (onUnlockSucceded != null)
+                    onUnlockSucceded.run();
             } catch (SalmonAuthException ex) {
                 SalmonDialog.promptDialog("Vault", "Wrong password");
             } catch (Exception e) {
