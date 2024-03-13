@@ -615,7 +615,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
             });
             return true;
         }
-        String filename = selectedFile.getBaseName();
         SalmonFile item = fileItemList.get(position);
         return openListItem.apply(item);
     }
