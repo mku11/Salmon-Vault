@@ -1,0 +1,46 @@
+/*
+MIT License
+
+Copyright (c) 2021 Max Kas
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+import { URLUtils } from "../utils/url_utils.js";
+import { MainController } from "../controller/main_controller.js";
+import { ObservableList } from "../../common/binding/observable_list.js";
+import { SalmonDialog } from "../dialog/salmon_dialog.js";
+import { WindowUtils } from "../utils/window_utils.js";
+import { setDebugConsole } from "../../common/utils/debug_utils.js";
+
+const DEBUG = true;
+
+function setupDebug() {
+    let debugConsole = document.getElementById("debug-console");
+    let debugConsoleContainer = document.getElementById("debug-console-container");
+    debugConsoleContainer.style.display = DEBUG?"flex":"none";
+    setDebugConsole(debugConsole);
+}
+
+setupDebug();
+console.log("Starting Salmon Vault");
+WindowUtils.setDefaultIconPath("common-res/icons/logo_48x48.png");
+window.mainController = new MainController();
+window.mainController.initialize();
+window.mainController.setWindow();

@@ -48,3 +48,5 @@ xcuserdata
 *.dll
 *.exe
 node_modules
+
+js/project/lib

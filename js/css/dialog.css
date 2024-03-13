@@ -1,0 +1,33 @@
+.dialog-content {
+  min-width: 280px;
+  max-width: 400px;
+}
+
+.dialog-text {
+  word-break: break-all;
+  white-space: normal;
+}
+
+.dialog-input {
+  display: none;
+  width: 100%;
+}
+
+.dialog-option {
+  display: none;
+  padding: 4px;
+}
+
+.dialog-button-container {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.dialog-button {
+  display: none;
+  min-width: 60px;
+  height: 20px;
+  text-align: center;
+  margin: 1px;
+}
