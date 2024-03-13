@@ -33,6 +33,7 @@ export class SalmonDialog {
         SalmonDialog.defaultStyleSheet = defaultStyleSheet;
     }
 
+    #root;
     #icon;
     #modal;
     #closeButton;
@@ -48,7 +49,8 @@ export class SalmonDialog {
         this.#icon.src = icon;
     }
 
-    constructor(content, buttonListener1, buttonListener2 = null) {
+    constructor(content, buttonListener1, buttonListener2 = null, root = document) {
+        this.#root = root;
         this.setupControls();
         this.setupIcon();
         this.setupEventListeners();
@@ -66,7 +68,7 @@ export class SalmonDialog {
                 div.id = "modal-" + Math.floor(Math.random() * 1000000);
                 div.innerHTML = await response.text();
                 docBody.appendChild(div);
-                let dialog = new SalmonDialog(msg, "Ok");
+                let dialog = new SalmonDialog(msg, "Ok", null, div);
                 dialog.setTitle(title);
                 dialog.setValue(value, isFileName, readOnly, isPassword);
                 dialog.setOption(option);
@@ -89,7 +91,7 @@ export class SalmonDialog {
                 div.id = "modal-" + Math.floor(Math.random() * 1000000);
                 div.innerHTML = await response.text();
                 docBody.appendChild(div);
-                let dialog = new SalmonDialog(body);
+                let dialog = new SalmonDialog(body, null, div);
                 dialog.setTitle(title);
                 dialog.setFirstButton(buttonLabel1, buttonListener1);
                 dialog.setSecondButton(buttonLabel2, buttonListener2);
@@ -99,15 +101,15 @@ export class SalmonDialog {
     }
 
     setupControls() {
-        this.#modal = document.getElementById("modal");
-        this.#icon = document.getElementById("modal-icon");
-        this.#title = document.getElementById("modal-title");
-        this.#closeButton = document.getElementsByClassName("modal-close")[0];
-        this.#text = document.getElementById("modal-text");
-        this.#input = document.getElementById("dialog-input");
-        this.#option = document.getElementById("dialog-option");
-        this.#firstButton = document.getElementById("dialog-button-first");
-        this.#secondButton = document.getElementById("dialog-button-second");
+        this.#modal = this.#root.getElementsByClassName("modal")[0];
+        this.#icon = this.#root.getElementsByClassName("modal-icon")[0];
+        this.#title = this.#root.getElementsByClassName("modal-title")[0];
+        this.#closeButton = this.#root.getElementsByClassName("modal-close")[0];
+        this.#text = this.#root.getElementsByClassName("modal-text")[0];
+        this.#input = this.#root.getElementsByClassName("dialog-input")[0];
+        this.#option = this.#root.getElementsByClassName("dialog-option")[0];
+        this.#firstButton = this.#root.getElementsByClassName("dialog-button-first")[0];
+        this.#secondButton = this.#root.getElementsByClassName("dialog-button-second")[0];
     }
 
     setupEventListeners() {

@@ -28,19 +28,22 @@ import { ObservableList } from "../../common/binding/observable_list.js";
 import { SalmonDialog } from "../dialog/salmon_dialog.js";
 import { WindowUtils } from "../utils/window_utils.js";
 import { setDebugConsole } from "../../common/utils/debug_utils.js";
+import { SalmonConfig } from "../config/salmon_config.js";
 
 const DEBUG = true;
-
 function setupDebug() {
     let debugConsole = document.getElementById("debug-console");
     let debugConsoleContainer = document.getElementById("debug-console-container");
-    debugConsoleContainer.style.display = DEBUG?"flex":"none";
+    debugConsoleContainer.style.display = DEBUG ? "flex" : "none";
     setDebugConsole(debugConsole);
 }
 
-setupDebug();
-console.log("Starting Salmon Vault");
-WindowUtils.setDefaultIconPath("common-res/icons/logo_48x48.png");
-window.mainController = new MainController();
-window.mainController.initialize();
-window.mainController.setWindow();
+addEventListener("load", (e) => {
+    setupDebug();
+    console.log("Starting Salmon Vault");
+    WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
+    window.mainController = new MainController();
+    window.mainController.initialize();
+    window.mainController.setWindow();
+});
+

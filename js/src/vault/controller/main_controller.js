@@ -47,39 +47,34 @@ import { SalmonDialogs } from "../../common/dialog/salmon_dialogs.js";
 import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
 import { SalmonFileViewModel } from "../viewmodel/salmon_file_view_model.js";
 import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
+import { ImageViewerController } from "./image_viewer_controller.js";
 
 export class MainController {
     static MAX_TEXT_FILE = 1 * 1024 * 1024;
     static THREADS = 1;
 
-    fileItemList = Binding.bind('table', 'tbody', new ObservableList());
+    fileItemList = Binding.bind(document, 'table', 'tbody', new ObservableList());
     table;
-    status = Binding.bind('status', 'value', new StringProperty());
-    path = Binding.bind('path', 'value', new StringProperty());
+    status = Binding.bind(document, 'status', 'value', new StringProperty());
+    path = Binding.bind(document, 'path', 'value', new StringProperty());
+    progressVisibility = Binding.bind(document, 'progress-layout-container', 'display', new BooleanProperty());
+    fileprogress = Binding.bind(document, 'file-progress', 'value', new DoubleProperty());
+    fileprogresstext = Binding.bind(document, 'file-progress-text', 'value', new StringProperty());
+    filesprogress = Binding.bind(document, 'files-progress', 'value', new DoubleProperty());
+    filesprogresstext = Binding.bind(document, 'files-progress-text', 'value', new StringProperty());
 
+    keysPressed = new Set();
+    metaKeysPressed = new Set();
+    manager;
+
+    constructor() {
+
+    }
+    
     setPath(value) {
         if (value.startsWith("/"))
             value = value.substring(1);
         path.set("salmonfs://" + value);
-    }
-
-    progressVisibility = Binding.bind('progress-layout-container', 'display', new BooleanProperty());
-
-    fileprogress = Binding.bind('file-progress', 'value', new DoubleProperty());
-
-    fileprogresstext = Binding.bind('file-progress-text', 'value', new StringProperty());
-
-    filesprogress = Binding.bind('files-progress', 'value', new DoubleProperty());
-
-    filesprogresstext = Binding.bind('files-progress-text', 'value', new StringProperty());
-
-    manager;
-
-    keysPressed = new Set();
-    metaKeysPressed = new Set();
-
-    constructor() {
-
     }
 
     setupKeyboardShortcuts() {
@@ -343,7 +338,7 @@ export class MainController {
 
     onSettings() {
         try {
-            SettingsController.openSettings(stage);
+            SettingsController.openSettings(window);
         } catch (e) {
             console.error(e);
         }
@@ -492,7 +487,7 @@ export class MainController {
                 new SalmonDialog("File too large").show();
                 return;
             }
-            TextEditorController.openTextEditor(item, stage);
+            TextEditorController.openTextEditor(item, window);
         } catch (e) {
             console.error(e);
         }
@@ -500,7 +495,7 @@ export class MainController {
 
     startImageViewer(item) {
         try {
-            ImageViewerController.openImageViewer(item, stage);
+            ImageViewerController.openImageViewer(item, window);
         } catch (e) {
             console.error(e);
         }
@@ -508,7 +503,7 @@ export class MainController {
 
     startMediaPlayer(item) {
         try {
-            MediaPlayerController.openMediaPlayer(item, stage);
+            MediaPlayerController.openMediaPlayer(item, window);
         } catch (e) {
             console.error(e);
         }

@@ -23,18 +23,16 @@
 }
 
 .modal-title {
-  vertical-align: bottom;
+  vertical-align: middle;
   display: table-cell;
-  width: 24px;
-  height: 24px;
 }
 
 .modal-close {
-  vertical-align: bottom;
+  vertical-align: middle;
   display: table-cell;
   color: #aaaaaa;
   float: right;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: bold;
 }
 
