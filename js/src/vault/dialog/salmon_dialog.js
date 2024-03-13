@@ -51,7 +51,6 @@ export class SalmonDialog {
     constructor(content, buttonListener1, buttonListener2 = null) {
         this.setupControls();
         this.setupIcon();
-        this.setupStyle();
         this.setupEventListeners();
         this.setContent(content);
         this.setFirstButton("Ok", buttonListener1);
