@@ -102,6 +102,7 @@ export class SalmonDialog {
         this.#modal = document.getElementById("modal");
         this.#icon = document.getElementById("modal-icon");
         this.#title = document.getElementById("modal-title");
+        this.#closeButton = document.getElementsByClassName("modal-close")[0];
         this.#text = document.getElementById("modal-text");
         this.#input = document.getElementById("dialog-input");
         this.#option = document.getElementById("dialog-option");
