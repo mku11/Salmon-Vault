@@ -22,20 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-export class SalmonConfig {
-    static APP_NAME = "Salmon Vault";
-    static VERSION = "1.0.6-SNAPSHOT";
-    static ABOUT_TEXT = "License: MIT License\n\n" +
-            "For more information visit the project website";
-    static SourceCodeURL = "https://github.com/mku11/Salmon-AES-CTR";
-    static FILE_SEQ_FILENAME = "config.json";
-    static APP_ICON = "common-res/icons/logo_48x48.png";
-    
-    static getVersion() {
-        return SalmonConfig.VERSION;
-    }
+import {Property} from "./property.js";
 
-    static getPrivateDir() {
-        return ".";
-    }
+export class ObjectProperty extends Property {
+        
 }

@@ -26,15 +26,16 @@ import { ObservableList } from "./observable_list.js";
 import { StringProperty } from "./string_property.js";
 import { DoubleProperty } from "./double_property.js";
 import { BooleanProperty } from "./boolean_property.js";
+import { ObjectProperty } from "./object_property.js";
 
 export class Binding {
     static #bindings = {};
-    static bind(id, elementField, obj) {
-        let el = document.getElementById(id);
+    static bind(root, name, elementField, obj) {
+        let el = Binding.getElement(root, name);
         if (el == undefined)
-            throw new Error("Could not find document element: " + elementName);
-        let objBinding = { id: id, field: elementField, obj: obj };
-        let key = id + ":" + elementField;
+            throw new Error("Could not find document element: " + name);
+        let objBinding = { name: name, field: elementField, obj: obj, root: root };
+        let key = name + ":" + elementField;
         if (el.tagName.toLowerCase() === 'table') {
             if (elementField === 'tbody' && obj instanceof ObservableList) {
                 Binding.#bindings[key] = objBinding;
@@ -71,13 +72,21 @@ export class Binding {
                 obj.key = key;
             } else
                 throw new Error("Can only bind BooleanProperty to visibility value");
+        } else if (el.tagName.toLowerCase() === 'img' && elementField === 'src') {
+            if (obj instanceof ObjectProperty) {
+                Binding.#bindings[key] = objBinding;
+                obj.key = key;
+            } else
+                throw new Error("Can only bind ObjectProperty to img src");
+        } else {
+            throw new Error("Could not bind element: " + name);
         }
         return obj;
     }
 
     static setValue(obj, value) {
         let binding = this.#bindings[obj.key];
-        let el = document.getElementById(binding.id);
+        let el = Binding.getElement(binding.root, binding.name);
         if (binding.field == 'value') {
             if (el.value !== undefined)
                 el.value = value;
@@ -102,12 +111,14 @@ export class Binding {
             } else {
                 el.style.visibility = "collapse";   
             }
-        }
+        } else if (binding.field == 'src') {
+            el.src = value;
+        } 
     }
 
     static setItemValue(obj, index, value) {
         let binding = Binding.getBinding(obj);
-        let el = document.getElementById(binding.id);
+        let el = Binding.getElement(binding.root, binding.name);
         if (binding.field == 'tbody') {
             let th = el.getElementsByTagName('th');
             let tbody = el.getElementsByTagName('tbody')[0];
@@ -179,7 +190,7 @@ export class Binding {
 
     static setItemFieldValue(obj, index, field, value) {
         let binding = Binding.getBinding(obj);
-        let el = document.getElementById(binding.id);
+        let el = Binding.getElement(binding.root, binding.name);
         if (binding.field == 'tbody') {
             let th = el.getElementsByTagName('th');
             let tbody = el.getElementsByTagName('tbody')[0];
@@ -210,9 +221,16 @@ export class Binding {
         if (!(obj.key in this.#bindings))
             throw new Error("Could not find element");
         let binding = this.#bindings[obj.key];
-        let el = document.getElementById(binding.id);
+        let el = Binding.getElement(binding.root, binding.name);
         if (el == undefined)
-            throw new Error("Could not find document element: " + binding.id);
+            throw new Error("Could not find document element: " + binding.name);
         return binding;
+    }
+
+    static getElement(root, name) {
+        if(root.getElementById != undefined)
+            return root.getElementById(name);
+        else
+            return root.getElementsByClassName(name)[0];
     }
 }

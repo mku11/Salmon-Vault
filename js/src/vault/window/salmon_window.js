@@ -27,45 +27,52 @@ import { WindowUtils } from "../utils/window_utils.js";
 export class SalmonWindow {
     static modalUrl = "modal.html";
 
+    #root;
     #icon;
     #modal;
     #closeButton;
     #title;
     #content;
 
+    getRoot() {
+        return this.#root;
+    }
+    
     setupIcon() {
         let icon = WindowUtils.getDefaultIcon();
         this.#icon.src = icon;
     }
 
-    constructor(content) {
+    constructor(content, root = document) {
+        this.#root = root;
         this.setupControls();
         this.setupIcon();
         this.setupEventListeners();
         this.setContent(content);
     }
 
-    static openModal(title, msg) {
-        setTimeout(() => {
+    static async openModal(title, content) {
+        return new Promise((resolve, reject) => {
             fetch(SalmonWindow.modalUrl).then(async (response) => {
                 let docBody = document.getElementsByTagName("body")[0];
                 var div = document.createElement('div');
                 div.id = "modal-" + Math.floor(Math.random() * 1000000);
                 div.innerHTML = await response.text();
                 docBody.appendChild(div);
-                let dialog = new SalmonWindow(msg);
-                dialog.setTitle(title);
-                dialog.show();
+                let window = new SalmonWindow(content, div);
+                window.setTitle(title);
+                window.show();
+                resolve(window);
             });
         });
     }
 
     setupControls() {
-        this.#modal = document.getElementById("modal");
-        this.#icon = document.getElementById("modal-icon");
-        this.#title = document.getElementById("modal-title");
-        this.#closeButton = document.getElementsByClassName("modal-close")[0];
-        this.#content = document.getElementById("modal-window-content");
+        this.#modal = this.#root.getElementsByClassName("modal")[0];
+        this.#icon = this.#root.getElementsByClassName("modal-icon")[0];
+        this.#title = this.#root.getElementsByClassName("modal-title")[0];
+        this.#closeButton = this.#root.getElementsByClassName("modal-close")[0];
+        this.#content = this.#root.getElementsByClassName("modal-window-content")[0];
     }
 
     setupEventListeners() {
@@ -76,7 +83,9 @@ export class SalmonWindow {
     }
 
     setContent(content) {
-        this.#content.innerHTML = content;
+        var div = document.createElement('div');
+        div.innerHTML = content;
+        this.#content.appendChild(div);
     }
 
     setTitle(title) {

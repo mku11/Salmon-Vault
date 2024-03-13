@@ -22,20 +22,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-export class SalmonConfig {
-    static APP_NAME = "Salmon Vault";
-    static VERSION = "1.0.6-SNAPSHOT";
-    static ABOUT_TEXT = "License: MIT License\n\n" +
-            "For more information visit the project website";
-    static SourceCodeURL = "https://github.com/mku11/Salmon-AES-CTR";
-    static FILE_SEQ_FILENAME = "config.json";
-    static APP_ICON = "common-res/icons/logo_48x48.png";
+import { IPropertyNotifier } from "../binding/iproperty_notifier.js";
+import { SalmonFileReadableStream } from "../../lib/salmon-fs/salmonfs/salmon_file_readable_stream.js";
+
+
+export class SalmonImageViewer extends IPropertyNotifier {
+    imageStream;
+    observers = {};
     
-    static getVersion() {
-        return SalmonConfig.VERSION;
+    getImageStream() {
+        return this.imageStream;
     }
 
-    static getPrivateDir() {
-        return ".";
+    setImageStream(value) {
+        if(value != this.imageStream) {
+            this.imageStream = value;
+            this.propertyChanged(this, "ImageStream");
+        }
+    }
+
+    load(salmonFile) {
+        try {
+            this.imageStream = new SalmonFileReadableStream(salmonFile, 4, 4 * 1024 * 1024, 1, 256 * 1024);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    OnClosing() {
+        if (this.imageStream != null) {
+            try {
+                this.imageStream.close();
+            } catch (IOe) {
+                console.error(e);
+                throw new RuntimeException(e);
+            }
+        }
+        this.unobservePropertyChanges();
+    }
+
+    getObservers() {
+        return this.observers;
     }
 }

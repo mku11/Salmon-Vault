@@ -11,6 +11,18 @@
   border-color: gray;
 }
 
+.app-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: bottom;
+}
+
+.app-title {
+  vertical-align: bottom;
+  align-content: center;
+  padding: 2px;
+}
+
 .path-container {
   padding: 4px;
   display: flex;
