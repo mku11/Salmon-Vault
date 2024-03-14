@@ -26,9 +26,11 @@ import {Binding } from "./binding.js";
 
 export class Property {
     key = null;
-    value = null;
     set(value) {
-        this.value = value;
         Binding.setValue(this, value);
+    }
+
+    get() {
+        return Binding.getValue(this);
     }
 }

@@ -43,7 +43,7 @@ export class Binding {
             } else
                 throw new Error("Can only bind ObservableList to table body");
         } else if (el.tagName.toLowerCase() === 'span') {
-            if (elementField === 'value' && obj instanceof StringProperty) {
+            if (elementField === 'innerText' && obj instanceof StringProperty) {
                 Binding.#bindings[key] = objBinding;
                 obj.key = key;
             } else
@@ -78,6 +78,12 @@ export class Binding {
                 obj.key = key;
             } else
                 throw new Error("Can only bind ObjectProperty to img src");
+        } else if (el.tagName.toLowerCase() === 'textarea' && elementField === 'textContent') {
+            if (obj instanceof StringProperty) {
+                Binding.#bindings[key] = objBinding;
+                obj.key = key;
+            } else
+                throw new Error("Can only bind ObjectProperty to img src");
         } else {
             throw new Error("Could not bind element: " + name);
         }
@@ -88,10 +94,13 @@ export class Binding {
         let binding = this.#bindings[obj.key];
         let el = Binding.getElement(binding.root, binding.name);
         if (binding.field == 'value') {
-            if (el.value !== undefined)
-                el.value = value;
-            else if (el.tagName.toLowerCase() === 'span')
-                el.innerText = value;
+            el.value = value;
+        } else if (binding.field == 'innerText') {
+            el.innerText = value;
+        } else if (binding.field == 'innerHtml') {
+            el.innerHtml = value;
+        } else if (binding.field == 'textContent') {
+            el.textContent = value;
         } else if (binding.field == 'tbody') {
             if (value == null) {
                 let tbody = el.getElementsByTagName('tbody')[0];
@@ -103,17 +112,17 @@ export class Binding {
             if (value) {
                 el.style.display = "block";
             } else {
-                el.style.display = "none";   
+                el.style.display = "none";
             }
         } else if (binding.field == 'visibility') {
             if (value) {
                 el.style.visibility = "visible";
             } else {
-                el.style.visibility = "collapse";   
+                el.style.visibility = "collapse";
             }
         } else if (binding.field == 'src') {
             el.src = value;
-        } 
+        }
     }
 
     static setItemValue(obj, index, value) {
@@ -228,9 +237,49 @@ export class Binding {
     }
 
     static getElement(root, name) {
-        if(root.getElementById != undefined)
+        if (root.getElementById != undefined)
             return root.getElementById(name);
         else
             return root.getElementsByClassName(name)[0];
+    }
+
+    static setFocus(obj) {
+        let binding = this.#bindings[obj.key];
+        let el = Binding.getElement(binding.root, binding.name);
+        el.focus();
+    }
+
+    static getValue(obj) {
+        let binding = this.#bindings[obj.key];
+        let el = Binding.getElement(binding.root, binding.name);
+        if (binding.field == 'value') {
+            return el.value;
+        } else if (binding.field == 'innerText') {
+            return el.innerText;
+        } else if (binding.field == 'innerHtml') {
+            return el.innerHtml;
+        } else if (binding.field == 'textContent') {
+            return el.value;
+        } else if (binding.field == 'display') {
+            return el.style.display != "none";
+        } else if (binding.field == 'visibility') {
+            return el.style.visibility == "visible";
+        } else if (binding.field == 'src') {
+            return el.src;
+        } else {
+            throw new Error("Could not get value");
+        }
+    }
+
+    static getCaretPosition(obj) {
+        let binding = this.#bindings[obj.key];
+        let el = Binding.getElement(binding.root, binding.name);
+        if(el.tagName.toLowerCase() === 'textarea') {
+            return el.selectionStart();
+        } else if(el.tagName.toLowerCase() === 'input') {
+            return el.selectionStart();
+        } else {
+            throw new Error("Could not get value");
+        }
     }
 }

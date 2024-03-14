@@ -122,4 +122,10 @@ export class ObservableList {
     size() {
         return this.list.length;
     }
+
+    remove(value) {
+        let index = this.list.indexOf(value);
+        if(index >= 0)
+            this.list.splice(index, 1);
+    }
 }

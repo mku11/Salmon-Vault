@@ -23,7 +23,14 @@ SOFTWARE.
 */
 
 import {Property} from "./property.js";
+import {Binding } from "./binding.js";
 
 export class StringProperty extends Property {
-    
+    focus() {
+        Binding.setFocus(this);
+    }
+
+    getCaretPosition() {
+        Binding.getCaretPosition(this);
+    }
 }
