@@ -143,7 +143,7 @@ export class SalmonFileViewModel extends IPropertyNotifier {
     }
 
     setSalmonFile(file) {
-        salmonFile = file;
+        this.salmonFile = file;
         this.update();
     }
 
@@ -164,13 +164,16 @@ export class SalmonFileViewModel extends IPropertyNotifier {
     }
 
     async getDateText() {
-        let date = new Date(await this.salmonFile.getLastDateTimeModified());
+        let millis = await this.salmonFile.getLastDateTimeModified();
+        if(millis == 0)
+            return "";
+        let date = new Date(millis);
         return date.getMonth().toString().padStart(2,"0") 
             + "/" + date.getDay().toString().padStart(2,"0") 
-            + "/" + date.getFullYear()
-            + " " + date.getHours()
-            + ":" + date.getMinutes()
-            + ":" + date.getSeconds()
+            + "/" + date.getFullYear().toString().padStart(2,"0")
+            + " " + date.getHours().toString().padStart(2,"0")
+            + ":" + date.getMinutes().toString().padStart(2,"0")
+            + ":" + date.getSeconds().toString().padStart(2,"0")
             ;
     }
 
