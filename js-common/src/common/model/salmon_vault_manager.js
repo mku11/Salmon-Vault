@@ -819,7 +819,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
         return "Name: " + await item.getBaseName() + "\n" +
             "Path: " + await item.getPath() + "\n" +
             (!await item.isDirectory() ? ("Size: " + ByteUtils.getBytes(await item.getSize(), 2)
-                + " (" + await item.getSize() + " bytes)") : "Items: " + await item.listFiles().length) + "\n" +
+                + " (" + await item.getSize() + " bytes)") : "Items: " + (await item.listFiles()).length) + "\n" +
             "Encrypted Name: " + item.getRealFile().getBaseName() + "\n" +
             "Encrypted Path: " + item.getRealFile().getAbsolutePath() + "\n" +
             (!item.isDirectory() ? "Encrypted Size: " + ByteUtils.getBytes(item.getRealFile().length(), 2)
