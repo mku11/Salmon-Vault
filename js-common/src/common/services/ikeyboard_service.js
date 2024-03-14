@@ -22,23 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-export const MetaKey = {
-    Ctrl: 'Ctrl', 
-    Shift: 'Shift', 
-    Alt: 'Alt'
-}
-
-export class KeyEventArgs {
-    down = false;
-    key = null;
-}
-
-export class MetaKeyEventArgs {
-    down = false;
-    metaKey = null;
-}
-
 export class IKeyboardService {
     onMetaKey(args) {}
     onKey(args) {}
+    addOnMetaKeyListener(listener){}
+    removeOnMetaKeyListener(listener){}
+    addOnKeyListener(listener){}
+    removeOnKeyListener(listener){}
 }

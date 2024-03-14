@@ -50,7 +50,7 @@ export class ImageViewerController {
         fetch(ImageViewerController.modalURL).then(async (response) => {
             let htmlText = await response.text();
             let controller = new ImageViewerController();
-            let modalWindow = await SalmonWindow.openModal("Image Viewer", htmlText);
+            let modalWindow = await SalmonWindow.createModal("Image Viewer", htmlText);
             controller.setStage(modalWindow.getRoot());
             await controller.load(fileViewModel);
             WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
@@ -79,9 +79,5 @@ export class ImageViewerController {
         } catch (e) {
             console.error(e);
         }
-    }
-
-    onClose() {
-        stage.close();
     }
 }

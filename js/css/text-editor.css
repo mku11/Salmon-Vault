@@ -1,0 +1,40 @@
+.text-editor-text {
+  min-width: 600px;
+  min-height: 400px;
+  max-width: 800px;
+  max-height: 600px;
+}
+
+.search-button-layout {
+  float: right;
+  vertical-align: middle;
+  padding: 4px;
+  height: 100%;
+}
+
+.search-button-text {
+  vertical-align: middle;
+  background-color: black;
+  color: white;
+  font-size: 12px;
+}
+
+.search-button {
+  vertical-align: middle;
+  background-color: black;
+}
+
+.search-text {
+  vertical-align: middle;
+}
+
+.text-editor-status-container {
+  float: right;
+  vertical-align: middle;
+  height: 100%;
+}
+
+.text-editor-status {
+  vertical-align: middle;
+  font-size: 12px;
+}

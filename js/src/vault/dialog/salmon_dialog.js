@@ -24,37 +24,24 @@ SOFTWARE.
 
 import { WindowUtils } from "../utils/window_utils.js";
 import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
+import { SalmonWindow } from "../window/salmon_window.js";
 
-export class SalmonDialog {
+export class SalmonDialog extends SalmonWindow {
     static dialogURL = "dialog.html";
-    static defaultStyleSheet;
 
-    static setDefaultStyleSheet(defaultStyleSheet) {
-        SalmonDialog.defaultStyleSheet = defaultStyleSheet;
-    }
+    text;
+    input;
+    option;
+    firstButton;
+    secondButton;
 
-    #root;
-    #icon;
-    #modal;
-    #closeButton;
-    #text;
-    #input;
-    #title;
-    #option;
-    #firstButton;
-    #secondButton;
-
-    setupIcon() {
-        let icon = WindowUtils.getDefaultIcon();
-        this.#icon.src = icon;
-    }
-
-    constructor(content, buttonListener1, buttonListener2 = null, root = document) {
-        this.#root = root;
+    constructor(content, buttonListener1 = null, buttonListener2 = null, root = document) {
+        super(null, root);
+        this.root = root;
         this.setupControls();
         this.setupIcon();
         this.setupEventListeners();
-        this.setContent(content);
+        this.#setTextContent(content);
         this.setFirstButton("Ok", buttonListener1);
         if(buttonListener2 != null)
             this.setSecondButton("Cancel", buttonListener2);
@@ -74,7 +61,7 @@ export class SalmonDialog {
                 dialog.setOption(option);
                 dialog.setFirstButton("ok", () => {
                     if (OnEdit != null)
-                        OnEdit(dialog.#input.value);
+                        OnEdit(dialog.input.value);
                 });
                 dialog.show();
             });
@@ -91,7 +78,7 @@ export class SalmonDialog {
                 div.id = "modal-" + Math.floor(Math.random() * 1000000);
                 div.innerHTML = await response.text();
                 docBody.appendChild(div);
-                let dialog = new SalmonDialog(body, null, div);
+                let dialog = new SalmonDialog(body, null, null, div);
                 dialog.setTitle(title);
                 dialog.setFirstButton(buttonLabel1, buttonListener1);
                 dialog.setSecondButton(buttonLabel2, buttonListener2);
@@ -101,38 +88,24 @@ export class SalmonDialog {
     }
 
     setupControls() {
-        this.#modal = this.#root.getElementsByClassName("modal")[0];
-        this.#icon = this.#root.getElementsByClassName("modal-icon")[0];
-        this.#title = this.#root.getElementsByClassName("modal-title")[0];
-        this.#closeButton = this.#root.getElementsByClassName("modal-close")[0];
-        this.#text = this.#root.getElementsByClassName("modal-text")[0];
-        this.#input = this.#root.getElementsByClassName("dialog-input")[0];
-        this.#option = this.#root.getElementsByClassName("dialog-option")[0];
-        this.#firstButton = this.#root.getElementsByClassName("dialog-button-first")[0];
-        this.#secondButton = this.#root.getElementsByClassName("dialog-button-second")[0];
+        super.setupControls();
+        this.text = this.root.getElementsByClassName("modal-text")[0];
+        this.input = this.root.getElementsByClassName("dialog-input")[0];
+        this.option = this.root.getElementsByClassName("dialog-option")[0];
+        this.firstButton = this.root.getElementsByClassName("dialog-button-first")[0];
+        this.secondButton = this.root.getElementsByClassName("dialog-button-second")[0];
     }
 
-    setupEventListeners() {
-        let dialog = this;
-        this.#closeButton.onclick = function () {
-            dialog.#hide();
-        }
-    }
-
-    setContent(content) {
-        this.#text.innerText = content;
-    }
-
-    setTitle(title) {
-        this.#title.innerText = title;
+    #setTextContent(content) {
+        this.text.innerText = content;
     }
 
     setFirstButton(label, listener) {
-        this.#setButton(this.#firstButton, label, listener);
+        this.#setButton(this.firstButton, label, listener);
     }
 
     setSecondButton(label, listener) {
-        this.#setButton(this.#secondButton, label, listener);
+        this.#setButton(this.secondButton, label, listener);
     }
 
     #setButton(button, label, listener) {
@@ -143,17 +116,17 @@ export class SalmonDialog {
             button.onclick = function () {
                 if (listener != null)
                     listener();
-                dialog.#hide();
+                dialog.hide();
             }
         }
     }
 
     setOption(option) {
         if (option != null) {
-            this.#option.innerText = option;
-            this.#option.style.display = "block";
+            this.option.innerText = option;
+            this.option.style.display = "block";
         } else {
-            this.#option.style.display = "none";
+            this.option.style.display = "none";
         }
     }
 
@@ -161,26 +134,15 @@ export class SalmonDialog {
         if (isFileName) {
             let ext = SalmonFileUtils.getExtensionFromFileName(value);
             if (ext != null && ext.length > 0)
-                this.#input.setSelectionRange(0, value.length - ext.length - 1);
+                this.input.setSelectionRange(0, value.length - ext.length - 1);
             else
-                this.#input.setSelectionRange(0, value.length);
+                this.input.setSelectionRange(0, value.length);
         } if (isPassword) {
-            this.#input.type = "password";
+            this.input.type = "password";
         } else if (readOnly) {
-            this.#input.readOnly = true;
+            this.input.readOnly = true;
         }
-        this.#input.value = value;
-        this.#input.style.display = "block";
-    }
-
-    show() {
-        this.#modal.style.display = "block";
-        if(this.#input != null)
-            this.#input.focus();
-    }
-
-    #hide() {
-        this.#modal.style.display = "none";
-        this.#modal.parentElement.parentElement.removeChild(this.#modal.parentElement);
+        this.input.value = value;
+        this.input.style.display = "block";
     }
 }

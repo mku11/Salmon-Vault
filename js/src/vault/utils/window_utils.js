@@ -25,16 +25,6 @@ SOFTWARE.
 export class WindowUtils {
     static #iconPath;
 
-    static runOnMainThread(runnable) {
-        setTimeout(runnable);
-    }
-
-    static runOnMainThread(runnable, delay) {
-        setTimeout(() => {
-            runOnMainThread(runnable);
-        }, delay);
-    }
-
     static setDefaultIconPath(iconPath) {
         WindowUtils.#iconPath = iconPath;
     }

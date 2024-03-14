@@ -26,32 +26,34 @@ import { WindowUtils } from "../utils/window_utils.js";
 
 export class SalmonWindow {
     static modalUrl = "modal.html";
+    static zIndex = 0;
 
-    #root;
-    #icon;
-    #modal;
-    #closeButton;
-    #title;
-    #content;
+    root;
+    icon;
+    modal;
+    closeButton;
+    title;
+    content;
+    onClose;
 
     getRoot() {
-        return this.#root;
+        return this.root;
     }
     
     setupIcon() {
         let icon = WindowUtils.getDefaultIcon();
-        this.#icon.src = icon;
+        this.icon.src = icon;
     }
 
     constructor(content, root = document) {
-        this.#root = root;
+        this.root = root;
         this.setupControls();
         this.setupIcon();
         this.setupEventListeners();
-        this.setContent(content);
+        this.#setContent(content);
     }
 
-    static async openModal(title, content) {
+    static async createModal(title, content) {
         return new Promise((resolve, reject) => {
             fetch(SalmonWindow.modalUrl).then(async (response) => {
                 let docBody = document.getElementsByTagName("body")[0];
@@ -61,43 +63,49 @@ export class SalmonWindow {
                 docBody.appendChild(div);
                 let window = new SalmonWindow(content, div);
                 window.setTitle(title);
-                window.show();
                 resolve(window);
             });
         });
     }
 
     setupControls() {
-        this.#modal = this.#root.getElementsByClassName("modal")[0];
-        this.#icon = this.#root.getElementsByClassName("modal-icon")[0];
-        this.#title = this.#root.getElementsByClassName("modal-title")[0];
-        this.#closeButton = this.#root.getElementsByClassName("modal-close")[0];
-        this.#content = this.#root.getElementsByClassName("modal-window-content")[0];
+        this.modal = this.root.getElementsByClassName("modal")[0];
+        this.icon = this.root.getElementsByClassName("modal-icon")[0];
+        this.title = this.root.getElementsByClassName("modal-title")[0];
+        this.closeButton = this.root.getElementsByClassName("modal-close")[0];
+        this.content = this.root.getElementsByClassName("modal-window-content")[0];
     }
 
     setupEventListeners() {
         let dialog = this;
-        this.#closeButton.onclick = function () {
-            dialog.#hide();
+        this.closeButton.onclick = function () {
+            dialog.hide();
         }
     }
 
-    setContent(content) {
-        var div = document.createElement('div');
-        div.innerHTML = content;
-        this.#content.appendChild(div);
+    #setContent(content) {
+        if(content != null) {
+            var div = document.createElement('div');
+            div.innerHTML = content;
+            this.content.appendChild(div);
+        }
     }
 
     setTitle(title) {
-        this.#title.innerText = title;
+        this.title.innerText = title;
     }
 
     show() {
-        this.#modal.style.display = "block";
+        this.modal.style.display = "block";
+        SalmonWindow.zIndex += 2;
+        this.modal.style.zIndex = SalmonWindow.zIndex;
     }
 
-    #hide() {
-        this.#modal.style.display = "none";
-        this.#modal.parentElement.parentElement.removeChild(this.#modal.parentElement);
+    hide() {
+        this.modal.style.display = "none";
+        this.modal.parentElement.parentElement.removeChild(this.modal.parentElement);
+        SalmonWindow.zIndex -= 2;
+        if(this.onClose != null)
+            this.onClose();
     }
 }

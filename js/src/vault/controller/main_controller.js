@@ -48,6 +48,7 @@ import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
 import { SalmonFileViewModel } from "../viewmodel/salmon_file_view_model.js";
 import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
 import { ImageViewerController } from "./image_viewer_controller.js";
+import { TextEditorController } from "./text_editor_controller.js";
 
 export class MainController {
     static MAX_TEXT_FILE = 1 * 1024 * 1024;
@@ -55,13 +56,13 @@ export class MainController {
 
     fileItemList = Binding.bind(document, 'table', 'tbody', new ObservableList());
     table;
-    status = Binding.bind(document, 'status', 'value', new StringProperty());
+    status = Binding.bind(document, 'status', 'innerText', new StringProperty());
     path = Binding.bind(document, 'path', 'value', new StringProperty());
     progressVisibility = Binding.bind(document, 'progress-layout-container', 'display', new BooleanProperty());
     fileprogress = Binding.bind(document, 'file-progress', 'value', new DoubleProperty());
-    fileprogresstext = Binding.bind(document, 'file-progress-text', 'value', new StringProperty());
+    fileprogresstext = Binding.bind(document, 'file-progress-text', 'innerText', new StringProperty());
     filesprogress = Binding.bind(document, 'files-progress', 'value', new DoubleProperty());
-    filesprogresstext = Binding.bind(document, 'files-progress-text', 'value', new StringProperty());
+    filesprogresstext = Binding.bind(document, 'files-progress-text', 'innerText', new StringProperty());
 
     keysPressed = new Set();
     metaKeysPressed = new Set();
@@ -78,47 +79,39 @@ export class MainController {
     }
 
     setupKeyboardShortcuts() {
-        ServiceLocator.getInstance().resolve(IKeyboardService).onKey = (e) => this.onKey(e, this);
-        ServiceLocator.getInstance().resolve(IKeyboardService).onMetaKey = (e) => this.onMetaKey(e, this);
+        ServiceLocator.getInstance().resolve(IKeyboardService).addOnKeyListener((e) => this.onKey(e, this));
+        ServiceLocator.getInstance().resolve(IKeyboardService).addOnMetaKeyListener((e) => this.onMetaKey(e, this));
     }
 
     onMetaKey(e, self) {
+        let detected;
         if (e.type == 'keydown') {
             self.metaKeysPressed.add(e.key);
-            let detected = self.detectShortcuts();
-            if (detected) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }
-        else
+            detected = self.detectShortcuts();
+        } else {
             self.metaKeysPressed.delete(e.key);
+        }
+        return detected;
     }
 
     onKey(e, self) {
+        let detected;
         if (e.type == 'keydown') {
             self.keysPressed.add(e.key.toUpperCase());
-            let detected = self.detectShortcuts();
-            if (detected) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
+            detected = self.detectShortcuts();
         } else if (!e.Down && e.key == "Enter") {
             // workaround for Enter
             self.keysPressed.add(e.key.toUpperCase());
-            let detected = self.detectShortcuts();
-            if (detected) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
+            detected = self.detectShortcuts();
             self.keysPressed.delete(e.key.toUpperCase());
         }
         else
             self.keysPressed.delete(e.key.toUpperCase());
+        return detected;
     }
 
     detectShortcuts() {
-        if (true) // TODO: DataGrid.IsFocused
+        if (document.activeElement.tagName == 'BODY')
         {
             if (this.metaKeysPressed.has('Control') && this.keysPressed.has("R"))
                 this.onRefresh();
@@ -483,7 +476,7 @@ export class MainController {
 
     startTextEditor(item) {
         try {
-            if (item.getSalmonFile().getSize() > MAX_TEXT_FILE) {
+            if (item.getSalmonFile().getSize() > MainController.MAX_TEXT_FILE) {
                 new SalmonDialog("File too large").show();
                 return;
             }

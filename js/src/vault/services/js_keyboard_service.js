@@ -25,8 +25,8 @@ SOFTWARE.
 import { IKeyboardService } from "../../common/services/ikeyboard_service.js";
 
 export class JsKeyboardService extends IKeyboardService {
-    onMetaKey;
-    onKey;
+    onMetaKeyListeners = [];
+    onKeyListeners = [];
 
     constructor() {
         super();
@@ -34,14 +34,39 @@ export class JsKeyboardService extends IKeyboardService {
         document.onkeydown = (e) => this.keyDetected(e);
     }
 
+    addOnMetaKeyListener(listener) {
+        this.onMetaKeyListeners.push(listener);
+    }
+
+    removeOnMetaKeyListener(listener) {
+        let index = this.onMetaKeyListeners.indexOf(listener);
+        if(index >= 0)
+            this.onMetaKeyListeners.splice(index,1);
+    }
+
+    addOnKeyListener(listener) {
+        this.onKeyListeners.push(listener);
+    }
+
+    removeOnKeyListener(listener) {
+        let index = this.onKeyListeners.indexOf(listener);
+        if(index >= 0)
+            this.onKeyListeners.splice(index,1);
+    }
+    
     keyDetected(e) {
         e = e || window.event;
+        let detected = false;
         if (e.key == 'Control' || e.key == 'Alt' || e.key == 'Shift') {
-            if (this.onMetaKey != null)
-                this.onMetaKey(e);
+            for(let listener of this.onMetaKeyListeners)
+                detected |= listener(e);
         } else {
-            if (this.onKey != null)
-                this.onKey(e);
+            for(let listener of this.onKeyListeners)
+                detected |= listener(e);
+        }
+        if(detected) {
+            e.preventDefault();
+            e.stopPropagation();
         }
     }
 }

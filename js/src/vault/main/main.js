@@ -22,15 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { URLUtils } from "../utils/url_utils.js";
 import { MainController } from "../controller/main_controller.js";
-import { ObservableList } from "../../common/binding/observable_list.js";
-import { SalmonDialog } from "../dialog/salmon_dialog.js";
 import { WindowUtils } from "../utils/window_utils.js";
 import { setDebugConsole } from "../../common/utils/debug_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
 
-const DEBUG = true;
+const DEBUG = false;
 function setupDebug() {
     let debugConsole = document.getElementById("debug-console");
     let debugConsoleContainer = document.getElementById("debug-console-container");
