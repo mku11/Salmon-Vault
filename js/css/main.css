@@ -30,11 +30,12 @@
 }
 
 .path-button {
-  vertical-align: bottom;
+  vertical-align: middle;
   display: table-cell;
 }
 
 .path-button-image {
+  vertical-align: middle;
   width: 1em;
   height: 1em;
 }
