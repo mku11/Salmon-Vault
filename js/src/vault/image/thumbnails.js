@@ -69,30 +69,6 @@ export class Thumbnails {
     }
 
     /// <summary>
-    /// Return a MemoryStream with the partial unencrypted file contents.
-    /// This will read only the beginning contents of the file since we don't need the whole file.
-    /// </summary>
-    /// <param name="salmonFile">The encrypted file to be used</param>
-    /// <param name="maxSize">The max content length that will be decrypted from the beginning of the file</param>
-    /// <returns></returns>
-    static async getTempStream(salmonFile, maxSize) {
-        let ms = new MemoryStream();
-        let ins = await salmonFile.getInputStream();
-        let buffer = new Uint8Array(Thumbnails.ENC_BUFFER_SIZE);
-        let bytesRead;
-        let totalBytesRead = 0;
-        while ((bytesRead = await ins.read(buffer, 0, buffer.length)) > 0
-            && totalBytesRead < maxSize) {
-            await ms.write(buffer, 0, bytesRead);
-            totalBytesRead += bytesRead;
-        }
-        await ms.flush();
-        await ins.close();
-        await ms.setPosition(0);
-        return ms;
-    }
-
-    /// <summary>
     /// Create a bitmap from the unencrypted data contents of a media file
     /// If the file is a gif we get only a certain amount of data from the beginning of the file
     /// since we don't need to get the whole file.
@@ -174,9 +150,9 @@ export class Thumbnails {
                 let hOffset = 0;
                 let vOffset = 0;
                 if (image.width > image.height) {
-                    vOffset = (height - width * image.height / image.width)/2;
+                    vOffset = (height - width * image.height / image.width) / 2;
                 } else {
-                    hOffset = (width - height * image.width / image.height)/2;
+                    hOffset = (width - height * image.width / image.height) / 2;
                 }
 
                 const canvas = document.createElement('canvas');
@@ -185,7 +161,7 @@ export class Thumbnails {
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = "rgba(0, 0, 0, 0)";
                 ctx.fillRect(0, 0, width, height);
-                ctx.drawImage(image, hOffset, vOffset, width - hOffset*2, height - vOffset*2);
+                ctx.drawImage(image, hOffset, vOffset, width - hOffset * 2, height - vOffset * 2);
                 ctx.canvas.toBlob((blob) => {
                     const resizedImage = new Image();
                     let resizedImageUrl = URL.createObjectURL(blob);
@@ -217,15 +193,10 @@ export class Thumbnails {
         let ms = null;
         try {
             let ext = SalmonFileUtils.getExtensionFromFileName(await file.getBaseName()).toLowerCase();
-            if (ext == "gif" && await file.getSize() > Thumbnails.TMP_GIF_THUMB_MAX_SIZE) {
-                stream = await Thumbnails.getTempStream(file, Thumbnails.TMP_GIF_THUMB_MAX_SIZE);
-                blob = new Blob([stream.toArray().buffer]);
-            } else {
-                stream = await file.getInputStream();
-                ms = new MemoryStream();
-                await stream.copyTo(ms);
-                blob = new Blob([ms.toArray().buffer]);
-            }
+            stream = await file.getInputStream();
+            ms = new MemoryStream();
+            await stream.copyTo(ms);
+            blob = new Blob([ms.toArray().buffer]);
             let imageUrl = URL.createObjectURL(blob);
             image.src = imageUrl;
         } catch (ex) {
