@@ -42,7 +42,13 @@ export class ObservableList {
     }
     
     getSelectedItems() {
-        return this.selected;
+        return Array.from(this.selected);
+    }
+
+    clearSelectedItems() {
+        this.selected.clear();
+        for(let i=0; i<this.#list.length; i++)
+            Binding.setItemSelect(this, i, false);
     }
 
     getContextMenu() {
@@ -69,7 +75,7 @@ export class ObservableList {
         let index = this.#list.indexOf(item);
         if(index >= 0) {
             this.selected.add(item);
-            Binding.setItemSelect(this, index);
+            Binding.setItemSelect(this, index, true);
         }
     }
 

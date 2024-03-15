@@ -142,8 +142,8 @@ export class Binding {
                             r.classList.remove("tr-row-selected");
                         }
                         let trow = tbody.childNodes[index];
+                        obj.clearSelectedItems();
                         trow.classList.add("tr-row-selected");
-                        obj.getSelected().clear();
                         obj.onSetSelected(index, true);
                         return {
                             items: obj.getContextMenu()
@@ -164,10 +164,10 @@ export class Binding {
                     trow.classList.remove("tr-row-selected");
                     obj.onSetSelected(index, false);
                 } else {
-                    row.classList.add("tr-row-selected");
                     if (!event.ctrlKey)
-                        obj.getSelectedItems().clear();
+                        obj.clearSelectedItems();
                     obj.onSetSelected(index, true);
+                    row.classList.add("tr-row-selected");
                     obj.onClicked(event, index);
                 }
             }
@@ -294,13 +294,16 @@ export class Binding {
         }
     }
 
-    static setItemSelect(obj, index) {
+    static setItemSelect(obj, index, value) {
         let binding = Binding.getBinding(obj);
         let el = Binding.getElement(binding.root, binding.name);
         if (binding.field == 'tbody') {
             let tbody = el.getElementsByTagName('tbody')[0];
             let row = tbody.childNodes[index];
-            row.classList.add("tr-row-selected");
+            if(value)
+                row.classList.add("tr-row-selected");
+            else
+                row.classList.remove("tr-row-selected");
         }
     }
 }

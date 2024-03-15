@@ -154,10 +154,11 @@ export class MainController {
                 this.keysPressed.clear();
                 this.metaKeysPressed.clear();
                 this.manager.clearCopiedFiles();
+                this.fileItemList.clearSelectedItems();
             }
             else if (this.keysPressed.has("ENTER")) {
-                // if (DataGrid.SelectionMode == SelectionMode.Single && DataGrid.SelectedItem != null)
-                this.onOpenItem(this.fileItemList.getSelectedIndex());
+                if (this.fileItemList.getSelectedIndex() >= 0)
+                    this.onOpenItem(this.fileItemList.getSelectedIndex());
             } else {
                 return false;
             }
@@ -430,14 +431,14 @@ export class MainController {
         let contextMenu = this.fileItemList.getContextMenu();
 
         contextMenu["View"] = { name: "View", icon: "edit", callback: async () => this.onOpenItem(this.fileItemList.getSelectedIndex()) };
-        contextMenu["ViewAsText"] = { name: "View as Text", icon: "edit", callback: async () => this.startTextEditor(this.fileItemList.getSelectedItems().values().next().value) };
+        contextMenu["ViewAsText"] = { name: "View as Text", icon: "edit", callback: async () => this.startTextEditor(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
         contextMenu["Copy"] = { name: "Copy (Ctrl-C)", icon: "copy", callback: async () => this.onCopy() };
         contextMenu["Cut"] = { name: "Cut (Ctrl-X)", icon: "cut", callback: async () => this.onCut() };
         contextMenu["Delete"] = { name: "Delete (Del)", icon: "delete", callback: async () => this.onDelete() };
-        contextMenu["Rename"] = { name: "Rename", icon: "rename", callback: async () => SalmonDialogs.promptRenameFile(this.fileItemList.getSelectedItems().values().next().value.getSalmonFile()) };
+        contextMenu["Rename"] = { name: "Rename", icon: "rename", callback: async () => SalmonDialogs.promptRenameFile(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
         contextMenu["Export"] = { name: "Export (Ctrl-E)", icon: "export", callback: async () => this.onExport() };
         contextMenu["ExportAndDelete"] = { name: "Export And Delete (Ctrl-U)", icon: "export", callback: async () => this.onExportAndDelete() };
-        contextMenu["Properties"] = { name: "Properties", icon: "export", callback: async () => await SalmonDialogs.showProperties(this.fileItemList.getSelectedItems().values().next().value.getSalmonFile()) };
+        contextMenu["Properties"] = { name: "Properties", icon: "export", callback: async () => await SalmonDialogs.showProperties(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
     }
 
     async openItem(position) {
