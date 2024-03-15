@@ -143,7 +143,8 @@ export class Binding {
                         }
                         let trow = tbody.childNodes[index];
                         trow.classList.add("tr-row-selected");
-                        obj.onSetSelected(index);
+                        obj.getSelected().clear();
+                        obj.onSetSelected(index, true);
                         return {
                             items: obj.getContextMenu()
                         };
@@ -152,13 +153,23 @@ export class Binding {
             });
             row.classList.add("tr-row");
             row.onclick = (event) => {
-                for (let i = 0; i < tbody.childNodes.length; i++) {
-                    let r = tbody.childNodes[i];
-                    r.classList.remove("tr-row-selected");
+                if (!event.ctrlKey) {
+                    for (let i = 0; i < tbody.childNodes.length; i++) {
+                        let r = tbody.childNodes[i];
+                        r.classList.remove("tr-row-selected");
+                    }
                 }
-                row.classList.add("tr-row-selected");
-                obj.onSetSelected(index);
-                obj.onClicked(event, index);
+                let trow = tbody.childNodes[index];
+                if (event.ctrlKey && trow.classList.contains("tr-row-selected")) {
+                    trow.classList.remove("tr-row-selected");
+                    obj.onSetSelected(index, false);
+                } else {
+                    row.classList.add("tr-row-selected");
+                    if (!event.ctrlKey)
+                        obj.getSelectedItems().clear();
+                    obj.onSetSelected(index, true);
+                    obj.onClicked(event, index);
+                }
             }
             row.ondblclick = (event) => {
                 for (let i = 0; i < tbody.childNodes.length; i++) {
@@ -167,7 +178,7 @@ export class Binding {
                 }
                 let trow = tbody.childNodes[index];
                 trow.classList.add("tr-row-selected");
-                obj.onSetSelected(index);
+                obj.onSetSelected(index, true);
                 obj.onDoubleClicked(event, index);
             }
             for (let i = 0; i < th.length; i++) {
@@ -274,12 +285,22 @@ export class Binding {
     static getCaretPosition(obj) {
         let binding = this.#bindings[obj.key];
         let el = Binding.getElement(binding.root, binding.name);
-        if(el.tagName.toLowerCase() === 'textarea') {
+        if (el.tagName.toLowerCase() === 'textarea') {
             return el.selectionStart();
-        } else if(el.tagName.toLowerCase() === 'input') {
+        } else if (el.tagName.toLowerCase() === 'input') {
             return el.selectionStart();
         } else {
             throw new Error("Could not get value");
+        }
+    }
+
+    static setItemSelect(obj, index) {
+        let binding = Binding.getBinding(obj);
+        let el = Binding.getElement(binding.root, binding.name);
+        if (binding.field == 'tbody') {
+            let tbody = el.getElementsByTagName('tbody')[0];
+            let row = tbody.childNodes[index];
+            row.classList.add("tr-row-selected");
         }
     }
 }

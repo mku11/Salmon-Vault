@@ -110,8 +110,13 @@ export class MainController {
         return detected;
     }
 
+    isModalOpened() {
+        let modals = document.getElementsByClassName("modal");
+        return modals.length > 0;
+    }
+
     detectShortcuts() {
-        if (document.activeElement.tagName == 'BODY')
+        if (document.activeElement.tagName == 'BODY' && !this.isModalOpened())
         {
             if (this.metaKeysPressed.has('Control') && this.keysPressed.has("R"))
                 this.onRefresh();
@@ -138,18 +143,16 @@ export class MainController {
             else if (this.metaKeysPressed.has('Control') && this.keysPressed.has("F"))
                 this.onSearch();
             else if (this.metaKeysPressed.has('Control') && this.keysPressed.has("A")) {
-                // TODO: select all items
-                // ViewModel.IsMultiSelection = true;
-                // DataGrid.Focus();
-                // foreach (SalmonFileViewModel vm in ViewModel.FileItemList)
-                //     DataGrid.SelectedItems.Add(vm);
+                for(let i=0; i<this.fileItemList.length(); i++) {
+                    let vm = this.fileItemList.get(i);
+                    this.fileItemList.select(vm);
+                }
             }
             else if (this.keysPressed.has("DELETE"))
                 this.onDelete();
             else if (this.keysPressed.has("ESCAPE")) {
                 this.keysPressed.clear();
                 this.metaKeysPressed.clear();
-                // ViewModel.IsMultiSelection = false;
                 this.manager.clearCopiedFiles();
             }
             else if (this.keysPressed.has("ENTER")) {

@@ -26,7 +26,7 @@ import {Binding } from "./binding.js";
 
 export class ObservableList {
     key = null;
-    list = [];
+    #list = [];
     selected = new Set();
     onSelectionChanged = [];
     onItemClicked = null;
@@ -38,7 +38,7 @@ export class ObservableList {
     }
 
     getSelectedIndex() {
-        return this.list.indexOf(this.selected.values().next().value);
+        return this.#list.indexOf(this.selected.values().next().value);
     }
     
     getSelectedItems() {
@@ -54,20 +54,23 @@ export class ObservableList {
             this.onItemClicked(index);
     }
 
-    async onSetSelected(index) {
-        let item = this.list[index];
-        this.selected.clear();
-        this.selected.add(item);
+    async onSetSelected(index, value) {
+        let item = this.#list[index];
+        if(value)
+            this.selected.add(item);
+        else
+            this.selected.delete(item);
         for(let onSelectionChanged of this.onSelectionChanged) {
             onSelectionChanged();
         }
     }
 
-    select(index) {
-        this.selected.clear();
-        this.selected.add(item);
-        // TODO:
-        // Binding.setItemSelected(self, index);
+    select(item) {
+        let index = this.#list.indexOf(item);
+        if(index >= 0) {
+            this.selected.add(item);
+            Binding.setItemSelect(this, index);
+        }
     }
 
     addSelectedChangeListener(onSelectionChanged) {
@@ -85,32 +88,32 @@ export class ObservableList {
 
     async itemPropertyChanged(owner, propertyName, self) {
         let value = owner[propertyName];
-        let index = self.list.indexOf(owner);
+        let index = self.#list.indexOf(owner);
         Binding.setItemFieldValue(self, index, propertyName, value);
     }
 
     push(value) {
-        this.list.push(value);
+        this.#list.push(value);
         value.observePropertyChanges(this.itemPropertyChanged, this);
-        Binding.setItemValue(this, this.list.length-1, value);
+        Binding.setItemValue(this, this.#list.length-1, value);
     }
 
     add(position, value) {
-        if (this.list.length < position)
-            this.list = this.list.concat(new Array(position - this.list.length));
-        this.list.splice(position, 0, value);
+        if (this.#list.length < position)
+            this.#list = this.#list.concat(new Array(position - this.list.length));
+        this.#list.splice(position, 0, value);
         value.observePropertyChanges(this.itemPropertyChanged, this);
         Binding.setItemValue(this, position, value);
     }
 
     get(position) {
-        return this.list[position];
+        return this.#list[position];
     }
 
     clear() {
-        for(let item of this.list)
+        for(let item of this.#list)
             item.unobservePropertyChanges(this.itemPropertyChanged);
-        this.list.length = 0;
+        this.#list.length = 0;
         Binding.setValue(this, null);
     }
 
@@ -120,12 +123,16 @@ export class ObservableList {
     }
 
     size() {
-        return this.list.length;
+        return this.#list.length;
     }
 
     remove(value) {
-        let index = this.list.indexOf(value);
+        let index = this.#list.indexOf(value);
         if(index >= 0)
-            this.list.splice(index, 1);
+            this.#list.splice(index, 1);
+    }
+
+    length() {
+        return this.#list.length;
     }
 }
