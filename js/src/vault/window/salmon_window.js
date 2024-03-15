@@ -99,13 +99,30 @@ export class SalmonWindow {
         this.modal.style.display = "block";
         SalmonWindow.zIndex += 2;
         this.modal.style.zIndex = SalmonWindow.zIndex;
+        this.disableSiblings(true);
     }
 
     hide() {
         this.modal.style.display = "none";
+        this.disableSiblings(false);
         this.modal.parentElement.parentElement.removeChild(this.modal.parentElement);
         SalmonWindow.zIndex -= 2;
         if(this.onClose != null)
             this.onClose();
+    }
+
+    disableSiblings(value) {
+        let parent = this.modal.parentElement.parentElement;
+        for(let i = parent.childNodes.length - 1; i >= 0; i--) {
+            let element = parent.childNodes[i];
+            if(element.style && element != this.modal.parentElement) {
+                if(value) {
+                    element.classList.add("is-disabled");
+                } else {
+                    element.classList.remove("is-disabled");
+                }
+                break;
+            }
+        }
     }
 }

@@ -220,7 +220,7 @@ export class SalmonDialogs {
                     URLUtils.goToUrl(SalmonConfig.SourceCodeURL);
                 } catch (ex) {
                     SalmonDialog.promptDialog("Error", "Could not open Url: "
-                        + SalmonConfig.SourceCodeURL);
+                        + SalmonConfig.SourceCodeURL + ex);
                 }
             }, "Ok", null);
     }
