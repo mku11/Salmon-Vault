@@ -147,8 +147,7 @@ export class MainController {
                     let vm = this.fileItemList.get(i);
                     this.fileItemList.select(vm);
                 }
-            }
-            else if (this.keysPressed.has("DELETE"))
+            } else if (this.keysPressed.has("DELETE"))
                 this.onDelete();
             else if (this.keysPressed.has("ESCAPE")) {
                 this.keysPressed.clear();
@@ -165,7 +164,6 @@ export class MainController {
             return true;
         }
         return false;
-
     }
 
     fileItemAdded(position, file, self) {
