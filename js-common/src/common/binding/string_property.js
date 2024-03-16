@@ -29,8 +29,25 @@ export class StringProperty extends Property {
     focus() {
         Binding.setFocus(this);
     }
+    
+    getSelectionStart() {
+        return Binding.getSelectionStart(this);
+    }
 
-    getCaretPosition() {
-        Binding.getCaretPosition(this);
+    setSelectionStart(value) {
+        Binding.setSelectionStart(this, value);
+    }
+
+    getSelectionEnd() {
+        return Binding.getSelectionStart(this);
+    }
+
+    setSelectionEnd(value) {
+        Binding.setSelectionEnd(this, value);
+    }
+
+    setSelectionAll() {
+        this.setSelectionStart(this, 0);
+        this.setSelectionEnd(this.get().length);
     }
 }

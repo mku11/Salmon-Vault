@@ -282,15 +282,53 @@ export class Binding {
         }
     }
 
-    static getCaretPosition(obj) {
+    static getSelectionStart(obj) {
         let binding = this.#bindings[obj.key];
         let el = Binding.getElement(binding.root, binding.name);
         if (el.tagName.toLowerCase() === 'textarea') {
-            return el.selectionStart();
+            return el.selectionStart;
         } else if (el.tagName.toLowerCase() === 'input') {
-            return el.selectionStart();
+            return el.selectionStart;
         } else {
             throw new Error("Could not get value");
+        }
+    }
+
+    static setSelectionStart(obj, value) {
+        let binding = this.#bindings[obj.key];
+        let el = Binding.getElement(binding.root, binding.name);
+        if (el.tagName.toLowerCase() === 'textarea') {
+            return el.selectionStart = value;
+        } else if (el.tagName.toLowerCase() === 'input') {
+            return el.selectionStart = value;
+        } else {
+            throw new Error("Could not set value");
+        }
+    }
+
+    
+    static getSelectionEnd(obj) {
+        let binding = this.#bindings[obj.key];
+        let el = Binding.getElement(binding.root, binding.name);
+        if (el.tagName.toLowerCase() === 'textarea') {
+            return el.selectionEnd;
+        } else if (el.tagName.toLowerCase() === 'input') {
+            return el.selectionEnd;
+        } else {
+            throw new Error("Could not get value");
+        }
+    }
+
+    
+    static setSelectionEnd(obj, value) {
+        let binding = this.#bindings[obj.key];
+        let el = Binding.getElement(binding.root, binding.name);
+        if (el.tagName.toLowerCase() === 'textarea') {
+            return el.selectionEnd = value;
+        } else if (el.tagName.toLowerCase() === 'input') {
+            return el.selectionEnd = value;
+        } else {
+            throw new Error("Could not set value");
         }
     }
 
@@ -305,5 +343,11 @@ export class Binding {
             else
                 row.classList.remove("tr-row-selected");
         }
+    }
+
+    static isFocused(obj) {
+        let binding = Binding.getBinding(obj);
+        let el = Binding.getElement(binding.root, binding.name);
+        return document.activeElement == el;
     }
 }

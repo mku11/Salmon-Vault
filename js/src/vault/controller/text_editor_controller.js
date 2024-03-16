@@ -57,9 +57,9 @@ export class TextEditorController {
 
     setStage(modalWindow) {
         this.modalWindow = modalWindow;
-        this.contentArea = Binding.bind(this.modalWindow, 'text-editor-text', 'textContent', new StringProperty());
-        this.searchText = Binding.bind(this.modalWindow, 'search-text', 'value', new StringProperty());
-        this.status = Binding.bind(this.modalWindow, 'text-editor-status', 'innerText', new StringProperty());
+        this.contentArea = Binding.bind(this.modalWindow.getRoot(), 'text-editor-text', 'textContent', new StringProperty());
+        this.searchText = Binding.bind(this.modalWindow.getRoot(), 'search-text', 'value', new StringProperty());
+        this.status = Binding.bind(this.modalWindow.getRoot(), 'text-editor-status', 'innerText', new StringProperty());
         this.initialize();
     }
 
@@ -69,7 +69,7 @@ export class TextEditorController {
             let controller = new TextEditorController();
             window.textEditorController = controller;
             let modalWindow = await SalmonWindow.createModal("Text Editor", htmlText);
-            controller.setStage(modalWindow.getRoot());
+            controller.setStage(modalWindow);
             await controller.load(fileViewModel);
             WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
             modalWindow.show();
@@ -168,6 +168,8 @@ export class TextEditorController {
             setTimeout(()=>this.onSave());
         } else if (this.metaKeysPressed.has('Control') && this.keysPressed.has("F")) {
             this.onFind();
+        } else if (this.contentArea.isFocused() && this.keysPressed.has("TAB")) {
+            document.execCommand('insertText', false, ' '.repeat(4));
         } else {
             return false;
         }
@@ -176,7 +178,7 @@ export class TextEditorController {
 
     onFind() {
         this.searchText.focus();
-        this.searchText.selectAll();
+        this.searchText.setSelectionAll();
     }
     
     onSearchKeyPressed(event) {
@@ -186,21 +188,21 @@ export class TextEditorController {
     }
 
     onSearch() {
-        this.search(this.searchText.get(), this.contentArea.getCaretPosition() - contentArea.getAnchor() > 0 ? this.contentArea.getAnchor() + 1 : this.contentArea.getAnchor());
+        this.search(this.searchText.get(), 
+            this.contentArea.getSelectionEnd() - this.contentArea.getSelectionStart() > 0 ? 
+            this.contentArea.getSelectionStart() + 1 : this.contentArea.getSelectionStart());
     }
 
     search(text, caretPosition) {
         let searchStart;
         if (this.currentCaretPosition == -1) {
             searchStart = 0;
-        } else if (this.currentCaretPosition != caretPosition) {
-            searchStart = caretPosition;
         } else {
             searchStart = this.currentCaretPosition;
         }
         let start = this.contentArea.get().indexOf(text, searchStart);
         if (start >= 0) {
-            this.selectAndScrollTo(start, text.length());
+            this.selectAndScrollTo(start, text.length);
             this.currentCaretPosition = start + 1;
         } else {
             this.currentCaretPosition = -1;
@@ -210,12 +212,15 @@ export class TextEditorController {
     selectAndScrollTo(start, length) {
         setTimeout(() => {
             this.contentArea.focus();
-            this.contentArea.positionCaret(start);
-            this.contentArea.selectPositionCaret(start + length);
-            this.searchText.focus();
+            this.contentArea.setSelectionStart(start);
+            this.contentArea.setSelectionEnd(start + length);
         });
     }
 
+    close() {
+        this.modalWindow.hide();
+    }
+    
     onClose(self) {
         this.removeOnKeyboardShortcuts();
     }

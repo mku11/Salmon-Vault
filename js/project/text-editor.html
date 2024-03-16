@@ -5,7 +5,7 @@
         <i class="fa fa-caret-down"></i></button>
       <div id="textEditorFileDropdown" class="dropdown-content">
         <a href="javascript:textEditorController.onSave()">Save File (Ctrl-S)</a>
-        <a href="javascript:textEditorController.onClose()">Close</a>
+        <a href="javascript:textEditorController.close()">Close</a>
       </div>
     </div>
     <div id="operations-menu" class="dropdown">
@@ -20,15 +20,15 @@
       <input type="text" name="search-text" class="search-text" onkeydown="javascript:textEditorController.onSearchKeyPressed(event)">
 
       </input>
-      <button id="search-button" class="search-button" click="javascript:textEditorController.onSearch()">
+      <button id="search-button" class="search-button" onclick="javascript:textEditorController.onSearch()">
         🔎
       </button>
     </div>
   </div>
   <div id="text-editor-container" class="text-editor-container">
-    <textarea name="text-editor-text" class="text-editor-text"></textarea>
+    <textarea name="text-editor-text" class="text-editor-text" spellcheck="false"></textarea>
   </div>
   <div id="text-editor-status-container" class="text-editor-status-container">
-    <span id="text-editor-status" class="text-editor-status">TEset<span>
+    <span id="text-editor-status" class="text-editor-status"><span>
   </div>
 </div>

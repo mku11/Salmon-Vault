@@ -431,7 +431,7 @@ export class MainController {
         let contextMenu = this.fileItemList.getContextMenu();
 
         contextMenu["View"] = { name: "View", icon: "edit", callback: async () => this.onOpenItem(this.fileItemList.getSelectedIndex()) };
-        contextMenu["ViewAsText"] = { name: "View as Text", icon: "edit", callback: async () => this.startTextEditor(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
+        contextMenu["ViewAsText"] = { name: "View as Text", icon: "edit", callback: async () => this.startTextEditor(this.fileItemList.getSelectedItems()[0]) };
         contextMenu["Copy"] = { name: "Copy (Ctrl-C)", icon: "copy", callback: async () => this.onCopy() };
         contextMenu["Cut"] = { name: "Cut (Ctrl-X)", icon: "cut", callback: async () => this.onCut() };
         contextMenu["Delete"] = { name: "Delete (Del)", icon: "delete", callback: async () => this.onDelete() };

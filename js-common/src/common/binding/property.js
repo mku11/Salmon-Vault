@@ -33,4 +33,8 @@ export class Property {
     get() {
         return Binding.getValue(this);
     }
+
+    isFocused() {
+        return Binding.isFocused(this);
+    }
 }
