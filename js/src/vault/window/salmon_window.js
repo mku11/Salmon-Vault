@@ -35,6 +35,7 @@ export class SalmonWindow {
     title;
     content;
     onClose;
+    onShow;
 
     getRoot() {
         return this.root;
@@ -100,6 +101,7 @@ export class SalmonWindow {
         SalmonWindow.zIndex += 2;
         this.modal.style.zIndex = SalmonWindow.zIndex;
         this.disableSiblings(true);
+        this.onShow();
     }
 
     hide() {

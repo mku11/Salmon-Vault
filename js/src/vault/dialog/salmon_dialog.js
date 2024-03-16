@@ -43,7 +43,7 @@ export class SalmonDialog extends SalmonWindow {
         this.setupEventListeners();
         this.#setTextContent(content);
         this.setFirstButton("Ok", buttonListener1);
-        if(buttonListener2 != null)
+        if (buttonListener2 != null)
             this.setSecondButton("Cancel", buttonListener2);
     }
 
@@ -132,12 +132,18 @@ export class SalmonDialog extends SalmonWindow {
     }
 
     setValue(value, isFileName, readOnly, isPassword) {
+        let ext = SalmonFileUtils.getExtensionFromFileName(value);
         if (isFileName) {
-            let ext = SalmonFileUtils.getExtensionFromFileName(value);
-            if (ext != null && ext.length > 0)
-                this.input.setSelectionRange(0, value.length - ext.length - 1);
-            else
-                this.input.setSelectionRange(0, value.length);
+            this.onShow = () => {
+                this.input.focus();
+                if (ext != null && ext.length > 0) {
+                    this.input.selectionStart = 0;
+                    this.input.selectionEnd = value.length - ext.length - 1;
+                } else {
+                    this.input.selectionStart = 0;
+                    this.input.selectionEnd = value.length;
+                }
+            };
         } if (isPassword) {
             this.input.type = "password";
         } else if (readOnly) {
