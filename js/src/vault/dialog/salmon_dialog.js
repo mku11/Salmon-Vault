@@ -94,6 +94,7 @@ export class SalmonDialog extends SalmonWindow {
         this.option = this.root.getElementsByClassName("dialog-option")[0];
         this.firstButton = this.root.getElementsByClassName("dialog-button-first")[0];
         this.secondButton = this.root.getElementsByClassName("dialog-button-second")[0];
+        this.modal.style.resize = "none";
     }
 
     #setTextContent(content) {
