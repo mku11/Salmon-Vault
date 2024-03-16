@@ -144,10 +144,14 @@ export class SalmonDialog extends SalmonWindow {
                     this.input.selectionEnd = value.length;
                 }
             };
-        } if (isPassword) {
+        } 
+        if (isPassword) {
             this.input.type = "password";
+            this.onShow = () => this.input.focus();
         } else if (readOnly) {
             this.input.readOnly = true;
+        } else {
+            this.onShow = () => this.input.focus();
         }
         this.input.value = value;
         this.input.style.display = "block";
