@@ -61,7 +61,7 @@ export class SalmonDialog extends SalmonWindow {
                 dialog.setOption(option);
                 dialog.setFirstButton("ok", () => {
                     if (OnEdit != null)
-                        OnEdit(dialog.input.value);
+                        OnEdit(dialog.input.value, dialog.option.checked);
                 });
                 dialog.show();
             });
@@ -92,6 +92,7 @@ export class SalmonDialog extends SalmonWindow {
         this.text = this.root.getElementsByClassName("modal-text")[0];
         this.input = this.root.getElementsByClassName("dialog-input")[0];
         this.option = this.root.getElementsByClassName("dialog-option")[0];
+        this.optionText = this.root.getElementsByClassName("dialog-option-text")[0];
         this.firstButton = this.root.getElementsByClassName("dialog-button-first")[0];
         this.secondButton = this.root.getElementsByClassName("dialog-button-second")[0];
         this.modal.style.resize = "none";
@@ -124,7 +125,7 @@ export class SalmonDialog extends SalmonWindow {
 
     setOption(option) {
         if (option != null) {
-            this.option.innerText = option;
+            this.optionText.innerText = option;
             this.option.style.display = "block";
         } else {
             this.option.style.display = "none";

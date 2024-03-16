@@ -13,6 +13,12 @@
   width: 100%;
 }
 
+.dialog-option-container {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
 .dialog-option {
   display: none;
   padding: 4px;
