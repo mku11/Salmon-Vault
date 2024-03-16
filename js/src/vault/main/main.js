@@ -27,7 +27,7 @@ import { WindowUtils } from "../utils/window_utils.js";
 import { setDebugConsole } from "../../common/utils/debug_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
 
-const DEBUG = false;
+const DEBUG = true;
 function setupDebug() {
     let debugConsole = document.getElementById("debug-console");
     let debugConsoleContainer = document.getElementById("debug-console-container");
