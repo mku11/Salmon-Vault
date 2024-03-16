@@ -179,7 +179,7 @@ table td {
 }
 
 .debug-console-container {
-  display: flex;
+  display: none;
   overflow: auto;
   margin: 4px;
 }
