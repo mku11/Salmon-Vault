@@ -101,7 +101,8 @@ export class SalmonWindow {
         SalmonWindow.zIndex += 2;
         this.modal.style.zIndex = SalmonWindow.zIndex;
         this.disableSiblings(true);
-        this.onShow();
+        if(this.onShow != null)
+            this.onShow();
     }
 
     hide() {
