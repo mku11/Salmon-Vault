@@ -51,6 +51,7 @@ export class ImageViewerController {
             let htmlText = await response.text();
             let controller = new ImageViewerController();
             let modalWindow = await SalmonWindow.createModal("Image Viewer", htmlText);
+            modalWindow.modal.style.resize = "both";
             controller.setStage(modalWindow.getRoot());
             await controller.load(fileViewModel);
             WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
