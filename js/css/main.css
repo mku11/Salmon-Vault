@@ -115,6 +115,9 @@ table td {
 }
 
 .td-cell {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   padding: 4px;
 }
 

@@ -153,7 +153,7 @@ export class Binding {
             });
             row.classList.add("tr-row");
             row.onclick = (event) => {
-                if (!event.ctrlKey) {
+                if (!event.ctrlKey && !event.shiftKey) {
                     for (let i = 0; i < tbody.childNodes.length; i++) {
                         let r = tbody.childNodes[i];
                         r.classList.remove("tr-row-selected");
@@ -164,11 +164,23 @@ export class Binding {
                     trow.classList.remove("tr-row-selected");
                     obj.onSetSelected(index, false);
                 } else {
-                    if (!event.ctrlKey)
-                        obj.clearSelectedItems();
-                    obj.onSetSelected(index, true);
-                    row.classList.add("tr-row-selected");
-                    obj.onClicked(event, index);
+                    let lastSelection = binding.obj.getLastSelection();
+                    if (event.shiftKey && lastSelection >= 0) {
+                        let startSelection = Math.min(index, lastSelection);
+                        let endSelection = Math.max(index, lastSelection);
+                        for (let i = startSelection; i <= endSelection; i++) {
+                            let r = tbody.childNodes[i];
+                            obj.onSetSelected(i, true);
+                            r.classList.add("tr-row-selected");
+                        }
+                    } else {
+                        if (!event.ctrlKey) {
+                            obj.clearSelectedItems();
+                        }
+                        obj.onSetSelected(index, true);
+                        row.classList.add("tr-row-selected");
+                        obj.onClicked(event, index);
+                    }
                 }
             }
             row.ondblclick = (event) => {
@@ -306,7 +318,7 @@ export class Binding {
         }
     }
 
-    
+
     static getSelectionEnd(obj) {
         let binding = this.#bindings[obj.key];
         let el = Binding.getElement(binding.root, binding.name);
@@ -319,7 +331,7 @@ export class Binding {
         }
     }
 
-    
+
     static setSelectionEnd(obj, value) {
         let binding = this.#bindings[obj.key];
         let el = Binding.getElement(binding.root, binding.name);
@@ -338,7 +350,7 @@ export class Binding {
         if (binding.field == 'tbody') {
             let tbody = el.getElementsByTagName('tbody')[0];
             let row = tbody.childNodes[index];
-            if(value)
+            if (value)
                 row.classList.add("tr-row-selected");
             else
                 row.classList.remove("tr-row-selected");

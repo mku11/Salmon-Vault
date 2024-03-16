@@ -28,6 +28,7 @@ export class ObservableList {
     key = null;
     #list = [];
     selected = new Set();
+    lastSelection = -1;
     onSelectionChanged = [];
     onItemClicked = null;
     onItemDoubleClicked = null;
@@ -47,6 +48,7 @@ export class ObservableList {
 
     clearSelectedItems() {
         this.selected.clear();
+        this.lastSelection = -1;
         for(let i=0; i<this.#list.length; i++)
             Binding.setItemSelect(this, i, false);
     }
@@ -62,10 +64,13 @@ export class ObservableList {
 
     async onSetSelected(index, value) {
         let item = this.#list[index];
-        if(value)
+        if(value) {
             this.selected.add(item);
-        else
+            this.lastSelection = index;
+        } else {
             this.selected.delete(item);
+            this.lastSelection = -1;
+        }
         for(let onSelectionChanged of this.onSelectionChanged) {
             onSelectionChanged();
         }
@@ -76,6 +81,7 @@ export class ObservableList {
         if(index >= 0) {
             this.selected.add(item);
             Binding.setItemSelect(this, index, true);
+            this.lastSelection = index;
         }
     }
 
@@ -120,6 +126,7 @@ export class ObservableList {
         for(let item of this.#list)
             item.unobservePropertyChanges(this.itemPropertyChanged);
         this.#list.length = 0;
+        this.lastSelection = -1;
         Binding.setValue(this, null);
     }
 
@@ -140,5 +147,9 @@ export class ObservableList {
 
     length() {
         return this.#list.length;
+    }
+
+    getLastSelection() {
+        return this.lastSelection;
     }
 }
