@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 import {Binding } from "./binding.js";
+import { IPropertyNotifier } from "./iproperty_notifier.js";
 
 export class ObservableList {
     key = null;
@@ -41,16 +42,22 @@ export class ObservableList {
     getSelectedIndex() {
         return this.#list.indexOf(this.selected.values().next().value);
     }
+
+    getSelectedItem() {
+        return this.selected.values().next().value;
+    }
     
     getSelectedItems() {
         return Array.from(this.selected);
     }
 
-    clearSelectedItems() {
+    clearSelectedItems(update = true) {
         this.selected.clear();
         this.lastSelection = -1;
-        for(let i=0; i<this.#list.length; i++)
-            Binding.setItemSelect(this, i, false);
+        if(update) {
+            for(let i=0; i<this.#list.length; i++)
+                Binding.setItemSelect(this, i, false);
+        }
     }
 
     getContextMenu() {
@@ -106,7 +113,8 @@ export class ObservableList {
 
     push(value) {
         this.#list.push(value);
-        value.observePropertyChanges(this.itemPropertyChanged, this);
+        if(value instanceof IPropertyNotifier)
+            value.observePropertyChanges(this.itemPropertyChanged, this);
         Binding.setItemValue(this, this.#list.length-1, value);
     }
 
@@ -114,7 +122,8 @@ export class ObservableList {
         if (this.#list.length < position)
             this.#list = this.#list.concat(new Array(position - this.list.length));
         this.#list.splice(position, 0, value);
-        value.observePropertyChanges(this.itemPropertyChanged, this);
+        if(value instanceof IPropertyNotifier)
+            value.observePropertyChanges(this.itemPropertyChanged, this);
         Binding.setItemValue(this, position, value);
     }
 
@@ -123,8 +132,10 @@ export class ObservableList {
     }
 
     clear() {
-        for(let item of this.#list)
-            item.unobservePropertyChanges(this.itemPropertyChanged);
+        for(let item of this.#list) {
+            if(item instanceof IPropertyNotifier)
+                item.unobservePropertyChanges(this.itemPropertyChanged);
+        }
         this.#list.length = 0;
         this.lastSelection = -1;
         Binding.setValue(this, null);

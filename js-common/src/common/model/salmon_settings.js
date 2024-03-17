@@ -29,6 +29,7 @@ import { ProviderType } from "../../lib/salmon-core/salmon/io/provider_type.js";
 import { PbkdfType } from "../../lib/salmon-core/salmon/password/pbkdf_type.js";
 import { PbkdfAlgo } from "../../lib/salmon-core/salmon/password/pbkdf_algo.js";
 import { SalmonPassword } from "../../lib/salmon-core/salmon/password/salmon_password.js";
+import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
 
 
 export class SalmonSettings {
@@ -38,7 +39,7 @@ export class SalmonSettings {
     settingsService = null;
 
     getSettingsService() {
-        return settingsService;
+        return this.settingsService;
     }
 
     vaultLocation = SalmonSettings.DEFAULT_VAULT_LOCATION;
@@ -68,8 +69,8 @@ export class SalmonSettings {
 
     setAesType(aesType) {
         this.aesType = aesType;
-        this.settingsService.setAesType(aesType.name());
-        SalmonStream.setAesProviderType(ProviderType.valueOf(aesType.name()));
+        this.settingsService.setAesType(aesType.name);
+        SalmonStream.setAesProviderType(ProviderType[aesType.name]);
     }
 
     static PbkdfImplType = {
@@ -81,13 +82,13 @@ export class SalmonSettings {
     static PBKDF_IMPL_TYPE_KEY = "PBKDF_IMPL_TYPE_KEY";
 
     getPbkdfImpl() {
-        return pbkdfImpl;
+        return this.pbkdfImpl;
     }
 
     setPbkdfImpl(pbkdfImpl) {
         this.pbkdfImpl = pbkdfImpl;
-        settingsService.setPbkdfImplType(pbkdfImpl.name());
-        SalmonPassword.setPbkdfType(SalmonPassword.PbkdfType.valueOf(this.pbkdfImpl.name()));
+        this.settingsService.setPbkdfImplType(pbkdfImpl.name);
+        SalmonPassword.setPbkdfType(PbkdfType[this.pbkdfImpl.name]);
     }
 
     static PbkdfAlgoType = {
@@ -105,8 +106,8 @@ export class SalmonSettings {
 
     setPbkdfAlgo(pbkdfAlgo) {
         this.pbkdfAlgo = pbkdfAlgo;
-        this.settingsService.setPbkdfAlgoType(pbkdfAlgo.toString());
-        SalmonPassword.setPbkdfAlgo(SalmonPassword.PbkdfAlgo.valueOf(pbkdfAlgo.name()));
+        this.settingsService.setPbkdfAlgoType(pbkdfAlgo.name);
+        SalmonPassword.setPbkdfAlgo(PbkdfAlgo[pbkdfAlgo.name]);
     }
 
     static AuthType = {
@@ -119,12 +120,12 @@ export class SalmonSettings {
     static AUTH_TYPE_KEY = "AUTH_TYPE_KEY";
 
     getSequencerAuthType() {
-        return sequencerAuthType;
+        return this.sequencerAuthType;
     }
 
     setSequencerAuthType(sequencerAuthType) {
         this.sequencerAuthType = sequencerAuthType;
-        this.settingsService.setSequenceAuthType(sequencerAuthType.name());
+        this.settingsService.setSequenceAuthType(sequencerAuthType.name);
         SalmonVaultManager.getInstance().setupSalmonManager();
     }
 

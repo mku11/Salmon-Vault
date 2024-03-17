@@ -84,6 +84,18 @@ export class Binding {
                 obj.key = key;
             } else
                 throw new Error("Can only bind ObjectProperty to img src");
+        } else if (el.tagName.toLowerCase() === 'input' && el.type == 'checkbox' && elementField === 'value') {
+            if (obj instanceof BooleanProperty) {
+                Binding.#bindings[key] = objBinding;
+                obj.key = key;
+            } else
+                throw new Error("Can only bind BooleanProperty to input checkbox");
+        } else if (el.tagName.toLowerCase() === 'select' && elementField === 'options') {
+            if (obj instanceof ObservableList) {
+                Binding.#bindings[key] = objBinding;
+                obj.key = key;
+            } else
+                throw new Error("Can only bind ObservableList to select options");
         } else {
             throw new Error("Could not bind element: " + name);
         }
@@ -93,7 +105,9 @@ export class Binding {
     static setValue(obj, value) {
         let binding = this.#bindings[obj.key];
         let el = Binding.getElement(binding.root, binding.name);
-        if (binding.field == 'value') {
+        if (el.tagName == 'INPUT' && el.type == 'checkbox' && binding.field == 'value') {
+            el.checked = value;
+        } else if (binding.field == 'value') {
             el.value = value;
         } else if (binding.field == 'innerText') {
             el.innerText = value;
@@ -128,7 +142,16 @@ export class Binding {
     static setItemValue(obj, index, value) {
         let binding = Binding.getBinding(obj);
         let el = Binding.getElement(binding.root, binding.name);
-        if (binding.field == 'tbody') {
+        if (el.tagName == 'SELECT' && binding.field == 'options') {
+            var option = document.createElement('option');
+            option.value = value;
+            option.innerHTML = value;
+            el.onchange = (event) => {
+                obj.clearSelectedItems(false);
+                obj.onSetSelected(el.selectedIndex, true);
+            };
+            el.appendChild(option);
+        } else if (binding.field == 'tbody') {
             let th = el.getElementsByTagName('th');
             let tbody = el.getElementsByTagName('tbody')[0];
             let row = tbody.insertRow(index);
@@ -275,7 +298,9 @@ export class Binding {
     static getValue(obj) {
         let binding = this.#bindings[obj.key];
         let el = Binding.getElement(binding.root, binding.name);
-        if (binding.field == 'value') {
+        if (el.tagName == 'INPUT' && el.type == 'checkbox' && binding.field == 'value') {
+            return el.checked;
+        } else if (binding.field == 'value') {
             return el.value;
         } else if (binding.field == 'innerText') {
             return el.innerText;
@@ -354,6 +379,8 @@ export class Binding {
                 row.classList.add("tr-row-selected");
             else
                 row.classList.remove("tr-row-selected");
+        } else if (binding.field == 'options') {
+            el.selectedIndex = value ? index : -1;
         }
     }
 
