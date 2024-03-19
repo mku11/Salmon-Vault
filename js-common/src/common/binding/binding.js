@@ -96,7 +96,13 @@ export class Binding {
                 obj.key = key;
             } else
                 throw new Error("Can only bind ObservableList to select options");
-        } else {
+        }  else if (el.tagName.toLowerCase() === 'video' && elementField === 'src') {
+            if (obj instanceof StringProperty) {
+                Binding.#bindings[key] = objBinding;
+                obj.key = key;
+            } else
+                throw new Error("Can only bind ObservableList to select options");
+        }else {
             throw new Error("Could not bind element: " + name);
         }
         return obj;

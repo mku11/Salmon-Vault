@@ -27,24 +27,26 @@ import { SalmonSettings } from "../../common/model/salmon_settings.js";
 
 class Prefs {
     get(key, defaultValue) {
-        if(typeof(key) !== 'string')
+        if (typeof (key) !== 'string')
             return defaultValue;
         let val = localStorage.getItem(key);
-        return val != null? val:defaultValue;
+        return val != null ? val : defaultValue;
     }
     put(key, value) {
-        if(typeof(key) !== 'string' || typeof(value) !== 'string')
+        if (typeof (key) !== 'string' || typeof (value) !== 'string')
             return;
         localStorage.setItem(key, value);
     }
     getBoolean(key, defaultValue) {
-        if(typeof(key) !== 'string')
+        if (typeof (key) !== 'string')
             return defaultValue;
         let val = localStorage.getItem(key);
-        return val != null? val:defaultValue;
+        if(val == null)
+            return defaultValue;
+        return val == 'true';
     }
     putBoolean(key, value) {
-        if(typeof(key) !== 'string' || typeof(value) !== 'boolean')
+        if (typeof (key) !== 'string' || typeof (value) !== 'boolean')
             return;
         localStorage.setItem(key, value);
     }
@@ -59,7 +61,7 @@ export class JsSettingsService extends ISettingsService {
 
     getVaultLocation() {
         return this.prefs.get(SalmonSettings.VAULT_LOCATION_KEY,
-                SalmonSettings.DEFAULT_VAULT_LOCATION);
+            SalmonSettings.DEFAULT_VAULT_LOCATION);
     }
 
     setVaultLocation(value) {
@@ -72,21 +74,21 @@ export class JsSettingsService extends ISettingsService {
 
     getAesType() {
         return this.prefs.get(SalmonSettings.AES_TYPE_KEY,
-                SalmonSettings.DEFAULT_AES_TYPE.name);
+            SalmonSettings.DEFAULT_AES_TYPE.name);
     }
 
     getPbkdfImplType() {
         return this.prefs.get(SalmonSettings.PBKDF_IMPL_TYPE_KEY,
-                SalmonSettings.DEFAULT_PBKDF_IMPL_TYPE.name);
+            SalmonSettings.DEFAULT_PBKDF_IMPL_TYPE.name);
     }
 
-    setPbkdfImplType( value) {
+    setPbkdfImplType(value) {
         this.prefs.put(SalmonSettings.PBKDF_IMPL_TYPE_KEY, value);
     }
 
     getPbkdfAlgoType() {
         return this.prefs.get(SalmonSettings.PBKDF_ALGO_TYPE_KEY,
-                SalmonSettings.DEFAULT_PBKDF_ALGO.name);
+            SalmonSettings.DEFAULT_PBKDF_ALGO.name);
     }
 
     setPbkdfAlgoType(value) {
@@ -95,17 +97,17 @@ export class JsSettingsService extends ISettingsService {
 
     getSequenceAuthType() {
         return this.prefs.get(SalmonSettings.AUTH_TYPE_KEY,
-                SalmonSettings.DEFAULT_AUTH_TYPE.name);
+            SalmonSettings.DEFAULT_AUTH_TYPE.name);
     }
 
-    
+
     setSequenceAuthType(value) {
         this.prefs.put(SalmonSettings.AUTH_TYPE_KEY, value);
     }
 
     getDeleteAfterImport() {
         return this.prefs.getBoolean(SalmonSettings.DELETE_AFTER_IMPORT_KEY,
-                SalmonSettings.DEFAULT_DELETE_AFTER_IMPORT);
+            SalmonSettings.DEFAULT_DELETE_AFTER_IMPORT);
     }
 
     setDeleteAfterImport(value) {
@@ -114,7 +116,7 @@ export class JsSettingsService extends ISettingsService {
 
     getLastImportDir() {
         return this.prefs.get(SalmonSettings.LAST_IMPORT_DIR_KEY,
-                SalmonSettings.DEFAULT_LAST_IMPORT_DIR);
+            SalmonSettings.DEFAULT_LAST_IMPORT_DIR);
     }
 
     setLastImportDir(value) {

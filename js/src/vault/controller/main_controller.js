@@ -50,6 +50,7 @@ import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js"
 import { ImageViewerController } from "./image_viewer_controller.js";
 import { TextEditorController } from "./text_editor_controller.js";
 import { SettingsController } from "./settings_controller.js";
+import { MediaPlayerController } from "./media_player_controller.js";
 
 export class MainController {
     static MAX_TEXT_FILE = 1 * 1024 * 1024;
