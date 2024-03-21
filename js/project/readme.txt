@@ -1,4 +1,6 @@
 To view and edit files you can use Visual Studio Code.
+Right click on the workspace file and "Open with Code".
+
 To fetch and extract the salmon library dependencies run Terminal / Run Build Task.
 
 You will need an http server to host the app or open the index.html locally with your browser (see below for limitations)
