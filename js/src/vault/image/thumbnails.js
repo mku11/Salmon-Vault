@@ -24,7 +24,7 @@ SOFTWARE.
 
 import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
 import { MemoryStream } from "../../lib/salmon-core/io/memory_stream.js";
-
+import { BitConverter } from "../../lib/salmon-core/convert/bit_converter.js";
 
 /**
  * Utility class that generates thumbnails for encrypted salmon files
@@ -86,13 +86,13 @@ export class Thumbnails {
                 image = await Thumbnails.fromFile(salmonFile);
                 image = await Thumbnails.resize(image, width, height);
             }
-            if (image == null) {
-                image = await Thumbnails.getIcon(salmonFile, width, height);
-            }
-            Thumbnails.addCache(salmonFile, image);
         } catch (e) {
             throw e;
         }
+        if (image == null) {
+            image = await Thumbnails.getIcon(salmonFile, width, height);
+        }
+        Thumbnails.addCache(salmonFile, image);
         return image;
     }
 
@@ -107,32 +107,21 @@ export class Thumbnails {
         image.src = icon;
         if (await salmonFile.isFile()) {
             try {
-                // let ext = SalmonFileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
-                // BufferedImage bufferedImage = ImageIO.read(Thumbnails.class.getResourceAsStream(icon));
-                // BufferedImage nimage = new BufferedImage(
-                //         bufferedImage.getWidth(),
-                //         bufferedImage.getHeight(),
-                //         BufferedImage.TYPE_INT_ARGB_PRE);
-                // Graphics g = nimage.getGraphics();
-                // Color tintColor = Thumbnails.getFileColorFromExtension(ext);
-                // addImage(g, bufferedImage, tintColor);
-                // addText(g, ext, bufferedImage.getWidth() / 2, bufferedImage.getHeight() / 2);
-                // g.dispose();
-                // image = SwingFXUtils.toFXImage(nimage, null);
+                let ext = SalmonFileUtils.getExtensionFromFileName(await salmonFile.getBaseName()).toLowerCase();
+                let hsv = await Thumbnails.getHSVFromExtension(ext);
+                Thumbnails.addImage(image, hsv);
             } catch (ex) {
                 console.error(ex);
             }
         }
-        // if (image == null)
-        //     image = new Image(Thumbnails.class.getResourceAsStream(icon));
         return image;
     }
 
-    static addImage(g, bufferedImage, tintColor) {
-        // g.setXORMode(tintColor);
-        // g.drawImage(bufferedImage, 0, 0, null);
-        // // reset the tint
-        // g.setXORMode(Color.decode("#00000000"));
+    static addImage(image, hsv) {
+        let [h, s, v] = hsv;
+        let filter = `sepia(100%) saturate(${Math.trunc((s + 1) * 100)}%) 
+            brightness(${Math.trunc((v + 0.4) * 100)}%) hue-rotate(${Math.trunc(h)}deg)`;
+        image.style.filter = filter;
     }
 
     static addText(g, text, width, height) {
@@ -212,15 +201,20 @@ export class Thumbnails {
         return image;
     }
 
-    static getFileColorFromExtension(extension) {
-        // MessageDigest md = MessageDigest.getInstance("MD5");
-        // byte[] bytes = extension.getBytes(Charset.defaultCharset());
-        // byte[] hashValue = md.digest(bytes);
-        // StringBuilder sb = new StringBuilder();
-        // sb.append(BitConverter.toHex(hashValue));
-        // Color color = Color.decode("#" + sb.substring(0, 6));
-        // color = new Color(255 - color.getRed(), 255 - color.getGreen(),
-        //         255 - color.getBlue(), Thumbnails.TINT_COLOR_ALPHA);
-        // return color;
+    static async getHSVFromExtension(extension) {
+        let bytes = new TextEncoder().encode(extension);
+        let hashValue = await crypto.subtle.digest("SHA-256", bytes);
+        let digest = new Uint8Array(hashValue);
+        let [r, g, b] = [digest[0] / 256, digest[1] / 256, digest[2] / 256];
+        let cmax = Math.max(r, g, b);
+        let cmin = Math.min(r, g, b);
+        let d = cmax - cmin;
+        let h;
+        if (cmax == r) h = (60 * ((g - b) / d % 6));
+        else if (cmax == g) h = (60 * ((b - r) / d + 2));
+        else if (cmax == b) h = (60 * ((r - g) / d + 4));
+        let s = (cmax == 0) ? 0 : d / cmax;
+        let v = cmax;
+        return [h, s, v];
     }
 }
