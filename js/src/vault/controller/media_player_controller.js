@@ -32,7 +32,7 @@ import { SalmonHandler } from "../../lib/salmon-fs/service/salmon_handler.js";
 export class MediaPlayerController {
     static modalURL = "media-player.html";
     static MEDIA_BUFFERS = 4;
-    static MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    static MEDIA_BUFFER_SIZE = 2 * 1024 * 1024;
     static MEDIA_THREADS = 1;
     static MEDIA_BACKOFFSET = 256 * 1024;
 
@@ -80,7 +80,10 @@ export class MediaPlayerController {
             key: file.getEncryptionKey(),
             integrity: file.getIntegrity(),
             hash_key: file.getHashKey(),
-            mimeType: "video/mp4"
+            mimeType: "video/mp4",
+            // we use FileReadableStream so we can cache content
+	        // though web worker parallelism is not available for service workers in the browser
+	        useFileReadableStream: true
         });
         this.player.set(url);
     }
