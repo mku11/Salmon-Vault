@@ -50,7 +50,13 @@ export class SalmonFileViewModel extends IPropertyNotifier {
             img.height = SalmonFileViewModel.#IMAGE_SIZE;
             setTimeout(async () => {
                 this.image = await Thumbnails.getIcon(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
-                this.image = await Thumbnails.generateThumbnail(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
+                if (await this.salmonFile.isFile()) {
+                    let ext = SalmonFileUtils.getExtensionFromFileName(await this.salmonFile.getBaseName()).toLowerCase();
+                    Thumbnails.addText(this.image, ext);
+                }
+                let imageThumbnail = await Thumbnails.generateThumbnail(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
+                if(imageThumbnail != null)
+                    this.image = imageThumbnail;
             });
         }
         return this.#_image;

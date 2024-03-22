@@ -69,6 +69,7 @@
 
 table td {
   border-collapse: collapse;
+  position: relative;
 }
 
 .th-resizable {
@@ -83,6 +84,7 @@ table td {
   height: 48px;
   margin-left: auto;
   margin-right: auto;
+  text-align: center;
 }
 
 .data-file-size {

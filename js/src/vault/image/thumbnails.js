@@ -89,10 +89,8 @@ export class Thumbnails {
         } catch (e) {
             throw e;
         }
-        if (image == null) {
-            image = await Thumbnails.getIcon(salmonFile, width, height);
-        }
-        Thumbnails.addCache(salmonFile, image);
+        if(image != null)
+            Thumbnails.addCache(salmonFile, image);
         return image;
     }
 
@@ -114,6 +112,7 @@ export class Thumbnails {
                 console.error(ex);
             }
         }
+
         return image;
     }
 
@@ -124,13 +123,26 @@ export class Thumbnails {
         image.style.filter = filter;
     }
 
-    static addText(g, text, width, height) {
-        // g.setColor(Color.WHITE);
-        // g.setFont(new Font("Comic sans MS", Font.BOLD, 96));
-        // FontMetrics fontMetrics = g.getFontMetrics();
-        // int textWidth = fontMetrics.stringWidth(text);
-        // int textHeight = fontMetrics.getHeight();
-        // g.drawString(text, width - textWidth / 2, height + textHeight / 4);
+    static addText(image, text) {
+        if (image.complete) {
+            this.addTextWhenLoaded(image, text);
+        } else {
+            image.onload = () => {
+                this.addTextWhenLoaded(image, text);
+            };
+        }
+    }
+
+    static addTextWhenLoaded(image, text) {
+        let parent = image.parentElement;
+        let textElement = document.createElement("div");
+        textElement.style.fontSize = "0.8em";
+        textElement.style.position = "absolute";
+        textElement.style.top = "50%";
+        textElement.style.left = "50%";
+        textElement.style.transform = "translate(-50%, -50%)";
+        textElement.innerText = text;
+        parent.appendChild(textElement);
     }
 
     static async resize(image, width, height) {
