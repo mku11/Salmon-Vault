@@ -1,6 +1,6 @@
 .settings-container {
-  min-width: 400px;
-  max-width: 800px;
+  min-width: 400pt;
+  max-width: 800pt;
 }
 
 .settings-checkbox {
@@ -12,14 +12,14 @@
 }
 
 .settings-section {
-  padding: 8px;
+  padding: 8pt;
 }
 
 .settings-row {
-  padding: 1px;
+  padding: 1pt;
 }
 
 .settings-header {
   font-weight: bold;
-  padding: 2px;
+  padding: 2pt;
 }

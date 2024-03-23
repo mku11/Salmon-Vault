@@ -1,6 +1,6 @@
 .dialog-content {
-  min-width: 280px;
-  max-width: 400px;
+  min-width: 280pt;
+  max-width: 400pt;
 }
 
 .dialog-text {
@@ -16,24 +16,24 @@
 .dialog-option-container {
   display: flex;
   justify-content: flex-end;
-  padding-top: 4px;
+  padding-top: 4pt;
 }
 
 .dialog-option {
   display: none;
-  padding: 4px;
+  padding: 4pt;
 }
 
 .dialog-button-container {
   display: flex;
   justify-content: flex-end;
-  padding-top: 4px;
+  padding-top: 4pt;
 }
 
 .dialog-button {
   display: none;
-  min-width: 60px;
-  height: 20px;
+  min-width: 60pt;
+  height: 20pt;
   text-align: center;
-  margin: 1px;
+  margin: 1pt;
 }

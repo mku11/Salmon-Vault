@@ -54,8 +54,8 @@ export class Binding {
                 obj.key = key;
             } else
                 throw new Error("Can only bind StringProperty to input text value");
-        } else if (el.tagName.toLowerCase() === 'progress') {
-            if (elementField === 'value' && obj instanceof DoubleProperty) {
+        } else if (el.tagName.toLowerCase() === 'progress' && elementField == 'value') {
+            if (obj instanceof DoubleProperty) {
                 Binding.#bindings[key] = objBinding;
                 obj.key = key;
             } else

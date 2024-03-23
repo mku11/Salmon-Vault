@@ -27,8 +27,10 @@ import { WindowUtils } from "../utils/window_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
 import { Binding } from "../../common/binding/binding.js";
 import { StringProperty } from "../../common/binding/string_property.js";
+import { BooleanProperty } from "../../common/binding/boolean_property.js";
 import { SalmonHandler } from "../../lib/salmon-fs/service/salmon_handler.js";
 import { MemoryStream } from "../../lib/salmon-core/io/memory_stream.js";
+import { SalmonFileReadableStream } from "../../lib/salmon-fs/salmonfs/salmon_file_readable_stream.js";
 
 export class MediaPlayerController {
     static modalURL = "media-player.html";
@@ -41,7 +43,9 @@ export class MediaPlayerController {
     filePath;
     handler;
     modalWindow;
-    
+    player;
+    progressVisibility;
+
     initialize() {
         setImage(playImage);
     }
@@ -49,6 +53,7 @@ export class MediaPlayerController {
     setStage(modalWindow) {
         this.modalWindow = modalWindow;
         this.player = Binding.bind(this.modalWindow.getRoot(), 'media-player-video', 'src', new StringProperty());
+        this.progressVisibility = Binding.bind(this.modalWindow.getRoot(), 'media-progress', 'display', new BooleanProperty());
     }
 
     static openMediaPlayer(fileViewModel, owner) {
@@ -57,7 +62,9 @@ export class MediaPlayerController {
             let controller = new MediaPlayerController();
             let modalWindow = await SalmonWindow.createModal("Media Player", htmlText);
             controller.setStage(modalWindow);
-            await controller.load(fileViewModel);
+            setTimeout(() => {
+                controller.load(fileViewModel);
+            });
             WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
             modalWindow.show();
             modalWindow.onClose = () => controller.onClose(this);
@@ -75,16 +82,24 @@ export class MediaPlayerController {
         let url = null;
         let size = await file.getSize();
         // if file is relative small just decrypt and load via a blob
-        if(size < MediaPlayerController.MIN_FILE_STREAMING) {
-            let stream = await file.getInputStream();
+        if (size < MediaPlayerController.MIN_FILE_STREAMING) {
+            let stream = SalmonFileReadableStream.create(file,
+                1, MediaPlayerController.MIN_FILE_STREAMING, 2, 0);
             let ms = new MemoryStream();
-            await stream.copyTo(ms);
-            await stream.close();
+            let reader = stream.getReader();
+            while (true) {
+                let buffer = await reader.read();
+                if (buffer.value == undefined || buffer.value.length == 0)
+                    break;
+                ms.write(buffer.value, 0, buffer.value.length);
+            }
+            reader.releaseLock();
+            await stream.cancel();
             let blob = new Blob([ms.toArray().buffer]);
             await ms.close();
             url = URL.createObjectURL(blob);
         } else {
-            if(this.handler == null)
+            if (this.handler == null)
                 this.handler = new SalmonHandler();
             var link = document.createElement("a");
             link.href = "?path=" + encodeURIComponent(this.filePath);
@@ -103,10 +118,11 @@ export class MediaPlayerController {
         }
         // set the video player to the content
         this.player.set(url);
+        this.progressVisibility.set(false);
     }
 
     onClose() {
-        if(this.handler != null)
+        if (this.handler != null)
             this.handler.unregister();
     }
 }

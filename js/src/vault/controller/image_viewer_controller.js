@@ -27,6 +27,7 @@ import { SalmonWindow } from "../window/salmon_window.js";
 import { SalmonImageViewer } from "../../common/model/salmon_image_viewer.js";
 import { Binding } from "../../common/binding/binding.js";
 import { ObjectProperty } from "../../common/binding/object_property.js";
+import { BooleanProperty } from "../../common/binding/boolean_property.js";
 import { WindowUtils } from "../utils/window_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
 import { MemoryStream } from "../../lib/salmon-core/io/memory_stream.js";
@@ -36,6 +37,7 @@ export class ImageViewerController {
     image;
     modalWindow;
     viewer;
+    progressVisibility;
 
     constructor() {
         
@@ -43,7 +45,8 @@ export class ImageViewerController {
 
     setStage(modalWindow) {
         this.modalWindow = modalWindow;
-        this.image = Binding.bind(this.modalWindow, 'image-viewer-image', 'src', new ObjectProperty());
+        this.image = Binding.bind(this.modalWindow.getRoot(), 'image-viewer-image', 'src', new ObjectProperty());
+        this.progressVisibility = Binding.bind(this.modalWindow.getRoot(), 'media-progress', 'display', new BooleanProperty());
     }
 
     static openImageViewer(fileViewModel, owner) {
@@ -52,8 +55,10 @@ export class ImageViewerController {
             let controller = new ImageViewerController();
             let modalWindow = await SalmonWindow.createModal("Image Viewer", htmlText);
             modalWindow.modal.style.resize = "both";
-            controller.setStage(modalWindow.getRoot());
-            await controller.load(fileViewModel);
+            controller.setStage(modalWindow);
+            setTimeout(() => {
+                controller.load(fileViewModel);
+            });
             WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
             modalWindow.show();
         });
@@ -75,5 +80,6 @@ export class ImageViewerController {
         } catch (e) {
             console.error(e);
         }
+        this.progressVisibility.set(false);
     }
 }
