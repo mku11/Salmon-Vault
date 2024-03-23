@@ -69,12 +69,7 @@ export class ImageViewerController {
             await stream.copyTo(ms);
             await stream.close();
             let blob = new Blob([ms.toArray().buffer]);
-            ms.close();
-            
-			// FIXME:
-            // let stream = this.viewer.getImageStream();
-            // let blob = await new Response(stream).blob();
-            
+            await ms.close();            
             let imageUrl = URL.createObjectURL(blob);
             this.image.set(imageUrl);
         } catch (e) {
