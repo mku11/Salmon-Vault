@@ -32,7 +32,6 @@ import { SalmonConfig } from "../../vault/config/salmon_config.js";
 import { URLUtils } from "../../vault/utils/url_utils.js";
 import { SalmonAuthException } from "../../lib/salmon-fs/salmonfs/salmon_auth_exception.js";
 import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
-import { IFileService } from "../../common/services/ifile_service.js";
 import { IFileRemoteService } from "../../common/services/ifile_remote_service.js";
 
 export class SalmonDialogs {
