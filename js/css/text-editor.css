@@ -16,7 +16,7 @@
   vertical-align: middle;
   background-color: black;
   color: white;
-  font-size: 12pt;
+  font-size: 10pt;
 }
 
 .search-button {
@@ -29,12 +29,14 @@
 }
 
 .text-editor-status-container {
-  float: right;
+  display: flex;
+  justify-content: flex-end;
   vertical-align: middle;
-  height: 100%;
+  height: 1em;
+  overflow: auto;
 }
 
 .text-editor-status {
   vertical-align: middle;
-  font-size: 12pt;
+  font-size: 10pt;
 }
