@@ -24,7 +24,6 @@ SOFTWARE.
 
 import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
 import { MemoryStream } from "../../lib/salmon-core/io/memory_stream.js";
-import { BitConverter } from "../../lib/salmon-core/convert/bit_converter.js";
 
 /**
  * Utility class that generates thumbnails for encrypted salmon files
@@ -33,7 +32,7 @@ export class Thumbnails {
     static TMP_THUMB_DIR = "tmp";
     static TMP_VIDEO_THUMB_MAX_SIZE = 3 * 1024 * 1024;
     static TMP_GIF_THUMB_MAX_SIZE = 1 * 1024 * 1024;
-    static ENC_BUFFER_SIZE = 128 * 1024;
+    static ENC_BUFFER_SIZE = 512 * 1024;
     static THUMBNAIL_SIZE = 128;
 
     static MAX_CACHE_SIZE = 20 * 1024 * 1024;
@@ -47,16 +46,33 @@ export class Thumbnails {
     /// </summary>
     /// <param name="salmonFile">The encrypted media file which will be used to get the thumbnail</param>
     /// <returns></returns>
-    static getVideoThumbnail(salmonFile) {
-        return getVideoThumbnail(salmonFile, 0);
-    }
-
-    static getVideoThumbnail(salmonFile, ms) {
-        throw new UnsupportedOperationException();
-    }
-
-    static getVideoThumbnailMedia(file, ms) {
-        throw new UnsupportedOperationException();
+    static async getVideoThumbnail(salmonFile) {
+        let position = 5;
+        let blob = await Thumbnails.getVideoTmpBlob(salmonFile);
+        let imageUrl = URL.createObjectURL(blob);
+        return new Promise((resolve, reject) => {
+            let video = document.createElement('video');
+            video.setAttribute('src', imageUrl);
+            video.addEventListener('loadedmetadata', () => {
+                video.addEventListener('seeked', () => {
+                    const canvas = document.createElement("canvas");
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    ctx.canvas.toBlob((blob) => {
+                        const thumbnailImage = new Image();
+                        let thumbnailImageUrl = URL.createObjectURL(blob);
+                        thumbnailImage.src = thumbnailImageUrl;
+                        resolve(thumbnailImage);
+                    }, 'image/png', 0.75);
+                });
+                if (video.duration < position)
+                    position = 0;
+                video.currentTime = position;
+            });
+            video.load();
+        });
     }
 
     /// <summary>
@@ -64,8 +80,36 @@ export class Thumbnails {
     /// </summary>
     /// <param name="salmonFile">The encrypted file that will be used to get the temp file</param>
     /// <returns></returns>
-    static getVideoTmpFile(salmonFile) {
-        throw new UnsupportedOperationException();
+    static async getVideoTmpBlob(salmonFile) {
+        let ms = await Thumbnails.getTempStream(salmonFile, Thumbnails.TMP_VIDEO_THUMB_MAX_SIZE);
+        let blob = new Blob([ms.toArray().buffer]);
+        await ms.close();
+        return blob;    
+    }
+
+    
+    /// <summary>
+    /// Return a MemoryStream with the partial unencrypted file contents.
+    /// This will read only the beginning contents of the file since we don't need the whole file.
+    /// </summary>
+    /// <param name="salmonFile">The encrypted file to be used</param>
+    /// <param name="maxSize">The max content length that will be decrypted from the beginning of the file</param>
+    /// <returns></returns>
+    static async getTempStream(salmonFile, maxSize) {
+        let ms = new MemoryStream();
+        let ins = await salmonFile.getInputStream();
+        let buffer = new Uint8Array(Thumbnails.ENC_BUFFER_SIZE);
+        let bytesRead;
+        let totalBytesRead = 0;
+        while ((bytesRead = await ins.read(buffer, 0, buffer.length)) > 0
+                && totalBytesRead < maxSize) {
+            await ms.write(buffer, 0, bytesRead);
+            totalBytesRead += bytesRead;
+        }
+        await ms.flush();
+        await ins.close();
+        await ms.setPosition(0);
+        return ms;
     }
 
     /// <summary>
@@ -83,7 +127,10 @@ export class Thumbnails {
         let image = null;
         try {
             if (await salmonFile.isFile() && SalmonFileUtils.isImage(await salmonFile.getBaseName())) {
-                image = await Thumbnails.fromFile(salmonFile);
+                image = await Thumbnails.getImageThumbnail(salmonFile);
+                image = await Thumbnails.resize(image, width, height);
+            } else if (await salmonFile.isFile() && SalmonFileUtils.isVideo(await salmonFile.getBaseName())) {
+                image = await Thumbnails.getVideoThumbnail(salmonFile);
                 image = await Thumbnails.resize(image, width, height);
             }
         } catch (e) {
@@ -168,7 +215,7 @@ export class Thumbnails {
                     let resizedImageUrl = URL.createObjectURL(blob);
                     resizedImage.src = resizedImageUrl;
                     resolve(resizedImage);
-                }, 'image/png', 1);
+                }, 'image/png', 0.75);
             }
         });
     }
@@ -187,13 +234,12 @@ export class Thumbnails {
         Thumbnails.cache.clear();
     }
 
-    static async fromFile(file) {
+    static async getImageThumbnail(file) {
         let stream = null;
         let image = new Image();
         let blob = null;
         let ms = null;
         try {
-            let ext = SalmonFileUtils.getExtensionFromFileName(await file.getBaseName()).toLowerCase();
             stream = await file.getInputStream();
             ms = new MemoryStream();
             await stream.copyTo(ms);
