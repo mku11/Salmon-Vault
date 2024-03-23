@@ -99,12 +99,10 @@ export class MediaPlayerController {
             await ms.close();
             url = URL.createObjectURL(blob);
         } else {
-            if (this.handler == null)
-                this.handler = new SalmonHandler();
             var link = document.createElement("a");
             link.href = "?path=" + encodeURIComponent(this.filePath);
-            let url = link.href;
-            await this.handler.register(url, {
+            url = link.href;
+            await SalmonHandler.getInstance().register(url, {
                 fileHandle: file.getRealFile().getPath(),
                 fileClass: file.getRealFile().constructor.name,
                 key: file.getEncryptionKey(),
@@ -122,7 +120,6 @@ export class MediaPlayerController {
     }
 
     onClose() {
-        if (this.handler != null)
-            this.handler.unregister();
+        SalmonHandler.getInstance().unregister();
     }
 }
