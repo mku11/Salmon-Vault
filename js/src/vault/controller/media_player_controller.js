@@ -28,9 +28,11 @@ import { SalmonConfig } from "../config/salmon_config.js";
 import { Binding } from "../../common/binding/binding.js";
 import { StringProperty } from "../../common/binding/string_property.js";
 import { SalmonHandler } from "../../lib/salmon-fs/service/salmon_handler.js";
+import { MemoryStream } from "../../lib/salmon-core/io/memory_stream.js";
 
 export class MediaPlayerController {
     static modalURL = "media-player.html";
+    static MIN_FILE_STREAMING = 16 * 1024 * 1024;
     static MEDIA_BUFFERS = 4;
     static MEDIA_BUFFER_SIZE = 2 * 1024 * 1024;
     static MEDIA_THREADS = 1;
@@ -70,25 +72,41 @@ export class MediaPlayerController {
             console.error(e);
             return;
         }
-        this.handler = new SalmonHandler();
-        var link = document.createElement("a");
-        link.href = "?path=" + encodeURIComponent(this.filePath);
-        let url = link.href;
-        await this.handler.register(url, {
-            fileHandle: file.getRealFile().getPath(),
-            fileClass: file.getRealFile().constructor.name,
-            key: file.getEncryptionKey(),
-            integrity: file.getIntegrity(),
-            hash_key: file.getHashKey(),
-            mimeType: "video/mp4",
-            // we use FileReadableStream so we can cache content
-	        // though web worker parallelism is not available for service workers in the browser
-	        useFileReadableStream: true
-        });
+        let url = null;
+        let size = await file.getSize();
+        // if file is relative small just decrypt and load via a blob
+        if(size < MediaPlayerController.MIN_FILE_STREAMING) {
+            let stream = await file.getInputStream();
+            let ms = new MemoryStream();
+            await stream.copyTo(ms);
+            await stream.close();
+            let blob = new Blob([ms.toArray().buffer]);
+            await ms.close();
+            url = URL.createObjectURL(blob);
+        } else {
+            if(this.handler == null)
+                this.handler = new SalmonHandler();
+            var link = document.createElement("a");
+            link.href = "?path=" + encodeURIComponent(this.filePath);
+            let url = link.href;
+            await this.handler.register(url, {
+                fileHandle: file.getRealFile().getPath(),
+                fileClass: file.getRealFile().constructor.name,
+                key: file.getEncryptionKey(),
+                integrity: file.getIntegrity(),
+                hash_key: file.getHashKey(),
+                mimeType: "video/mp4",
+                // we use FileReadableStream so we can cache content
+                // though web worker parallelism is not available for service workers in the browser
+                useFileReadableStream: true
+            });
+        }
+        // set the video player to the content
         this.player.set(url);
     }
 
     onClose() {
-        this.handler.unregister();
+        if(this.handler != null)
+            this.handler.unregister();
     }
 }
