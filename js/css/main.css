@@ -72,6 +72,10 @@ table td {
   position: relative;
 }
 
+.th-text {
+  font-size: 10pt;
+}
+
 .th-resizable {
   resize: horizontal;
   overflow: auto;
@@ -80,8 +84,8 @@ table td {
 
 .data-file-image img {
   display: block;
-  width: 48pt;
-  height: 48pt;
+  width: 32pt;
+  height: 32pt;
   margin-left: auto;
   margin-right: auto;
   text-align: center;
