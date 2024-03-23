@@ -385,6 +385,7 @@ export class Binding {
                 row.classList.add("tr-row-selected");
             else
                 row.classList.remove("tr-row-selected");
+            obj.onSetSelected(index, value);
         } else if (binding.field == 'options') {
             el.selectedIndex = value ? index : -1;
         }
