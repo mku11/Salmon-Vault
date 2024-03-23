@@ -39,7 +39,8 @@ export class Thumbnails {
     static cache = {};
     static TINT_COLOR_ALPHA = 127;
     static cacheSize;
-    static enableCache = false;
+    static enableCache = true;
+    static objectURLs = new Set();
 
     /// <summary>
     /// Returns a bitmap thumbnail from an encrypted file
@@ -49,7 +50,7 @@ export class Thumbnails {
     static async getVideoThumbnail(salmonFile) {
         let position = 5;
         let blob = await Thumbnails.getVideoTmpBlob(salmonFile);
-        let imageUrl = URL.createObjectURL(blob);
+        let imageUrl = Thumbnails.createObjectURL(blob);
         return new Promise((resolve, reject) => {
             let video = document.createElement('video');
             video.setAttribute('src', imageUrl);
@@ -62,7 +63,7 @@ export class Thumbnails {
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                     ctx.canvas.toBlob((blob) => {
                         const thumbnailImage = new Image();
-                        let thumbnailImageUrl = URL.createObjectURL(blob);
+                        let thumbnailImageUrl = Thumbnails.createObjectURL(blob);
                         thumbnailImage.src = thumbnailImageUrl;
                         resolve(thumbnailImage);
                     }, 'image/png', 0.75);
@@ -120,11 +121,14 @@ export class Thumbnails {
     /// <param name="salmonFile"></param>
     /// <returns></returns>
     static async generateThumbnail(salmonFile, width, height) {
-
-        if (salmonFile in Thumbnails.cache) {
-            return Thumbnails.cache[salmonFile];
-        }
         let image = null;
+        if (salmonFile.getRealPath() in Thumbnails.cache) {
+            image = Thumbnails.cache[salmonFile.getRealPath()];
+            if(image.parentElement!=null)
+                image.parentElement.removeChild(image);
+            return image;
+        }
+        
         try {
             if (await salmonFile.isFile() && SalmonFileUtils.isImage(await salmonFile.getBaseName())) {
                 image = await Thumbnails.getImageThumbnail(salmonFile);
@@ -137,7 +141,7 @@ export class Thumbnails {
             throw e;
         }
         if(image != null)
-            Thumbnails.addCache(salmonFile, image);
+            Thumbnails.addCache(salmonFile.getRealPath(), image);
         return image;
     }
 
@@ -212,7 +216,7 @@ export class Thumbnails {
                 ctx.drawImage(image, hOffset, vOffset, width - hOffset * 2, height - vOffset * 2);
                 ctx.canvas.toBlob((blob) => {
                     const resizedImage = new Image();
-                    let resizedImageUrl = URL.createObjectURL(blob);
+                    let resizedImageUrl = Thumbnails.createObjectURL(blob);
                     resizedImage.src = resizedImageUrl;
                     resolve(resizedImage);
                 }, 'image/png', 0.75);
@@ -220,18 +224,20 @@ export class Thumbnails {
         });
     }
 
-    static addCache(file, image) {
+    static async addCache(filePath, image) {
         if (!Thumbnails.enableCache)
             return;
         if (Thumbnails.cacheSize > Thumbnails.MAX_CACHE_SIZE)
             Thumbnails.resetCache();
-        Thumbnails.cache[file] = image;
-        Thumbnails.cacheSize += image.Width * image.Height * 4;
+        Thumbnails.cache[filePath] = image;
+        let blob = await fetch(image.src).then(r => r.blob());
+        Thumbnails.cacheSize += blob.size;
     }
 
     static resetCache() {
         Thumbnails.cacheSize = 0;
-        Thumbnails.cache.clear();
+        Thumbnails.cache = {};
+        Thumbnails.clearObjectURL();
     }
 
     static async getImageThumbnail(file) {
@@ -244,7 +250,7 @@ export class Thumbnails {
             ms = new MemoryStream();
             await stream.copyTo(ms);
             blob = new Blob([ms.toArray().buffer]);
-            let imageUrl = URL.createObjectURL(blob);
+            let imageUrl = Thumbnails.createObjectURL(blob);
             image.src = imageUrl;
         } catch (ex) {
             console.error(ex);
@@ -274,5 +280,23 @@ export class Thumbnails {
         let s = (cmax == 0) ? 0 : d / cmax;
         let v = cmax;
         return [h, s, v];
+    }
+
+    static createObjectURL(blob) {
+        let url = URL.createObjectURL(blob);
+        Thumbnails.objectURLs.add(url);
+        return url;
+    }
+
+    static clearObjectURL(url = null) {
+        if(url != null) {
+            URL.revokeObjectURL(url);
+            Thumbnails.objectURLs.delete(url);
+        } else {
+            for(let nUrl of Thumbnails.objectURLs) {
+                if(nUrl != null)
+                    Thumbnails.clearObjectURL(nUrl);
+            }
+        }
     }
 }

@@ -31,6 +31,7 @@ import { BooleanProperty } from "../../common/binding/boolean_property.js";
 import { WindowUtils } from "../utils/window_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
 import { MemoryStream } from "../../lib/salmon-core/io/memory_stream.js";
+import { SalmonHandler } from "../../lib/salmon-fs/service/salmon_handler.js";
 
 export class ImageViewerController {
     static modalURL = "image-viewer.html";
@@ -38,6 +39,7 @@ export class ImageViewerController {
     modalWindow;
     viewer;
     progressVisibility;
+    url;
 
     constructor() {
         
@@ -61,6 +63,7 @@ export class ImageViewerController {
             });
             WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
             modalWindow.show();
+            modalWindow.onClose = () => controller.onClose(this);
         });
     }
 
@@ -75,11 +78,16 @@ export class ImageViewerController {
             await stream.close();
             let blob = new Blob([ms.toArray().buffer]);
             await ms.close();            
-            let imageUrl = URL.createObjectURL(blob);
-            this.image.set(imageUrl);
+            this.url = URL.createObjectURL(blob);
+            this.image.set(this.url);
         } catch (e) {
             console.error(e);
         }
         this.progressVisibility.set(false);
+    }
+
+    onClose() {
+        URL.revokeObjectURL(this.url);
+        SalmonHandler.getInstance().unregister();
     }
 }

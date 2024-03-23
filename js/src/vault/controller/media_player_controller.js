@@ -45,6 +45,7 @@ export class MediaPlayerController {
     modalWindow;
     player;
     progressVisibility;
+    url;
 
     initialize() {
         setImage(playImage);
@@ -79,7 +80,7 @@ export class MediaPlayerController {
             console.error(e);
             return;
         }
-        let url = null;
+        this.url = null;
         let size = await file.getSize();
         // if file is relative small just decrypt and load via a blob
         if (size < MediaPlayerController.MIN_FILE_STREAMING) {
@@ -97,12 +98,12 @@ export class MediaPlayerController {
             await stream.cancel();
             let blob = new Blob([ms.toArray().buffer]);
             await ms.close();
-            url = URL.createObjectURL(blob);
+            this.url = URL.createObjectURL(blob);
         } else {
             var link = document.createElement("a");
             link.href = "?path=" + encodeURIComponent(this.filePath);
-            url = link.href;
-            await SalmonHandler.getInstance().register(url, {
+            this.url = link.href;
+            await SalmonHandler.getInstance().register(this.url, {
                 fileHandle: file.getRealFile().getPath(),
                 fileClass: file.getRealFile().constructor.name,
                 key: file.getEncryptionKey(),
@@ -115,11 +116,12 @@ export class MediaPlayerController {
             });
         }
         // set the video player to the content
-        this.player.set(url);
+        this.player.set(this.url);
         this.progressVisibility.set(false);
     }
 
     onClose() {
+        URL.revokeObjectURL(this.url);
         SalmonHandler.getInstance().unregister();
     }
 }

@@ -51,6 +51,7 @@ import { ImageViewerController } from "./image_viewer_controller.js";
 import { TextEditorController } from "./text_editor_controller.js";
 import { SettingsController } from "./settings_controller.js";
 import { MediaPlayerController } from "./media_player_controller.js";
+import { Thumbnails } from "../image/thumbnails.js";
 
 export class MainController {
     static MAX_TEXT_FILE = 1 * 1024 * 1024;
