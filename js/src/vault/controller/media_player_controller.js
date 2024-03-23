@@ -91,7 +91,7 @@ export class MediaPlayerController {
                 let buffer = await reader.read();
                 if (buffer.value == undefined || buffer.value.length == 0)
                     break;
-                ms.write(buffer.value, 0, buffer.value.length);
+                await ms.write(buffer.value, 0, buffer.value.length);
             }
             reader.releaseLock();
             await stream.cancel();
