@@ -127,9 +127,7 @@ table td {
   padding: 4pt;
 }
 
-.tr-row {
-  height: 56pt;
-}
+.tr-row {height: 42pt;}
 
 .tr-row-selected {
   background-color: grey;
