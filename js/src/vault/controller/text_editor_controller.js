@@ -70,10 +70,13 @@ export class TextEditorController {
             window.textEditorController = controller;
             let modalWindow = await SalmonWindow.createModal("Text Editor", htmlText);
             controller.setStage(modalWindow);
-            await controller.load(fileViewModel);
             WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
-            modalWindow.show();
             modalWindow.onClose = () => controller.onClose(this);
+            modalWindow.show();
+            controller.showTaskMessage("File loading");
+            setTimeout(async ()=>{
+                await controller.load(fileViewModel);
+            });
         });
     }
 
@@ -105,13 +108,16 @@ export class TextEditorController {
 
     async onSave() {
         let oldFile = this.item.getSalmonFile();
-        let targetFile = await this.editor.onSave(this.item.getSalmonFile(), this.contentArea.get());
-        let index = SalmonVaultManager.getInstance().getFileItemList().indexOf(oldFile);
-        if (index >= 0) {
-            SalmonVaultManager.getInstance().getFileItemList().splice(index, 1);
-            SalmonVaultManager.getInstance().getFileItemList().splice(index, 0, targetFile);
-        }
         try {
+            let targetFile = await this.editor.onSave(this.item.getSalmonFile(), this.contentArea.get());
+            if(targetFile == null){
+                throw new Error("Could not save file");
+            }
+            let index = SalmonVaultManager.getInstance().getFileItemList().indexOf(oldFile);
+            if (index >= 0) {
+                SalmonVaultManager.getInstance().getFileItemList().splice(index, 1);
+                SalmonVaultManager.getInstance().getFileItemList().splice(index, 0, targetFile);
+            }
             this.item.setSalmonFile(targetFile);
             this.showTaskMessage("File saved");
             setTimeout(() => {
@@ -165,7 +171,7 @@ export class TextEditorController {
 
     detectShortcuts() {
         if (this.metaKeysPressed.has('Control') && this.keysPressed.has("S")) {
-            setTimeout(()=>this.onSave());
+            setTimeout(() => this.onSave());
         } else if (this.metaKeysPressed.has('Control') && this.keysPressed.has("F")) {
             this.onFind();
         } else if (this.contentArea.isFocused() && this.keysPressed.has("TAB")) {
@@ -180,17 +186,17 @@ export class TextEditorController {
         this.searchText.focus();
         this.searchText.setSelectionAll();
     }
-    
+
     onSearchKeyPressed(event) {
-        if(event.key == 'ENTER') {
+        if (event.key == 'ENTER') {
             this.onSearch();
         }
     }
 
     onSearch() {
-        this.search(this.searchText.get(), 
-            this.contentArea.getSelectionEnd() - this.contentArea.getSelectionStart() > 0 ? 
-            this.contentArea.getSelectionStart() + 1 : this.contentArea.getSelectionStart());
+        this.search(this.searchText.get(),
+            this.contentArea.getSelectionEnd() - this.contentArea.getSelectionStart() > 0 ?
+                this.contentArea.getSelectionStart() + 1 : this.contentArea.getSelectionStart());
     }
 
     search(text, caretPosition) {
@@ -220,7 +226,7 @@ export class TextEditorController {
     close() {
         this.modalWindow.hide();
     }
-    
+
     onClose(self) {
         this.removeOnKeyboardShortcuts();
     }
