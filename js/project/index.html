@@ -7,7 +7,6 @@
     <link rel="shortcut icon" href="./favicon.ico">
     <title>Salmon Vault</title>
     <link rel="stylesheet" type="text/css" href="css/navbar.css">
-    <link rel="stylesheet" type="text/css" href="css/dark.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
     <link rel="stylesheet" type="text/css" href="css/modal.css">
     <link rel="stylesheet" type="text/css" href="css/dialog.css">
@@ -16,6 +15,7 @@
     <link rel="stylesheet" type="text/css" href="css/media-player.css">
     <link rel="stylesheet" type="text/css" href="css/settings.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
+    <link rel="stylesheet" type="text/css" href="css/dark.css">
 </head>
 
 <body>
@@ -28,9 +28,9 @@
     <div id="app-container" class="app-container">
         <div id="app-title" class="app-title">
             <img id="app-icon" class="app-icon" src="common-res/icons/logo_48x48.png">
-                Salmon Vault
+                <div id="app-title-text" class="app-title-text">Salmon Vault</div>
         </div>
-        <div id="menuContainer" class="navbar">
+        <div id="menu-container" class="menu-container">
             <div id="fileMenu" class="dropdown">
                 <button onclick="onMenuClicked('fileDropdown')" class="dropbtn">File
                     <i class="fa fa-caret-down"></i></button>

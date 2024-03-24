@@ -1,22 +1,47 @@
-.root {
-    -fx-base: #2d3343;
-
-    -fx-control-inner-background: derive(-fx-base, 42%);
+body {
+    background-color: black;
 }
 
-.label{
-    -fx-text-fill: white;
+.app-container {
+    background-color: #2d3343;
 }
 
-.text-field {
-    -fx-prompt-text-fill: white;
+.app-title {
+    background-color: white;
+    color: black;
 }
 
-.button{
-    -fx-focus-traversable: false;
+.menu-container {
+    background-color: white;
+    background-image: linear-gradient(to bottom, #2d3343BB, #2d3343FF);
+    margin: 4pt;
+    border-width: 1pt;
+    border-style: solid;
 }
 
-.button:hover{
+.menu-container a:hover,
+.dropdown:hover .dropbtn,
+.dropbtn:focus {
+    background: white;
+    background-color: #2d3343AA;
+}
+
+.dropdown-content {
+    border-end-start-radius: 2pt;
+    border-end-end-radius: 2pt;
+    box-shadow: #2d3343;
+}
+
+.dropdown-content a {
+    background-color: #2d3343DD;
+    color: white;
+}
+
+.div {
+    color: white;
+}
+
+.button:hover {
     -fx-text-fill: white;
 }
 
@@ -24,48 +49,90 @@
     -fx-highlight-fill: grey;
 }
 
-.table-view{
+.table {
     -fx-table-cell-border-color: transparent;
-    -fx-background-color: black;
+    background-color: black;
     -fx-text-fill: white;
 }
 
-.table-row-cell {
-    -fx-table-cell-border-color: transparent;
-    -fx-background-color: black;
-    -fx-text-fill: white;
+.th-row {
+    background-color: black;
+    color: white;
 }
 
-.table-row-cell:selected {
-    -fx-table-cell-border-color: transparent;
-    -fx-background-color: #909090;
-    -fx-text-fill: white;
+.td-cell:selected {
+    background-color: #909090;
+    color: white;
 }
-
-.table-cell:selected {
-    -fx-text-fill: white;
-}
-
-
-.dialog-pane{
-
-    -fx-base: #2d3343;
-    -fx-control-inner-background: derive(-fx-base, 42%);
- }
 
 .dialog-pane {
+    -fx-base: #2d3343;
+    -fx-control-inner-background: derive(-fx-base, 42%);
+}
 
+.dialog-pane {
     -fx-base: #2d3343;
     -fx-control-inner-background: derive(-fx-base, 42%);
     -fx-focus-traversable: false;
- }
+}
 
-.dialog-pane .button:hover{
-
-    -fx-base: #2d3343;-fx-control-inner-background: derive(-fx-base, 42%);
+.dialog-pane .button:hover {
+    -fx-base: #2d3343;
+    -fx-control-inner-background: derive(-fx-base, 42%);
     -fx-text-fill: white;
- }
+}
 
- .progress-bar {
-    -fx-accent: #3f4f4f;
- }
+.progress-bar {
+    color: #3f4f4f;
+}
+
+.path-button {
+    background: #2d3343BB;
+}
+
+.path-input {
+    background: white;
+    background-color: #485167bb;
+    color: white;
+}
+
+.td-cell {
+    color: white;
+}
+
+.table-container {
+    background-color: black;
+}
+
+.table-container th {
+    background-color: #2d3343FF;
+}
+
+.image-text {
+    color: black;
+}
+
+.tr-row {
+    background-color: black;
+}
+
+.tr-row-selected {
+    background-color: #71727f;
+}
+
+.status {
+    color: white;
+}
+
+.debug-console {
+    color: white;
+    background-color: black;
+}
+
+.file-progress-text {
+    color:white;
+}
+
+.file-progress {
+    accent-color: #485167bb;
+}

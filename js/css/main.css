@@ -7,20 +7,26 @@
   width: 75%;
   border-style: solid;  
   border-width: 1pt;
-  border-radius: 4pt;
+  border-radius: 2pt;
   border-color: gray;
 }
 
 .app-icon {
-  width: 18pt;
-  height: 18pt;
-  vertical-align: bottom;
+  height: 1.5em;
+  vertical-align: middle;
 }
 
 .app-title {
-  vertical-align: bottom;
+  vertical-align: middle;
   align-content: center;
+  border-top-left-radius: 2pt;
+  border-top-right-radius: 2pt;
   padding: 2pt;
+}
+
+.app-title-text {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .path-container {
@@ -45,6 +51,7 @@
   width: 100%;
   margin-left: 4pt;
   margin-right: 4pt;
+
 }
 
 .table-container {
@@ -52,7 +59,6 @@
   height: 300pt;
   border-style: solid;
   border-width: 1pt;
-  border-color: gray;
   margin: 4pt;
 }
 
@@ -70,10 +76,6 @@
 table td {
   border-collapse: collapse;
   position: relative;
-}
-
-.th-text {
-  font-size: 10pt;
 }
 
 .th-resizable {
@@ -98,6 +100,7 @@ table td {
 .th-file-image {
   margin-left: auto;
   margin-right: auto;
+  width: 48pt;
 }
 
 .th-file-name {
@@ -127,7 +130,9 @@ table td {
   padding: 4pt;
 }
 
-.tr-row {height: 42pt;}
+.tr-row {
+  height: 42pt;
+}
 
 .tr-row-selected {
   background-color: grey;
@@ -145,6 +150,7 @@ table td {
   height: 10pt;
   display: table;
   margin: 0 auto;
+  accent-color: gray;
 }
 
 .progress-layout-container {

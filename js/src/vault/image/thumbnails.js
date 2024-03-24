@@ -192,6 +192,7 @@ export class Thumbnails {
         textElement.style.top = "50%";
         textElement.style.left = "50%";
         textElement.style.transform = "translate(-50%, -50%)";
+        textElement.classList.add("image-text");
         textElement.innerText = text;
         parent.appendChild(textElement);
     }
