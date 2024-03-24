@@ -4,7 +4,7 @@ import { SalmonDialog } from "./vault/dialog/salmon_dialog.js";
 import { WindowUtils } from "./vault/utils/window_utils.js";
 import { SalmonConfig } from "./vault/config/salmon_config.js";
 
-const DEBUG = true;
+const DEBUG = false;
 function setupDebug() {
     let debugConsole = document.getElementById("debug-console");
     let debugConsoleContainer = document.getElementById("debug-console-container");
