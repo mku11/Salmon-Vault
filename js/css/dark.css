@@ -7,8 +7,8 @@ body {
 }
 
 .app-title {
-    background-color: white;
-    color: black;
+    background-color: #485167bb;
+    color: white;
 }
 
 .menu-container {
@@ -41,18 +41,15 @@ body {
     color: white;
 }
 
-.button:hover {
-    -fx-text-fill: white;
+.dialog-button {
+    background: white;
+    background-color: #2d3343;
+    color: white;
 }
 
-.text-area {
-    -fx-highlight-fill: grey;
-}
-
-.table {
-    -fx-table-cell-border-color: transparent;
-    background-color: black;
-    -fx-text-fill: white;
+.dialog-button:hover {
+    background: white;
+    background-color: #485167bb;
 }
 
 .th-row {
@@ -63,23 +60,6 @@ body {
 .td-cell:selected {
     background-color: #909090;
     color: white;
-}
-
-.dialog-pane {
-    -fx-base: #2d3343;
-    -fx-control-inner-background: derive(-fx-base, 42%);
-}
-
-.dialog-pane {
-    -fx-base: #2d3343;
-    -fx-control-inner-background: derive(-fx-base, 42%);
-    -fx-focus-traversable: false;
-}
-
-.dialog-pane .button:hover {
-    -fx-base: #2d3343;
-    -fx-control-inner-background: derive(-fx-base, 42%);
-    -fx-text-fill: white;
 }
 
 .progress-bar {
@@ -136,4 +116,32 @@ body {
 
 .file-progress {
     accent-color: #485167bb;
+}
+
+.modal-content {
+    background-color: #2d3343FF;
+    color: white;
+}
+
+.modal-close:hover {
+    background: white;
+    background-color: #2d3343AA;
+}
+
+.dialog-input {
+    background: white;
+    background-color: #485167bb;
+    color: white;
+}
+
+.text-editor-text {
+    background: white;
+    background-color: #485167bb;
+    color: white;
+}
+
+.search-text {
+    background: white;
+    background-color: #485167bb;
+    color: white;
 }
