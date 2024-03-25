@@ -421,7 +421,16 @@ export class MainController {
             this.manager.observePropertyChanges(this.managerPropertyChanged, this);
             this.manager.updateListItem = (file) => this.updateListItem(file, this);
             this.manager.onFileItemAdded = (position, file) => this.fileItemAdded(position, file, this);
-
+            let currentExportDir = this.manager.getExportDir;
+            this.manager.getExportDir = async ()=>  {
+                return new Promise(async (resolve, reject)=> {
+                    ServiceLocator.getInstance().resolve(IFileDialogService).pickFolder("Select directory to export files",
+                    await currentExportDir(this.manager), (filePath) => {
+                        resolve(filePath);
+                    },
+                    SalmonVaultManager.REQUEST_EXPORT_DIR);
+                });
+            }
         } catch (e) {
             console.error(e);
             new SalmonDialog("Error during initializing: " + e).show();

@@ -61,6 +61,12 @@ export class SalmonVaultManager extends IPropertyNotifier {
     promptExitOnBack = false;
     drive = null;
 
+    async getExportDir(self) {
+        if (self == null)
+            self == this;
+        return await self.drive.getExportDir();
+    }
+
     getDrive() {
         return this.drive;
     }
@@ -286,10 +292,10 @@ export class SalmonVaultManager extends IPropertyNotifier {
 
     async setupRootDir() {
         let vaultLocation = SalmonSettings.getInstance().getVaultLocation();
-        let isRemote = vaultLocation != null 
+        let isRemote = vaultLocation != null
             && (vaultLocation.startsWith("http://")
-            || vaultLocation.startsWith("https://"));
-        if(vaultLocation == null || !isRemote) {
+                || vaultLocation.startsWith("https://"));
+        if (vaultLocation == null || !isRemote) {
             return;
         }
         try {
@@ -328,7 +334,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 await this.checkCredentials();
                 return;
             }
-            setTimeout(async() => {
+            setTimeout(async () => {
                 if (this.fileManagerMode != SalmonVaultManager.Mode.Search)
                     this.salmonFiles = await this.currDir.listFiles();
                 let selectedFile = this.selectedFiles.size > 1 ? this.selectedFiles.values().next().value : null;
@@ -664,9 +670,10 @@ export class SalmonVaultManager extends IPropertyNotifier {
             let processedFiles = [-1];
             let files = null;
             let failedFiles = [];
+            let exportDir = await this.getExportDir();
             try {
                 files = await this.fileCommander.exportFiles(items,
-                    await this.drive.getExportDir(),
+                    exportDir,
                     deleteSource, true,
                     async (taskProgress) => {
                         if (processedFiles[0] < taskProgress.getProcessedFiles()) {
@@ -697,8 +704,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 SalmonDialog.promptDialog("Export", "Some files failed: " + exception);
             else if (files != null) {
                 this.setTaskMessage("Export Complete");
-                SalmonDialog.promptDialog("Export", "Files Exported To: "
-                    + (await this.drive.getExportDir()).getAbsolutePath());
+                SalmonDialog.promptDialog("Export", "Files Exported To: " + exportDir.getAbsolutePath());
             }
             this.setFileProgress(1);
             this.setFilesProgress(1);
@@ -816,14 +822,16 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     async getFileProperties(item) {
+        let fileChunkSize = await item.getFileChunkSize();
         return "Name: " + await item.getBaseName() + "\n" +
             "Path: " + await item.getPath() + "\n" +
             (!await item.isDirectory() ? ("Size: " + ByteUtils.getBytes(await item.getSize(), 2)
                 + " (" + await item.getSize() + " bytes)") : "Items: " + (await item.listFiles()).length) + "\n" +
-            "Encrypted Name: " + item.getRealFile().getBaseName() + "\n" +
-            "Encrypted Path: " + item.getRealFile().getAbsolutePath() + "\n" +
-            (!item.isDirectory() ? "Encrypted Size: " + ByteUtils.getBytes(item.getRealFile().length(), 2)
-                + " (" + await item.getRealFile().length() + " bytes)" : "") + "\n";
+            "Encrypted name: " + item.getRealFile().getBaseName() + "\n" +
+            "Encrypted path: " + item.getRealFile().getAbsolutePath() + "\n" +
+            (!await item.isDirectory() ? "Encrypted size: " + ByteUtils.getBytes(item.getRealFile().length(), 2)
+                + " (" + await item.getRealFile().length() + " bytes)" : "") + "\n" +
+            "Integrity chunk size: " + (fileChunkSize == 0 ? "None" : fileChunkSize) + "\n";
     }
 
     async canGoBack() {
