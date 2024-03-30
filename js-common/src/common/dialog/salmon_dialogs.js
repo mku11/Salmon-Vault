@@ -214,10 +214,10 @@ export class SalmonDialogs {
 
     static promptCreateVault() {
         ServiceLocator.getInstance().resolve(IFileDialogService).pickFolder("Select the vault",
-            SalmonSettings.getInstance().getVaultLocation(), (filePath) => {
+            SalmonSettings.getInstance().getVaultLocation(), (file) => {
                 SalmonDialogs.promptSetPassword(async (pass) => {
                     try {
-                        await SalmonVaultManager.getInstance().createVault(filePath, pass);
+                        await SalmonVaultManager.getInstance().createVault(file, pass);
                         SalmonDialog.promptDialog("Action", "Vault created, you can start importing your files");
                     } catch (e) {
                         SalmonDialog.promptDialog("Error", "Could not create vault: " + e);
