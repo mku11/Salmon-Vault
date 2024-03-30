@@ -762,7 +762,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            IVirtualFile[] salmonFiles = new SalmonFile[]{};
+            salmonFiles = new SalmonFile[]{};
             populateFileList(null);
             setTaskRunning(true);
             setStatus("Searching");
