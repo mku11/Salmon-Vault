@@ -25,20 +25,18 @@ SOFTWARE.
 import { IPropertyNotifier } from "../../common/binding/iproperty_notifier.js";
 import { SalmonConfig } from "../../vault/config/salmon_config.js";
 import { SalmonSettings } from "../../common/model/salmon_settings.js";
-import { SalmonFileCommander } from "../../lib/salmon-fs/utils/salmon_file_commander.js";
-import { SalmonFile, autoRenameFile as SalmonFileAutoRename } from "../../lib/salmon-fs/salmonfs/salmon_file.js";
-import { SalmonDrive } from "../../lib/salmon-fs/salmonfs/salmon_drive.js";
+import { SalmonFileCommander } from "../../lib/salmon-fs/salmon/utils/salmon_file_commander.js";
+import { autoRenameFile as SalmonFileAutoRename } from "../../lib/salmon-fs/salmon/salmon_file.js";
+import { SalmonDrive } from "../../lib/salmon-fs/salmon/salmon_drive.js";
 import { SalmonDialog } from "../../vault/dialog/salmon_dialog.js";
 import { SalmonDialogs } from "../dialog/salmon_dialogs.js";
 import { autoRenameFile as IRealFileAutoRename } from "../../lib/salmon-fs/file/ireal_file.js";
-import { JsHttpFile } from "../../lib/salmon-fs/file/js_http_file.js";
 import { JsFile } from "../../lib/salmon-fs/file/js_file.js";
-import { JsHttpDrive } from "../../lib/salmon-fs/file/js_http_drive.js";
-import { JsDrive } from "../../lib/salmon-fs/file/js_drive.js";
+import { JsDrive } from "../../lib/salmon-fs/salmon/drive/js_drive.js";
 import { JsLocalStorageFile } from "../../lib/salmon-fs/file/js_ls_file.js";
-import { SalmonFileSequencer } from "../../lib/salmon-fs/sequence/salmon_file_sequencer.js";
-import { SalmonSequenceSerializer } from "../../lib/salmon-fs/sequence/salmon_sequence_serializer.js";
-import { SalmonAuthException } from "../../lib/salmon-fs/salmonfs/salmon_auth_exception.js";
+import { SalmonFileSequencer } from "../../lib/salmon-fs/salmon/sequence/salmon_file_sequencer.js";
+import { SalmonSequenceSerializer } from "../../lib/salmon-fs/salmon/sequence/salmon_sequence_serializer.js";
+import { SalmonAuthException } from "../../lib/salmon-fs/salmon/salmon_auth_exception.js";
 import { ByteUtils } from "../../common/utils/byte_utils.js";
 
 export class SalmonVaultManager extends IPropertyNotifier {
@@ -241,13 +239,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     async initialize() {
-        await this.setupDrive();
-    }
-
-    async setupDrive() {
-        if (SalmonSettings.getInstance().getVaultLocation() != null) {
-            await this.setupRootDir();
-        }
+        
     }
 
     onOpenItem(selectedItem) {
@@ -273,6 +265,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     copySelectedFiles() {
+        if(this.selectedFiles.size == 0)
+            return;
         this.fileManagerMode = SalmonVaultManager.Mode.Copy;
         this.copyFiles = Array.from(this.selectedFiles);
         this.setTaskRunning(true, false);
@@ -280,6 +274,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     cutSelectedFiles() {
+        if(this.selectedFiles.size == 0)
+            return;
         this.fileManagerMode = SalmonVaultManager.Mode.Move;
         this.copyFiles = Array.from(this.selectedFiles);
         this.setTaskRunning(true, false);
@@ -290,50 +286,12 @@ export class SalmonVaultManager extends IPropertyNotifier {
         this.fileCommander = new SalmonFileCommander(SalmonVaultManager.bufferSize, SalmonVaultManager.bufferSize, SalmonVaultManager.threads);
     }
 
-    async setupRootDir() {
-        let vaultLocation = SalmonSettings.getInstance().getVaultLocation();
-        let isRemote = vaultLocation != null
-            && (vaultLocation.startsWith("http://")
-                || vaultLocation.startsWith("https://"));
-        if (vaultLocation == null || !isRemote) {
-            return;
-        }
-        try {
-            let dir = new JsHttpFile(vaultLocation);
-            this.drive = await SalmonDrive.openDrive(dir, JsDrive, this.sequencer);
-            this.currDir = await this.drive.getVirtualRoot();
-            if (await this.drive.getVirtualRoot() == null) {
-                SalmonDialogs.promptSelectRoot();
-                return;
-            }
-        } catch (ex) {
-            if (ex instanceof SalmonAuthException) {
-                await this.checkCredentials();
-                return;
-            } else {
-                console.error(e);
-                SalmonDialogs.promptSelectRoot();
-                return;
-            }
-        }
-        await refresh();
-    }
-
     async refresh() {
         if (this.checkFileSearcher())
             return;
         if (this.drive == null)
             return;
         try {
-            if (await this.drive.getVirtualRoot() == null
-                || ! await (await this.drive.getVirtualRoot()).exists()) {
-                SalmonDialogs.promptSelectRoot();
-                return;
-            }
-            if (!this.drive.isUnlocked()) {
-                await this.checkCredentials();
-                return;
-            }
             setTimeout(async () => {
                 if (this.fileManagerMode != SalmonVaultManager.Mode.Search)
                     this.salmonFiles = await this.currDir.listFiles();
@@ -416,13 +374,14 @@ export class SalmonVaultManager extends IPropertyNotifier {
         this.setStatus(msg != null ? msg : "");
     }
 
-    async openVault(dir) {
+    async openVault(dir, password) {
         if (dir == null)
             return;
 
         try {
             this.closeVault();
-            this.drive = await SalmonDrive.openDrive(dir, JsDrive, this.sequencer);
+            this.drive = await SalmonDrive.openDrive(dir, JsDrive, password, this.sequencer);
+            this.currDir = await this.drive.getRoot();
             SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
         } catch (e) {
             console.error(e);
@@ -546,7 +505,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     async exportSelectedFiles(deleteSource) {
-        if (await this.drive.getVirtualRoot() == null || !this.drive.isUnlocked())
+        if (await this.drive == null)
             return;
         await this.exportFiles(Array.from(this.selectedFiles), async (files) => {
             await this.refresh();
@@ -569,25 +528,10 @@ export class SalmonVaultManager extends IPropertyNotifier {
             this.clearCopiedFiles();
             this.setPathText("");
             if (this.drive != null)
-                this.drive.lock();
+                this.drive.close();
         } catch (ex) {
             console.error(ex);
         }
-    }
-
-    async checkCredentials() {
-        if (await this.drive.hasConfig()) {
-            SalmonDialogs.promptPassword(async () => await this.onPasswordSubmitted());
-        }
-    }
-
-    async onPasswordSubmitted() {
-        try {
-            this.currDir = await this.drive.getVirtualRoot();
-        } catch (e) {
-            console.error(e);
-        }
-        await this.refresh();
     }
 
     async openItem(selectedFile) {
@@ -650,6 +594,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     async renameFile(file, newFilename) {
+        if(await file.getBaseName() == newFilename)
+            return;
         await this.fileCommander.renameFile(file, newFilename);
     }
 
@@ -807,10 +753,9 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     async createVault(dir, password) {
-        //TODO: use JsHttpDrive for remote
-        this.drive = await SalmonDrive.createDrive(dir, JsDrive, this.sequencer, password);
+        this.drive = await SalmonDrive.createDrive(dir, JsDrive, password, this.sequencer);
+        this.currDir = await this.drive.getRoot();
         SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
-        this.currDir = await this.drive.getVirtualRoot();
         await this.refresh();
     }
 

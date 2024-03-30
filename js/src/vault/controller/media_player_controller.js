@@ -28,9 +28,9 @@ import { SalmonConfig } from "../config/salmon_config.js";
 import { Binding } from "../../common/binding/binding.js";
 import { StringProperty } from "../../common/binding/string_property.js";
 import { BooleanProperty } from "../../common/binding/boolean_property.js";
-import { SalmonHandler } from "../../lib/salmon-fs/service/salmon_handler.js";
-import { MemoryStream } from "../../lib/salmon-core/io/memory_stream.js";
-import { SalmonFileReadableStream } from "../../lib/salmon-fs/salmonfs/salmon_file_readable_stream.js";
+import { Handler } from "../../lib/salmon-fs/service/handler.js";
+import { MemoryStream } from "../../lib/salmon-core/iostream/memory_stream.js";
+import { SalmonFileReadableStream } from "../../lib/salmon-fs/salmon/iostream/salmon_file_readable_stream.js";
 
 export class MediaPlayerController {
     static modalURL = "media-player.html";
@@ -103,7 +103,7 @@ export class MediaPlayerController {
             var link = document.createElement("a");
             link.href = "?path=" + encodeURIComponent(this.filePath);
             this.url = link.href;
-            await SalmonHandler.getInstance().register(this.url, {
+            await Handler.getInstance().register(this.url, {
                 fileHandle: file.getRealFile().getPath(),
                 fileClass: file.getRealFile().constructor.name,
                 key: file.getEncryptionKey(),
@@ -122,6 +122,6 @@ export class MediaPlayerController {
 
     onClose() {
         URL.revokeObjectURL(this.url);
-        SalmonHandler.getInstance().unregister();
+        Handler.getInstance().unregister();
     }
 }

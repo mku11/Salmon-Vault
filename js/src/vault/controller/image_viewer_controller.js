@@ -30,8 +30,8 @@ import { ObjectProperty } from "../../common/binding/object_property.js";
 import { BooleanProperty } from "../../common/binding/boolean_property.js";
 import { WindowUtils } from "../utils/window_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
-import { MemoryStream } from "../../lib/salmon-core/io/memory_stream.js";
-import { SalmonHandler } from "../../lib/salmon-fs/service/salmon_handler.js";
+import { MemoryStream } from "../../lib/salmon-core/iostream/memory_stream.js";
+import { Handler } from "../../lib/salmon-fs/service/handler.js";
 
 export class ImageViewerController {
     static modalURL = "image-viewer.html";
@@ -88,6 +88,6 @@ export class ImageViewerController {
 
     onClose() {
         URL.revokeObjectURL(this.url);
-        SalmonHandler.getInstance().unregister();
+        Handler.getInstance().unregister();
     }
 }

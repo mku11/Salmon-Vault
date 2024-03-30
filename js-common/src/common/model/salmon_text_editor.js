@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-import {MemoryStream} from "../../lib/salmon-core/io/memory_stream.js";
+import {MemoryStream} from "../../lib/salmon-core/iostream/memory_stream.js";
 import {SalmonDialog } from "../../vault/dialog/salmon_dialog.js";
 
 export class SalmonTextEditor

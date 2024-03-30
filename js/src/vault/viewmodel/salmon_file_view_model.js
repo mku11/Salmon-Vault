@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import { IPropertyNotifier } from "../../common/binding/iproperty_notifier.js";
-import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
+import { FileUtils } from "../../lib/salmon-fs/utils/file_utils.js";
 import { ByteUtils } from "../../common/utils/byte_utils.js";
 import { Thumbnails } from "../image/thumbnails.js";
 
@@ -51,7 +51,7 @@ export class SalmonFileViewModel extends IPropertyNotifier {
             setTimeout(async () => {
                 this.image = await Thumbnails.getIcon(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
                 if (await this.salmonFile.isFile()) {
-                    let ext = SalmonFileUtils.getExtensionFromFileName(await this.salmonFile.getBaseName()).toLowerCase();
+                    let ext = FileUtils.getExtensionFromFileName(await this.salmonFile.getBaseName()).toLowerCase();
                     Thumbnails.addText(this.image, ext);
                 }
                 let imageThumbnail = await Thumbnails.generateThumbnail(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
@@ -166,7 +166,7 @@ export class SalmonFileViewModel extends IPropertyNotifier {
     }
 
     async getExtText() {
-        return SalmonFileUtils.getExtensionFromFileName(await this.salmonFile.getBaseName()).toLowerCase();
+        return FileUtils.getExtensionFromFileName(await this.salmonFile.getBaseName()).toLowerCase();
     }
 
     async getDateText() {

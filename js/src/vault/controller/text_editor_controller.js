@@ -28,7 +28,7 @@ import { Binding } from "../../common/binding/binding.js";
 import { StringProperty } from "../../common/binding/string_property.js";
 import { WindowUtils } from "../utils/window_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
-import { MemoryStream } from "../../lib/salmon-core/io/memory_stream.js";
+import { MemoryStream } from "../../lib/salmon-core/iostream/memory_stream.js";
 import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
 import { SalmonDialog } from "../dialog/salmon_dialog.js";
 import { ServiceLocator } from "../../common/services/service_locator.js";

@@ -46,7 +46,7 @@ import { JsMediaPlayerService } from "../services/js_media_player_service.js";
 import { SalmonDialogs } from "../../common/dialog/salmon_dialogs.js";
 import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
 import { SalmonFileViewModel } from "../viewmodel/salmon_file_view_model.js";
-import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
+import { FileUtils } from "../../lib/salmon-fs/utils/file_utils.js";
 import { ImageViewerController } from "./image_viewer_controller.js";
 import { TextEditorController } from "./text_editor_controller.js";
 import { SettingsController } from "./settings_controller.js";
@@ -227,13 +227,6 @@ export class MainController {
     setupTable() {
         this.setContextMenu();
         this.fileItemList.onItemDoubleClicked = async (index) => this.onOpenItem(index);
-        // table.setOnKeyPressed(event => {
-        //     if (event.getCode() == KeyCode.ENTER) {
-        //         event.consume();
-        //         TableView.TableViewSelectionModel<SalmonFileViewModel> rowData = table.getSelectionModel();
-        //         onOpenItem(rowData.getSelectedIndex());
-        //     }
-        // });
         this.fileItemList.addSelectedChangeListener(() => {
             this.onSelectedItems(this.fileItemList.getSelectedItems());
         });
@@ -299,30 +292,18 @@ export class MainController {
     }
 
     onCopy() {
-        // TODO:
-        // if (this.table != document.activeElement)
-        //     return;
         this.manager.copySelectedFiles();
     }
 
     onCut() {
-        // TODO:
-        // if (this.table != document.activeElement)
-        //     return;
         this.manager.cutSelectedFiles();
     }
 
     onDelete() {
-        // TODO:
-        // if (this.table != document.activeElement)
-        //     return;
         SalmonDialogs.promptDelete();
     }
 
     onPaste() {
-        // TODO:
-        // if (this.table != document.activeElement)
-        //     return;
         this.manager.pasteSelected();
     }
 
@@ -362,8 +343,8 @@ export class MainController {
         SalmonDialogs.promptRevokeAuth();
     }
 
-    async onDisplayAuthID() {
-        await SalmonDialogs.onDisplayAuthID();
+    async onDisplayAuthId() {
+        await SalmonDialogs.onDisplayAuthId();
     }
 
     onExit() {
@@ -468,16 +449,16 @@ export class MainController {
     async OpenListItem(file, self) {
         let vm = self.getViewModel(file);
         try {
-            if (SalmonFileUtils.isVideo(await file.getBaseName())) {
+            if (FileUtils.isVideo(await file.getBaseName())) {
                 self.startMediaPlayer(vm);
                 return true;
-            } else if (SalmonFileUtils.isAudio(await file.getBaseName())) {
+            } else if (FileUtils.isAudio(await file.getBaseName())) {
                 self.startMediaPlayer(vm);
                 return true;
-            } else if (SalmonFileUtils.isImage(await file.getBaseName())) {
+            } else if (FileUtils.isImage(await file.getBaseName())) {
                 self.startImageViewer(vm);
                 return true;
-            } else if (SalmonFileUtils.isText(await file.getBaseName())) {
+            } else if (FileUtils.isText(await file.getBaseName())) {
                 self.startTextEditor(vm);
                 return true;
             }

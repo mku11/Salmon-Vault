@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { WindowUtils } from "../utils/window_utils.js";
-import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
+import { FileUtils } from "../../lib/salmon-fs/utils/file_utils.js";
 import { SalmonWindow } from "../window/salmon_window.js";
 
 export class SalmonDialog extends SalmonWindow {
@@ -133,7 +132,7 @@ export class SalmonDialog extends SalmonWindow {
     }
 
     setValue(value, isFileName, readOnly, isPassword) {
-        let ext = SalmonFileUtils.getExtensionFromFileName(value);
+        let ext = FileUtils.getExtensionFromFileName(value);
         if (isFileName) {
             this.onShow = () => {
                 this.input.focus();

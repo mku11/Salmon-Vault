@@ -26,29 +26,18 @@ import { ServiceLocator } from "../services/service_locator.js";
 import { IFileDialogService } from "../services/ifile_dialog_service.js";
 import { SalmonSettings } from "../model/salmon_settings.js";
 import { SalmonVaultManager } from "../model/salmon_vault_manager.js";
-import { SalmonDrive } from "../../lib/salmon-fs/salmonfs/salmon_drive.js";
+import { SalmonDrive } from "../../lib/salmon-fs/salmon/salmon_drive.js";
 import { SalmonDialog } from "../../vault/dialog/salmon_dialog.js";
 import { SalmonConfig } from "../../vault/config/salmon_config.js";
 import { URLUtils } from "../../vault/utils/url_utils.js";
-import { SalmonAuthException } from "../../lib/salmon-fs/salmonfs/salmon_auth_exception.js";
-import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
+import { FileUtils } from "../../lib/salmon-fs/utils/file_utils.js";
 import { IFileRemoteService } from "../../common/services/ifile_remote_service.js";
 
 export class SalmonDialogs {
-    static promptPassword(onUnlockSucceded) {
+    static promptPassword(onSubmit) {
         SalmonDialog.promptEdit("Vault", "Password", async (password, option) => {
-            if (password == null)
-                return;
-            try {
-                await SalmonVaultManager.getInstance().getDrive().unlock(password);
-                if (onUnlockSucceded != null)
-                    onUnlockSucceded();
-            } catch (e) {
-                if (e instanceof SalmonAuthException)
-                    SalmonDialog.promptDialog("Vault", "Wrong password");
-                else
-                    SalmonDialog.promptDialog("Vault", "Error: " + e);
-            }
+            if (onSubmit)
+                onSubmit(password);
         }, "", false, false, true, null);
     }
 
@@ -68,6 +57,8 @@ export class SalmonDialogs {
     }
 
     static promptChangePassword() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
         SalmonDialogs.promptSetPassword(async (pass) => {
             try {
                 await SalmonVaultManager.getInstance().getDrive().setPassword(pass);
@@ -79,57 +70,50 @@ export class SalmonDialogs {
     }
 
     static promptImportAuth() {
-        if (SalmonVaultManager.getInstance().getDrive() == null) {
-            SalmonDialog.promptDialog("Error", "No Drive Loaded");
+        if(!SalmonDialogs.driveLoaded())
             return;
-        }
-
         let filename = SalmonDrive.getDefaultAuthConfigFilename();
-        let ext = SalmonFileUtils.getExtensionFromFileName(filename);
+        let ext = FileUtils.getExtensionFromFileName(filename);
         let filter = {};
         filter["Salmon Auth Files"] = ext;
         ServiceLocator.getInstance().resolve(IFileDialogService).openFile("Import Auth File",
             filename, filter, SalmonSettings.getInstance().getVaultLocation(), async (file) => {
-            try {
-                await SalmonVaultManager.getInstance().getDrive().importAuthFile(file);
-                SalmonDialog.promptDialog("Auth", "Device is now Authorized");
-            } catch (ex) {
-                console.error(ex);
-                SalmonDialog.promptDialog("Auth", "Could Not Import Auth: " + ex);
-            }
-        }, SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE);
+                try {
+                    await SalmonVaultManager.getInstance().getDrive().importAuthFile(file);
+                    SalmonDialog.promptDialog("Auth", "Device is now Authorized");
+                } catch (ex) {
+                    console.error(ex);
+                    SalmonDialog.promptDialog("Auth", "Could Not Import Auth: " + ex);
+                }
+            }, SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE);
     }
 
     static promptExportAuth() {
-        if (SalmonVaultManager.getInstance().getDrive() == null) {
-            SalmonDialog.promptDialog("Error", "No Drive Loaded");
+        if(!SalmonDialogs.driveLoaded())
             return;
-        }
         SalmonDialog.promptEdit("Export Auth File",
             "Enter the Auth ID for the device you want to authorize",
-            (targetAuthID, option) => {
+            (targetAuthId, option) => {
                 let filename = SalmonDrive.getDefaultAuthConfigFilename();
-                let ext = SalmonFileUtils.getExtensionFromFileName(filename);
+                let ext = FileUtils.getExtensionFromFileName(filename);
                 let filter = {};
                 filter["Salmon Auth Files"] = ext;
                 ServiceLocator.getInstance().resolve(IFileDialogService).saveFile("Export Auth file",
                     filename, filter, SalmonSettings.getInstance().getVaultLocation(), async (fileResult) => {
-                    try {
-                        await SalmonVaultManager.getInstance().getDrive().exportAuthFile(targetAuthID, fileResult);
-                        SalmonDialog.promptDialog("Auth", "Auth File Exported");
-                    } catch (ex) {
-                        console.error(ex);
-                        SalmonDialog.promptDialog("Auth", "Could Not Export Auth: " + ex);
-                    }
-                }, SalmonVaultManager.REQUEST_EXPORT_AUTH_FILE);
+                        try {
+                            await SalmonVaultManager.getInstance().getDrive().exportAuthFile(targetAuthId, fileResult);
+                            SalmonDialog.promptDialog("Auth", "Auth File Exported");
+                        } catch (ex) {
+                            console.error(ex);
+                            SalmonDialog.promptDialog("Auth", "Could Not Export Auth: " + ex);
+                        }
+                    }, SalmonVaultManager.REQUEST_EXPORT_AUTH_FILE);
             }, "", false, false, false, null);
     }
 
     static promptRevokeAuth() {
-        if (SalmonVaultManager.getInstance().getDrive() == null) {
-            SalmonDialog.promptDialog("Error", "No Drive Loaded");
+        if(!SalmonDialogs.driveLoaded())
             return;
-        }
         SalmonDialog.promptDialog("Revoke Auth",
             "Revoke Auth for this drive? You will still be able to decrypt and view your files but you won't be able to import any more files in this drive.",
             "Ok",
@@ -145,15 +129,14 @@ export class SalmonDialogs {
             "Cancel", null);
     }
 
-    static async onDisplayAuthID() {
+    static async onDisplayAuthId() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
+
         try {
-            if (SalmonVaultManager.getInstance().getDrive() == null || SalmonVaultManager.getInstance().getDrive().getDriveID() == null) {
-                SalmonDialog.promptDialog("Error", "No Drive Loaded");
-                return;
-            }
-            let driveID = await SalmonVaultManager.getInstance().getDrive().getAuthID();
+            let driveId = await SalmonVaultManager.getInstance().getDrive().getAuthId();
             SalmonDialog.promptEdit("Auth", "Salmon Auth App ID",
-                null, driveID, false, true, false, null);
+                null, driveId, false, true, false, null);
         } catch (ex) {
             SalmonDialog.promptDialog("Error", ex);
         }
@@ -175,14 +158,16 @@ export class SalmonDialogs {
             "The recommended action is to press Reset to de-authorize all drives.\n" +
             "Otherwise only if you know what you're doing press Continue.",
             "Reset", () => {
-            resetSequencer(false);
-        },
+                resetSequencer(false);
+            },
             "Continue", () => {
-            resetSequencer(true);
-        });
+                resetSequencer(true);
+            });
     }
 
     static promptDelete() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
         SalmonDialog.promptDialog(
             "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size + " item(s)?",
             "Ok",
@@ -205,6 +190,9 @@ export class SalmonDialogs {
     }
 
     static promptSearch() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
+
         SalmonDialog.promptEdit("Search", "Keywords",
             async (value, isChecked) => {
                 await SalmonVaultManager.getInstance().search(value, isChecked);
@@ -224,16 +212,6 @@ export class SalmonDialogs {
             }, "Ok", null);
     }
 
-    static promptSelectRoot() {
-        SalmonDialog.promptDialog("Vault",
-            "Choose a location for your vault",
-            "Ok",
-            SalmonDialogs.promptOpenVault,
-            "Cancel",
-            null
-        );
-    }
-
     static promptCreateVault() {
         ServiceLocator.getInstance().resolve(IFileDialogService).pickFolder("Select the vault",
             SalmonSettings.getInstance().getVaultLocation(), (filePath) => {
@@ -250,10 +228,9 @@ export class SalmonDialogs {
     }
 
     static promptOpenVault() {
-        SalmonDialog.promptDialog("Open Vault", "Choose Local to open a vault located in your computer.\n" 
-        + "Choose Remote to specify a remote vault in a web host.\n\n"
-        + "* Local vault support is only available for Chrome desktop browser."
-        ,
+        SalmonDialog.promptDialog("Open Vault", "Choose Local to open a vault located in your computer.\n"
+            + "Choose Remote to specify a remote vault in a web host.\n\n"
+            + "* Local vault support is only available for Chrome desktop browser.",
             "Local", () => {
                 this.promptOpenLocalVault();
             }, "Remote", () => {
@@ -263,8 +240,12 @@ export class SalmonDialogs {
 
     static promptOpenLocalVault() {
         ServiceLocator.getInstance().resolve(IFileDialogService).pickFolder("Select the vault",
-            SalmonSettings.getInstance().getVaultLocation(), (dir) =>
-            SalmonVaultManager.getInstance().openVault(dir),
+            SalmonSettings.getInstance().getVaultLocation(),
+            (dir) => {
+                SalmonDialogs.promptPassword(async (password) => {
+                    SalmonVaultManager.getInstance().openVault(dir, password);
+                });
+            },
             SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
     }
 
@@ -278,20 +259,25 @@ export class SalmonDialogs {
     }
 
     static promptImportFiles() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
         ServiceLocator.getInstance().resolve(IFileDialogService).openFiles("Select files to import",
             null, SalmonSettings.getInstance().getLastImportDir(), async (obj) => {
-            let filesToImport = obj;
-            if (filesToImport.length == 0)
-                return;
-            SalmonSettings.getInstance().setLastImportDir("");
-            SalmonVaultManager.getInstance().importFiles(filesToImport,
-                SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), async (importedFiles) => {
-                await SalmonVaultManager.getInstance().refresh();
-            });
-        }, SalmonVaultManager.REQUEST_IMPORT_FILES);
+                let filesToImport = obj;
+                if (filesToImport.length == 0)
+                    return;
+                SalmonSettings.getInstance().setLastImportDir("");
+                SalmonVaultManager.getInstance().importFiles(filesToImport,
+                    SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), async (importedFiles) => {
+                        await SalmonVaultManager.getInstance().refresh();
+                    });
+            }, SalmonVaultManager.REQUEST_IMPORT_FILES);
     }
 
     static promptNewFolder() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
+
         SalmonDialog.promptEdit("Create Folder",
             "Folder Name",
             async (folderName, isChecked) => {
@@ -326,7 +312,7 @@ export class SalmonDialogs {
                     } catch (exception) {
                         console.error(exception);
                         if (!SalmonVaultManager.getInstance().handleException(exception)) {
-                            SalmonDialog.promptDialog("Error: " + exception);
+                            SalmonDialog.promptDialog("Error", exception);
                         }
                     }
                     await SalmonVaultManager.getInstance().updateListItem(ifile);
@@ -334,5 +320,13 @@ export class SalmonDialogs {
         } catch (exception) {
             console.error(exception);
         }
+    }
+
+    static driveLoaded() {
+        if (SalmonVaultManager.getInstance().getDrive() == null) {
+            SalmonDialog.promptDialog("Error", "No Drive Loaded");
+            return false;
+        }
+        return true;
     }
 }

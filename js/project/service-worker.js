@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { SalmonServiceWorker } from "./lib/salmon-fs/service/salmon_service_worker.js";
+import { SalmonServiceWorker } from "./lib/salmon-fs/salmon/service/salmon_service_worker.js";
 
 var worker = self;
 var salmonServiceWorker = new SalmonServiceWorker();

@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { SalmonFileUtils } from "../../lib/salmon-fs/utils/salmon_file_utils.js";
-import { MemoryStream } from "../../lib/salmon-core/io/memory_stream.js";
+import { FileUtils } from "../../lib/salmon-fs/utils/file_utils.js";
+import { MemoryStream } from "../../lib/salmon-core/iostream/memory_stream.js";
 
 /**
  * Utility class that generates thumbnails for encrypted salmon files
@@ -130,10 +130,10 @@ export class Thumbnails {
         }
         
         try {
-            if (await salmonFile.isFile() && SalmonFileUtils.isImage(await salmonFile.getBaseName())) {
+            if (await salmonFile.isFile() && FileUtils.isImage(await salmonFile.getBaseName())) {
                 image = await Thumbnails.getImageThumbnail(salmonFile);
                 image = await Thumbnails.resize(image, width, height);
-            } else if (await salmonFile.isFile() && SalmonFileUtils.isVideo(await salmonFile.getBaseName())) {
+            } else if (await salmonFile.isFile() && FileUtils.isVideo(await salmonFile.getBaseName())) {
                 image = await Thumbnails.getVideoThumbnail(salmonFile);
                 image = await Thumbnails.resize(image, width, height);
             }
@@ -156,7 +156,7 @@ export class Thumbnails {
         image.src = icon;
         if (await salmonFile.isFile()) {
             try {
-                let ext = SalmonFileUtils.getExtensionFromFileName(await salmonFile.getBaseName()).toLowerCase();
+                let ext = FileUtils.getExtensionFromFileName(await salmonFile.getBaseName()).toLowerCase();
                 let hsv = await Thumbnails.getHSVFromExtension(ext);
                 Thumbnails.addImage(image, hsv);
             } catch (ex) {
