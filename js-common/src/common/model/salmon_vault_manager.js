@@ -291,19 +291,12 @@ export class SalmonVaultManager extends IPropertyNotifier {
             return;
         if (this.drive == null)
             return;
-        try {
             setTimeout(async () => {
                 if (this.fileManagerMode != SalmonVaultManager.Mode.Search)
                     this.salmonFiles = await this.currDir.listFiles();
                 let selectedFile = this.selectedFiles.size > 1 ? this.selectedFiles.values().next().value : null;
                 this.populateFileList(selectedFile);
             });
-        } catch (e) {
-            if (e instanceof SalmonAuthException)
-                await this.checkCredentials();
-            else
-                console.error(e);
-        }
     }
 
     checkFileSearcher() {
@@ -505,7 +498,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     async exportSelectedFiles(deleteSource) {
-        if (await this.drive == null)
+        if (this.drive == null)
             return;
         await this.exportFiles(Array.from(this.selectedFiles), async (files) => {
             await this.refresh();
