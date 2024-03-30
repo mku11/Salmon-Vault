@@ -1,21 +1,4 @@
 package com.mku.salmon.vault.model.win;
-
-import com.mku.file.IRealFile;
-import com.mku.file.JavaFile;
-import com.mku.salmon.vault.config.SalmonConfig;
-import com.mku.salmon.vault.model.SalmonVaultManager;
-import com.mku.salmon.vault.model.SalmonSettings;
-import com.mku.salmon.win.sequencer.WinClientSequencer;
-import com.mku.salmon.win.sequencer.WinFileSequencer;
-import com.mku.salmon.win.sequencer.WinSequenceTamperedException;
-import com.mku.sequence.SalmonSequenceException;
-import com.mku.sequence.SalmonSequenceSerializer;
-import com.mku.salmon.vault.dialog.SalmonDialog;
-import com.mku.salmon.vault.dialog.SalmonDialogs;
-import com.mku.salmonfs.SalmonDriveManager;
-
-import java.io.IOException;
-
 /*
 MIT License
 
@@ -39,6 +22,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+
+
+import com.mku.file.IRealFile;
+import com.mku.file.JavaFile;
+import com.mku.salmon.sequence.SalmonSequenceException;
+import com.mku.salmon.sequence.SalmonSequenceSerializer;
+import com.mku.salmon.vault.config.SalmonConfig;
+import com.mku.salmon.vault.model.SalmonVaultManager;
+import com.mku.salmon.vault.model.SalmonSettings;
+import com.mku.salmon.win.sequencer.WinClientSequencer;
+import com.mku.salmon.win.sequencer.WinFileSequencer;
+import com.mku.salmon.win.sequencer.WinSequenceTamperedException;
+import com.mku.salmon.vault.dialog.SalmonDialog;
+import com.mku.salmon.vault.dialog.SalmonDialogs;
+
+
+import java.io.IOException;
+
 public class SalmonWinVaultManager extends SalmonVaultManager {
     synchronized
     public static SalmonWinVaultManager getInstance() {
@@ -48,19 +49,19 @@ public class SalmonWinVaultManager extends SalmonVaultManager {
         return (SalmonWinVaultManager) instance;
     }
 
-    protected void setupWinFileSequencer() throws SalmonSequenceException, IOException {
+    protected void setupWinFileSequencer() throws IOException {
         IRealFile dirFile = new JavaFile(getSequencerDefaultDirPath());
         if (!dirFile.exists())
             dirFile.mkdir();
         IRealFile seqFile = new JavaFile(getSequencerFilepath());
         WinFileSequencer sequencer = new WinFileSequencer(seqFile, new SalmonSequenceSerializer(), SalmonConfig.REGISTRY_CHKSUM_KEY);
-        SalmonDriveManager.setSequencer(sequencer);
+        setSequencer(sequencer);
     }
 
     protected void setupClientSequencer() {
         try {
             WinClientSequencer sequencer = new WinClientSequencer(SERVICE_PIPE_NAME);
-            SalmonDriveManager.setSequencer(sequencer);
+            setSequencer(sequencer);
         } catch (Exception ex) {
             SalmonDialog.promptDialog("Error", "Error during service lookup. Make sure the Salmon Service is installed and running:\n" + ex.getMessage());
         }
@@ -84,9 +85,9 @@ public class SalmonWinVaultManager extends SalmonVaultManager {
     }
 
     public void resetSequencer(boolean clearChecksumOnly) {
-        if (SalmonDriveManager.getSequencer() instanceof WinFileSequencer) {
+        if (getSequencer() instanceof WinFileSequencer) {
             try {
-                ((WinFileSequencer) SalmonDriveManager.getSequencer()).reset(clearChecksumOnly);
+                ((WinFileSequencer) getSequencer()).reset(clearChecksumOnly);
             } catch (SalmonSequenceException e) {
                 SalmonDialog.promptDialog("Could not reset sequencer: " + e);
             }
@@ -97,8 +98,8 @@ public class SalmonWinVaultManager extends SalmonVaultManager {
     @Override
     public void setupSalmonManager() {
         try {
-            if (SalmonDriveManager.getSequencer() != null)
-                SalmonDriveManager.getSequencer().close();
+            if (getSequencer() != null)
+                getSequencer().close();
 
             if (SalmonSettings.getInstance().getSequencerAuthType() == SalmonSettings.AuthType.User) {
                 // for windows we have a registry checksum variant

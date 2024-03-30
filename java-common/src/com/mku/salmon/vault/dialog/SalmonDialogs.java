@@ -25,6 +25,8 @@ SOFTWARE.
 
 import com.mku.file.IRealFile;
 import com.mku.func.Consumer;
+import com.mku.salmon.SalmonDrive;
+import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonVaultManager;
@@ -32,32 +34,18 @@ import com.mku.salmon.vault.services.IFileDialogService;
 import com.mku.salmon.vault.services.IFileService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.URLUtils;
-import com.mku.salmonfs.SalmonAuthException;
-import com.mku.salmonfs.SalmonDriveManager;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.utils.SalmonFileUtils;
+import com.mku.utils.FileUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class SalmonDialogs {
-    public static void promptPassword(Runnable onUnlockSucceded) {
-        SalmonDialog.promptEdit("Vault", "Password", (password, option) ->
-        {
-            if (password == null)
-                return;
-            try {
-                SalmonDriveManager.getDrive().unlock(password);
-                if (onUnlockSucceded != null)
-                    onUnlockSucceded.run();
-            } catch (SalmonAuthException ex) {
-                SalmonDialog.promptDialog("Vault", "Wrong password");
-            } catch (Exception e) {
-                SalmonDialog.promptDialog("Vault", "Error: " + e.getMessage());
-            }
+    public static void promptPassword(Consumer<String> onSubmit) {
+        SalmonDialog.promptEdit("Vault", "Password", (password, option) -> {
+        if (onSubmit != null)
+            onSubmit.accept(password);
         }, "", false, false, true, null);
     }
 
@@ -79,10 +67,12 @@ public class SalmonDialogs {
     }
 
     public static void promptChangePassword() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
         SalmonDialogs.promptSetPassword((pass) ->
         {
             try {
-                SalmonDriveManager.getDrive().setPassword(pass);
+                SalmonVaultManager.getInstance().getDrive().setPassword(pass);
                 SalmonDialog.promptDialog("Password changed");
             } catch (Exception e) {
                 SalmonDialog.promptDialog("Could not change password: " + e.getMessage());
@@ -91,20 +81,17 @@ public class SalmonDialogs {
     }
 
     public static void promptImportAuth() {
-        if (SalmonDriveManager.getDrive() == null) {
-            SalmonDialog.promptDialog("Error", "No Drive Loaded");
+        if(!SalmonDialogs.driveLoaded())
             return;
-        }
-
-        String filename = SalmonDriveManager.getDefaultAuthConfigFilename();
-        String ext = SalmonFileUtils.getExtensionFromFileName(filename);
+        String filename = SalmonDrive.getDefaultAuthConfigFilename();
+        String ext = FileUtils.getExtensionFromFileName(filename);
         HashMap<String, String> filter = new HashMap<>();
         filter.put("Salmon Auth Files", ext);
         ServiceLocator.getInstance().resolve(IFileDialogService.class).openFile("Import Auth File",
-                filename, filter, SalmonSettings.getInstance().getVaultLocation(), (filePath) ->
+                filename, filter, SalmonSettings.getInstance().getVaultLocation(), (file) ->
                 {
                     try {
-                        SalmonDriveManager.importAuthFile((String) filePath);
+                        SalmonVaultManager.getInstance().getDrive().importAuthFile((IRealFile) file);
                         SalmonDialog.promptDialog("Auth", "Device is now Authorized");
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -114,23 +101,21 @@ public class SalmonDialogs {
     }
 
     public static void promptExportAuth() {
-        if (SalmonDriveManager.getDrive() == null) {
-            SalmonDialog.promptDialog("Error", "No Drive Loaded");
+        if(!SalmonDialogs.driveLoaded())
             return;
-        }
         SalmonDialog.promptEdit("Export Auth File",
                 "Enter the Auth ID for the device you want to authorize",
                 (targetAuthID, option) ->
                 {
-                    String filename = SalmonDriveManager.getDefaultAuthConfigFilename();
-                    String ext = SalmonFileUtils.getExtensionFromFileName(filename);
+                    String filename = SalmonDrive.getDefaultAuthConfigFilename();
+                    String ext = FileUtils.getExtensionFromFileName(filename);
                     HashMap<String, String> filter = new HashMap<>();
                     filter.put("Salmon Auth Files", ext);
                     ServiceLocator.getInstance().resolve(IFileDialogService.class).saveFile("Export Auth file",
                             filename, filter, SalmonSettings.getInstance().getVaultLocation(), (fileResult) ->
                             {
                                 try {
-                                    SalmonDriveManager.exportAuthFile(targetAuthID, ((String[]) fileResult)[0], ((String[]) fileResult)[1]);
+                                    SalmonVaultManager.getInstance().getDrive().exportAuthFile(targetAuthID, (IRealFile) fileResult);
                                     SalmonDialog.promptDialog("Auth", "Auth File Exported");
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
@@ -141,17 +126,15 @@ public class SalmonDialogs {
     }
 
     public static void promptRevokeAuth() {
-        if (SalmonDriveManager.getDrive() == null) {
-            SalmonDialog.promptDialog("Error", "No Drive Loaded");
+        if(!SalmonDialogs.driveLoaded())
             return;
-        }
         SalmonDialog.promptDialog("Revoke Auth",
                 "Revoke Auth for this drive? You will still be able to decrypt and view your files but you won't be able to import any more files in this drive.",
                 "Ok",
                 () ->
                 {
                     try {
-                        SalmonDriveManager.revokeAuthorization();
+                        SalmonVaultManager.getInstance().getDrive().revokeAuthorization();
                         SalmonDialog.promptDialog("Action", "Revoke Auth Successful");
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -162,12 +145,10 @@ public class SalmonDialogs {
     }
 
     public static void onDisplayAuthID() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
         try {
-            if (SalmonDriveManager.getDrive() == null || SalmonDriveManager.getDrive().getDriveID() == null) {
-                SalmonDialog.promptDialog("Error", "No Drive Loaded");
-                return;
-            }
-            String driveID = SalmonDriveManager.getAuthID();
+            String driveID = SalmonVaultManager.getInstance().getDrive().getAuthId();
             SalmonDialog.promptEdit("Auth", "Salmon Auth App ID",
                     null, driveID, false, true, false, null);
         } catch (Exception ex) {
@@ -201,6 +182,8 @@ public class SalmonDialogs {
     }
 
     public static void promptDelete() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
         SalmonDialog.promptDialog(
                 "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size() + " item(s)?",
                 "Ok",
@@ -224,6 +207,8 @@ public class SalmonDialogs {
     }
 
     public static void promptSearch() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
         SalmonDialog.promptEdit("Search", "Keywords",
                 (value, isChecked) ->
                 {
@@ -244,23 +229,13 @@ public class SalmonDialogs {
                 }, "Ok", null);
     }
 
-    public static void promptSelectRoot() {
-        SalmonDialog.promptDialog("Vault",
-                "Choose a location for your vault",
-                "Ok",
-                SalmonDialogs::promptOpenVault,
-                "Cancel",
-                null
-        );
-    }
-
     public static void promptCreateVault() {
         ServiceLocator.getInstance().resolve(IFileDialogService.class).pickFolder("Select the vault",
-                SalmonSettings.getInstance().getVaultLocation(), (filePath) -> {
+                SalmonSettings.getInstance().getVaultLocation(), (file) -> {
                     SalmonDialogs.promptSetPassword((String pass) ->
                     {
                         try {
-                            SalmonVaultManager.getInstance().createVault((String) filePath, pass);
+                            SalmonVaultManager.getInstance().createVault((IRealFile) file, pass);
                             SalmonDialog.promptDialog("Action", "Vault created, you can start importing your files");
                         } catch (Exception e) {
                             SalmonDialog.promptDialog("Error", "Could not create vault: " + e.getMessage());
@@ -272,25 +247,26 @@ public class SalmonDialogs {
 
     public static void promptOpenVault() {
         ServiceLocator.getInstance().resolve(IFileDialogService.class).pickFolder("Select the vault",
-                SalmonSettings.getInstance().getVaultLocation(), (filePath) ->
-                        SalmonVaultManager.getInstance().openVault((String) filePath),
-                SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
+                SalmonSettings.getInstance().getVaultLocation(),
+                (dir) -> {
+                SalmonDialogs.promptPassword((String password) -> {
+                        SalmonVaultManager.getInstance().openVault((IRealFile) dir, password);
+                });
+            },
+        SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
     }
 
     public static void promptImportFiles() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
         ServiceLocator.getInstance().resolve(IFileDialogService.class).openFiles("Select files to import",
                 null, SalmonSettings.getInstance().getLastImportDir(), (obj) ->
                 {
-                    String[] files = (String[]) obj;
-                    List<IRealFile> filesToImport = new ArrayList<>();
-                    IFileService fileService = ServiceLocator.getInstance().resolve(IFileService.class);
-                    for (String file : files) {
-                        filesToImport.add(fileService.getFile(file, false));
-                    }
-					if (filesToImport.size() == 0)
-                            return;
-                    SalmonSettings.getInstance().setLastImportDir(new File(files[0]).getParentFile().getAbsolutePath());
-                    SalmonVaultManager.getInstance().importFiles(filesToImport.toArray(new IRealFile[0]),
+                    IRealFile[] filesToImport = (IRealFile[]) obj;
+					if (filesToImport.length == 0)
+                        return;
+                    SalmonSettings.getInstance().setLastImportDir(filesToImport[0].getParent().getAbsolutePath());
+                    SalmonVaultManager.getInstance().importFiles(filesToImport,
                             SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
                             {
                                 SalmonVaultManager.getInstance().refresh();
@@ -299,6 +275,8 @@ public class SalmonDialogs {
     }
 
     public static void promptNewFolder() {
+        if(!SalmonDialogs.driveLoaded())
+            return;
         SalmonDialog.promptEdit("Create Folder",
                 "Folder Name",
                 (folderName, isChecked) ->
@@ -343,5 +321,13 @@ public class SalmonDialogs {
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+    }
+
+    static boolean driveLoaded() {
+        if (SalmonVaultManager.getInstance().getDrive() == null) {
+            SalmonDialog.promptDialog("Error", "No Drive Loaded");
+            return false;
+        }
+        return true;
     }
 }

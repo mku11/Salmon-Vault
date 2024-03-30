@@ -25,13 +25,12 @@ SOFTWARE.
 
 import com.mku.func.BiConsumer;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.utils.SalmonFileUtils;
+import com.mku.utils.FileUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -117,7 +116,7 @@ public class SalmonDialog extends javafx.scene.control.Alert {
             final Button btOk = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
             valueText.requestFocus();
             if (isFileName) {
-                String ext = SalmonFileUtils.getExtensionFromFileName(value);
+                String ext = FileUtils.getExtensionFromFileName(value);
                 if (ext != null && ext.length() > 0)
                     valueText.selectRange(0, value.length() - ext.length() - 1);
                 else

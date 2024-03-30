@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.file.JavaFile;
 import com.mku.func.Consumer;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -89,7 +90,8 @@ public class JavaFxFileDialogService implements IFileDialogService {
         File file = fileChooser.showOpenDialog(stage);
         if (file == null)
             return;
-        onFilePicked.accept(file.getAbsolutePath());
+        JavaFile javaFile = new JavaFile(file.getAbsolutePath());
+        onFilePicked.accept(javaFile);
 
     }
 
@@ -113,8 +115,11 @@ public class JavaFxFileDialogService implements IFileDialogService {
         List<File> files = fileChooser.showOpenMultipleDialog(stage);
         if (files == null)
             return;
-        List<String> filePaths = files.stream().map(File::getAbsolutePath).collect(Collectors.toList());
-        onFilesPicked.accept(filePaths.toArray(new String[0]));
+        List<JavaFile> javaFiles = new ArrayList<>();
+        for (File file : files) {
+            javaFiles.add(new JavaFile(file.getAbsolutePath()));
+        }
+        onFilesPicked.accept(javaFiles.toArray(new JavaFile[0]));
     }
 
     public void pickFolder(String title, String initialDirectory, Consumer<Object> onFolderPicked, int requestCode) {
@@ -131,7 +136,8 @@ public class JavaFxFileDialogService implements IFileDialogService {
         File selectedDirectory = directoryChooser.showDialog(stage);
         if (selectedDirectory == null)
             return;
-        onFolderPicked.accept(selectedDirectory.getAbsolutePath());
+        JavaFile javaFile = new JavaFile(selectedDirectory.getAbsolutePath());
+        onFolderPicked.accept(javaFile);
     }
 
     public void saveFile(String title, String filename, HashMap<String, String> filter, String initialDirectory,
@@ -157,6 +163,7 @@ public class JavaFxFileDialogService implements IFileDialogService {
         File file = fileChooser.showSaveDialog(stage);
         if (file == null)
             return;
-        onFilePicked.accept(new String[]{file.getParentFile().getAbsolutePath(), file.getName()});
+        JavaFile javaFile = new JavaFile(file.getAbsolutePath());
+        onFilePicked.accept(javaFile);
     }
 }

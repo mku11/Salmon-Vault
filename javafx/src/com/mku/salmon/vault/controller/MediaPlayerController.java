@@ -24,11 +24,11 @@ SOFTWARE.
 */
 
 import com.mku.handler.SalmonStreamHandlerFactory;
+import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
-import com.mku.salmonfs.SalmonFile;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -179,7 +180,7 @@ public class MediaPlayerController {
             e.printStackTrace();
             return;
         }
-        filePath = URLEncoder.encode(filePath, "UTF-8");
+        filePath = URLEncoder.encode(filePath, StandardCharsets.UTF_8);
         String uri = "http://localhost/" + filePath;
 
         Media m = new Media(uri);

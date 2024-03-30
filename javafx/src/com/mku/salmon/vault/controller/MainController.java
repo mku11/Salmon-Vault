@@ -23,7 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.file.JavaDrive;
+import com.mku.salmon.SalmonAuthException;
+import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
 import com.mku.salmon.vault.model.SalmonVaultManager;
@@ -31,11 +32,7 @@ import com.mku.salmon.vault.model.win.SalmonWinVaultManager;
 import com.mku.salmon.vault.services.*;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
-import com.mku.salmonfs.SalmonAuthException;
-import com.mku.salmonfs.SalmonDriveManager;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.utils.SalmonFileImporter;
-import com.mku.utils.SalmonFileUtils;
+import com.mku.utils.FileUtils;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -417,7 +414,6 @@ public class MainController {
 
     public void setupSalmonManager() {
         try {
-            SalmonDriveManager.setVirtualDriveClass(JavaDrive.class);
             ServiceLocator.getInstance().register(ISettingsService.class, new JavaFxSettingsService());
             ServiceLocator.getInstance().register(IFileService.class, new JavaFxFileService());
             ServiceLocator.getInstance().register(IFileDialogService.class, new JavaFxFileDialogService(stage));
@@ -501,16 +497,16 @@ public class MainController {
     private boolean OpenListItem(SalmonFile file) {
         SalmonFileViewModel vm = getViewModel(file);
         try {
-            if (SalmonFileUtils.isVideo(file.getBaseName())) {
+            if (FileUtils.isVideo(file.getBaseName())) {
                 startMediaPlayer(vm);
                 return true;
-            } else if (SalmonFileUtils.isAudio(file.getBaseName())) {
+            } else if (FileUtils.isAudio(file.getBaseName())) {
                 startMediaPlayer(vm);
                 return true;
-            } else if (SalmonFileUtils.isImage(file.getBaseName())) {
+            } else if (FileUtils.isImage(file.getBaseName())) {
                 startImageViewer(vm);
                 return true;
-            } else if (SalmonFileUtils.isText(file.getBaseName())) {
+            } else if (FileUtils.isText(file.getBaseName())) {
                 startTextEditor(vm);
                 return true;
             }

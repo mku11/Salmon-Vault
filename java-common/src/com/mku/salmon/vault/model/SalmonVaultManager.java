@@ -24,26 +24,27 @@ SOFTWARE.
 */
 
 import com.mku.file.IRealFile;
+import com.mku.file.IVirtualFile;
 import com.mku.file.JavaFile;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
 import com.mku.func.Function;
-import com.mku.salmon.SalmonRangeExceededException;
+import com.mku.salmon.SalmonAuthException;
+import com.mku.salmon.SalmonDrive;
+import com.mku.salmon.SalmonFile;
 import com.mku.salmon.SalmonSecurityException;
+import com.mku.salmon.drive.JavaDrive;
 import com.mku.salmon.integrity.SalmonIntegrityException;
+import com.mku.salmon.sequence.SalmonFileSequencer;
+import com.mku.salmon.sequence.SalmonSequenceSerializer;
+import com.mku.salmon.utils.SalmonFileCommander;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
-import com.mku.salmonfs.SalmonAuthException;
-import com.mku.salmonfs.SalmonDriveManager;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.sequence.ISalmonSequenceSerializer;
-import com.mku.sequence.SalmonFileSequencer;
-import com.mku.sequence.SalmonSequenceException;
-import com.mku.sequence.SalmonSequenceSerializer;
-import com.mku.utils.SalmonFileCommander;
+import com.mku.sequence.INonceSequenceSerializer;
+import com.mku.sequence.INonceSequencer;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,6 +74,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
     private HashSet<BiConsumer<Object, String>> observers = new HashSet<>();
 
     private boolean promptExitOnBack;
+    private SalmonDrive drive;
+
+    public SalmonDrive getDrive() {
+        return this.drive;
+    }
 
     public String getSequencerDefaultDirPath() {
         return sequencerDefaultDirPath;
@@ -92,6 +98,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public BiConsumer<Integer, SalmonFile> onFileItemAdded;
 
     protected static SalmonVaultManager instance;
+    private INonceSequencer sequencer = null;
 
     synchronized
     public static SalmonVaultManager getInstance() {
@@ -244,13 +251,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void initialize() {
-        setupDrive();
-    }
 
-    private void setupDrive() {
-        if (SalmonSettings.getInstance().getVaultLocation() != null) {
-            setupRootDir();
-        }
     }
 
     public boolean onOpenItem(int selectedItem) {
@@ -293,52 +294,19 @@ public class SalmonVaultManager implements IPropertyNotifier {
         fileCommander = new SalmonFileCommander(bufferSize, bufferSize, threads);
     }
 
-    protected void setupRootDir() {
-        String vaultLocation = SalmonSettings.getInstance().getVaultLocation();
-        try {
-            SalmonDriveManager.openDrive(vaultLocation);
-            currDir = SalmonDriveManager.getDrive().getVirtualRoot();
-            if (SalmonDriveManager.getDrive().getVirtualRoot() == null) {
-                SalmonDialogs.promptSelectRoot();
-                return;
-            }
-        } catch (SalmonAuthException ex) {
-            checkCredentials();
-            return;
-        } catch (Exception e) {
-            e.printStackTrace();
-            SalmonDialogs.promptSelectRoot();
-            return;
-        }
-        refresh();
-    }
-
     public void refresh() {
         if (checkFileSearcher())
             return;
-        if (SalmonDriveManager.getDrive() == null)
+        if (this.drive == null)
             return;
-        try {
-            if (SalmonDriveManager.getDrive().getVirtualRoot() == null || !SalmonDriveManager.getDrive().getVirtualRoot().exists()) {
-                SalmonDialogs.promptSelectRoot();
-                return;
-            }
-            if (!SalmonDriveManager.getDrive().isUnlocked()) {
-                checkCredentials();
-                return;
-            }
-            executor.execute(() ->
-            {
-                if (fileManagerMode != Mode.Search)
-                    salmonFiles = currDir.listFiles();
-                SalmonFile selectedFile = selectedFiles.size() > 1 ? selectedFiles.iterator().next() : null;
-                populateFileList(selectedFile);
-            });
-        } catch (SalmonAuthException e) {
-            checkCredentials();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        executor.execute(() ->
+        {
+            if (fileManagerMode != Mode.Search)
+                salmonFiles = currDir.listFiles();
+            SalmonFile selectedFile = selectedFiles.size() > 1 ? selectedFiles.iterator().next() : null;
+            populateFileList(selectedFile);
+        });
+
     }
 
     private boolean checkFileSearcher() {
@@ -379,8 +347,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public void setupSalmonManager() {
         try {
-            if (SalmonDriveManager.getSequencer() != null)
-                SalmonDriveManager.getSequencer().close();
             // file sequencer for mobile is secure since it runs in sandbox
             setupFileSequencer();
         } catch (Exception e) {
@@ -389,16 +355,15 @@ public class SalmonVaultManager implements IPropertyNotifier {
         }
     }
 
-    private void setupFileSequencer() throws SalmonSequenceException, IOException {
+    private void setupFileSequencer() throws IOException {
         IRealFile dirFile = new JavaFile(getSequencerDefaultDirPath());
         if (!dirFile.exists())
             dirFile.mkdir();
         IRealFile seqFile = new JavaFile(getSequencerFilepath());
-        SalmonFileSequencer sequencer = new SalmonFileSequencer(seqFile, createSerializer());
-        SalmonDriveManager.setSequencer(sequencer);
+        this.sequencer = new SalmonFileSequencer(seqFile, createSerializer());
     }
 
-    protected ISalmonSequenceSerializer createSerializer() {
+    protected INonceSequenceSerializer createSerializer() {
         return new SalmonSequenceSerializer();
     }
 
@@ -419,14 +384,15 @@ public class SalmonVaultManager implements IPropertyNotifier {
         setStatus(msg != null ? msg : "");
     }
 
-    public void openVault(String path) {
-        if (path == null)
+    public void openVault(IRealFile dir, String password) {
+        if (dir == null)
             return;
 
         try {
             closeVault();
-            SalmonDriveManager.openDrive(path);
-            SalmonSettings.getInstance().setVaultLocation(path);
+            this.drive = SalmonDrive.openDrive(dir, JavaDrive.class, password, this.sequencer);
+            this.currDir = this.drive.getRoot();
+            SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
         } catch (Exception e) {
             SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage());
         }
@@ -475,7 +441,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                             setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
                         }, (file, ex) ->
                         {
-                            failedFiles.add(file);
+                            failedFiles.add((SalmonFile) file);
                             exception[0] = ex;
                         });
             } catch (Exception e) {
@@ -530,7 +496,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         }, SalmonFile.autoRename, true, (file, ex) ->
                         {
                             handleThrowException(ex);
-                            failedFiles.add(file);
+                            failedFiles.add((SalmonFile) file);
                             exception[0] = ex;
                         });
             } catch (Exception e) {
@@ -554,8 +520,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
         });
     }
 
-    public void exportSelectedFiles(boolean deleteSource) throws SalmonAuthException {
-        if (SalmonDriveManager.getDrive().getVirtualRoot() == null || !SalmonDriveManager.getDrive().isUnlocked())
+    public void exportSelectedFiles(boolean deleteSource) {
+        if (this.drive == null)
             return;
         exportFiles(selectedFiles.toArray(new SalmonFile[0]), (files) ->
         {
@@ -578,29 +544,14 @@ public class SalmonVaultManager implements IPropertyNotifier {
             currDir = null;
             clearCopiedFiles();
             setPathText("");
-            if (SalmonDriveManager.getDrive() != null)
-                SalmonDriveManager.closeDrive();
+            if (this.drive != null)
+                this.drive.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private void checkCredentials() {
-        if (SalmonDriveManager.getDrive().hasConfig()) {
-            SalmonDialogs.promptPassword(() -> onPasswordSubmitted());
-        }
-    }
-
-    public void onPasswordSubmitted() {
-        try {
-            currDir = SalmonDriveManager.getDrive().getVirtualRoot();
-        } catch (SalmonAuthException e) {
-            e.printStackTrace();
-        }
-        refresh();
-    }
-
-    public boolean openItem(SalmonFile selectedFile) throws SalmonSecurityException, SalmonIntegrityException, IOException, SalmonAuthException {
+    public boolean openItem(SalmonFile selectedFile) {
         int position = fileItemList.indexOf(selectedFile);
         if (position < 0)
             return true;
@@ -640,7 +591,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 salmonFiles = currDir.listFiles();
                 populateFileList(parentDir);
             });
-        } else if(promptExitOnBack){
+        } else if (promptExitOnBack) {
             SalmonDialogs.promptExit();
         }
     }
@@ -664,9 +615,16 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void renameFile(SalmonFile file, String newFilename)
-            throws SalmonSecurityException, SalmonIntegrityException, SalmonSequenceException,
-            IOException, SalmonRangeExceededException, SalmonAuthException {
+            throws IOException {
         fileCommander.renameFile(file, newFilename);
+    }
+
+    protected void setSequencer(INonceSequencer sequencer) {
+        this.sequencer = sequencer;
+    }
+
+    protected INonceSequencer getSequencer() {
+        return this.sequencer;
     }
 
     public enum Mode {
@@ -684,9 +642,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
             int[] processedFiles = new int[]{-1};
             IRealFile[] files = null;
             List<SalmonFile> failedFiles = new ArrayList<>();
+            IRealFile exportDir = this.drive.getExportDir();
             try {
                 files = fileCommander.exportFiles(items,
-                        SalmonDriveManager.getDrive().getExportDir(),
+                        exportDir,
                         deleteSource, true,
                         (taskProgress) ->
                         {
@@ -704,7 +663,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                             setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
                         }, IRealFile.autoRename, (file, ex) ->
                         {
-                            failedFiles.add(file);
+                            failedFiles.add((SalmonFile) file);
                             exception[0] = ex;
                         });
                 if (onFinished != null)
@@ -720,7 +679,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             else if (files != null) {
                 setTaskMessage("Export Complete");
                 SalmonDialog.promptDialog("Export", "Files Exported To: "
-                        + SalmonDriveManager.getDrive().getExportDir().getAbsolutePath());
+                        + drive.getExportDir().getAbsolutePath());
             }
             setFileProgress(1);
             setFilesProgress(1);
@@ -805,18 +764,18 @@ public class SalmonVaultManager implements IPropertyNotifier {
             populateFileList(null);
             setTaskRunning(true);
             setStatus("Searching");
-            salmonFiles = fileCommander.search(currDir, value, any, (SalmonFile salmonFile) ->
+            salmonFiles = (SalmonFile[]) fileCommander.search(currDir, value, any, (IVirtualFile salmonFile) ->
             {
                 int position = 0;
                 for (SalmonFile file : fileItemList) {
-                    if (salmonFile.getTag() != null &&
-                            (file.getTag() == null || (int) salmonFile.getTag() > (int) file.getTag()))
+                    if (((SalmonFile) salmonFile).getTag() != null &&
+                            (file.getTag() == null || (int) ((SalmonFile) salmonFile).getTag() > (int) file.getTag()))
                         break;
                     position++;
                 }
                 try {
-                    fileItemList.add(position, salmonFile);
-                    onFileItemAdded.accept(position, salmonFile);
+                    fileItemList.add(position, (SalmonFile) salmonFile);
+                    onFileItemAdded.accept(position, (SalmonFile) salmonFile);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -829,13 +788,12 @@ public class SalmonVaultManager implements IPropertyNotifier {
         });
     }
 
-    public void createVault(String dirPath, String password)
-            throws SalmonSecurityException, SalmonIntegrityException, SalmonSequenceException,
-            IOException, SalmonAuthException {
-        SalmonDriveManager.createDrive(dirPath, password);
-        SalmonSettings.getInstance().setVaultLocation(dirPath);
-        currDir = SalmonDriveManager.getDrive().getVirtualRoot();
-        refresh();
+    public void createVault(IRealFile dir, String password)
+            throws IOException {
+        this.drive = SalmonDrive.createDrive(dir, JavaDrive.class, password, this.sequencer);
+        this.currDir = this.drive.getRoot();
+        SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
+        this.refresh();
     }
 
     public void clearCopiedFiles() {
@@ -846,7 +804,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public String getFileProperties(SalmonFile item)
-            throws SalmonSecurityException, SalmonIntegrityException, IOException, SalmonAuthException {
+            throws IOException {
         return "Name: " + item.getBaseName() + "\n" +
                 "Path: " + item.getPath() + "\n" +
                 (!item.isDirectory() ? ("Size: " + ByteUtils.getBytes(item.getSize(), 2)

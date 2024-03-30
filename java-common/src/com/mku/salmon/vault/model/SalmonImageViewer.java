@@ -24,9 +24,9 @@ SOFTWARE.
 */
 
 import com.mku.func.BiConsumer;
+import com.mku.salmon.SalmonFile;
+import com.mku.salmon.iostream.SalmonFileInputStream;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.salmonfs.SalmonFileInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;

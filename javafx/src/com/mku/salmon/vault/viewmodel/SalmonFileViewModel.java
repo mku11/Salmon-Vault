@@ -23,13 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmon.SalmonSecurityException;
-import com.mku.salmon.integrity.SalmonIntegrityException;
+import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.utils.ByteUtils;
-import com.mku.salmonfs.SalmonAuthException;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.utils.SalmonFileUtils;
+import com.mku.utils.FileUtils;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -43,8 +40,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class SalmonFileViewModel {
     private static final int BACKGROUND_THREADS = 4;
@@ -141,8 +136,8 @@ public class SalmonFileViewModel {
         }
     }
 
-    private String getExtText() throws SalmonSecurityException, SalmonIntegrityException, IOException, SalmonAuthException {
-        return SalmonFileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
+    private String getExtText() throws IOException {
+        return FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
     }
 
     private String getDateText() {

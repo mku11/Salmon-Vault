@@ -23,15 +23,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.io.MemoryStream;
+import com.mku.iostream.MemoryStream;
+import com.mku.iostream.RandomAccessStream;
+import com.mku.salmon.SalmonFile;
 import com.mku.salmon.SalmonSecurityException;
 import com.mku.salmon.integrity.SalmonIntegrityException;
-import com.mku.salmon.io.SalmonStream;
+import com.mku.salmon.iostream.SalmonStream;
 import com.mku.salmon.vault.dialog.SalmonDialog;
-import com.mku.salmonfs.SalmonFile;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 
 public class SalmonTextEditor
@@ -40,7 +41,7 @@ public class SalmonTextEditor
     public SalmonFile OnSave(SalmonFile file, String text)
     {
         SalmonFile targetFile = null;
-        SalmonStream stream = null;
+        RandomAccessStream stream = null;
         MemoryStream ins = null;
         boolean success = false;
         try
@@ -83,13 +84,7 @@ public class SalmonTextEditor
             }
             if (ins != null)
             {
-                try
-                {
-                    ins.close();
-                }
-                catch (IOException ignored)
-                {
-                }
+                ins.close();
             }
         }
         if (success)
@@ -98,8 +93,7 @@ public class SalmonTextEditor
     }
 
     synchronized
-    public String getTextContent(SalmonFile file) throws SalmonSecurityException,
-            SalmonIntegrityException, IOException {
+    public String getTextContent(SalmonFile file) throws IOException {
         SalmonStream stream = file.getInputStream();
         MemoryStream ms = new MemoryStream();
         stream.copyTo(ms);

@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmonfs.SalmonFile;
+import com.mku.salmon.SalmonFile;
 
 public class JavaFxMediaPlayerService implements IMediaPlayerService {
     public JavaFxMediaPlayerService() {

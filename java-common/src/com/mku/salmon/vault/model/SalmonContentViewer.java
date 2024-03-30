@@ -24,16 +24,13 @@ SOFTWARE.
 */
 
 import com.mku.func.BiConsumer;
-import com.mku.salmon.SalmonSecurityException;
-import com.mku.salmon.integrity.SalmonIntegrityException;
+import com.mku.salmon.SalmonFile;
+import com.mku.salmon.iostream.SalmonFileInputStream;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.services.IWebBrowserService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
-import com.mku.salmonfs.SalmonAuthException;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.salmonfs.SalmonFileInputStream;
-import com.mku.utils.SalmonFileUtils;
+import com.mku.utils.FileUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,7 +53,7 @@ public class SalmonContentViewer implements IPropertyNotifier {
     }
 
     public void setSource(String value) {
-        if (_source != value) {
+        if (_source.equals(value)) {
             _source = value;
             propertyChanged(this, "Source");
         }
@@ -77,7 +74,7 @@ public class SalmonContentViewer implements IPropertyNotifier {
         unobservePropertyChanges();
     }
 
-    void Load(SalmonFile file) throws SalmonSecurityException, SalmonIntegrityException, IOException, SalmonAuthException {
+    void load(SalmonFile file) throws IOException {
         String filePath = null;
         try {
             filePath = file.getRealPath();
@@ -87,7 +84,7 @@ public class SalmonContentViewer implements IPropertyNotifier {
         String filename = file.getBaseName();
         String mimeType = null; //= MimeTypesMap.GetMimeType(filename);
         // webview2 buffering with partial content works only with video and audio
-        boolean buffered = SalmonFileUtils.isVideo(filename) || SalmonFileUtils.isAudio(filename);
+        boolean buffered = FileUtils.isVideo(filename) || FileUtils.isAudio(filename);
         String contentPath = "content.dat";
         webBrowserService.setResponse(URL + contentPath, mimeType, file.getSize(), BUFFER_SIZE, buffered, (pos) ->
         {

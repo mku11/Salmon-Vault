@@ -23,8 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.io.MemoryStream;
-import com.mku.salmon.io.SalmonStream;
+import com.mku.iostream.MemoryStream;
+import com.mku.salmon.SalmonFile;
+import com.mku.salmon.iostream.SalmonStream;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
@@ -32,7 +33,6 @@ import com.mku.salmon.vault.model.SalmonTextEditor;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
-import com.mku.salmonfs.SalmonFile;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

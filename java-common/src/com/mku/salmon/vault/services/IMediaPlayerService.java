@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmonfs.SalmonFile;
+import com.mku.salmon.SalmonFile;
 
 public interface IMediaPlayerService {
     void startMediaPlayer(SalmonFile file);

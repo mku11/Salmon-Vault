@@ -24,17 +24,15 @@ SOFTWARE.
 */
 
 import com.mku.convert.BitConverter;
-import com.mku.io.RandomAccessStream;
-import com.mku.io.InputStreamWrapper;
-import com.mku.io.MemoryStream;
-import com.mku.salmon.io.SalmonStream;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.utils.SalmonFileUtils;
-import javafx.application.Platform;
+import com.mku.iostream.InputStreamWrapper;
+import com.mku.iostream.MemoryStream;
+import com.mku.iostream.RandomAccessStream;
+import com.mku.salmon.SalmonFile;
+import com.mku.salmon.iostream.SalmonStream;
+import com.mku.utils.FileUtils;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -45,7 +43,6 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.concurrent.*;
 
 /**
@@ -60,7 +57,7 @@ public class Thumbnails {
 
     private static final int MAX_CACHE_SIZE = 20 * 1024 * 1024;
     private static final HashMap<SalmonFile, Image> cache = new HashMap<>();
-    private static final int TINT_COLOR_ALPHA = 127;
+    private static int TINT_COLOR_ALPHA = 60;
     private static int cacheSize;
 
     private static final Executor executor = Executors.newFixedThreadPool(2);
@@ -122,7 +119,7 @@ public class Thumbnails {
         }
         ms.flush();
         ins.close();
-        ms.position(0);
+        ms.setPosition(0);
         return ms;
     }
 
@@ -169,7 +166,7 @@ public class Thumbnails {
         Image image = null;
         if (salmonFile.isFile()) {
             try {
-                String ext = SalmonFileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
+                String ext = FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
                 BufferedImage bufferedImage = ImageIO.read(Thumbnails.class.getResourceAsStream(icon));
                 BufferedImage nimage = new BufferedImage(
                         bufferedImage.getWidth(),
@@ -199,7 +196,7 @@ public class Thumbnails {
 
     private static void addText(Graphics g, String text, int width, int height) {
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Comic sans MS", Font.BOLD, 96));
+        g.setFont(new Font("Comic sans MS", Font.PLAIN, 102));
         FontMetrics fontMetrics = g.getFontMetrics();
         int textWidth = fontMetrics.stringWidth(text);
         int textHeight = fontMetrics.getHeight();
@@ -209,7 +206,7 @@ public class Thumbnails {
     private static void generateThumbnail(ThumbnailTask task) {
         Image image = null;
         try {
-            if (task.file.isFile() && SalmonFileUtils.isImage(task.file.getBaseName())) {
+            if (task.file.isFile() && FileUtils.isImage(task.file.getBaseName())) {
                 image = Thumbnails.fromFile(task.file);
             }
             if(image == null)
@@ -237,7 +234,7 @@ public class Thumbnails {
         BufferedInputStream stream = null;
         Image image = null;
         try {
-            String ext = SalmonFileUtils.getExtensionFromFileName(file.getBaseName()).toLowerCase();
+            String ext = FileUtils.getExtensionFromFileName(file.getBaseName()).toLowerCase();
             if (ext.equals("gif") && file.getSize() > TMP_GIF_THUMB_MAX_SIZE)
                 stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(file, TMP_GIF_THUMB_MAX_SIZE)), ENC_BUFFER_SIZE);
             else
@@ -258,7 +255,7 @@ public class Thumbnails {
     }
 
     private static Color getFileColorFromExtension(String extension) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] bytes = extension.getBytes(Charset.defaultCharset());
         byte[] hashValue = md.digest(bytes);
         StringBuilder sb = new StringBuilder();
