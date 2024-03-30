@@ -23,9 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.handler.SalmonStreamHandlerFactory;
 import com.mku.salmon.SalmonFile;
+import com.mku.salmon.service.SalmonStreamHandler;
 import com.mku.salmon.vault.config.SalmonConfig;
+import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
@@ -49,8 +50,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -60,10 +59,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class MediaPlayerController {
-    private static int MEDIA_BUFFERS = 4;
-    private static int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
-    private static int MEDIA_THREADS = 1;
-    private static int MEDIA_BACKOFFSET = 256 * 1024;
 
     @FXML
     public Button playButton;
@@ -75,6 +70,8 @@ public class MediaPlayerController {
     @FXML
     private MediaView mediaView;
     private MediaPlayer mp;
+
+    private String url;
 
     private boolean quit = false;
 
@@ -136,8 +133,7 @@ public class MediaPlayerController {
     public void setStage(Stage stage) {
         this.stage = stage;
         stage.setOnCloseRequest(event -> {
-            stopTimer();
-            mp.stop();
+            this.onClose();
         });
     }
 
@@ -165,30 +161,24 @@ public class MediaPlayerController {
         mp.play();
     }
 
-    static {
-        URL.setURLStreamHandlerFactory(new SalmonStreamHandlerFactory(
-                MEDIA_BUFFERS, MEDIA_BUFFER_SIZE,
-                MEDIA_THREADS, MEDIA_BACKOFFSET));
-    }
-
-    private void load(SalmonFileViewModel fileItem) throws UnsupportedEncodingException {
+    private void load(SalmonFileViewModel fileItem) {
         SalmonFile file = fileItem.getSalmonFile();
         String filePath;
         try {
             filePath = file.getRealPath();
+            this.url = null;
+            this.url = "http://localhost/?path=" + URLEncoder.encode(filePath, StandardCharsets.UTF_8);
+            SalmonStreamHandler.getInstance().register(this.url, file);
+            Media m = new Media(url);
+            mp = new MediaPlayer(m);
+            mp.setOnPaused(() -> setImage(playImage));
+            mp.setOnPlaying(() -> setImage(pauseImage));
+            mediaView.setMediaPlayer(mp);
+            startTimer();
         } catch (Exception e) {
             e.printStackTrace();
-            return;
+            SalmonDialog.promptDialog("Error", "Could not load file: " + e);
         }
-        filePath = URLEncoder.encode(filePath, StandardCharsets.UTF_8);
-        String uri = "http://localhost/" + filePath;
-
-        Media m = new Media(uri);
-        mp = new MediaPlayer(m);
-        mp.setOnPaused(() -> setImage(playImage));
-        mp.setOnPlaying(() -> setImage(pauseImage));
-        mediaView.setMediaPlayer(mp);
-        startTimer();
     }
 
     private void stopTimer() {
@@ -220,7 +210,9 @@ public class MediaPlayerController {
     public void onClose() {
         stopTimer();
         mp.stop();
+        mp.dispose();
         stage.close();
+        SalmonStreamHandler.getInstance().unregister(this.url);
     }
 
     public void togglePlay() {
