@@ -49,10 +49,12 @@ import com.mku.sequence.INonceSequencer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class SalmonVaultManager implements IPropertyNotifier {
     protected static final String SEQUENCER_DIR_NAME = ".salmon";
@@ -760,11 +762,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            salmonFiles = new SalmonFile[]{};
+            IVirtualFile[] salmonFiles = new SalmonFile[]{};
             populateFileList(null);
             setTaskRunning(true);
             setStatus("Searching");
-            salmonFiles = (SalmonFile[]) fileCommander.search(currDir, value, any, (IVirtualFile salmonFile) ->
+            IVirtualFile[] files = fileCommander.search(currDir, value, any, (IVirtualFile salmonFile) ->
             {
                 int position = 0;
                 for (SalmonFile file : fileItemList) {
@@ -780,6 +782,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                     e.printStackTrace();
                 }
             }, null);
+            this.salmonFiles = Arrays.stream(files).map((x) -> (SalmonFile) x).toArray(SalmonFile[]::new);
             if (!fileCommander.isFileSearcherStopped())
                 setStatus("Search Complete");
             else
