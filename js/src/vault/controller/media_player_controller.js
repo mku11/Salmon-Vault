@@ -31,14 +31,10 @@ import { BooleanProperty } from "../../common/binding/boolean_property.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
 import { MemoryStream } from "../../lib/salmon-core/iostream/memory_stream.js";
 import { SalmonFileReadableStream } from "../../lib/salmon-fs/salmon/iostream/salmon_file_readable_stream.js";
+import { SalmonDialog } from "../dialog/salmon_dialog.js";
 
 export class MediaPlayerController {
     static modalURL = "media-player.html";
-    static MIN_FILE_STREAMING = 16 * 1024 * 1024;
-    static MEDIA_BUFFERS = 4;
-    static MEDIA_BUFFER_SIZE = 2 * 1024 * 1024;
-    static MEDIA_THREADS = 1;
-    static MEDIA_BACKOFFSET = 256 * 1024;
 
     filePath;
     handler;
@@ -76,48 +72,48 @@ export class MediaPlayerController {
         let file = fileItem.getSalmonFile();
         try {
             this.filePath = file.getRealPath();
-        } catch (e) {
+			this.url = null;
+			let size = await file.getSize();
+			// if file is relative small just decrypt and load via a blob
+			if (size < MediaPlayerController.MIN_FILE_STREAMING) {
+				let stream = SalmonFileReadableStream.create(file,
+					1, MediaPlayerController.MIN_FILE_STREAMING, 2, 0);
+				let ms = new MemoryStream();
+				let reader = stream.getReader();
+				while (true) {
+					let buffer = await reader.read();
+					if (buffer.value == undefined || buffer.value.length == 0)
+						break;
+					await ms.write(buffer.value, 0, buffer.value.length);
+				}
+				reader.releaseLock();
+				await stream.cancel();
+				let blob = new Blob([ms.toArray().buffer]);
+				await ms.close();
+				this.url = URL.createObjectURL(blob);
+			} else {
+				var link = document.createElement("a");
+				link.href = "?path=" + encodeURIComponent(this.filePath);
+				this.url = link.href;
+				await Handler.getInstance().register(this.url, {
+					fileHandle: file.getRealFile().getPath(),
+					fileClass: file.getRealFile().constructor.name,
+					key: file.getEncryptionKey(),
+					integrity: file.getIntegrity(),
+					hash_key: file.getHashKey(),
+					mimeType: "video/mp4",
+					// we use FileReadableStream so we can cache content
+					// though web worker parallelism is not available for service workers in the browser
+					useFileReadableStream: true
+				});
+			}
+			// set the video player to the content
+			this.player.set(this.url);
+			this.progressVisibility.set(false);
+		} catch (e) {
             console.error(e);
-            return;
+			SalmonDialog.promptDialog("Error", e);
         }
-        this.url = null;
-        let size = await file.getSize();
-        // if file is relative small just decrypt and load via a blob
-        if (size < MediaPlayerController.MIN_FILE_STREAMING) {
-            let stream = SalmonFileReadableStream.create(file,
-                1, MediaPlayerController.MIN_FILE_STREAMING, 2, 0);
-            let ms = new MemoryStream();
-            let reader = stream.getReader();
-            while (true) {
-                let buffer = await reader.read();
-                if (buffer.value == undefined || buffer.value.length == 0)
-                    break;
-                await ms.write(buffer.value, 0, buffer.value.length);
-            }
-            reader.releaseLock();
-            await stream.cancel();
-            let blob = new Blob([ms.toArray().buffer]);
-            await ms.close();
-            this.url = URL.createObjectURL(blob);
-        } else {
-            var link = document.createElement("a");
-            link.href = "?path=" + encodeURIComponent(this.filePath);
-            this.url = link.href;
-            await Handler.getInstance().register(this.url, {
-                fileHandle: file.getRealFile().getPath(),
-                fileClass: file.getRealFile().constructor.name,
-                key: file.getEncryptionKey(),
-                integrity: file.getIntegrity(),
-                hash_key: file.getHashKey(),
-                mimeType: "video/mp4",
-                // we use FileReadableStream so we can cache content
-                // though web worker parallelism is not available for service workers in the browser
-                useFileReadableStream: true
-            });
-        }
-        // set the video player to the content
-        this.player.set(this.url);
-        this.progressVisibility.set(false);
     }
 
     onClose() {
