@@ -45,11 +45,15 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.mku.android.file.AndroidDrive;
 import com.mku.android.file.AndroidFile;
 import com.mku.android.file.AndroidSharedFileObserver;
+import com.mku.android.salmon.drive.AndroidDrive;
 import com.mku.file.IRealFile;
 import com.mku.func.Consumer;
+import com.mku.salmon.SalmonAuthException;
+import com.mku.salmon.SalmonDrive;
+import com.mku.salmon.SalmonFile;
+import com.mku.salmon.utils.SalmonFileComparators;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
@@ -67,13 +71,9 @@ import com.mku.salmon.vault.services.ISettingsService;
 import com.mku.salmon.vault.services.IWebBrowserService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.salmonfs.SalmonAuthException;
-import com.mku.salmonfs.SalmonDrive;
-import com.mku.salmonfs.SalmonDriveManager;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.salmonfs.SalmonFileComparators;
-import com.mku.utils.SalmonFileUtils;
+import com.mku.utils.FileUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -338,7 +338,7 @@ public class SalmonActivity extends AppCompatActivity {
                     .setIcon(android.R.drawable.ic_menu_agenda);
         }
 
-        if (SalmonDriveManager.getDrive() != null) {
+        if (SalmonVaultManager.getInstance().getDrive() != null) {
             menu.add(5, ActionType.IMPORT_AUTH.ordinal(), 0, getResources().getString(R.string.ImportAuthFile))
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
             menu.add(5, ActionType.EXPORT_AUTH.ordinal(), 0, getResources().getString(R.string.ExportAuthFile))
@@ -654,7 +654,7 @@ public class SalmonActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         try {
-            if (SalmonDriveManager.getDrive().getVirtualRoot() == null || !SalmonDriveManager.getDrive().isUnlocked())
+            if (SalmonVaultManager.getInstance().getDrive().getRoot() == null)
                 return;
         } catch (SalmonAuthException e) {
             SalmonDialog.promptDialog("Could not reimport shared file: " + e.getMessage());
@@ -722,42 +722,54 @@ public class SalmonActivity extends AppCompatActivity {
             ActivityCommon.setUriPermissions(data, uri);
             IRealFile file = ServiceLocator.getInstance().resolve(IFileService.class).getFile(uri.toString(), true);
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
-            callback.accept(file.getPath());
+            callback.accept(file);
         } else if (requestCode == SalmonVaultManager.REQUEST_CREATE_VAULT_DIR) {
             ActivityCommon.setUriPermissions(data, uri);
             IRealFile file = ServiceLocator.getInstance().resolve(IFileService.class).getFile(uri.toString(), true);
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
-            callback.accept(file.getPath());
+            callback.accept(file);
         } else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES) {
             String[] filesToImport = ActivityCommon.getFilesFromIntent(this, data);
+            IRealFile[] files = new AndroidFile[filesToImport.length];
+            for(int i=0; i<files.length; i++){
+                files[i] = ServiceLocator.getInstance().resolve(IFileService.class).getFile(uri.toString(), false);
+            }
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
-            callback.accept(filesToImport);
+            callback.accept(files);
         } else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE) {
             String[] files = ActivityCommon.getFilesFromIntent(this, data);
-            String file = files != null ? files[0] : null;
-            if (file == null)
+            String importFile = files != null ? files[0] : null;
+            if (importFile == null)
                 return;
+            IRealFile file = ServiceLocator.getInstance().resolve(IFileService.class).getFile(importFile, false);
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
             callback.accept(file);
         } else if (requestCode == SalmonVaultManager.REQUEST_EXPORT_AUTH_FILE) {
             String[] dirs = ActivityCommon.getFilesFromIntent(this, data);
-            String dir = dirs != null ? dirs[0] : null;
-            if (dir == null)
+            String exportAuthDir = dirs != null ? dirs[0] : null;
+            if (exportAuthDir == null)
                 return;
+            IRealFile dir = ServiceLocator.getInstance().resolve(IFileService.class).getFile(exportAuthDir, true);
+            IRealFile exportAuthFile = null;
+            try {
+                exportAuthFile = dir.createFile(SalmonDrive.getAuthConfigFilename());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
-            callback.accept(new String[]{dir, SalmonDrive.getAuthConfigFilename()});
+            callback.accept(exportAuthFile);
         }
     }
 
     public boolean openListItem(SalmonFile file) {
         try {
-            if (SalmonFileUtils.isVideo(file.getBaseName()) || SalmonFileUtils.isAudio(file.getBaseName())) {
+            if (FileUtils.isVideo(file.getBaseName()) || FileUtils.isAudio(file.getBaseName())) {
                 StartMediaPlayer(fileItemList.indexOf(file));
                 return true;
-            } else if (SalmonFileUtils.isImage(file.getBaseName())) {
+            } else if (FileUtils.isImage(file.getBaseName())) {
                 StartWebViewer(fileItemList.indexOf(file));
                 return true;
-            } else if (SalmonFileUtils.isText(file.getBaseName())) {
+            } else if (FileUtils.isText(file.getBaseName())) {
                 StartWebViewer(fileItemList.indexOf(file));
                 return true;
             }
@@ -770,21 +782,21 @@ public class SalmonActivity extends AppCompatActivity {
 
     private void Logout() {
         try {
-            SalmonDriveManager.getDrive().lock();
+            SalmonVaultManager.getInstance().getDrive().close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     public void StartMediaPlayer(int position) {
-        List<SalmonFile> salmonFiles = new ArrayList<SalmonFile>();
+        List<SalmonFile> salmonFiles = new ArrayList<>();
         int pos = 0;
         int i = 0;
         for (SalmonFile file : fileItemList) {
             String filename;
             try {
                 filename = file.getBaseName();
-                if (SalmonFileUtils.isVideo(filename) || SalmonFileUtils.isAudio(filename)) {
+                if (FileUtils.isVideo(filename) || FileUtils.isAudio(filename)) {
                     salmonFiles.add(file);
                 }
                 if (i == position)
@@ -829,8 +841,8 @@ public class SalmonActivity extends AppCompatActivity {
                 try {
                     String listFilename = listFile.getBaseName();
                     if (i != position &&
-                            ((SalmonFileUtils.isImage(filename) && SalmonFileUtils.isImage(listFilename))
-                            || (SalmonFileUtils.isText(filename) && SalmonFileUtils.isText(listFilename)))) {
+                            ((FileUtils.isImage(filename) && FileUtils.isImage(listFilename))
+                            || (FileUtils.isText(filename) && FileUtils.isText(listFilename)))) {
                         salmonFiles.add(listFile);
                     }
                     if (i == position) {
@@ -879,7 +891,6 @@ public class SalmonActivity extends AppCompatActivity {
 
     protected SalmonVaultManager createVaultManager() {
         AndroidDrive.initialize(this.getApplicationContext());
-        SalmonDriveManager.setVirtualDriveClass(AndroidDrive.class);
         return SalmonAndroidVaultManager.getInstance();
     }
 }

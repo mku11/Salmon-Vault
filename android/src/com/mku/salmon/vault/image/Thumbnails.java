@@ -30,13 +30,13 @@ import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.provider.MediaStore;
 
-import com.mku.io.InputStreamWrapper;
-import com.mku.io.MemoryStream;
-import com.mku.io.RandomAccessStream;
-import com.mku.salmon.io.SalmonStream;
+import com.mku.iostream.InputStreamWrapper;
+import com.mku.iostream.MemoryStream;
+import com.mku.iostream.RandomAccessStream;
+import com.mku.salmon.SalmonFile;
+import com.mku.salmon.iostream.SalmonStream;
 import com.mku.salmon.vault.main.SalmonApplication;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.utils.SalmonFileUtils;
+import com.mku.utils.FileUtils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -111,7 +111,7 @@ public class Thumbnails {
         if (!tmpDir.exists())
             tmpDir.mkdir();
 
-        java.io.File tmpFile = new java.io.File(tmpDir, System.currentTimeMillis() + "." + SalmonFileUtils.getExtensionFromFileName(salmonFile.getBaseName()));
+        java.io.File tmpFile = new java.io.File(tmpDir, System.currentTimeMillis() + "." + FileUtils.getExtensionFromFileName(salmonFile.getBaseName()));
         if (tmpFile.exists())
             tmpFile.delete();
         tmpFile.createNewFile();
@@ -151,7 +151,7 @@ public class Thumbnails {
         }
         ms.flush();
         ins.close();
-        ms.position(0);
+        ms.setPosition(0);
         return ms;
     }
 
@@ -166,7 +166,7 @@ public class Thumbnails {
         BufferedInputStream stream = null;
         Bitmap bitmap = null;
         try {
-            String ext = SalmonFileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
+            String ext = FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
             if (ext.equals("gif") && salmonFile.getSize() > TMP_GIF_THUMB_MAX_SIZE)
                 stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(salmonFile, TMP_GIF_THUMB_MAX_SIZE)), BUFFER_SIZE);
             else

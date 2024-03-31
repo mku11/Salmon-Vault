@@ -17,14 +17,13 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.mku.android.file.AndroidSharedFileObserver;
 import com.mku.func.Consumer;
+import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.utils.SalmonFileUtils;
 
 import com.mku.func.BiConsumer;
+import com.mku.utils.FileUtils;
 
-import java.util.LinkedHashMap;
 import java.util.TreeMap;
 
 /*
@@ -94,7 +93,7 @@ public class SalmonDialog {
                     text.setInputType(InputType.TYPE_CLASS_TEXT);
                 }
                 if (isFileName) {
-                    String ext = SalmonFileUtils.getExtensionFromFileName(value);
+                    String ext = FileUtils.getExtensionFromFileName(value);
                     if (ext != null && ext.length() > 0)
                         text.setSelection(0, value.length() - ext.length() - 1);
                     else

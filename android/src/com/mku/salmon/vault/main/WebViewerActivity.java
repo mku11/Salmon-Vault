@@ -41,13 +41,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.mku.iostream.InputStreamWrapper;
+import com.mku.salmon.SalmonFile;
+import com.mku.salmon.iostream.SalmonStream;
 import com.mku.salmon.vault.android.R;
-import com.mku.io.InputStreamWrapper;
 import com.mku.salmon.integrity.SalmonIntegrityException;
-import com.mku.salmon.io.SalmonStream;
 import com.mku.salmon.vault.dialog.SalmonDialog;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.utils.SalmonFileUtils;
+import com.mku.utils.FileUtils;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -92,7 +92,7 @@ public class WebViewerActivity extends AppCompatActivity {
 
     protected void loadContent(SalmonFile file) throws Exception {
         String filename = file.getBaseName();
-        String ext = SalmonFileUtils.getExtensionFromFileName(filename).toLowerCase();
+        String ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
         String mimeType = null;
         try {
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
@@ -194,7 +194,7 @@ public class WebViewerActivity extends AppCompatActivity {
 
     private void setupActionBar() {
         try {
-            if (fileList.length > 0 && !SalmonFileUtils.isText(fileList[0].getBaseName())) {
+            if (fileList.length > 0 && !FileUtils.isText(fileList[0].getBaseName())) {
                 if (getSupportActionBar() != null)
                     getSupportActionBar().hide();
             }

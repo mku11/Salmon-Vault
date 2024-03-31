@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.android.salmon.drive.AndroidDrive;
 import com.mku.file.IRealFile;
 import com.mku.file.IVirtualFile;
 import com.mku.file.JavaFile;
@@ -392,7 +393,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
         try {
             closeVault();
-            this.drive = SalmonDrive.openDrive(dir, JavaDrive.class, password, this.sequencer);
+            this.drive = SalmonDrive.openDrive(dir, AndroidDrive.class, password, this.sequencer);
             this.currDir = this.drive.getRoot();
             SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
         } catch (Exception e) {
@@ -782,7 +783,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
                     e.printStackTrace();
                 }
             }, null);
-            this.salmonFiles = Arrays.stream(files).map((x) -> (SalmonFile) x).toArray(SalmonFile[]::new);
+            this.salmonFiles = new SalmonFile[files.length];
+            for(int i=0; i<files.length; i++)
+                this.salmonFiles[i] = (SalmonFile) files[i];
             if (!fileCommander.isFileSearcherStopped())
                 setStatus("Search Complete");
             else

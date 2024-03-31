@@ -25,7 +25,7 @@ SOFTWARE.
 
 import com.mku.android.sequence.AndroidSequenceSerializer;
 import com.mku.salmon.vault.model.SalmonVaultManager;
-import com.mku.sequence.ISalmonSequenceSerializer;
+import com.mku.sequence.INonceSequenceSerializer;
 
 public class SalmonAndroidVaultManager extends SalmonVaultManager {
     synchronized
@@ -36,7 +36,7 @@ public class SalmonAndroidVaultManager extends SalmonVaultManager {
         return (SalmonAndroidVaultManager) instance;
     }
 
-    protected ISalmonSequenceSerializer createSerializer() {
+    protected INonceSequenceSerializer createSerializer() {
         return new AndroidSequenceSerializer();
     }
 }

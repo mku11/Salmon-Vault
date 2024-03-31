@@ -41,13 +41,13 @@ import androidx.arch.core.util.Function;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mku.func.BiConsumer;
+import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.android.R;
 import com.mku.convert.BitConverter;
 import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.utils.SalmonFileUtils;
+import com.mku.utils.FileUtils;
 
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -207,7 +207,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                 updateFileInfo(viewHolder, filename, finalItems, viewHolder.salmonFile, finalSize, finalDate);
             });
 
-            String ext = SalmonFileUtils.getExtensionFromFileName(filename).toLowerCase();
+            String ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
             if (bitmapCache.containsKey(file)) {
                 activity.runOnUiThread(() -> {
                     updateIconFromCache(viewHolder, file, ext);
@@ -317,7 +317,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
     private Bitmap getFileThumbnail(SalmonFile salmonFile) throws Exception {
         Bitmap bitmap = null;
-        String ext = SalmonFileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
+        String ext = FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
         if (ext.equals("mp4")) {
             bitmap = Thumbnails.getVideoThumbnail(salmonFile, VIDEO_THUMBNAIL_MSECS);
         } else if (ext.equals("png") || ext.equals("jpg") || ext.equals("bmp") || ext.equals("webp") || ext.equals("gif")) {

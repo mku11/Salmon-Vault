@@ -40,10 +40,10 @@ import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.mku.android.salmonfs.media.SalmonMediaDataSource;
+import com.mku.android.salmon.media.SalmonMediaDataSource;
+import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.salmonfs.SalmonFile;
 
 import java.io.IOException;
 import java.util.Timer;

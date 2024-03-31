@@ -33,15 +33,15 @@ import android.widget.Toast;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.FileProvider;
 
-import com.mku.android.file.AndroidDrive;
 import com.mku.android.file.AndroidSharedFileObserver;
-import com.mku.salmon.vault.android.R;
+import com.mku.android.salmon.drive.AndroidDrive;
 import com.mku.func.BiConsumer;
+import com.mku.salmon.SalmonFile;
+import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
-import com.mku.salmonfs.SalmonDriveManager;
-import com.mku.salmonfs.SalmonFile;
-import com.mku.utils.SalmonFileUtils;
+import com.mku.salmon.vault.model.SalmonVaultManager;
+import com.mku.utils.FileUtils;
 
 import java.util.List;
 import java.util.TreeMap;
@@ -49,10 +49,10 @@ import java.util.TreeMap;
 public class ExternalAppChooser {
     public static void chooseApp(Activity activity, SalmonFile salmonFile, int action,
                                  BiConsumer<Uri, AndroidSharedFileObserver> ReimportSharedFile) throws Exception {
-        java.io.File sharedFile = ((AndroidDrive) SalmonDriveManager.getDrive()).
+        java.io.File sharedFile = ((AndroidDrive) SalmonVaultManager.getInstance().getDrive()).
                 copyToSharedFolder(salmonFile);
         sharedFile.deleteOnExit();
-        String ext = SalmonFileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
+        String ext = FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
         android.net.Uri uri = FileProvider.getUriForFile(activity, SalmonConfig.FILE_PROVIDER, sharedFile);
         ShareCompat.IntentBuilder builder = ShareCompat.IntentBuilder.from(activity).setType(mimeType);

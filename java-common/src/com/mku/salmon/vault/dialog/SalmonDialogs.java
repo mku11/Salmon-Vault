@@ -44,8 +44,8 @@ import java.util.List;
 public class SalmonDialogs {
     public static void promptPassword(Consumer<String> onSubmit) {
         SalmonDialog.promptEdit("Vault", "Password", (password, option) -> {
-        if (onSubmit != null)
-            onSubmit.accept(password);
+            if (onSubmit != null)
+                onSubmit.accept(password);
         }, "", false, false, true, null);
     }
 
@@ -67,7 +67,7 @@ public class SalmonDialogs {
     }
 
     public static void promptChangePassword() {
-        if(!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.driveLoaded())
             return;
         SalmonDialogs.promptSetPassword((pass) ->
         {
@@ -81,7 +81,7 @@ public class SalmonDialogs {
     }
 
     public static void promptImportAuth() {
-        if(!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.driveLoaded())
             return;
         String filename = SalmonDrive.getDefaultAuthConfigFilename();
         String ext = FileUtils.getExtensionFromFileName(filename);
@@ -101,7 +101,7 @@ public class SalmonDialogs {
     }
 
     public static void promptExportAuth() {
-        if(!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.driveLoaded())
             return;
         SalmonDialog.promptEdit("Export Auth File",
                 "Enter the Auth ID for the device you want to authorize",
@@ -126,7 +126,7 @@ public class SalmonDialogs {
     }
 
     public static void promptRevokeAuth() {
-        if(!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.driveLoaded())
             return;
         SalmonDialog.promptDialog("Revoke Auth",
                 "Revoke Auth for this drive? You will still be able to decrypt and view your files but you won't be able to import any more files in this drive.",
@@ -145,7 +145,7 @@ public class SalmonDialogs {
     }
 
     public static void onDisplayAuthID() {
-        if(!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.driveLoaded())
             return;
         try {
             String driveID = SalmonVaultManager.getInstance().getDrive().getAuthId();
@@ -182,7 +182,7 @@ public class SalmonDialogs {
     }
 
     public static void promptDelete() {
-        if(!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.driveLoaded())
             return;
         SalmonDialog.promptDialog(
                 "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size() + " item(s)?",
@@ -207,7 +207,7 @@ public class SalmonDialogs {
     }
 
     public static void promptSearch() {
-        if(!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.driveLoaded())
             return;
         SalmonDialog.promptEdit("Search", "Keywords",
                 (value, isChecked) ->
@@ -249,23 +249,26 @@ public class SalmonDialogs {
         ServiceLocator.getInstance().resolve(IFileDialogService.class).pickFolder("Select the vault",
                 SalmonSettings.getInstance().getVaultLocation(),
                 (dir) -> {
-                SalmonDialogs.promptPassword((String password) -> {
+                    SalmonDialogs.promptPassword((String password) -> {
                         SalmonVaultManager.getInstance().openVault((IRealFile) dir, password);
-                });
-            },
-        SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
+                    });
+                },
+                SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
     }
 
     public static void promptImportFiles() {
-        if(!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.driveLoaded())
             return;
         ServiceLocator.getInstance().resolve(IFileDialogService.class).openFiles("Select files to import",
                 null, SalmonSettings.getInstance().getLastImportDir(), (obj) ->
                 {
                     IRealFile[] filesToImport = (IRealFile[]) obj;
-					if (filesToImport.length == 0)
+                    if (filesToImport.length == 0)
                         return;
-                    SalmonSettings.getInstance().setLastImportDir(filesToImport[0].getParent().getAbsolutePath());
+
+                    IRealFile parent = filesToImport[0].getParent();
+                    if(parent != null && parent.getAbsolutePath() != null)
+                        SalmonSettings.getInstance().setLastImportDir(parent.getAbsolutePath());
                     SalmonVaultManager.getInstance().importFiles(filesToImport,
                             SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
                             {
@@ -275,7 +278,7 @@ public class SalmonDialogs {
     }
 
     public static void promptNewFolder() {
-        if(!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.driveLoaded())
             return;
         SalmonDialog.promptEdit("Create Folder",
                 "Folder Name",

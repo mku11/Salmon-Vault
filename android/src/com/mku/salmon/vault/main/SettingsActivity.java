@@ -27,11 +27,8 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.view.WindowManager;
 
-import com.mku.salmon.io.SalmonStream;
-import com.mku.salmon.password.SalmonPassword;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.model.SalmonSettings;
-import com.mku.salmon.vault.utils.WindowUtils;
 
 public class SettingsActivity extends PreferenceActivity {
     public void onCreate(Bundle SavedInstanceState) {
@@ -71,8 +68,8 @@ public class SettingsActivity extends PreferenceActivity {
             preference.setSummary((String) o);
             return true;
         });
-		
-		getPreferenceManager().findPreference("deleteAfterImport").setOnPreferenceChangeListener((preference, o) -> {
+
+        getPreferenceManager().findPreference("deleteAfterImport").setOnPreferenceChangeListener((preference, o) -> {
             SalmonSettings.getInstance().setDeleteAfterImport((boolean) o);
             return true;
         });
