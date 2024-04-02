@@ -262,7 +262,7 @@ public class SalmonDialog : System.Windows.Window
             valueText.Focus();
             if (isFileName)
             {
-                string ext = SalmonFileUtils.GetExtensionFromFileName(value);
+                string ext = FileUtils.GetExtensionFromFileName(value);
                 if (ext != null && ext.Length > 0 && !isPassword)
                 {
                     (valueText as TextBox).Select(0, value.Length - ext.Length - 1);

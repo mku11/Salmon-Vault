@@ -21,12 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-using Mku.File;
-using Mku.SalmonFS;
-using Salmon.Vault.Model.Win;
+
 using Salmon.Vault.Services;
 using Salmon.Vault.View;
-using System;
 using System.Windows;
 
 namespace Salmon.Vault.WPF;
@@ -42,7 +39,6 @@ public partial class App : Application
 
     private void SetupServices()
     {
-        SalmonDriveManager.VirtualDriveClass = typeof(DotNetDrive);
         ServiceLocator.GetInstance().Register(typeof(ISettingsService), new WPFSettingsService());
         ServiceLocator.GetInstance().Register(typeof(IFileService), new WPFFileService());
         ServiceLocator.GetInstance().Register(typeof(IWebBrowserService), new WPFBrowserService());

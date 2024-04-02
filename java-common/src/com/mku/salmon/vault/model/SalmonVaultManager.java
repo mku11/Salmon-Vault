@@ -393,7 +393,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
         try {
             closeVault();
-            this.drive = SalmonDrive.openDrive(dir, AndroidDrive.class, password, this.sequencer);
+            this.drive = SalmonDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
             this.currDir = this.drive.getRoot();
             SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
         } catch (Exception e) {
@@ -401,6 +401,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
         }
         refresh();
     }
+	
+	protected Class<?> getDriveClassType() {
+		return JavaDrive.class;
+	}
 
     public void deleteSelectedFiles() {
         deleteFiles(selectedFiles.toArray(new SalmonFile[0]));

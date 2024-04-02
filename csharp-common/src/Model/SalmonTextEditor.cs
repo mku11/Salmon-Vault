@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.Salmon.IO;
-using Mku.SalmonFS;
+using Mku.Salmon.Streams;
+using Mku.Salmon;
 using Salmon.Vault.Dialog;
 using System;
 using System.IO;

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.Salmon.IO;
+using Mku.Salmon.Streams;
 using Mku.Salmon.Password;
 using Salmon.Vault.Model;
 using Salmon.Vault.Services;
@@ -59,7 +59,7 @@ public class SalmonSettings
         {
             this._aesType = value;
             SettingsService.AesType = value.ToString();
-            SalmonStream.AesProviderType = (SalmonStream.ProviderType)Enum.Parse(typeof(SalmonStream.ProviderType), AesType.ToString());
+            SalmonStream.AesProviderType = (ProviderType)Enum.Parse(typeof(ProviderType), AesType.ToString());
         }
     }
     public static readonly AESType DEFAULT_AES_TYPE = AESType.Default;
@@ -80,7 +80,7 @@ public class SalmonSettings
         {
             this._pbkdfImpl = value;
             SettingsService.PbkdfImplType = value.ToString();
-            SalmonPassword.PbkdfImplType = (SalmonPassword.PbkdfType)Enum.Parse(typeof(SalmonPassword.PbkdfType), PbkdfImpl.ToString());
+            SalmonPassword.PbkdfImplType = (PbkdfType)Enum.Parse(typeof(PbkdfType), PbkdfImpl.ToString());
         }
     }
     public static readonly PbkdfImplType DEFAULT_IMPL_TYPE = PbkdfImplType.Default;
@@ -101,7 +101,7 @@ public class SalmonSettings
         {
             this._pbkdfAlgo = value;
             SettingsService.PbkdfAlgoType = value.ToString();
-            SalmonPassword.PbkdfAlgorithm = (SalmonPassword.PbkdfAlgo)Enum.Parse(typeof(SalmonPassword.PbkdfAlgo), PbkdfAlgo.ToString());
+            SalmonPassword.PbkdfAlgorithm = (PbkdfAlgo)Enum.Parse(typeof(PbkdfAlgo), PbkdfAlgo.ToString());
         }
     }
     public static readonly PbkdfAlgoType DEFAULT_PBKDF_ALGO = PbkdfAlgoType.SHA256;
@@ -160,11 +160,11 @@ public class SalmonSettings
     {
         _vaultLocation = SettingsService.VaultLocation;
         _aesType = (AESType)Enum.Parse(typeof(AESType), SettingsService.AesType);
-        SalmonStream.AesProviderType = (SalmonStream.ProviderType)Enum.Parse(typeof(SalmonStream.ProviderType), AesType.ToString());
+        SalmonStream.AesProviderType = (ProviderType)Enum.Parse(typeof(ProviderType), AesType.ToString());
         _pbkdfImpl = (PbkdfImplType)Enum.Parse(typeof(PbkdfImplType), SettingsService.PbkdfImplType);
-        SalmonPassword.PbkdfImplType = (SalmonPassword.PbkdfType)Enum.Parse(typeof(SalmonPassword.PbkdfType), PbkdfImpl.ToString());
+        SalmonPassword.PbkdfImplType = (PbkdfType)Enum.Parse(typeof(PbkdfType), PbkdfImpl.ToString());
         _pbkdfAlgo = (PbkdfAlgoType)Enum.Parse(typeof(PbkdfAlgoType), SettingsService.PbkdfAlgoType);
-        SalmonPassword.PbkdfAlgorithm = (SalmonPassword.PbkdfAlgo)Enum.Parse(typeof(SalmonPassword.PbkdfAlgo), PbkdfAlgo.ToString());
+        SalmonPassword.PbkdfAlgorithm = (PbkdfAlgo)Enum.Parse(typeof(PbkdfAlgo), PbkdfAlgo.ToString());
         _sequencerAuthType = (AuthType)Enum.Parse(typeof(AuthType), SettingsService.SequenceAuthType);
         DeleteAfterImport = SettingsService.DeleteAfterImport;
         LastImportDir = SettingsService.LastImportDir;

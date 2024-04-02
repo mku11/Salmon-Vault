@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-using Mku.SalmonFS;
+
 using Mku.Utils;
 using Salmon.Vault.Utils;
 using System;
@@ -35,6 +35,7 @@ using Salmon.Vault.Config;
 using System.Windows.Input;
 using System.Runtime.CompilerServices;
 using Salmon.Vault.Model.Win;
+using Mku.Salmon;
 
 namespace Salmon.Vault.ViewModel;
 
@@ -400,7 +401,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         try
         {
-            if (SalmonFileUtils.IsVideo(file.BaseName) || SalmonFileUtils.IsAudio(file.BaseName))
+            if (FileUtils.IsVideo(file.BaseName) || FileUtils.IsAudio(file.BaseName))
             {
                 if (!SalmonConfig.USE_CONTENT_VIEWER && MediaPlayerViewModel.HasFFMPEG())
                     StartMediaPlayer(vm);
@@ -408,7 +409,7 @@ public class MainViewModel : INotifyPropertyChanged
                     StartContentViewer(vm);
                 return true;
             }
-            else if (SalmonFileUtils.IsImage(file.BaseName))
+            else if (FileUtils.IsImage(file.BaseName))
             {
                 if (!SalmonConfig.USE_CONTENT_VIEWER)
                     StartImageViewer(vm);
@@ -416,12 +417,12 @@ public class MainViewModel : INotifyPropertyChanged
                     StartContentViewer(vm);
                 return true;
             }
-            else if (SalmonFileUtils.IsPdf(file.BaseName))
+            else if (FileUtils.IsPdf(file.BaseName))
             {
                 StartContentViewer(vm);
                 return true;
             }
-            else if (SalmonFileUtils.IsText(file.BaseName))
+            else if (FileUtils.IsText(file.BaseName))
             {
                 StartTextEditor(vm);
                 return true;

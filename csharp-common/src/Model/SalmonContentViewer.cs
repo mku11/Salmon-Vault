@@ -23,7 +23,8 @@ SOFTWARE.
 */
 
 using HeyRed.Mime;
-using Mku.SalmonFS;
+using Mku.Salmon;
+using Mku.Salmon.Streams;
 using Mku.Utils;
 using Salmon.Vault.Services;
 using System;
@@ -84,7 +85,7 @@ public class SalmonContentViewer : INotifyPropertyChanged
         string filename = file.BaseName;
         string mimeType = MimeTypesMap.GetMimeType(filename);
         // webview2 buffering with partial content works only with video and audio
-        bool buffered = SalmonFileUtils.IsVideo(filename) || SalmonFileUtils.IsAudio(filename);
+        bool buffered = FileUtils.IsVideo(filename) || FileUtils.IsAudio(filename);
         string contentPath = "content.dat";
         webBrowserService.SetResponse(URL + contentPath, mimeType, file.Size, BUFFER_SIZE, buffered, (pos) =>
         {

@@ -23,9 +23,11 @@ SOFTWARE.
 */
 
 using Mku.File;
-using Mku.SalmonFS;
+using Mku.Salmon;
+using Mku.Salmon.Drive;
+using Mku.Salmon.Sequence;
+using Mku.Salmon.Utils;
 using Mku.Sequence;
-using Mku.Utils;
 using Salmon.Vault.Config;
 using Salmon.Vault.Dialog;
 using Salmon.Vault.Settings;
@@ -62,6 +64,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
     protected string SequencerFilepath => SequencerDefaultDirPath + System.IO.Path.DirectorySeparatorChar
         + SalmonConfig.FILE_SEQ_FILENAME;
 
+    public SalmonDrive Drive { get; private set; }
+
     public delegate bool OpenListViewItem(SalmonFile item);
     public OpenListViewItem OpenListItem;
 
@@ -85,6 +89,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         }
     }
 
+    public INonceSequencer Sequencer { get; protected set; }
 
     public static int GetBufferSize()
     {
@@ -237,15 +242,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void Initialize()
     {
-        SetupDrive();
-    }
 
-    private void SetupDrive()
-    {
-        if (SalmonSettings.GetInstance().VaultLocation != null)
-        {
-            SetupRootDir();
-        }
     }
 
     public bool OnOpenItem(int selectedItem)
@@ -297,67 +294,18 @@ public class SalmonVaultManager : INotifyPropertyChanged
         fileCommander = new SalmonFileCommander(bufferSize, bufferSize, threads);
     }
 
-    protected void SetupRootDir()
-    {
-        string vaultLocation = SalmonSettings.GetInstance().VaultLocation;
-        try
-        {
-            SalmonDriveManager.OpenDrive(vaultLocation);
-            CurrDir = SalmonDriveManager.Drive.VirtualRoot;
-            if (SalmonDriveManager.Drive.VirtualRoot == null)
-            {
-                SalmonDialogs.PromptSelectRoot();
-                return;
-            }
-        }
-        catch (SalmonAuthException)
-        {
-            CheckCredentials();
-            return;
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-            SalmonDialogs.PromptSelectRoot();
-            return;
-        }
-        Refresh();
-    }
-
     public void Refresh()
     {
         if (CheckFileSearcher())
             return;
-        if (SalmonDriveManager.Drive == null)
+        if (Drive == null)
             return;
-        try
+        Task.Run(() =>
         {
-            if (SalmonDriveManager.Drive.VirtualRoot == null || !SalmonDriveManager.Drive.VirtualRoot.Exists)
-            {
-                SalmonDialogs.PromptSelectRoot();
-                return;
-            }
-            if (!SalmonDriveManager.Drive.IsUnlocked)
-            {
-                CheckCredentials();
-                return;
-            }
-            Task.Run(() =>
-            {
-                if (FileManagerMode != Mode.Search)
-                    salmonFiles = CurrDir.ListFiles();
-                PopulateFileList(SelectedFiles.FirstOrDefault((SalmonFile)null));
-            });
-        }
-        catch (SalmonAuthException e)
-        {
-            Console.Error.WriteLine(e);
-            CheckCredentials();
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-        }
+            if (FileManagerMode != Mode.Search)
+                salmonFiles = CurrDir.ListFiles();
+            PopulateFileList(SelectedFiles.FirstOrDefault((SalmonFile)null));
+        });
     }
 
     private bool CheckFileSearcher()
@@ -410,8 +358,6 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         try
         {
-            if (SalmonDriveManager.Sequencer != null)
-                SalmonDriveManager.Sequencer.Close();
             // file sequencer for mobile is secure since it runs in sandbox
             SetupFileSequencer();
         }
@@ -429,7 +375,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             dirFile.Mkdir();
         IRealFile seqFile = new DotNetFile(SequencerFilepath);
         SalmonFileSequencer sequencer = new SalmonFileSequencer(seqFile, new SalmonSequenceSerializer());
-        SalmonDriveManager.Sequencer = sequencer;
+        this.Sequencer = sequencer;
     }
 
     public void PasteSelected()
@@ -448,22 +394,28 @@ public class SalmonVaultManager : INotifyPropertyChanged
         Status = msg ?? "";
     }
 
-    public void OpenVault(string path)
+    public void OpenVault(IRealFile dir, string password)
     {
-        if (path == null)
+        if (dir == null)
             return;
 
         try
         {
             CloseVault();
-            SalmonDriveManager.OpenDrive(path);
-            SalmonSettings.GetInstance().VaultLocation = path;
+            this.Drive = SalmonDrive.OpenDrive(dir, GetDriveClassType(), password, this.Sequencer);
+            this.CurrDir = this.Drive.Root;
+            SalmonSettings.GetInstance().VaultLocation = dir.AbsolutePath;
         }
         catch (Exception e)
         {
             SalmonDialog.PromptDialog("Error", "Could not open vault: " + e.Message);
         }
         Refresh();
+    }
+
+    protected Type GetDriveClassType()
+    {
+        return typeof(DotNetDrive);
     }
 
     public void DeleteSelectedFiles()
@@ -516,7 +468,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
                         FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
                     }, (file, ex) =>
                     {
-                        failedFiles.Add(file);
+                        failedFiles.Add((SalmonFile)file);
                         exception = ex;
                     });
             }
@@ -579,7 +531,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
                     }, SalmonFile.AutoRename, true, (file, ex) =>
                     {
                         HandleThrowException(ex);
-                        failedFiles.Add(file);
+                        failedFiles.Add((SalmonFile)file);
                         exception = ex;
                     });
             }
@@ -608,7 +560,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void ExportSelectedFiles(bool deleteSource)
     {
-        if (SalmonDriveManager.Drive.VirtualRoot == null || !SalmonDriveManager.Drive.IsUnlocked)
+        if (Drive == null)
             return;
         ExportFiles(SelectedFiles.ToArray(), (files) =>
         {
@@ -635,34 +587,13 @@ public class SalmonVaultManager : INotifyPropertyChanged
             CurrDir = null;
             ClearCopiedFiles();
             SetPathText("");
-            if (SalmonDriveManager.Drive != null)
-                SalmonDriveManager.LockDrive();
+            if (this.Drive != null)
+                this.Drive.Close();
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine(ex);
         }
-    }
-
-    private void CheckCredentials()
-    {
-        if (SalmonDriveManager.Drive.HasConfig())
-        {
-            SalmonDialogs.PromptPassword(() => OnPasswordSubmitted());
-        }
-    }
-
-    public void OnPasswordSubmitted()
-    {
-        try
-        {
-            CurrDir = SalmonDriveManager.Drive.VirtualRoot;
-        }
-        catch (SalmonAuthException e)
-        {
-            Console.Error.WriteLine(e);
-        }
-        Refresh();
     }
 
     public bool OpenItem(SalmonFile selectedFile)
@@ -715,7 +646,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 PopulateFileList(parentDir);
             });
         }
-        else if(PromptExitOnBack)
+        else if (PromptExitOnBack)
         {
             SalmonDialogs.PromptExit();
         }
@@ -759,10 +690,11 @@ public class SalmonVaultManager : INotifyPropertyChanged
             int[] processedFiles = new int[] { -1 };
             IRealFile[] files = null;
             List<SalmonFile> failedFiles = new List<SalmonFile>();
+            IRealFile exportDir = this.Drive.ExportDir;
             try
             {
                 files = fileCommander.ExportFiles(items,
-                    SalmonDriveManager.Drive.ExportDir,
+                    exportDir,
                     deleteSource, true,
                     (taskProgress) =>
                     {
@@ -782,7 +714,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
                         FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
                     }, IRealFile.AutoRename, (file, ex) =>
                     {
-                        failedFiles.Add(file);
+                        failedFiles.Add((SalmonFile)file);
                         exception = ex;
                     });
                 if (OnFinished != null)
@@ -801,7 +733,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             {
                 SetTaskMessage("Export Complete");
                 SalmonDialog.PromptDialog("Export", "Files Exported To: "
-                    + SalmonDriveManager.Drive.ExportDir.AbsolutePath);
+                    + exportDir.AbsolutePath);
             }
             FileProgress = 1;
             FilesProgress = 1;
@@ -890,26 +822,29 @@ public class SalmonVaultManager : INotifyPropertyChanged
             PopulateFileList(null);
             SetTaskRunning(true);
             Status = "Searching";
-            salmonFiles = fileCommander.Search(CurrDir, value, any, (SalmonFile salmonFile) =>
+            IVirtualFile[] files = fileCommander.Search(CurrDir, value, any, (IVirtualFile salmonFile) =>
             {
                 int position = 0;
                 foreach (SalmonFile file in FileItemList)
                 {
-                    if (salmonFile.Tag != null &&
-                        (file.Tag == null || (int)salmonFile.Tag > (int)file.Tag))
+                    if (((SalmonFile)salmonFile).Tag != null &&
+                        (file.Tag == null || (int)((SalmonFile)salmonFile).Tag > (int)file.Tag))
                         break;
                     position++;
                 }
                 try
                 {
-                    FileItemList.Insert(position, salmonFile);
-                    OnFileItemAdded(position, salmonFile);
+                    FileItemList.Insert(position, (SalmonFile)salmonFile);
+                    OnFileItemAdded(position, (SalmonFile)salmonFile);
                 }
                 catch (Exception e)
                 {
                     Console.Error.WriteLine(e);
                 }
             }, null);
+            this.salmonFiles = new SalmonFile[files.Length];
+            for (int i = 0; i < files.Length; i++)
+                this.salmonFiles[i] = (SalmonFile)files[i];
             if (!fileCommander.IsFileSearcherStopped())
                 Status = "Search Complete";
             else
@@ -918,11 +853,11 @@ public class SalmonVaultManager : INotifyPropertyChanged
         });
     }
 
-    public void CreateVault(string dirPath, string password)
+    public void CreateVault(IRealFile dir, string password)
     {
-        SalmonDriveManager.CreateDrive(dirPath, password);
-        SalmonSettings.GetInstance().VaultLocation = dirPath;
-        CurrDir = SalmonDriveManager.Drive.VirtualRoot;
+        this.Drive = SalmonDrive.CreateDrive(dir, GetDriveClassType(), password, Sequencer);
+        this.CurrDir = this.Drive.Root;
+        SalmonSettings.GetInstance().VaultLocation = dir.AbsolutePath;
         Refresh();
     }
 

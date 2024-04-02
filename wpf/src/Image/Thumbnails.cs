@@ -24,8 +24,7 @@ SOFTWARE.
 
 using Mku.File;
 using Mku.Salmon;
-using Mku.Salmon.IO;
-using Mku.SalmonFS;
+using Mku.Salmon.Streams;
 using Mku.Utils;
 using Salmon.Vault.ViewModel;
 using Salmon.Vault.Utils;
@@ -97,9 +96,16 @@ public class Thumbnails
     private static Stream GetTempStream(SalmonFile salmonFile, long maxSize)
     {
         MemoryStream ms = new MemoryStream();
-        SalmonDefaultOptions.BufferSize = 1 * 1024 * 1024;
         SalmonStream ins = salmonFile.GetInputStream();
-        ins.CopyTo(ms, SalmonDefaultOptions.BufferSize);
+        byte[] buffer = new byte[BUFFER_SIZE];
+        int bytesRead;
+        long totalBytesRead = 0;
+        while ((bytesRead = ins.Read(buffer, 0, buffer.Length)) > 0
+                && totalBytesRead < maxSize)
+        {
+            ms.Write(buffer, 0, bytesRead);
+            totalBytesRead += bytesRead;
+        }
         ms.Flush();
         ins.Close();
         ms.Position = 0;
@@ -125,7 +131,7 @@ public class Thumbnails
                 item.Image = bitmapImage;
             });
         }
-        else if (item.GetSalmonFile().IsDirectory || !SalmonFileUtils.IsImage(item.GetSalmonFile().BaseName))
+        else if (item.GetSalmonFile().IsDirectory || !FileUtils.IsImage(item.GetSalmonFile().BaseName))
         {
             WindowUtils.RunOnMainThread(() =>
             {
@@ -241,7 +247,7 @@ public class Thumbnails
         Stream stream = null;
         try
         {
-            string ext = SalmonFileUtils.GetExtensionFromFileName(file.BaseName).ToLower();
+            string ext = FileUtils.GetExtensionFromFileName(file.BaseName).ToLower();
             if (ext.Equals("gif") && file.Size > TMP_GIF_THUMB_MAX_SIZE)
                 stream = GetTempStream(file, TMP_GIF_THUMB_MAX_SIZE);
             else
@@ -257,7 +263,7 @@ public class Thumbnails
 
     public static Color GetTintColor(SalmonFile salmonFile)
     {
-        if (!salmonFile.IsFile || SalmonFileUtils.IsImage(salmonFile.BaseName))
+        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.BaseName))
             return Colors.Transparent;
 
         MD5 md5 = MD5.Create();
@@ -270,8 +276,8 @@ public class Thumbnails
 
     public static string GetExt(SalmonFile salmonFile)
     {
-        if (!salmonFile.IsFile || SalmonFileUtils.IsImage(salmonFile.BaseName))
+        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.BaseName))
             return "";
-        return SalmonFileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+        return FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
     }
 }

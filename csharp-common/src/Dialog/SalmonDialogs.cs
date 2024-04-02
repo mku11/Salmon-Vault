@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 using Mku.File;
-using Mku.SalmonFS;
+using Mku.Salmon;
 using Mku.Utils;
 using Salmon.Vault.Config;
 using Salmon.Vault.Extensions;
@@ -35,32 +35,19 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using Action = System.Action;
 
 namespace Salmon.Vault.Dialog;
 
 public class SalmonDialogs
 {
-    public static void PromptPassword(Action OnUnlockSucceded)
+    public static void PromptPassword(Action<string> OnSubmit)
     {
         SalmonDialog.PromptEdit("Vault", "Password", (password, option) =>
         {
-            if (password == null)
-                return;
-            try
-            {
-                SalmonDriveManager.Drive.Unlock(password);
-                if (OnUnlockSucceded != null)
-                    OnUnlockSucceded();
-            }
-            catch (SalmonAuthException)
-            {
-                SalmonDialog.PromptDialog("Vault", "Wrong password");
-            }
-            catch (Exception e)
-            {
-                SalmonDialog.PromptDialog("Vault", "Error: " + e.Message);
-            }
+            if (OnSubmit != null)
+                OnSubmit(password);
         }, isPassword: true);
     }
 
@@ -88,11 +75,14 @@ public class SalmonDialogs
 
     public static void PromptChangePassword()
     {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
+
         SalmonDialogs.PromptSetPassword((pass) =>
         {
             try
             {
-                SalmonDriveManager.Drive.SetPassword(pass);
+                SalmonVaultManager.Instance.Drive.SetPassword(pass);
                 SalmonDialog.PromptDialog("Password changed");
             }
             catch (Exception e)
@@ -104,14 +94,11 @@ public class SalmonDialogs
 
     public static void PromptImportAuth()
     {
-        if (SalmonDriveManager.Drive == null)
-        {
-            SalmonDialog.PromptDialog("Error", "No Drive Loaded");
+        if (!SalmonDialogs.IsDriveLoaded())
             return;
-        }
 
-        string filename = SalmonDriveManager.GetDefaultAuthConfigFilename();
-        string ext = SalmonFileUtils.GetExtensionFromFileName(filename);
+        string filename = SalmonVaultManager.Instance.Drive.GetDefaultAuthConfigFilename();
+        string ext = FileUtils.GetExtensionFromFileName(filename);
         Dictionary<string, string> filter = new Dictionary<string, string>();
         filter["Salmon Auth Files"] = ext;
         ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFile("Import Auth File",
@@ -119,7 +106,7 @@ public class SalmonDialogs
         {
             try
             {
-                SalmonDriveManager.ImportAuthFile((string)filePath);
+                SalmonVaultManager.Instance.Drive.ImportAuthFile((IRealFile)filePath);
                 SalmonDialog.PromptDialog("Auth", "Device is now Authorized");
             }
             catch (Exception ex)
@@ -132,17 +119,14 @@ public class SalmonDialogs
 
     public static void PromptExportAuth()
     {
-        if (SalmonDriveManager.Drive == null)
-        {
-            SalmonDialog.PromptDialog("Error", "No Drive Loaded");
+        if (!SalmonDialogs.IsDriveLoaded())
             return;
-        }
         SalmonDialog.PromptEdit("Export Auth File",
             "Enter the Auth ID for the device you want to authorize",
             (targetAuthID, option) =>
             {
-                string filename = SalmonDriveManager.GetDefaultAuthConfigFilename();
-                string ext = SalmonFileUtils.GetExtensionFromFileName(filename);
+                string filename = SalmonVaultManager.Instance.Drive.GetDefaultAuthConfigFilename();
+                string ext = FileUtils.GetExtensionFromFileName(filename);
                 Dictionary<string, string> filter = new Dictionary<string, string>();
                 filter["Salmon Auth Files"] = ext;
                 ServiceLocator.GetInstance().Resolve<IFileDialogService>().SaveFile("Export Auth file",
@@ -150,7 +134,7 @@ public class SalmonDialogs
                     {
                         try
                         {
-                            SalmonDriveManager.ExportAuthFile(targetAuthID, ((string[])fileResult)[0], ((string[])fileResult)[1]);
+                            SalmonVaultManager.Instance.Drive.ExportAuthFile(targetAuthID, (IRealFile)fileResult);
                             SalmonDialog.PromptDialog("Auth", "Auth File Exported");
                         }
                         catch (Exception ex)
@@ -164,11 +148,8 @@ public class SalmonDialogs
 
     public static void PromptRevokeAuth()
     {
-        if (SalmonDriveManager.Drive == null)
-        {
-            SalmonDialog.PromptDialog("Error", "No Drive Loaded");
+        if (!SalmonDialogs.IsDriveLoaded())
             return;
-        }
         SalmonDialog.PromptDialog("Revoke Auth",
             "Revoke Auth for this drive? You will still be able to decrypt and view your files but you won't be able to import any more files in this drive.",
             "Ok",
@@ -176,7 +157,7 @@ public class SalmonDialogs
             {
                 try
                 {
-                    SalmonDriveManager.RevokeAuthorization();
+                    SalmonVaultManager.Instance.Drive.RevokeAuthorization();
                     SalmonDialog.PromptDialog("Action", "Revoke Auth Successful");
                 }
                 catch (Exception e)
@@ -190,14 +171,16 @@ public class SalmonDialogs
 
     public static void OnDisplayAuthID()
     {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
         try
         {
-            if (SalmonDriveManager.Drive == null || SalmonDriveManager.Drive.DriveID == null)
+            if (SalmonVaultManager.Instance.Drive == null || SalmonVaultManager.Instance.Drive.DriveId == null)
             {
                 SalmonDialog.PromptDialog("Error", "No Drive Loaded");
                 return;
             }
-            string driveID = SalmonDriveManager.GetAuthID();
+            string driveID = SalmonVaultManager.Instance.Drive.GetAuthId();
             SalmonDialog.PromptEdit("Auth", "Salmon Auth App ID", null, driveID, false, true);
         }
         catch (Exception ex)
@@ -219,18 +202,6 @@ public class SalmonDialogs
         }
     }
 
-    private static string GetFileProperties(SalmonFile item)
-    {
-        return "Name: " + item.BaseName + "\n" +
-            "Path: " + item.Path + "\n" +
-            (!item.IsDirectory ? ("Size: " + ByteUtils.GetBytes(item.Size, 2)
-                + " (" + item.Size + " bytes)") : "Items: " + item.ListFiles().Length) + "\n" +
-            "EncryptedName: " + item.RealFile.BaseName + "\n" +
-            "EncryptedPath: " + item.RealFile.AbsolutePath + "\n" +
-            (!item.IsDirectory ? "EncryptedSize: " + ByteUtils.GetBytes(item.RealFile.Length, 2)
-                + " (" + item.RealFile.Length + " bytes)" : "") + "\n";
-    }
-
     internal static void PromptSequenceReset(Action<bool> ResetSequencer)
     {
 
@@ -249,6 +220,8 @@ public class SalmonDialogs
 
     public static void PromptDelete()
     {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
         SalmonDialog.PromptDialog(
                 "Delete", "Delete " + SalmonVaultManager.Instance.SelectedFiles.Count + " item(s)?",
                 "Ok",
@@ -277,6 +250,8 @@ public class SalmonDialogs
 
     public static void PromptSearch()
     {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
         SalmonDialog.PromptEdit("Search", "Keywords",
             (value, isChecked) =>
             {
@@ -302,26 +277,16 @@ public class SalmonDialogs
             }, "Ok");
     }
 
-    public static void PromptSelectRoot()
-    {
-        SalmonDialog.PromptDialog("Vault",
-            "Choose a location for your vault",
-            "Ok",
-            PromptOpenVault,
-            "Cancel"
-            );
-    }
-
     public static void PromptCreateVault()
     {
         ServiceLocator.GetInstance().Resolve<IFileDialogService>().PickFolder("Select the vault",
-                SalmonSettings.GetInstance().VaultLocation, (filePath) =>
+                SalmonSettings.GetInstance().VaultLocation, (file) =>
                 {
                     SalmonDialogs.PromptSetPassword((string pass) =>
                                 {
                                     try
                                     {
-                                        SalmonVaultManager.Instance.CreateVault((string)filePath, pass);
+                                        SalmonVaultManager.Instance.CreateVault((IRealFile)file, pass);
                                         SalmonDialog.PromptDialog("Action", "Vault created, you can start importing your files");
                                     }
                                     catch (Exception e)
@@ -336,27 +301,30 @@ public class SalmonDialogs
     public static void PromptOpenVault()
     {
         ServiceLocator.GetInstance().Resolve<IFileDialogService>().PickFolder("Select the vault",
-                SalmonSettings.GetInstance().VaultLocation, (filePath) =>
-                        SalmonVaultManager.Instance.OpenVault((string)filePath),
-                SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
+                SalmonSettings.GetInstance().VaultLocation, (dir) =>
+                {
+                    SalmonDialogs.PromptPassword((string password) =>
+                    {
+                        SalmonVaultManager.Instance.OpenVault((IRealFile)dir, password);
+                    });
+                },
+        SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
     }
 
     public static void PromptImportFiles()
     {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
         ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFiles("Select files to import",
                     null, SalmonSettings.GetInstance().LastImportDir, (obj) =>
                     {
-                        string[] files = (string[])obj;
-                        List<IRealFile> filesToImport = new List<IRealFile>();
-                        IFileService fileService = ServiceLocator.GetInstance().Resolve<IFileService>();
-                        foreach (string file in files)
-                        {
-                            filesToImport.Add(fileService.GetFile(file, false));
-                        }
-                        if (filesToImport.Count == 0)
+                        IRealFile[] filesToImport = (IRealFile[])obj;
+                        if (filesToImport.Length == 0)
                             return;
-                        SalmonSettings.GetInstance().LastImportDir = new FileInfo(files[0]).Directory.FullName;
-                        SalmonVaultManager.Instance.ImportFiles(filesToImport.ToArray(),
+                        IRealFile parent = filesToImport[0].Parent;
+                        if (parent != null && parent.AbsolutePath != null)
+                            SalmonSettings.GetInstance().LastImportDir = parent.AbsolutePath;
+                        SalmonVaultManager.Instance.ImportFiles(filesToImport,
                             SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (SalmonFile[] importedFiles) =>
                             {
                                 SalmonVaultManager.Instance.Refresh();
@@ -366,6 +334,8 @@ public class SalmonDialogs
 
     public static void PromptNewFolder()
     {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
         SalmonDialog.PromptEdit("Create Folder",
                 "Folder Name",
                 (folderName, isChecked) =>
@@ -388,7 +358,7 @@ public class SalmonDialogs
 
     public static void PromptRenameFile(SalmonFile ifile)
     {
-        String currentFilename = "";
+        string currentFilename = "";
         try
         {
             currentFilename = ifile.BaseName;
@@ -425,5 +395,15 @@ public class SalmonDialogs
         {
             exception.PrintStackTrace();
         }
+    }
+
+    static bool IsDriveLoaded()
+    {
+        if (SalmonVaultManager.Instance.Drive == null)
+        {
+            SalmonDialog.PromptDialog("Error", "No Drive Loaded");
+            return false;
+        }
+        return true;
     }
 }

@@ -24,6 +24,13 @@ Build
 To build the app you will need:  
 1. Microsoft Visual Studio 2022  
 
+Restore packages:
+msbuild -restore
+
+Restore dev packages (if changed):
+delete files from C:\Users\<username>\.nuget\packages
+msbuild -t:restore
+
 Package:
 To package the app click on Build/Publish in Visual Studio.
 

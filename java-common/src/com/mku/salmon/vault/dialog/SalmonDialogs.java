@@ -67,7 +67,7 @@ public class SalmonDialogs {
     }
 
     public static void promptChangePassword() {
-        if (!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialogs.promptSetPassword((pass) ->
         {
@@ -81,7 +81,7 @@ public class SalmonDialogs {
     }
 
     public static void promptImportAuth() {
-        if (!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.isDriveLoaded())
             return;
         String filename = SalmonDrive.getDefaultAuthConfigFilename();
         String ext = FileUtils.getExtensionFromFileName(filename);
@@ -101,7 +101,7 @@ public class SalmonDialogs {
     }
 
     public static void promptExportAuth() {
-        if (!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialog.promptEdit("Export Auth File",
                 "Enter the Auth ID for the device you want to authorize",
@@ -126,7 +126,7 @@ public class SalmonDialogs {
     }
 
     public static void promptRevokeAuth() {
-        if (!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialog.promptDialog("Revoke Auth",
                 "Revoke Auth for this drive? You will still be able to decrypt and view your files but you won't be able to import any more files in this drive.",
@@ -145,7 +145,7 @@ public class SalmonDialogs {
     }
 
     public static void onDisplayAuthID() {
-        if (!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.isDriveLoaded())
             return;
         try {
             String driveID = SalmonVaultManager.getInstance().getDrive().getAuthId();
@@ -182,7 +182,7 @@ public class SalmonDialogs {
     }
 
     public static void promptDelete() {
-        if (!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialog.promptDialog(
                 "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size() + " item(s)?",
@@ -207,7 +207,7 @@ public class SalmonDialogs {
     }
 
     public static void promptSearch() {
-        if (!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialog.promptEdit("Search", "Keywords",
                 (value, isChecked) ->
@@ -257,7 +257,7 @@ public class SalmonDialogs {
     }
 
     public static void promptImportFiles() {
-        if (!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.isDriveLoaded())
             return;
         ServiceLocator.getInstance().resolve(IFileDialogService.class).openFiles("Select files to import",
                 null, SalmonSettings.getInstance().getLastImportDir(), (obj) ->
@@ -278,7 +278,7 @@ public class SalmonDialogs {
     }
 
     public static void promptNewFolder() {
-        if (!SalmonDialogs.driveLoaded())
+        if (!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialog.promptEdit("Create Folder",
                 "Folder Name",
@@ -326,7 +326,7 @@ public class SalmonDialogs {
         }
     }
 
-    static boolean driveLoaded() {
+    static boolean isDriveLoaded() {
         if (SalmonVaultManager.getInstance().getDrive() == null) {
             SalmonDialog.promptDialog("Error", "No Drive Loaded");
             return false;

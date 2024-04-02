@@ -39,4 +39,8 @@ public class SalmonAndroidVaultManager extends SalmonVaultManager {
     protected INonceSequenceSerializer createSerializer() {
         return new AndroidSequenceSerializer();
     }
+	
+	protected Class<?> getDriveClassType() {
+		return AndroidDrive.class;
+	}
 }

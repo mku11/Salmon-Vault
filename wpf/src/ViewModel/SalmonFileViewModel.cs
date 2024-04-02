@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.SalmonFS;
+using Mku.Salmon;
 using Mku.Utils;
 using Salmon.Vault.Image;
 using Salmon.Vault.Utils;
@@ -272,7 +272,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
 
     private string GetExtText()
     {
-        return SalmonFileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+        return FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
     }
 
     private string GetSizeText()
@@ -329,7 +329,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
     }
 
     override
-    public String ToString()
+    public string ToString()
     {
         return Name;
     }

@@ -52,7 +52,7 @@ public class Thumbnails {
     private static final String TMP_THUMB_DIR = "tmp";
     private static final int TMP_VIDEO_THUMB_MAX_SIZE = 3 * 1024 * 1024;
     private static final int TMP_GIF_THUMB_MAX_SIZE = 512 * 1024;
-    private static final int ENC_BUFFER_SIZE = 128 * 1024;
+    private static final int BUFFER_SIZE = 256 * 1024;
     private static final int THUMBNAIL_SIZE = 128;
 
     private static final int MAX_CACHE_SIZE = 20 * 1024 * 1024;
@@ -109,7 +109,7 @@ public class Thumbnails {
     private static RandomAccessStream getTempStream(SalmonFile salmonFile, long maxSize) throws Exception {
         MemoryStream ms = new MemoryStream();
         SalmonStream ins = salmonFile.getInputStream();
-        byte[] buffer = new byte[ENC_BUFFER_SIZE];
+        byte[] buffer = new byte[BUFFER_SIZE];
         int bytesRead;
         long totalBytesRead = 0;
         while ((bytesRead = ins.read(buffer, 0, buffer.length)) > 0

@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 using Mku.File;
-using Mku.SalmonFS;
+using Mku.Salmon.Sequence;
 using Mku.Sequence;
 using Salmon.Vault.Config;
 using Salmon.Vault.Dialog;
@@ -57,7 +57,7 @@ public class SalmonWinVaultManager : SalmonVaultManager
             dirFile.Mkdir();
         IRealFile seqFile = new DotNetFile(SequencerFilepath);
         WinFileSequencer sequencer = new WinFileSequencer(seqFile, new SalmonSequenceSerializer(), SalmonConfig.REGISTRY_CHKSUM_KEY);
-        SalmonDriveManager.Sequencer = sequencer;
+        this.Sequencer = sequencer;
     }
 
     protected void SetupClientSequencer()
@@ -65,7 +65,7 @@ public class SalmonWinVaultManager : SalmonVaultManager
         try
         {
             WinClientSequencer sequencer = new WinClientSequencer(SERVICE_PIPE_NAME);
-            SalmonDriveManager.Sequencer = sequencer;
+            Sequencer = sequencer;
         }
         catch (Exception ex)
         {
@@ -93,8 +93,8 @@ public class SalmonWinVaultManager : SalmonVaultManager
 
     public void ResetSequencer(bool clearChecksumOnly)
     {
-        if (SalmonDriveManager.Sequencer is WinFileSequencer)
-            (SalmonDriveManager.Sequencer as WinFileSequencer).Reset(clearChecksumOnly);
+        if (Sequencer is WinFileSequencer)
+            (Sequencer as WinFileSequencer).Reset(clearChecksumOnly);
         SetupSalmonManager();
     }
 
@@ -103,8 +103,8 @@ public class SalmonWinVaultManager : SalmonVaultManager
     {
         try
         {
-            if (SalmonDriveManager.Sequencer != null)
-                SalmonDriveManager.Sequencer.Close();
+            if (Sequencer != null)
+                Sequencer.Close();
 
             if (SalmonSettings.GetInstance().SequencerAuthType == SalmonSettings.AuthType.User)
             {

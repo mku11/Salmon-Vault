@@ -42,7 +42,7 @@ public class WPFFileDialogService : IFileDialogService
         directoryChooser.Description = title;
         directoryChooser.InitialDirectory = initialDirectory;
         if (directoryChooser.ShowDialog() == DialogResult.OK)
-            OnFolderPicked(directoryChooser.SelectedPath);
+            OnFolderPicked(new DotNetFile(directoryChooser.SelectedPath));
     }
 
     public void OpenFiles(string title, Dictionary<string, string> filter, string initialDirectory, Action<object> OnFilesPicked, int requestCode)
@@ -58,7 +58,12 @@ public class WPFFileDialogService : IFileDialogService
         }
         if (fileChooser.ShowDialog() == DialogResult.Cancel)
             return;
-        OnFilesPicked(fileChooser.FileNames);
+        List<IRealFile> files = new List<IRealFile>();
+        foreach (string filePath in fileChooser.FileNames)
+        {
+            files.Add(new DotNetFile(filePath));
+        }
+        OnFilesPicked(files.ToArray());
     }
 
     public void OpenFile(string title, string filename, Dictionary<string, string> filter, string initialDirectory, 
@@ -75,7 +80,7 @@ public class WPFFileDialogService : IFileDialogService
         }
         if (fileChooser.ShowDialog() == DialogResult.Cancel)
             return;
-        OnFilePicked(fileChooser.FileName);
+        OnFilePicked(new DotNetFile(fileChooser.FileName));
     }
 
     public void SaveFile(string title, string filename, Dictionary<string, string> filter, string initialDirectory, 
@@ -93,6 +98,6 @@ public class WPFFileDialogService : IFileDialogService
         if (fileChooser.ShowDialog() == DialogResult.Cancel)
             return;
         DotNetFile file = new DotNetFile(fileChooser.FileName);
-        OnFilePicked(new string[] { file.Parent.Path, file.BaseName });
+        OnFilePicked(file);
     }
 }
