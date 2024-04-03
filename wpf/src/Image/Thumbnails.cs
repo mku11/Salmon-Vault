@@ -266,9 +266,9 @@ public class Thumbnails
         if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.BaseName))
             return Colors.Transparent;
 
-        MD5 md5 = MD5.Create();
+        SHA256 sha256 = SHA256.Create();
         string ext = GetExt(salmonFile);
-        byte[] hashValue = md5.ComputeHash(Encoding.UTF8.GetBytes(ext));
+        byte[] hashValue = sha256.ComputeHash(Encoding.UTF8.GetBytes(ext));
         string hashstring = BitConverter.ToHex(hashValue);
         Color color = (Color)ColorConverter.ConvertFromString("#" + hashstring.Substring(0, 6));
         return color;
