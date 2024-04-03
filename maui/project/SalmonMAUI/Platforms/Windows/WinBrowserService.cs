@@ -24,7 +24,7 @@ SOFTWARE.
 
 using Microsoft.Maui.Platform;
 using Microsoft.Web.WebView2.Core;
-using Mku.SalmonFS;
+using Mku.Salmon;
 using Salmon.Vault.Services;
 using System;
 using System.Collections.Generic;

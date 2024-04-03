@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 using Mku.File;
-using Mku.SalmonFS;
+using Mku.Salmon;
 using Salmon.Vault.Services;
 using Salmon.Vault.View;
 using Salmon.Vault.ViewModel;
@@ -30,7 +30,6 @@ public partial class App : MauiWinUIApplication
 
     private void SetupServices()
     {
-        SalmonDriveManager.VirtualDriveClass = typeof(DotNetDrive);
         ServiceLocator.GetInstance().Register(typeof(IFileService), new WinFileService());
         SetupWebBrowser();
         MainWindow.OnAttachViewModel = AttachViewModel;

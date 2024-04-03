@@ -732,7 +732,7 @@ public class SalmonActivity extends AppCompatActivity {
             String[] filesToImport = ActivityCommon.getFilesFromIntent(this, data);
             IRealFile[] files = new AndroidFile[filesToImport.length];
             for(int i=0; i<files.length; i++){
-                files[i] = ServiceLocator.getInstance().resolve(IFileService.class).getFile(uri.toString(), false);
+                files[i] = ServiceLocator.getInstance().resolve(IFileService.class).getFile(filesToImport[i], false);
             }
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
             callback.accept(files);

@@ -24,7 +24,7 @@ SOFTWARE.
 
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using Mku.SalmonFS;
+using Mku.Salmon;
 using Mku.Utils;
 using Salmon.Vault.Image;
 using Salmon.Vault.Model;
@@ -282,7 +282,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
 
     private string GetExtText()
     {
-        return SalmonFileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+        return FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
     }
 
     private string GetSizeText()

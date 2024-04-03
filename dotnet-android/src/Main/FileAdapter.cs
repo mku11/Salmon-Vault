@@ -32,7 +32,7 @@ using Android.Views.Animations;
 using Java.Text;
 using Java.Security;
 using Mku.Utils;
-using Mku.SalmonFS;
+using Mku.Salmon;
 using BitConverter = Mku.Convert.BitConverter;
 using Salmon.Vault.DotNetAndroid;
 using System;
@@ -210,7 +210,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                 UpdateFileInfo(viewHolder, filename, finalItems, viewHolder.salmonFile, finalSize, finalDate);
             });
 
-            string ext = SalmonFileUtils.GetExtensionFromFileName(filename).ToLower();
+            string ext = FileUtils.GetExtensionFromFileName(filename).ToLower();
             if (bitmapCache.ContainsKey(file))
             {
                 activity.RunOnUiThread(() =>
@@ -317,7 +317,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
     private int GetFileColorFromExtension(string extension)
     {
-        MessageDigest md = MessageDigest.GetInstance("MD5");
+        MessageDigest md = MessageDigest.GetInstance("SHA-256");
         byte[] bytes = System.Text.Encoding.UTF8.GetBytes(extension);
         byte[] hashValue = md.Digest(bytes);
         Java.Lang.StringBuilder sb = new Java.Lang.StringBuilder();
@@ -350,7 +350,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     private Bitmap GetFileThumbnail(SalmonFile salmonFile)
     {
         Bitmap bitmap = null;
-        string ext = SalmonFileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+        string ext = FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
         if (ext.Equals("mp4"))
         {
             bitmap = Thumbnails.GetVideoThumbnail(salmonFile, VIDEO_THUMBNAIL_MSECS);

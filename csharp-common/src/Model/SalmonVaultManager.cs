@@ -374,8 +374,13 @@ public class SalmonVaultManager : INotifyPropertyChanged
         if (!dirFile.Exists)
             dirFile.Mkdir();
         IRealFile seqFile = new DotNetFile(SequencerFilepath);
-        SalmonFileSequencer sequencer = new SalmonFileSequencer(seqFile, new SalmonSequenceSerializer());
+        SalmonFileSequencer sequencer = new SalmonFileSequencer(seqFile, CreateSerializer());
         this.Sequencer = sequencer;
+    }
+
+    virtual
+    protected INonceSequenceSerializer CreateSerializer() {
+        return new SalmonSequenceSerializer();
     }
 
     public void PasteSelected()
@@ -413,6 +418,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         Refresh();
     }
 
+    virtual
     protected Type GetDriveClassType()
     {
         return typeof(DotNetDrive);

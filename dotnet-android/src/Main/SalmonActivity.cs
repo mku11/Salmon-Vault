@@ -23,7 +23,6 @@ SOFTWARE.
 */
 using Android.Content;
 using Android.Content.PM;
-using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.DocumentFile.Provider;
@@ -31,11 +30,10 @@ using AndroidX.RecyclerView.Widget;
 using Salmon.Vault.Utils;
 using Java.Lang;
 using Exception = System.Exception;
-using Thread = System.Threading.Thread;
 using Semaphore = Java.Util.Concurrent.Semaphore;
 using AndroidX.Core.View;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Mku.SalmonFS;
+using Mku.Salmon;
 using Mku.Utils;
 using Mku.File;
 
@@ -55,6 +53,8 @@ using System;
 using System.ComponentModel;
 using Salmon.Vault.MAUI.ANDROID;
 using System.Threading.Tasks;
+using Mku.Android.Salmon.Drive;
+using Mku.Salmon.Utils;
 
 namespace Salmon.Vault.Main;
 
@@ -84,7 +84,7 @@ public class SalmonActivity : AppCompatActivity
     private SortType sortType = SortType.Default;
     private SalmonVaultManager manager;
 
-    protected override void OnCreate(Bundle bundle)
+    protected override void OnCreate(Android.OS.Bundle bundle)
     {
         base.OnCreate(bundle);
         SetupServices();
@@ -164,7 +164,6 @@ public class SalmonActivity : AppCompatActivity
 
             SalmonNativeTransformer.NativeProxy = new AndroidNativeProxy();
             AndroidDrive.Initialize(this.ApplicationContext);
-            SalmonDriveManager.VirtualDriveClass = typeof(AndroidDrive);
 
             manager = CreateVaultManager();
             manager.PromptExitOnBack = true;
@@ -377,7 +376,7 @@ public class SalmonActivity : AppCompatActivity
                     .SetIcon(Android.Resource.Drawable.IcMenuAgenda);
         }
 
-        if (SalmonDriveManager.Drive != null)
+        if (SalmonVaultManager.Instance.Drive != null)
         {
             menu.Add(5, ActionType.IMPORT_AUTH.Ordinal(), 0, Resources.GetString(Resource.String.ImportAuthFile))
                     .SetShowAsAction(ShowAsAction.Never);
@@ -703,7 +702,7 @@ public class SalmonActivity : AppCompatActivity
         {
             e.PrintStackTrace();
         }
-        if (SalmonDriveManager.Drive.VirtualRoot == null || !SalmonDriveManager.Drive.IsUnlocked)
+        if (SalmonVaultManager.Instance.Drive.Root == null)
             return;
         DocumentFile docFile = DocumentFile.FromSingleUri(SalmonApplication.GetInstance().ApplicationContext, uri);
         IRealFile realFile = new AndroidFile(docFile, this);
@@ -756,39 +755,55 @@ public class SalmonActivity : AppCompatActivity
         {
             ActivityCommon.SetUriPermissions(data, uri);
             IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
-            Action<string> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
-            callback(file.Path);
+            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_CREATE_VAULT_DIR)
         {
             ActivityCommon.SetUriPermissions(data, uri);
             IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
-            Action<string> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
-            callback(file.Path);
+            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES)
         {
             string[] filesToImport = ActivityCommon.GetFilesFromIntent(this, data);
-            Action<string[]> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
-            callback(filesToImport);
+            IRealFile[] files = new AndroidFile[filesToImport.Length];
+            for (int i = 0; i < files.Length; i++)
+            {
+                files[i] = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(filesToImport[i], false);
+            }
+            Action<IRealFile[]> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            callback(files);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE)
         {
             string[] files = ActivityCommon.GetFilesFromIntent(this, data);
-            string file = files != null ? files[0] : null;
-            if (file == null)
+            string importFile = files != null ? files[0] : null;
+            if (importFile == null)
                 return;
-            Action<string> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(importFile, false);
+            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
             callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_EXPORT_AUTH_FILE)
         {
             string[] dirs = ActivityCommon.GetFilesFromIntent(this, data);
-            string dir = dirs != null ? dirs[0] : null;
-            if (dir == null)
+            string exportAuthDir = dirs != null ? dirs[0] : null;
+            if (exportAuthDir == null)
                 return;
-            Action<string[]> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
-            callback(new string[] { dir, SalmonDrive.AuthConfigFilename });
+            IRealFile dir = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(exportAuthDir, true);
+            IRealFile exportAuthFile;
+            try
+            {
+                exportAuthFile = dir.CreateFile(SalmonDrive.AuthConfigFilename);
+            }
+            catch (Java.IO.IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            callback(exportAuthFile);
         }
     }
 
@@ -797,17 +812,17 @@ public class SalmonActivity : AppCompatActivity
 
         try
         {
-            if (SalmonFileUtils.IsVideo(file.BaseName) || SalmonFileUtils.IsAudio(file.BaseName))
+            if (FileUtils.IsVideo(file.BaseName) || FileUtils.IsAudio(file.BaseName))
             {
                 StartMediaPlayer(fileItemList.IndexOf(file));
                 return true;
             }
-            else if (SalmonFileUtils.IsImage(file.BaseName))
+            else if (FileUtils.IsImage(file.BaseName))
             {
                 StartWebViewer(fileItemList.IndexOf(file));
                 return true;
             }
-            else if (SalmonFileUtils.IsText(file.BaseName))
+            else if (FileUtils.IsText(file.BaseName))
             {
                 StartWebViewer(fileItemList.IndexOf(file));
                 return true;
@@ -825,7 +840,7 @@ public class SalmonActivity : AppCompatActivity
     {
         try
         {
-            SalmonDriveManager.Drive.Lock();
+            SalmonVaultManager.Instance.Drive.Close();
         }
         catch (Exception ex)
         {
@@ -844,7 +859,7 @@ public class SalmonActivity : AppCompatActivity
             try
             {
                 filename = file.BaseName;
-                if (SalmonFileUtils.IsVideo(filename) || SalmonFileUtils.IsAudio(filename))
+                if (FileUtils.IsVideo(filename) || FileUtils.IsAudio(filename))
                 {
                     salmonFiles.Add(file);
                 }
@@ -902,8 +917,8 @@ public class SalmonActivity : AppCompatActivity
                 {
                     string listFilename = listFile.BaseName;
                     if (i != position &&
-                            (SalmonFileUtils.IsImage(filename) && SalmonFileUtils.IsImage(listFilename))
-                            || (SalmonFileUtils.IsText(filename) && SalmonFileUtils.IsText(listFilename)))
+                            (FileUtils.IsImage(filename) && FileUtils.IsImage(listFilename))
+                            || (FileUtils.IsText(filename) && FileUtils.IsText(listFilename)))
                     {
                         salmonFiles.Add(listFile);
                     }
@@ -964,7 +979,6 @@ public class SalmonActivity : AppCompatActivity
     {
         SalmonNativeTransformer.NativeProxy = new AndroidNativeProxy();
         AndroidDrive.Initialize(this.ApplicationContext);
-        SalmonDriveManager.VirtualDriveClass = typeof(AndroidDrive);
         return SalmonVaultManager.Instance;
     }
 }

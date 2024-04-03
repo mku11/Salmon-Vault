@@ -24,7 +24,6 @@ SOFTWARE.
 
 using Android.Webkit;
 using Microsoft.Maui.Platform;
-using Mku.SalmonFS;
 using Salmon.Vault.Services;
 using System;
 using System.Collections.Generic;
@@ -36,7 +35,7 @@ public class AndroidBrowserService : IWebBrowserService
 {
     private static readonly int BUFFER_SIZE = 4 * 1024 * 1024;
 
-    private Android.Webkit.WebView webView;
+    private WebView webView;
     private SalmonWebViewClient webViewClient;
 
     public AndroidBrowserService()
@@ -84,7 +83,7 @@ public class AndroidBrowserService : IWebBrowserService
 
         override
         public WebResourceResponse
-        ShouldInterceptRequest(Android.Webkit.WebView view, IWebResourceRequest request)
+        ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
             if (!request.Url.ToString().Equals(url))
             {

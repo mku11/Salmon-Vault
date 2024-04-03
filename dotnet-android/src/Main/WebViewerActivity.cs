@@ -24,15 +24,14 @@ SOFTWARE.
 using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
-using Android.OS;
 using Android.Views;
 using Android.Webkit;
 using AndroidX.AppCompat.App;
 using Exception = System.Exception;
 using Mku.Utils;
 using Mku.Salmon.Integrity;
-using Mku.SalmonFS;
-using Mku.Salmon.IO;
+using Mku.Salmon;
+using Mku.Salmon.Streams;
 using Salmon.Vault.DotNetAndroid;
 using Java.IO;
 using Math = System.Math;
@@ -96,7 +95,7 @@ public class WebViewerActivity : AppCompatActivity
     protected void LoadContent(SalmonFile file)
     {
         string filename = file.BaseName;
-        string ext = SalmonFileUtils.GetExtensionFromFileName(filename).ToLower();
+        string ext = FileUtils.GetExtensionFromFileName(filename).ToLower();
         string mimeType = null;
         try
         {
@@ -154,7 +153,7 @@ public class WebViewerActivity : AppCompatActivity
     }
 
     override
-    protected void OnCreate(Bundle icicle)
+    protected void OnCreate(Android.OS.Bundle icicle)
     {
         base.OnCreate(icicle);
         SetupWindow();
@@ -234,7 +233,7 @@ public class WebViewerActivity : AppCompatActivity
     {
         try
         {
-            if (fileList.Length > 0 && !SalmonFileUtils.IsText(fileList[0].BaseName))
+            if (fileList.Length > 0 && !FileUtils.IsText(fileList[0].BaseName))
             {
                 if (SupportActionBar != null)
                     SupportActionBar.Hide();

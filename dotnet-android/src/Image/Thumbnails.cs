@@ -23,14 +23,13 @@ SOFTWARE.
 */
 using Android.Graphics;
 using Android.Media;
-using Android.OS;
 using Android.Provider;
 using Java.IO;
-using Mku.Salmon.IO;
-using Mku.SalmonFS;
+using Mku.Salmon.Streams;
+using Mku.Salmon;
 using Mku.Time;
-using Mku.Utils;
 using Salmon.Vault.Main;
+using Mku.Utils;
 
 namespace Salmon.Vault.Image;
 
@@ -99,7 +98,7 @@ public class Thumbnails
             try
             {
                 retriever.Release();
-				if (Build.VERSION.SdkInt >= BuildVersionCodes.Q) {
+				if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Q) {
                     retriever.Close();
                 }
             }
@@ -122,7 +121,7 @@ public class Thumbnails
         if (!tmpDir.Exists())
             tmpDir.Mkdir();
 
-        Java.IO.File tmpFile = new Java.IO.File(tmpDir, Time.CurrentTimeMillis() + "." + SalmonFileUtils.GetExtensionFromFileName(salmonFile.BaseName));
+        Java.IO.File tmpFile = new Java.IO.File(tmpDir, Time.CurrentTimeMillis() + "." + FileUtils.GetExtensionFromFileName(salmonFile.BaseName));
         if (tmpFile.Exists())
             tmpFile.Delete();
         tmpFile.CreateNewFile();
@@ -182,7 +181,7 @@ public class Thumbnails
         Bitmap bitmap = null;
         try
         {
-            string ext = SalmonFileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+            string ext = FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
             if (ext.Equals("gif") && salmonFile.Size > TMP_GIF_THUMB_MAX_SIZE)
                 stream = new System.IO.BufferedStream(GetTempStream(salmonFile, TMP_GIF_THUMB_MAX_SIZE), BUFFER_SIZE);
             else

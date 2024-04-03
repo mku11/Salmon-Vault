@@ -58,7 +58,7 @@ public class WinFileDialogService : IFileDialogService
         StorageFile file = await picker.PickSingleFileAsync();
         if (file != null)
         {
-            OnFilePicked(file.Path);
+            OnFilePicked(new DotNetFile(file.Path));
         }
     }
 
@@ -80,7 +80,7 @@ public class WinFileDialogService : IFileDialogService
         IReadOnlyList<StorageFile> files = await picker.PickMultipleFilesAsync();
         if (files != null)
         {
-            List<string> filesPaths = new List<string>(files.Select(x => x.Path));
+            List<IRealFile> filesPaths = new List<IRealFile>(files.Select(x => new DotNetFile(x.Path)));
             OnFilesPicked(filesPaths.ToArray());
         }
     }
@@ -95,7 +95,7 @@ public class WinFileDialogService : IFileDialogService
         var file = await picker.PickSingleFolderAsync();
         if (file != null)
         {
-            OnFolderPicked(file.Path);
+            OnFolderPicked(new DotNetFile(file.Path));
         }
     }
 
@@ -113,10 +113,7 @@ public class WinFileDialogService : IFileDialogService
         if (file != null)
         {
             DotNetFile rfile = new DotNetFile(file.Path);
-            if (rfile.Parent == null)
-                return;
-            string dir = rfile.Parent.Path;
-            OnFilePicked(new string[] { dir, file.Name });
+            OnFilePicked(rfile);
         }
     }
 }

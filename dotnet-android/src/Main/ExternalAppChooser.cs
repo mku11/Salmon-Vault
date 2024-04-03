@@ -27,7 +27,7 @@ using Android.Webkit;
 using AndroidX.Core.App;
 using AndroidX.Core.Content;
 using Mku.Android.File;
-using Mku.SalmonFS;
+using Mku.Salmon;
 using Mku.Utils;
 using System.Collections.Generic;
 using Salmon.Vault.Extensions;
@@ -38,6 +38,8 @@ using Salmon.Vault.Dialog;
 using Android.Net;
 using Salmon.Vault.DotNetAndroid;
 using Salmon.Vault.Config;
+using Salmon.Vault.Model;
+using Mku.Android.Salmon.Drive;
 
 namespace Salmon.Vault.Main;
 
@@ -46,9 +48,9 @@ public class ExternalAppChooser
     public static void ChooseApp(Activity activity, SalmonFile salmonFile, int action, 
         Action<Android.Net.Uri, AndroidSharedFileObserver> ReimportSharedFile)
     {
-        Java.IO.File sharedFile = (SalmonDriveManager.Drive as AndroidDrive).CopyToSharedFolder(salmonFile);
+        Java.IO.File sharedFile = (SalmonVaultManager.Instance.Drive as AndroidDrive).CopyToSharedFolder(salmonFile);
         sharedFile.DeleteOnExit();
-        string ext = SalmonFileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+        string ext = FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
         string mimeType = MimeTypeMap.Singleton.GetMimeTypeFromExtension(ext);
         Android.Net.Uri uri = FileProvider.GetUriForFile(activity, SalmonConfig.FILE_PROVIDER, sharedFile);
         ShareCompat.IntentBuilder builder = ShareCompat.IntentBuilder.From(activity).SetType(mimeType);

@@ -4,13 +4,10 @@ using Android.Content.PM;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
-using Android.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui;
-using Mku.Android.File;
 using Mku.File;
 using Mku.Salmon.Transform;
-using Mku.SalmonFS;
 using Salmon.Transform;
 using Salmon.Vault.Extensions;
 using Salmon.Vault.Main;
@@ -20,6 +17,10 @@ using Salmon.Vault.View;
 using Salmon.Vault.ViewModel;
 using System;
 using System.Diagnostics;
+using Mku.Android.Salmon.Drive;
+using Mku.Android.File;
+using Mku.Salmon;
+using Java.Lang;
 
 namespace Salmon.Vault.MAUI.ANDROID;
 
@@ -45,7 +46,6 @@ public class MainActivity : MauiAppCompatActivity
     {
         SalmonNativeTransformer.NativeProxy = new AndroidNativeProxy();
         AndroidDrive.Initialize(this.ApplicationContext);
-        SalmonDriveManager.VirtualDriveClass = typeof(AndroidDrive);
         ServiceLocator.GetInstance().Register(typeof(IFileService), new AndroidFileService(this));
         ServiceLocator.GetInstance().Register(typeof(IFileDialogService), new AndroidFileDialogService(this));
         ServiceLocator.GetInstance().Register(typeof(IWebBrowserService), new AndroidBrowserService());
@@ -131,7 +131,7 @@ public class MainActivity : MauiAppCompatActivity
 
     public override bool OnOptionsItemSelected(IMenuItem item)
     {
-        ActionType type = (Enum.GetValues(typeof(ActionType)) as ActionType[])[item.ItemId];
+        ActionType type = (System.Enum.GetValues(typeof(ActionType)) as ActionType[])[item.ItemId];
         ViewModel.OnCommandClicked(type);
         base.OnOptionsItemSelected(item);
         return false;
@@ -147,30 +147,55 @@ public class MainActivity : MauiAppCompatActivity
         {
             ActivityCommon.SetUriPermissions(data, uri);
             IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
-            Action<string> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
-            callback(file.Path);
+            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_CREATE_VAULT_DIR)
         {
             ActivityCommon.SetUriPermissions(data, uri);
             IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
-            Action<string> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
-            callback(file.Path);
+            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES)
         {
-            string[] filesToImport;
+            string[] filesToImport = ActivityCommon.GetFilesFromIntent(this, data);
+            IRealFile[] files = new AndroidFile[filesToImport.Length];
+            for (int i = 0; i < files.Length; i++)
+            {
+                files[i] = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(filesToImport[i], false);
+            }
+            Action<IRealFile[]> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            callback(files);
+        }
+        else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE)
+        {
+            string[] files = ActivityCommon.GetFilesFromIntent(this, data);
+            string importFile = files != null ? files[0] : null;
+            if (importFile == null)
+                return;
+            IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(importFile, false);
+            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            callback(file);
+        }
+        else if (requestCode == SalmonVaultManager.REQUEST_EXPORT_AUTH_FILE)
+        {
+            string[] dirs = ActivityCommon.GetFilesFromIntent(this, data);
+            string exportAuthDir = dirs != null ? dirs[0] : null;
+            if (exportAuthDir == null)
+                return;
+            IRealFile dir = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(exportAuthDir, true);
+            IRealFile exportAuthFile;
             try
             {
-                filesToImport = ActivityCommon.GetFilesFromIntent(this, data);
-                Action <string[]> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
-                callback(filesToImport);
+                exportAuthFile = dir.CreateFile(SalmonDrive.AuthConfigFilename);
             }
-            catch (Exception e)
+            catch (Java.IO.IOException e)
             {
-                e.PrintStackTrace();
-                Toast.MakeText(this, Resources.GetString(Resource.String.CouldNotImportFiles), ToastLength.Long).Show();
+                throw new RuntimeException(e);
             }
+            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            callback(exportAuthFile);
         }
     }
 }

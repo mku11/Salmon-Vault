@@ -32,7 +32,7 @@ using AndroidX.AppCompat.App;
 using Android.Views;
 using Activity = Android.App.Activity;
 using Mku.Android.File;
-using Mku.SalmonFS;
+using Mku.Salmon;
 using Salmon.Vault.Extensions;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,7 +93,7 @@ public class SalmonDialog
                 }
                 if (isFileName)
                 {
-                    string ext = SalmonFileUtils.GetExtensionFromFileName(value);
+                    string ext = FileUtils.GetExtensionFromFileName(value);
                     if (ext != null && ext.Length > 0)
                         text.SetSelection(0, value.Length - ext.Length - 1);
                     else

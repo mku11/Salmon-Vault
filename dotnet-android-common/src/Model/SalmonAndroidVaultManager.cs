@@ -22,24 +22,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Android.App;
-using Mku.Salmon;
-using Salmon.Vault.MAUI.ANDROID;
+using Mku.Android.Salmon.Drive;
+using Mku.Salmon.Sequence;
+using Mku.Sequence;
+using System;
+using System.Runtime.CompilerServices;
 
-namespace Salmon.Vault.Services;
+namespace Salmon.Vault.Model;
 
-public class AndroidMediaPlayerService : IMediaPlayerService
-{
-    private Activity activity;
+public class SalmonAndroidVaultManager : SalmonVaultManager {
 
-    public AndroidMediaPlayerService(Activity activity)
+    public static new SalmonAndroidVaultManager Instance
     {
-        this.activity = activity;
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = new SalmonAndroidVaultManager();
+            }
+            return (SalmonAndroidVaultManager)_instance;
+        }
     }
 
-    public void StartMediaPlayer(SalmonFile file)
-    {
-        MediaPlayerActivity.SetMediaFiles(0, new SalmonFile[]{file});
-        activity.StartActivity(new Android.Content.Intent(activity, typeof(MediaPlayerActivity)));
+    override
+    protected INonceSequenceSerializer CreateSerializer() {
+        return new SalmonSequenceSerializer();
     }
+	
+    override
+	protected Type GetDriveClassType() {
+		return typeof(AndroidDrive);
+	}
 }
