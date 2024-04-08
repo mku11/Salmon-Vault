@@ -41,11 +41,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.mku.iostream.InputStreamWrapper;
+import com.mku.streams.InputStreamWrapper;
 import com.mku.salmon.SalmonFile;
-import com.mku.salmon.iostream.SalmonStream;
+import com.mku.salmon.streams.SalmonStream;
 import com.mku.salmon.vault.android.R;
-import com.mku.salmon.integrity.SalmonIntegrityException;
+import com.mku.integrity.IntegrityException;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.utils.FileUtils;
 
@@ -117,7 +117,7 @@ public class WebViewerActivity extends AppCompatActivity {
                 mTitle.setText(filename);
                 webView.loadUrl("file:android_asset/imagedata.dat");
             });
-        } catch (SalmonIntegrityException ex) {
+        } catch (IntegrityException ex) {
             ex.printStackTrace();
             runOnUiThread(() -> Toast.makeText(WebViewerActivity.this, getString(R.string.FileCorruptOrTampered), Toast.LENGTH_LONG).show());
         } catch (Exception ex) {

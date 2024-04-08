@@ -30,11 +30,11 @@ import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.provider.MediaStore;
 
-import com.mku.iostream.InputStreamWrapper;
-import com.mku.iostream.MemoryStream;
-import com.mku.iostream.RandomAccessStream;
+import com.mku.streams.InputStreamWrapper;
+import com.mku.streams.MemoryStream;
+import com.mku.streams.RandomAccessStream;
 import com.mku.salmon.SalmonFile;
-import com.mku.salmon.iostream.SalmonStream;
+import com.mku.salmon.streams.SalmonStream;
 import com.mku.salmon.vault.main.SalmonApplication;
 import com.mku.utils.FileUtils;
 
