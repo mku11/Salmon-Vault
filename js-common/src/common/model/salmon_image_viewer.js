@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import { IPropertyNotifier } from "../binding/iproperty_notifier.js";
-import { SalmonFileReadableStream } from "../../lib/salmon-fs/salmon/iostream/salmon_file_readable_stream.js";
+import { SalmonFileReadableStream } from "../../lib/salmon-fs/salmon/streams/salmon_file_readable_stream.js";
 
 
 export class SalmonImageViewer extends IPropertyNotifier {

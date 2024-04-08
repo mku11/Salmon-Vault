@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import { FileUtils } from "../../lib/salmon-fs/utils/file_utils.js";
-import { MemoryStream } from "../../lib/salmon-core/iostream/memory_stream.js";
+import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
 
 /**
  * Utility class that generates thumbnails for encrypted salmon files

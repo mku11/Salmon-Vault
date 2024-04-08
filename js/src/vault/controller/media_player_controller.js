@@ -29,8 +29,8 @@ import { Binding } from "../../common/binding/binding.js";
 import { StringProperty } from "../../common/binding/string_property.js";
 import { BooleanProperty } from "../../common/binding/boolean_property.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
-import { MemoryStream } from "../../lib/salmon-core/iostream/memory_stream.js";
-import { SalmonFileReadableStream } from "../../lib/salmon-fs/salmon/iostream/salmon_file_readable_stream.js";
+import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
+import { SalmonFileReadableStream } from "../../lib/salmon-fs/salmon/streams/salmon_file_readable_stream.js";
 import { SalmonDialog } from "../dialog/salmon_dialog.js";
 
 export class MediaPlayerController {

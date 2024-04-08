@@ -14,7 +14,7 @@ function setupDebug() {
 
 async function registerServiceWorker() {
     console.log("Registering handler");
-    Handler.setWorkerPath('service-worker.js');
+    Handler.getInstance().setWorkerPath('service-worker.js');
     try {
         await Handler.getInstance().register();
     } catch (ex) {

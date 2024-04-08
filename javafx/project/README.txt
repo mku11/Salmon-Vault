@@ -31,4 +31,8 @@ Run the build task from gradle instead of the Intellij IDEA. This will include t
 Alternatively you can build from the command line:
 gradlew.bat build -x test --rerun-tasks
 
+To refresh developement packages make sure you delete the salmon packages in the cache:
+C:\Users\<username>\.gradle\caches\modules-2\files-2.1\com.mku.salmon.*
+Then refresh the gradle dependencies from the IDE or from command line.
+
 To package the app build the artifacts from Intellij IDEA.

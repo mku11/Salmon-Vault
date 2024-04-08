@@ -24,8 +24,8 @@ SOFTWARE.
 
 import { ServiceLocator } from "../services/service_locator.js";
 import { ISettingsService } from "../services/isettings_service.js";
-import { SalmonStream } from "../../lib/salmon-core/salmon/iostream/salmon_stream.js";
-import { ProviderType } from "../../lib/salmon-core/salmon/iostream/provider_type.js";
+import { SalmonStream } from "../../lib/salmon-core/salmon/streams/salmon_stream.js";
+import { ProviderType } from "../../lib/salmon-core/salmon/streams/provider_type.js";
 import { PbkdfType } from "../../lib/salmon-core/salmon/password/pbkdf_type.js";
 import { PbkdfAlgo } from "../../lib/salmon-core/salmon/password/pbkdf_algo.js";
 import { SalmonPassword } from "../../lib/salmon-core/salmon/password/salmon_password.js";
