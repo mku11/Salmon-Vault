@@ -23,19 +23,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.android.salmon.drive.AndroidDrive;
 import com.mku.file.IRealFile;
 import com.mku.file.IVirtualFile;
 import com.mku.file.JavaFile;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
 import com.mku.func.Function;
-import com.mku.salmon.SalmonAuthException;
 import com.mku.salmon.SalmonDrive;
 import com.mku.salmon.SalmonFile;
-import com.mku.salmon.SalmonSecurityException;
 import com.mku.salmon.drive.JavaDrive;
-import com.mku.salmon.integrity.SalmonIntegrityException;
 import com.mku.salmon.sequence.SalmonFileSequencer;
 import com.mku.salmon.sequence.SalmonSequenceSerializer;
 import com.mku.salmon.utils.SalmonFileCommander;
@@ -50,12 +46,10 @@ import com.mku.sequence.INonceSequencer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 public class SalmonVaultManager implements IPropertyNotifier {
     protected static final String SEQUENCER_DIR_NAME = ".salmon";

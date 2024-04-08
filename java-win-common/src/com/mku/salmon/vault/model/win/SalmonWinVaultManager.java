@@ -26,7 +26,7 @@ SOFTWARE.
 
 import com.mku.file.IRealFile;
 import com.mku.file.JavaFile;
-import com.mku.salmon.sequence.SalmonSequenceException;
+import com.mku.sequence.SequenceException;
 import com.mku.salmon.sequence.SalmonSequenceSerializer;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonVaultManager;
@@ -88,7 +88,7 @@ public class SalmonWinVaultManager extends SalmonVaultManager {
         if (getSequencer() instanceof WinFileSequencer) {
             try {
                 ((WinFileSequencer) getSequencer()).reset(clearChecksumOnly);
-            } catch (SalmonSequenceException e) {
+            } catch (SequenceException e) {
                 SalmonDialog.promptDialog("Could not reset sequencer: " + e);
             }
         }

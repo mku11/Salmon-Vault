@@ -23,16 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.iostream.MemoryStream;
-import com.mku.iostream.RandomAccessStream;
 import com.mku.salmon.SalmonFile;
-import com.mku.salmon.SalmonSecurityException;
-import com.mku.salmon.integrity.SalmonIntegrityException;
-import com.mku.salmon.iostream.SalmonStream;
+import com.mku.salmon.streams.SalmonStream;
 import com.mku.salmon.vault.dialog.SalmonDialog;
+import com.mku.streams.MemoryStream;
+import com.mku.streams.RandomAccessStream;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 
 public class SalmonTextEditor

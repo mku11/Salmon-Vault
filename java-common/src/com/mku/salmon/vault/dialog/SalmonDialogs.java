@@ -25,21 +25,18 @@ SOFTWARE.
 
 import com.mku.file.IRealFile;
 import com.mku.func.Consumer;
+import com.mku.salmon.SalmonAuthConfig;
 import com.mku.salmon.SalmonDrive;
 import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.services.IFileDialogService;
-import com.mku.salmon.vault.services.IFileService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.URLUtils;
 import com.mku.utils.FileUtils;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class SalmonDialogs {
     public static void promptPassword(Consumer<String> onSubmit) {
@@ -91,7 +88,8 @@ public class SalmonDialogs {
                 filename, filter, SalmonSettings.getInstance().getVaultLocation(), (file) ->
                 {
                     try {
-                        SalmonVaultManager.getInstance().getDrive().importAuthFile((IRealFile) file);
+                        SalmonAuthConfig.importAuthFile(SalmonVaultManager.getInstance().getDrive(),
+                                (IRealFile) file);
                         SalmonDialog.promptDialog("Auth", "Device is now Authorized");
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -115,7 +113,8 @@ public class SalmonDialogs {
                             filename, filter, SalmonSettings.getInstance().getVaultLocation(), (fileResult) ->
                             {
                                 try {
-                                    SalmonVaultManager.getInstance().getDrive().exportAuthFile(targetAuthID, (IRealFile) fileResult);
+                                    SalmonAuthConfig.exportAuthFile(SalmonVaultManager.getInstance().getDrive(),
+                                            targetAuthID, (IRealFile) fileResult);
                                     SalmonDialog.promptDialog("Auth", "Auth File Exported");
                                 } catch (Exception ex) {
                                     ex.printStackTrace();

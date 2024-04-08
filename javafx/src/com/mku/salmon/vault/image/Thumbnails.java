@@ -24,11 +24,11 @@ SOFTWARE.
 */
 
 import com.mku.convert.BitConverter;
-import com.mku.iostream.InputStreamWrapper;
-import com.mku.iostream.MemoryStream;
-import com.mku.iostream.RandomAccessStream;
+import com.mku.streams.InputStreamWrapper;
+import com.mku.streams.MemoryStream;
+import com.mku.streams.RandomAccessStream;
 import com.mku.salmon.SalmonFile;
-import com.mku.salmon.iostream.SalmonStream;
+import com.mku.salmon.streams.SalmonStream;
 import com.mku.utils.FileUtils;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -236,9 +236,9 @@ public class Thumbnails {
         try {
             String ext = FileUtils.getExtensionFromFileName(file.getBaseName()).toLowerCase();
             if (ext.equals("gif") && file.getSize() > TMP_GIF_THUMB_MAX_SIZE)
-                stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(file, TMP_GIF_THUMB_MAX_SIZE)), ENC_BUFFER_SIZE);
+                stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(file, TMP_GIF_THUMB_MAX_SIZE)), BUFFER_SIZE);
             else
-                stream = new BufferedInputStream(new InputStreamWrapper(file.getInputStream()), ENC_BUFFER_SIZE);
+                stream = new BufferedInputStream(new InputStreamWrapper(file.getInputStream()), BUFFER_SIZE);
             image = new Image(stream, THUMBNAIL_SIZE, THUMBNAIL_SIZE, true, true);
         } catch (Exception ex) {
             ex.printStackTrace();

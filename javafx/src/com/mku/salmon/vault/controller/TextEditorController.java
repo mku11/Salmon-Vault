@@ -23,9 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.iostream.MemoryStream;
+import com.mku.streams.MemoryStream;
 import com.mku.salmon.SalmonFile;
-import com.mku.salmon.iostream.SalmonStream;
+import com.mku.salmon.streams.SalmonStream;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
