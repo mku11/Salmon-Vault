@@ -51,7 +51,7 @@ export class SalmonDialogs {
                         if (onPasswordChanged != null)
                             onPasswordChanged(password);
                     }
-                }, null, false, false, true, null);
+                }, "", false, false, true, null);
             }
         }, "", false, false, true, null);
     }
