@@ -58,7 +58,7 @@ public class SalmonDialogs {
                         if (onPasswordChanged != null)
                             onPasswordChanged.accept(password);
                     }
-                }, null, false, false, true, null);
+                }, "", false, false, true, null);
             }
         }, "", false, false, true, null);
     }

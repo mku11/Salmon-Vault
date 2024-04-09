@@ -6,7 +6,7 @@
     <TargetFrameworks>net8.0-android</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
     <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-    <!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
+    <!-- <TargetFrameworks>$(TargetFrameworks);net8.0-tizen</TargetFrameworks> -->
     <OutputType>Exe</OutputType>
     <RootNamespace>Salmon.Vault.MAUI</RootNamespace>
     <UseMaui>true</UseMaui>
@@ -211,6 +211,10 @@
     </PackageReference>
     <PackageReference Include="Salmon.Native.Android">
       <Version>1.0.6-SNAPSHOT</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx">
+      <!-- fixes issue with Type androidx.collection.ArrayMapKt is defined multiple times -->
+      <Version>1.6.2.2</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Google.Guava">
       <Version>32.0.1.2</Version>

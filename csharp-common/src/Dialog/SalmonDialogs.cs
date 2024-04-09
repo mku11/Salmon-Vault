@@ -70,7 +70,7 @@ public class SalmonDialogs
                     }
                 }, isPassword: true);
             }
-        });
+        }, isPassword: true);
     }
 
     public static void PromptChangePassword()
@@ -106,7 +106,7 @@ public class SalmonDialogs
         {
             try
             {
-                SalmonVaultManager.Instance.Drive.ImportAuthFile((IRealFile)filePath);
+                SalmonAuthConfig.ImportAuthFile(SalmonVaultManager.Instance.Drive, (IRealFile)filePath);
                 SalmonDialog.PromptDialog("Auth", "Device is now Authorized");
             }
             catch (Exception ex)
@@ -134,7 +134,7 @@ public class SalmonDialogs
                     {
                         try
                         {
-                            SalmonVaultManager.Instance.Drive.ExportAuthFile(targetAuthID, (IRealFile)fileResult);
+                            SalmonAuthConfig.ExportAuthFile(SalmonVaultManager.Instance.Drive, targetAuthID, (IRealFile)fileResult);
                             SalmonDialog.PromptDialog("Auth", "Auth File Exported");
                         }
                         catch (Exception ex)

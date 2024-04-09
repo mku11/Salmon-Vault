@@ -126,7 +126,7 @@ public class WebViewerActivity : AppCompatActivity
                 webView.LoadUrl("file:android_asset/imagedata.dat");
             });
         }
-        catch (SalmonIntegrityException ex)
+        catch (IntegrityException ex)
         {
             ex.PrintStackTrace();
             RunOnUiThread(() =>
