@@ -243,7 +243,7 @@ export class SalmonDialogs {
             SalmonSettings.getInstance().getVaultLocation(),
             (dir) => {
                 SalmonDialogs.promptPassword(async (password) => {
-                    SalmonVaultManager.getInstance().openVault(dir, password);
+                    await SalmonVaultManager.getInstance().openVault(dir, password);
                 });
             },
             SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
@@ -254,7 +254,9 @@ export class SalmonDialogs {
             "Type in the HTTP url for the remote vault",
             async (url, isChecked) => {
                 let dir = ServiceLocator.getInstance().resolve(IFileRemoteService).getFile(url);
-                await SalmonVaultManager.getInstance().openVault(dir);
+				SalmonDialogs.promptPassword(async (password) => {
+					await SalmonVaultManager.getInstance().openVault(dir, password);
+				});
             }, "");
     }
 
