@@ -89,7 +89,15 @@ public class SalmonVaultManager : INotifyPropertyChanged
         }
     }
 
-    public INonceSequencer Sequencer { get; protected set; }
+	private INonceSequencer _sequencer;
+    public INonceSequencer Sequencer { 
+		get => _sequencer;
+		protected set {
+			_sequencer = value;
+			if(this.Drive != null)
+				this.Drive.Sequencer = value;
+		}
+	}
 
     public static int GetBufferSize()
     {

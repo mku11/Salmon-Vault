@@ -1,5 +1,5 @@
 Salmon Vault - JavaFx
-version: 1.0.5
+version: 2.0.0
 project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 
@@ -33,6 +33,14 @@ gradlew.bat build -x test --rerun-tasks
 
 To refresh developement packages make sure you delete the salmon packages in the cache:
 C:\Users\<username>\.gradle\caches\modules-2\files-2.1\com.mku.salmon.*
-Then refresh the gradle dependencies from the IDE or from command line.
+Then refresh the gradle dependencies from the IDE or from command line:
+gradlew.bat --refresh-dependencies
 
+To run/debug the app from within the IDE open gradle tab and run the task "runApp" under Application. This will ensure that the salmon native library is loaded.
+
+Package:
 To package the app build the artifacts from Intellij IDEA.
+
+Native library support:
+If you need to build with AES intrinsics for a different cpu architecture you need to place the native libraries under libs folder.
+For more details open each artifact and view the required files.

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.mku.salmon'
-version '1.0.6-SNAPSHOT'
+version '2.0.0'
 
 repositories {
     maven {
@@ -64,12 +64,12 @@ build.dependsOn unzipNative
 dependencies {
 
     // salmon libs:
-    implementation 'com.mku.salmon:salmon-core:1.0.6-SNAPSHOT'
-    implementation 'com.mku.salmon:salmon-fs:1.0.6-SNAPSHOT'
-    implementation 'com.mku.salmon:salmon-win:1.0.6-SNAPSHOT'
+    implementation 'com.mku.salmon:salmon-core:2.0.0'
+    implementation 'com.mku.salmon:salmon-fs:2.0.0'
+    implementation 'com.mku.salmon:salmon-win:2.0.0'
     // optional fast AES intrinsics and Tiny AES:
-    implementation 'com.mku.salmon:salmon-native:1.0.6-SNAPSHOT:win-x86_64'
-    nativeImplementation 'com.mku.salmon:salmon-native:1.0.6-SNAPSHOT:win-x86_64'
+    implementation 'com.mku.salmon:salmon-native:2.0.0:win-x86_64'
+    nativeImplementation 'com.mku.salmon:salmon-native:2.0.0:win-x86_64'
 
     implementation 'net.java.dev.jna:jna:5.13.0'
     implementation 'net.java.dev.jna:jna-platform:5.13.0'

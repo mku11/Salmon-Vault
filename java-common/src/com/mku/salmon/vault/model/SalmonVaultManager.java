@@ -622,6 +622,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     protected void setSequencer(INonceSequencer sequencer) {
         this.sequencer = sequencer;
+        if(this.drive != null)
+            this.drive.setSequencer(sequencer);
     }
 
     protected INonceSequencer getSequencer() {
