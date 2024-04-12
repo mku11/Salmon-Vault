@@ -33,6 +33,8 @@ msbuild -t:restore
 
 Package:
 To package the app click on Build/Publish in Visual Studio.
+or type in the command prompt:
+msbuild /t:publish /p:PublishProfile=Properties\PublishProfiles\FolderProfile.pubxml /p:Configuration=Release
 
 Video Playback with ffmpeg (Optional):
 If you want to play encrypted media with ffmpeg you will need to download ffmpeg from here:
