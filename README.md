@@ -2,7 +2,7 @@
 
 # Salmon Vault
 Secure all your personal files in Salmon Vault with AES-256 encryption for your Android, Windows, Linux, MacOS devices. 
-Powered by Salmon AES CTR library.
+Powered by [Salmon](https://github.com/mku11/Salmon-AES-CTR) library.
 
 [![License: MIT](https://img.shields.io/github/license/mku11/Salmon-Vault.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/mku11/Salmon-Vault/releases)
