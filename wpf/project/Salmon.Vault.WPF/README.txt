@@ -31,6 +31,12 @@ Restore dev packages (if changed):
 delete files from C:\Users\<username>\.nuget\packages
 msbuild -t:restore
 
+To clean:
+msbuild -t:clean
+
+To build from the command line:
+msbuild
+
 Package:
 To package the app click on Build/Publish in Visual Studio.
 or type in the command prompt:

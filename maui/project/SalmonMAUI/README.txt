@@ -27,3 +27,19 @@ To build the app you will need:
 
 Package:
 To package the app click on Build/Publish in Visual Studio.
+
+Restore packages:
+msbuild -restore
+
+Restore dev packages (if changed):
+delete files from C:\Users\<username>\.nuget\packages
+msbuild -t:restore
+
+To clean:
+msbuild -t:clean
+
+To build from the command line:
+msbuild
+
+Package:
+To package the app click on Build/Publish in Visual Studio.
