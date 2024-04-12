@@ -7,8 +7,6 @@ Powered by Salmon AES CTR library.
 [![License: MIT](https://img.shields.io/github/license/mku11/Salmon-Vault.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/mku11/Salmon-Vault/releases)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/mku11/Salmon-Vault)](https://github.com/mku11/Salmon-Vault/commits/master)
-[![CodeFactor](https://www.codefactor.io/repository/github/mku11/salmon-Vault/badge)](https://www.codefactor.io/repository/github/mku11/salmon-Vault)
-<!-- [![GitHub Releases](https://img.shields.io/github/downloads/mku11/Salmon-Vault/latest/total?logo=github)](https://github.com/mku11/Salmon-Vault/releases) -->
 
 ## Features
 * Create portable virtual file drives encrypted with a text password.
