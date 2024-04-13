@@ -29,10 +29,13 @@ Powered by [Salmon](https://github.com/mku11/Salmon-AES-CTR) encryption library.
 
 ## Applications
 Salmon Vault app is offered on several different platforms:  
-* Java with JavaFx for Windows, MacOS, and Linux
-* .NET with WPF/MAUI for Windows, MacOS, Android
-* Native Android
-* Android .NET
+* JavaFx for Windows, MacOS, and Linux
+* .NET WPF/MAUI for Windows, MacOS, Android
+* Android
+* .NET Android
+* Javascript Web App
+
+[**Live Web Demo**](https://mku11.github.io/Salmon-AES-CTR/demo)
 
 [**Downloads**](https://github.com/mku11/Salmon-Vault/releases)
 
