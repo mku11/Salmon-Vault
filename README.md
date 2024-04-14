@@ -1,39 +1,40 @@
 ![alt text](https://github.com/mku11/Salmon-Vault/blob/wip/common/common-res/icons/logo.png)
 
 # Salmon Vault
-Secure all your personal files in Salmon Vault with AES-256 encryption for your Android, Windows, Linux, MacOS devices. 
-Powered by [Salmon](https://github.com/mku11/Salmon-AES-CTR) encryption library.
+Secure all your personal files in Salmon Vault with AES-256 encryption. Salmon Vault works on Android, Windows, Linux, and MacOS devices. Powered by [Salmon](https://github.com/mku11/Salmon-AES-CTR) encryption library.
 
 [![License: MIT](https://img.shields.io/github/license/mku11/Salmon-Vault.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/mku11/Salmon-Vault/releases)
 [![GitHub Releases](https://img.shields.io/github/downloads/mku11/Salmon-Vault/latest/total?logo=github)](https://github.com/mku11/Salmon-Vault/releases)
 
 ## Features
-* Create portable virtual file drives encrypted with a text password.
-* Drives are portable and can be decrypted with any device.
-* Unlike other products with Salmon there is no birthday problem.
-* Back up your drives as often as you wish.
-* Devices can be authorized to import new files.
-* Encrypted multimedia playback for audio and video.
-* Image Viewer support for common formats Jpeg, Png, Bmp.
-* Built-in Text Editor for editing encrypting text files.
+* Create encrypted virtual drives with text password.
+* Drives are portable and can used by other devices.
+* You can import new files from any authorized device.
+* Built-in Text Editor for editing encrypted text files.
+* Image Viewer for encrypted images (JPG, PNG, BMP).
+* Multimedia playback for encrypted audio and video.
 * Allow editing with external Apps (Android only).
+* No birthday problem unlike other encryption software.
+* Back up your drives as often as you wish.
 
 ## Specs
-* AES-256 CTR Mode encryption with HMAC SHA-256 integrity.
+* AES-256 encryption with HMAC SHA-256 authentication.
 * SHA-256 Text password key derivation.
-* Fast hardware AES-NI encryption.
-* Protected nonce sequencer (Android only)
+* Fast hardware with Salmon AES-NI encryption.
+* Fallback encryption with TinyAES.
+* Protected nonce sequencer (Android only).
 * Protected nonce sequencer with SHA256 checksum anti-tampering (Windows only)
-* Protected account sequencer service (Windows only).
+* Protected account sequencer service (Optional / Windows only).
 
 ## Applications
 Salmon Vault app is offered on several different platforms:  
-* JavaFx for Windows, MacOS, and Linux
-* .NET WPF/MAUI for Windows, MacOS, Android
+* JavaFx for Windows x86_64, MacOS x86_64, and Linux x86_64/ARM64
 * Android
+* .NET WPF
 * .NET Android
 * Javascript Web App
+* MAUI (Android/Windows 10+ experimental)
 
 [**Live Web Demo**](https://mku11.github.io/Salmon-AES-CTR/demo)
 
@@ -48,8 +49,7 @@ Salmon Vault app is offered on several different platforms:
 * Integrity is not supported for filenames only for file contents.
 
 ### Contributions
-Code contributions are not accepted.  
-Bug reports and security POCs are more than welcome!  
+Unfortunately I cannot accept any code contributions. Though, bug reports and security POCs are more than welcome!  
   
 ### License
 Salmon is released under MIT Licence, see [LICENSE](https://github.com/mku11/Salmon-Vault/blob/main/LICENSE) file.
