@@ -35,7 +35,7 @@ Salmon Vault app is offered on several different platforms:
 * Android 23+
 * .NET Android 23+
 * .NET MAUI (Android/Windows 10+ experimental)
-* Javascript Web App (Chrome, Firefox, Safari support remote drives, Chrome supports also local drives)
+* Javascript Web App (Chrome, Firefox, Safari support remote read-only drives, Chrome supports also local read-write drives)
 
 [**Live Web Demo**](https://mku11.github.io/Salmon-AES-CTR/demo)
 
