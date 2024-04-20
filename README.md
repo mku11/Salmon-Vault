@@ -8,33 +8,34 @@ Secure all your personal files in Salmon Vault with AES-256 encryption. Salmon V
 [![GitHub Releases](https://img.shields.io/github/downloads/mku11/Salmon-Vault/latest/total?logo=github)](https://github.com/mku11/Salmon-Vault/releases)
 
 ## Features
-* Create encrypted virtual drives with text password.
-* Drives are portable and can used by other devices.
-* You can import new files from any authorized device.
+* Create portable virtual drives encrypted with a text password.
+* Files can be decrypted by any devices running Salmon Vault.
+* Files can be imported from any authorized device.
 * Built-in Text Editor for editing encrypted text files.
 * Image Viewer for encrypted images (JPG, PNG, BMP).
 * Multimedia playback for encrypted audio and video.
-* Allow editing with external Apps (Android only).
+* Allow file editing with external Apps (Android only).
 * No birthday problem unlike other encryption software.
 * Back up your drives as often as you wish.
 
 ## Specs
-* AES-256 encryption with HMAC SHA-256 authentication.
+* AES-256 encryption 
+* HMAC SHA-256 authentication.
 * SHA-256 Text password key derivation.
-* Fast hardware with Salmon AES-NI encryption.
+* Fast hardware encryption with Salmon AES-NI native subroutines.
 * Fallback encryption with TinyAES.
 * Protected nonce sequencer (Android only).
-* Protected nonce sequencer with SHA256 checksum anti-tampering (Windows only)
+* Protected nonce sequencer with SHA256 checksum anti-tampering (Windows only).
 * Protected account sequencer service (Optional / Windows only).
 
 ## Applications
 Salmon Vault app is offered on several different platforms:  
 * JavaFx for Windows x86_64, MacOS x86_64, and Linux x86_64/ARM64
-* Android
-* .NET WPF
-* .NET Android
-* Javascript Web App
-* MAUI (Android/Windows 10+ experimental)
+* .NET WPF (Windows Only)
+* Android 23+
+* .NET Android 23+
+* .NET MAUI (Android/Windows 10+ experimental)
+* Javascript Web App (Chrome also supports local drives)
 
 [**Live Web Demo**](https://mku11.github.io/Salmon-AES-CTR/demo)
 
@@ -44,9 +45,12 @@ Salmon Vault app is offered on several different platforms:
 
 ### Limitations
 * Importing files to a salmon virtual drive using different devices requires authorization by an already authorized device for each  virtual drive. The device that created the drive is by default authorized. The authorization mechanism protects against repeated access based attacks!
-* Make sure that you never backup and restore the Nonce Sequencer files in your Windows Device! They are located in each user %LOCALAPPDATA%\\.salmon directory (including the LocalSystem user if you use the Salmon Windows Service). So make sure you exclude them from backups and restores.
-* The Windows user sequencer files are not secure from other apps! Also do not share your device account with other users! Salmon will attempt to notify you if it encounters tampering on the sequencer though for additional security you should use the Salmon Windows Service which protects the sequencer under the LocalSystem space.
+* Make sure that you never backup and restore the Nonce Sequencer files in your Windows Device! For Windows the files are located under %LOCALAPPDATA%\\.salmon directory, for Android and Linux under the $HOME/.salmon directory. Also you need to make sure you exclude them from backups and restores, this will prevent nonce reuse!
+* User Sequencer files are not secure from other apps. The sequencer file for Android is secure located in private space but not for rooted devices! For windows Salmon will notify you if it detects tampering though it is recommended for additional security that you should use the Salmon Windows Service. The Salmon service protects the sequencer files under the system administrator (LocalSystem) space. For Linux and Mac make sure you do not share your account with other users! 
 * Integrity is not supported for filenames only for file contents.
+* Maximum guaranteed file size: 2^64 bytes or limited by the backed resource (disk, memory, network).
+* Maximum drive file size: 2^64 bytes
+* Maximum number of drive files: 2^62 (64 bit nonces used for the filename and the file contents.
 
 ### Contributions
 Unfortunately I cannot accept any code contributions. Though, bug reports and security POCs are more than welcome!  
