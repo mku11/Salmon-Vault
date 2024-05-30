@@ -796,7 +796,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public void createVault(IRealFile dir, String password)
             throws IOException {
-        this.drive = SalmonDrive.createDrive(dir, JavaDrive.class, password, this.sequencer);
+        this.drive = SalmonDrive.createDrive(dir, getDriveClassType(), password, this.sequencer);
         this.currDir = this.drive.getRoot();
         SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
         this.refresh();
