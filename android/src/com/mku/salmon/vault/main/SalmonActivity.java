@@ -198,7 +198,6 @@ public class SalmonActivity extends AppCompatActivity {
         {
             if (propertyName == "FileItemList") {
                 UpdateFileAdapter();
-
                 adapter.selectAll(false);
                 adapter.setMultiSelect(false);
             } else if (propertyName.equals("CurrentItem")) {
@@ -264,14 +263,13 @@ public class SalmonActivity extends AppCompatActivity {
     }
 
     private void UpdateFileAdapter() {
-        if (manager.getFileItemList() == null) {
-            fileItemList.clear();
-            adapter.notifyDataSetChanged();
-        } else {
-            fileItemList.clear();
+        fileItemList.clear();
+        if (manager.getFileItemList() != null) {
             fileItemList.addAll(manager.getFileItemList());
-            adapter.notifyDataSetChanged();
         }
+        if(sortType != SortType.Default)
+            SortFiles(sortType);
+        adapter.notifyDataSetChanged();
     }
 
     private void fileItemAdded(int position, SalmonFile file) {
@@ -543,7 +541,7 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    private boolean openItem(int position) {
+    protected boolean openItem(int position) {
         try {
             return manager.openItem(fileItemList.get(position));
         } catch (Exception e) {
@@ -561,10 +559,9 @@ public class SalmonActivity extends AppCompatActivity {
     }
 
     private void SortFiles(SortType sortType) {
-        this.sortType = sortType;
         switch (sortType) {
             case Default:
-                Collections.sort(fileItemList, SalmonFileComparators.getDefaultComparator());
+                manager.refresh();
                 break;
             case Name:
                 Collections.sort(fileItemList, SalmonFileComparators.getFilenameAscComparator());
@@ -603,10 +600,11 @@ public class SalmonActivity extends AppCompatActivity {
 
         ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_list_item_activated_1, sortTypes.toArray(new String[0]));
-        SalmonDialog.promptSingleValue(itemsAdapter, getString(R.string.Sort), -1,
+        SalmonDialog.promptSingleValue(itemsAdapter, getString(R.string.Sort), sortType.ordinal(),
                 (AlertDialog dialog, Integer which) ->
                 {
-                    SortFiles(values[which]);
+                    sortType = values[which];
+                    SortFiles(sortType);
                     adapter.notifyDataSetChanged();
                     dialog.dismiss();
                 }
@@ -892,5 +890,9 @@ public class SalmonActivity extends AppCompatActivity {
     protected SalmonVaultManager createVaultManager() {
         AndroidDrive.initialize(this.getApplicationContext());
         return SalmonAndroidVaultManager.getInstance();
+    }
+
+    protected List<SalmonFile> getFileItemList() {
+        return fileItemList;
     }
 }
