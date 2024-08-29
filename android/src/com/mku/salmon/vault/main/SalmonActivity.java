@@ -782,6 +782,8 @@ public class SalmonActivity extends AppCompatActivity {
             } else if (FileUtils.isText(file.getBaseName())) {
                 startWebViewer(fileItemList.indexOf(file));
                 return true;
+            } else {
+                openWith(file, ActionType.VIEW_EXTERNAL.ordinal());
             }
         } catch (Exception ex) {
             ex.printStackTrace();
