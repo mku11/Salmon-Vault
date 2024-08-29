@@ -11,8 +11,8 @@
         android:id="@+id/thumbnail_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="4dp"
-        android:layout_alignParentTop="true">
+        android:layout_alignParentTop="true"
+        android:padding="4dp">
 
         <ImageView
             android:id="@+id/thumbnail"
@@ -40,10 +40,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:gravity="center_vertical"
         android:buttonTint="#FF8A8A"
-        android:padding="4dp"
-        android:layoutDirection="rtl" />
+        android:gravity="center_vertical"
+        android:layoutDirection="rtl"
+        android:padding="4dp" />
 
     <RelativeLayout
         android:id="@+id/file_layout"
@@ -59,7 +59,8 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:padding="2dp"
-            android:text="file.dat" />
+            android:text="file.dat"
+            android:textSize="14sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -76,7 +77,8 @@
                 android:layout_weight="1"
                 android:lines="1"
                 android:padding="2dp"
-                android:text="10MB" />
+                android:text="10MB"
+                android:textSize="12sp" />
 
             <TextView
                 android:id="@+id/filedate"
@@ -86,7 +88,8 @@
                 android:gravity="right"
                 android:lines="1"
                 android:padding="2dp"
-                android:text="01/01/2001" />
+                android:text="01/01/2001"
+                android:textSize="12sp" />
 
         </LinearLayout>
     </RelativeLayout>

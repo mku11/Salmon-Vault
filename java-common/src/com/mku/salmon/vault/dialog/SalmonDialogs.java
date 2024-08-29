@@ -33,10 +33,15 @@ import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.services.IFileDialogService;
 import com.mku.salmon.vault.services.ServiceLocator;
+import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.URLUtils;
 import com.mku.utils.FileUtils;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Locale;
 
 public class SalmonDialogs {
     public static void promptPassword(Consumer<String> onSubmit) {
@@ -160,6 +165,19 @@ public class SalmonDialogs {
             SalmonDialog.promptDialog("Properties", SalmonVaultManager.getInstance().getFileProperties(item));
         } catch (Exception exception) {
             SalmonDialog.promptDialog("Properties", "Could not get file properties: "
+                    + exception.getMessage());
+            exception.printStackTrace();
+        }
+    }
+
+    public static void showDiskUsage(int items, long totalSize) {
+        try {
+            DecimalFormat format = new DecimalFormat();
+            format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.US));
+            SalmonDialog.promptDialog("Disk Usage", format.format(items) + " items\n"
+            + "Size on disk: " + ByteUtils.getBytes(totalSize, 2));
+        } catch (Exception exception) {
+            SalmonDialog.promptDialog("Disk Usage", "Could not get file properties: "
                     + exception.getMessage());
             exception.printStackTrace();
         }

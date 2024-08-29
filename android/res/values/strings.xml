@@ -9,9 +9,9 @@
     <string name="IntegrityCheckSummary">Always check files integrity before opening. Warning: This is buggy and Very Slow for large files.</string>
     <string name="IntegrityCheckTitle">Integrity Check</string>
 
-    <string name="ImportFiles">Import File(s)</string>
-    <string name="ExportFiles">Export File(s)</string>
-    <string name="ExportAndDeleteFiles">Export And Delete File(s)</string>
+    <string name="ImportFiles">Add File(s)</string>
+    <string name="ExportFiles">Export</string>
+    <string name="ExportAndDeleteFiles">Export/Delete</string>
     <string name="Sort">Sort</string>
     <string name="ExportAll">Export All</string>
     <string name="Action">Action</string>
@@ -57,7 +57,6 @@
 
     <string name="FilesImported">Files Imported</string>
     <string name="Edit">Edit</string>
-    <string name="EditExternal">Edit External</string>
     <string name="Delete">Delete</string>
     <string name="SelectFolderForFiles">Select or create a folder for your vault</string>
     <string name="FilesExportedTo">Files exported to</string>
@@ -74,6 +73,7 @@
     <string name="Search">Search</string>
     <string name="AnotherProcessRunning">Another process is running</string>
     <string name="Properties">Properties</string>
+    <string name="DiskUsage">Disk Usage</string>
     <string name="CouldNotGetFileProperties">Could not get file properties</string>
     <string name="Name">Name</string>
     <string name="Path">Path</string>

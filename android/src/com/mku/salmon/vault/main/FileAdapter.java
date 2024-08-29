@@ -56,6 +56,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -76,9 +77,9 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     private final LinkedHashMap<SalmonFile, Bitmap> bitmapCache = new LinkedHashMap<>();
     // we use a deque and add jobs to the front for better user experience
     private final LinkedBlockingDeque<ViewHolder> tasks = new LinkedBlockingDeque<>();
-    private int lastPositionPressed;
+    private SalmonFile lastSelected;
     private int cacheSize = 0;
-    private HashSet<SalmonFile> selectedFiles = new HashSet<>();
+    private LinkedHashSet<SalmonFile> selectedFiles = new LinkedHashSet<>();
     private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     private Mode mode = Mode.SINGLE_SELECT;
     private ExecutorService executor;
@@ -97,7 +98,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         createThread();
     }
 
-    public HashSet<SalmonFile> getSelectedFiles() {
+    public LinkedHashSet<SalmonFile> getSelectedFiles() {
         return selectedFiles;
     }
 
@@ -346,8 +347,8 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         return new ViewHolder(view, itemClicked, this);
     }
 
-    public int getPosition() {
-        return lastPositionPressed;
+    public SalmonFile getLastSelected() {
+        return lastSelected;
     }
 
     private void updateBackgroundColor(ViewHolder viewHolder) {
@@ -386,22 +387,28 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
             itemView.setOnClickListener((View view) ->
             {
+                SalmonFile salmonFile = items.get(super.getLayoutPosition());
                 if (mode == Mode.MULTI_SELECT) {
                     selected.setChecked(!selected.isChecked());
-                    SalmonFile salmonFile = items.get(super.getLayoutPosition());
                     if (selected.isChecked())
                         selectedFiles.add(salmonFile);
                     else selectedFiles.remove(salmonFile);
                     adapter.propertyChanged(this, "SelectedFiles");
                     updateBackgroundColor(this);
                 } else if (itemClicked == null || !itemClicked.apply(super.getLayoutPosition())) {
-                    adapter.lastPositionPressed = super.getLayoutPosition();
+                    adapter.lastSelected = salmonFile;
                     itemView.showContextMenu();
                 }
             });
 
             itemView.setOnLongClickListener((View view) -> {
-                adapter.lastPositionPressed = super.getLayoutPosition();
+                SalmonFile salmonFile = items.get(super.getLayoutPosition());
+                if(mode == Mode.SINGLE_SELECT) {
+                    setMultiSelect(true);
+                    selectedFiles.add(salmonFile);
+                    adapter.propertyChanged(this, "SelectedFiles");
+                }
+                adapter.lastSelected = salmonFile;
                 itemView.showContextMenu();
                 return true;
             });

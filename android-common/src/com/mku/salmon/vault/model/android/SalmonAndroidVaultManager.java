@@ -25,8 +25,11 @@ SOFTWARE.
 
 import com.mku.android.salmon.drive.AndroidDrive;
 import com.mku.android.sequence.AndroidSequenceSerializer;
+import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.sequence.INonceSequenceSerializer;
+
+import java.util.LinkedHashSet;
 
 public class SalmonAndroidVaultManager extends SalmonVaultManager {
     synchronized
@@ -44,4 +47,27 @@ public class SalmonAndroidVaultManager extends SalmonVaultManager {
 	protected Class<?> getDriveClassType() {
 		return AndroidDrive.class;
 	}
+
+    // TODO: Refactor to SalmonVaultManager
+    public static long getTotalBytes(SalmonFile[] selectedFiles) {
+        long totalSize = 0;
+        for(SalmonFile file : selectedFiles) {
+            if(file.isFile())
+                totalSize += file.getRealFile().length();
+            else
+                totalSize += getTotalBytes(file.listFiles());
+        }
+        return totalSize;
+    }
+
+    public int getTotalItems(SalmonFile[] selectedFiles) {
+        int totalItems = 0;
+        for(SalmonFile file : selectedFiles) {
+            if(file.isFile())
+                totalItems++;
+            else
+                totalItems += getTotalItems(file.listFiles());
+        }
+        return totalItems;
+    }
 }
