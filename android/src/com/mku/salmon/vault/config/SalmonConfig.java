@@ -7,7 +7,9 @@ public class SalmonConfig {
     public static final String APP_NAME = "Salmon Vault";
     public static final String ABOUT_TEXT = "License: MIT License\n\n" +
             "Open source projects included:\n" +
-            "TinyAES - The Unlicense - https://github.com/kokke/tiny-AES-c\n\n" +
+            "Salmon-AES-CTR - MIT License - https://github.com/mku11/Salmon-AES-CTR\n" +
+            "TinyAES - The Unlicense - https://github.com/kokke/tiny-AES-c\n" +
+            "uxwing icons - https://uxwing.com/computer-folder-open-icon/\n" +
             "For more information visit the project website";
     public static final String SourceCodeURL = "https://github.com/mku11/Salmon-AES-CTR";
     public static final String FILE_SEQ_FILENAME = "config.xml";
