@@ -641,26 +641,36 @@ public class SalmonActivity extends AppCompatActivity {
 
     private void openWith(SalmonFile salmonFile, int action) {
         try {
-            if (salmonFile.getSize() > MAX_FILE_SIZE_TO_SHARE) {
+            long size = salmonFile.getRealFile().length();
+            if (size > MAX_FILE_SIZE_TO_SHARE) {
                 Toast toast = Toast.makeText(this, getString(R.string.FileSizeTooLarge), Toast.LENGTH_LONG);
                 toast.show();
                 return;
             }
-            if (salmonFile.getSize() > MEDIUM_FILE_SIZE_TO_SHARE) {
+            if (size > MEDIUM_FILE_SIZE_TO_SHARE) {
                 Toast toast = Toast.makeText(this, getString(R.string.PleaseWaitWhileDecrypting), Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
             }
-            new Thread(() ->
-            {
+            new Thread(() -> {
                 try {
                     ExternalAppChooser.chooseApp(this, salmonFile, action, this::reimportSharedFile);
                 } catch (Exception exception) {
                     exception.printStackTrace();
+                    WindowUtils.runOnMainThread(() -> {
+                        Toast toast = Toast.makeText(this, "Could not open file: " + exception, Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                    });
                 }
             }).start();
         } catch (Exception exception) {
             exception.printStackTrace();
+            WindowUtils.runOnMainThread(() -> {
+                Toast toast = Toast.makeText(this, "Could not open file: " + exception, Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            });
         }
     }
 
