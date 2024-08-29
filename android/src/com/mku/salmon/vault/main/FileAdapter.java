@@ -146,11 +146,6 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ViewHolder viewHolder = (ViewHolder) holder;
         try {
-            if (mode == Mode.MULTI_SELECT) {
-                viewHolder.selected.setVisibility(View.VISIBLE);
-            } else {
-                viewHolder.selected.setVisibility(View.GONE);
-            }
             viewHolder.salmonFile = items.get(position);
             updateSelected(viewHolder, viewHolder.salmonFile);
             updateBackgroundColor(viewHolder);
