@@ -353,7 +353,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
     private void updateBackgroundColor(ViewHolder viewHolder) {
         if (viewHolder.selected.isChecked())
-            viewHolder.itemView.setBackgroundColor(activity.getColor(R.color.colorPrimaryDark));
+            viewHolder.itemView.setBackgroundColor(activity.getColor(R.color.salmonItemSelectedBackground));
         else
             viewHolder.itemView.setBackgroundColor(0);
     }

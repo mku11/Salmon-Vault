@@ -15,12 +15,12 @@ repositories {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
 
     defaultConfig {
         applicationId "com.mku.salmon.vault.android"
         minSdkVersion 23
-        targetSdkVersion 33
+        targetSdkVersion 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
