@@ -4,6 +4,6 @@
 
     <style name="AppBaseTheme" parent="Theme.MaterialComponents.NoActionBar">
     </style>
-    <color name="salmonItemSelectedBackground">#533336</color>
+    <color name="salmonItemSelectedBackground">#955151</color>
 </resources>
 
