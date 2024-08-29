@@ -244,6 +244,8 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                         animationViewHolder = viewHolder;
                         if (ext.equals("mp4")) {
                             animateVideo(viewHolder);
+                        } else {
+                            return false;
                         }
                     }
                     return true;
