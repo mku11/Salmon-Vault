@@ -4,7 +4,9 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
+    android:background="@color/salmonItemSelectedBackground"
     android:foreground="?attr/selectableItemBackground"
+    android:hapticFeedbackEnabled="false"
     android:padding="4dp">
 
     <RelativeLayout
