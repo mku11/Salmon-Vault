@@ -162,8 +162,7 @@ public class SalmonActivity extends AppCompatActivity {
         return new FileAdapter(this, fileItemList, (Integer pos) ->
         {
             try {
-                SalmonFile salmonFile = adapter.getSelectedFiles().iterator().next();
-                return openItem(salmonFile);
+                return openItem(getFileItemList().get(pos));
             } catch (Exception e) {
                 e.printStackTrace();
                 SalmonDialog.promptDialog("Could not open item: " + e.getMessage());
