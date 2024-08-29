@@ -45,6 +45,7 @@
         android:buttonTint="#FF8A8A"
         android:gravity="center_vertical"
         android:layoutDirection="rtl"
+        android:visibility="gone"
         android:padding="4dp" />
 
     <RelativeLayout
