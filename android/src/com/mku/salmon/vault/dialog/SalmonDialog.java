@@ -1,9 +1,13 @@
 package com.mku.salmon.vault.dialog;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.text.InputType;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -110,7 +114,6 @@ public class SalmonDialog {
                         }
                     }
                 });
-                text.requestFocus();
                 valueText = text;
             }
             LinearLayout.LayoutParams parameters = new LinearLayout.LayoutParams(
@@ -141,9 +144,11 @@ public class SalmonDialog {
             alertDialog.setTitle(title);
             alertDialog.setCancelable(true);
             alertDialog.setView(layout);
-
+            valueText.requestFocus();
+            alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             if (!activity.isFinishing())
                 alertDialog.show();
+
         });
     }
 
