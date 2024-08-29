@@ -400,15 +400,11 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
             itemView.setOnLongClickListener((View view) -> {
                 SalmonFile salmonFile = items.get(super.getLayoutPosition());
-                if (mode == Mode.MULTI_SELECT) {
-                    selected.setChecked(!selected.isChecked());
-                    if (selected.isChecked())
-                        selectedFiles.add(salmonFile);
-                    else selectedFiles.remove(salmonFile);
-                } else if(mode == Mode.SINGLE_SELECT) {
+                if(mode == Mode.SINGLE_SELECT) {
                     setMultiSelect(true);
-                    selectedFiles.add(salmonFile);
                 }
+                selected.setChecked(true);
+                selectedFiles.add(salmonFile);
                 updateBackgroundColor(this);
                 notifyItemChanged(getLayoutPosition());
                 adapter.propertyChanged(this, "SelectedFiles");
