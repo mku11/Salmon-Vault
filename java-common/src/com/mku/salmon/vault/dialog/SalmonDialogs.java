@@ -267,16 +267,21 @@ public class SalmonDialogs {
                 SalmonSettings.getInstance().getVaultLocation(),
                 (dir) -> {
                     SalmonDialogs.promptPassword((String password) -> {
-                        SalmonVaultManager.getInstance().openVault((IRealFile) dir, password);
+                        try {
+                            SalmonVaultManager.getInstance().openVault((IRealFile) dir, password);
+                        } catch (Exception ex) {
+                            SalmonDialog.promptDialog("Error", "Could not create vault: "
+                                    + ex.getMessage());
+                        }
                     });
                 },
                 SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
     }
 
-    public static void promptImportFiles() {
+    public static void promptImportFiles(String text, int requestCode) {
         if (!SalmonDialogs.isDriveLoaded())
             return;
-        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFiles("Select files to import",
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFiles(text,
                 null, SalmonSettings.getInstance().getLastImportDir(), (obj) ->
                 {
                     IRealFile[] filesToImport = (IRealFile[]) obj;
@@ -291,7 +296,29 @@ public class SalmonDialogs {
                             {
                                 SalmonVaultManager.getInstance().refresh();
                             });
-                }, SalmonVaultManager.REQUEST_IMPORT_FILES);
+                }, requestCode);
+    }
+
+
+    public static void promptImportFolder(String text, int requestCode) {
+        if (!SalmonDialogs.isDriveLoaded())
+            return;
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).pickFolder(text,
+                SalmonSettings.getInstance().getLastImportDir(), (obj) ->
+                {
+                    IRealFile[] filesToImport = (IRealFile[]) obj;
+                    if (filesToImport.length == 0)
+                        return;
+
+                    IRealFile parent = filesToImport[0].getParent();
+                    if(parent != null && parent.getAbsolutePath() != null)
+                        SalmonSettings.getInstance().setLastImportDir(parent.getAbsolutePath());
+                    SalmonVaultManager.getInstance().importFiles(filesToImport,
+                            SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
+                            {
+                                SalmonVaultManager.getInstance().refresh();
+                            });
+                }, requestCode);
     }
 
     public static void promptNewFolder() {

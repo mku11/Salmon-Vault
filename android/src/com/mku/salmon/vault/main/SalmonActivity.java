@@ -370,47 +370,50 @@ public class SalmonActivity extends AppCompatActivity {
             if (adapter.getMode() != FileAdapter.Mode.MULTI_SELECT) {
                 if (manager.getFileManagerMode() != SalmonVaultManager.Mode.Copy
                         && manager.getFileManagerMode() != SalmonVaultManager.Mode.Move) {
-                    menu.add(5, ActionType.IMPORT.ordinal(), 0, getResources().getString(R.string.ImportFiles))
-                            .setIcon(R.drawable.add_file_small)
+                    menu.add(5, ActionType.IMPORT_FILES.ordinal(), 0, getResources().getString(R.string.ImportFiles))
+                            .setIcon(R.drawable.import_file_small)
+                            .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+                    menu.add(5, ActionType.IMPORT_FOLDER.ordinal(), 0, getResources().getString(R.string.ImportFolder))
+                            .setIcon(R.drawable.import_folder_small)
                             .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
                 }
-
                 menu.add(5, ActionType.NEW_FOLDER.ordinal(), 0, getString(R.string.NewFolder))
                         .setIcon(R.drawable.add_folder_small);
             }
-            menu.add(5, ActionType.SORT.ordinal(), 0, getResources().getString(R.string.Sort))
+
+            menu.add(6, ActionType.SORT.ordinal(), 0, getResources().getString(R.string.Sort))
                     .setIcon(R.drawable.sort_small);
             if (adapter.getMode() != FileAdapter.Mode.MULTI_SELECT) {
-                menu.add(5, ActionType.SEARCH.ordinal(), 0, getResources().getString(R.string.Search))
+                menu.add(6, ActionType.SEARCH.ordinal(), 0, getResources().getString(R.string.Search))
                         .setIcon(R.drawable.search_small);
             }
-            menu.add(5, ActionType.REFRESH.ordinal(), 0, getResources().getString(R.string.Refresh))
+            menu.add(6, ActionType.REFRESH.ordinal(), 0, getResources().getString(R.string.Refresh))
                     .setIcon(R.drawable.refresh_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         }
 
         // Auth
         if (manager.getDrive() != null && adapter.getMode() != FileAdapter.Mode.MULTI_SELECT) {
-            menu.add(6, ActionType.IMPORT_AUTH.ordinal(), 0, getResources().getString(R.string.ImportAuthFile))
+            menu.add(7, ActionType.IMPORT_AUTH.ordinal(), 0, getResources().getString(R.string.ImportAuthFile))
                     .setIcon(R.drawable.auth_import_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-            menu.add(6, ActionType.EXPORT_AUTH.ordinal(), 0, getResources().getString(R.string.ExportAuthFile))
+            menu.add(7, ActionType.EXPORT_AUTH.ordinal(), 0, getResources().getString(R.string.ExportAuthFile))
                     .setIcon(R.drawable.auth_export_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-            menu.add(6, ActionType.REVOKE_AUTH.ordinal(), 0, getResources().getString(R.string.RevokeAuth))
+            menu.add(7, ActionType.REVOKE_AUTH.ordinal(), 0, getResources().getString(R.string.RevokeAuth))
                     .setIcon(R.drawable.auth_revoke_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-            menu.add(6, ActionType.DISPLAY_AUTH_ID.ordinal(), 0, getResources().getString(R.string.DisplayAuthID))
+            menu.add(7, ActionType.DISPLAY_AUTH_ID.ordinal(), 0, getResources().getString(R.string.DisplayAuthID))
                     .setIcon(R.drawable.auth_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         }
 
         // Other
-        menu.add(7, ActionType.SETTINGS.ordinal(), 0, getResources().getString(R.string.Settings))
+        menu.add(8, ActionType.SETTINGS.ordinal(), 0, getResources().getString(R.string.Settings))
                 .setIcon(R.drawable.settings_small);
-        menu.add(7, ActionType.ABOUT.ordinal(), 0, getResources().getString(R.string.About))
+        menu.add(8, ActionType.ABOUT.ordinal(), 0, getResources().getString(R.string.About))
                 .setIcon(R.drawable.info_small);
-        menu.add(7, ActionType.EXIT.ordinal(), 0, getResources().getString(R.string.Exit))
+        menu.add(8, ActionType.EXIT.ordinal(), 0, getResources().getString(R.string.Exit))
                 .setIcon(R.drawable.exit_small);
 
         return super.onPrepareOptionsMenu(menu);
@@ -435,8 +438,11 @@ public class SalmonActivity extends AppCompatActivity {
             case REFRESH:
                 manager.refresh();
                 return true;
-            case IMPORT:
-                SalmonDialogs.promptImportFiles();
+            case IMPORT_FILES:
+                SalmonDialogs.promptImportFiles("Select files to import", SalmonVaultManager.REQUEST_IMPORT_FILES);
+                return true;
+            case IMPORT_FOLDER:
+                SalmonDialogs.promptImportFolder("Select folder to import", SalmonVaultManager.REQUEST_IMPORT_FOLDER);
                 return true;
             case EXPORT:
                 exportSelectedFiles(false);
@@ -729,15 +735,17 @@ public class SalmonActivity extends AppCompatActivity {
             IRealFile file = ServiceLocator.getInstance().resolve(IFileService.class).getFile(uri.toString(), true);
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
             callback.accept(file);
-        } else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES) {
+        } else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES
+                || requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER) {
             String[] filesToImport = ActivityCommon.getFilesFromIntent(this, data);
             IRealFile[] files = new AndroidFile[filesToImport.length];
             for (int i = 0; i < files.length; i++) {
-                files[i] = ServiceLocator.getInstance().resolve(IFileService.class).getFile(filesToImport[i], false);
+                files[i] = ServiceLocator.getInstance().resolve(IFileService.class).getFile(filesToImport[i],
+                        requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER);
             }
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
             callback.accept(files);
-        } else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE) {
+        }else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE) {
             String[] files = ActivityCommon.getFilesFromIntent(this, data);
             String importFile = files != null ? files[0] : null;
             if (importFile == null)

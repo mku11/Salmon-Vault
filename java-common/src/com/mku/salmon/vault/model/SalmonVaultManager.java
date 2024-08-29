@@ -64,6 +64,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public static final int REQUEST_EXPORT_DIR = 1003;
     public static final int REQUEST_IMPORT_AUTH_FILE = 1004;
     public static final int REQUEST_EXPORT_AUTH_FILE = 1005;
+    public static final int REQUEST_IMPORT_FOLDER = 1006;
 
     private static ExecutorService executor = Executors.newFixedThreadPool(2);
 
@@ -390,7 +391,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             this.drive = SalmonDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
             this.currDir = this.drive.getRoot();
             SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
-        } catch (Exception e) {
+        } catch (Exception | Error e) {
             SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage());
         }
         refresh();

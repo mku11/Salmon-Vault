@@ -9,7 +9,8 @@
     <string name="IntegrityCheckSummary">Always check files integrity before opening. Warning: This is buggy and Very Slow for large files.</string>
     <string name="IntegrityCheckTitle">Integrity Check</string>
 
-    <string name="ImportFiles">Add File(s)</string>
+    <string name="ImportFiles">Import File(s)</string>
+    <string name="ImportFolder">Import Folder</string>
     <string name="ExportFiles">Export</string>
     <string name="ExportAndDeleteFiles">Export/Delete</string>
     <string name="Sort">Sort</string>
