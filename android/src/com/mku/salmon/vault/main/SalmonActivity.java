@@ -305,7 +305,7 @@ public class SalmonActivity extends AppCompatActivity {
         // Item options
         if (adapter.getMode() == FileAdapter.Mode.MULTI_SELECT) {
 
-            if(adapter.getSelectedFiles().size() > 0) {
+            if (adapter.getSelectedFiles().size() > 0) {
 
                 // edit
                 if (!manager.isJobRunning()) {
@@ -755,7 +755,7 @@ public class SalmonActivity extends AppCompatActivity {
             }
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
             callback.accept(files);
-        }else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE) {
+        } else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE) {
             String[] files = ActivityCommon.getFilesFromIntent(this, data);
             String importFile = files != null ? files[0] : null;
             if (importFile == null)
