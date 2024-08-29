@@ -270,7 +270,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     }
 
     private void updateFileIcon(ViewHolder viewHolder, String extension) {
-        viewHolder.thumbnail.setImageResource(R.drawable.file);
+        viewHolder.thumbnail.setImageResource(R.drawable.file_item);
         int extColor;
         try {
             extColor = getFileColorFromExtension(extension);
