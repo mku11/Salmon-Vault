@@ -214,6 +214,7 @@ public class SalmonActivity extends AppCompatActivity {
                     }
                     if (!manager.isJobRunning())
                         statusText.setText("");
+                    invalidateOptionsMenu();
                 }, manager.isJobRunning() ? 0 : 1000);
             } else if (propertyName.equals("Path")) {
                 pathText.setText(manager.getPath());
@@ -353,12 +354,16 @@ public class SalmonActivity extends AppCompatActivity {
         }
 
         // Operations
-        if (manager.isJobRunning())
+        if (manager.isJobRunning()) {
             menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Stop))
                     .setIcon(android.R.drawable.ic_menu_close_clear_cancel)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        if (manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
-                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Move) {
+            menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Stop))
+                    .setIcon(android.R.drawable.ic_menu_close_clear_cancel)
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+        }
+        if (!manager.isJobRunning() && (manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
+                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Move)) {
             menu.add(5, ActionType.PASTE.ordinal(), 0, getResources().getString(R.string.Paste))
                     .setIcon(R.drawable.file_paste_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
