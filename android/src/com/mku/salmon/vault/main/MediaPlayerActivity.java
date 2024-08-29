@@ -74,6 +74,8 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     private Timer timer;
     private SurfaceView mSurfaceView;
     private SeekBar mSeekBar;
+    private TextView mTime;
+    private TextView mTotalTime;
     private MediaPlayer mediaPlayer;
     private SalmonMediaDataSource source;
     private RelativeLayout mSeekBarLayout;
@@ -92,11 +94,11 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         pos = position;
         videos = mediaFiles;
     }
-	
-	protected void setMediaThreads(int threads) {
-		mediaThreads = threads;
-	}
-	
+
+    protected void setMediaThreads(int threads) {
+        mediaThreads = threads;
+    }
+
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
@@ -134,6 +136,8 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         mSurfaceView = findViewById(R.id.surfaceview);
         mSurfaceView.getHolder().addCallback(this);
         mSeekBar = findViewById(R.id.seekbar);
+        mTime = findViewById(R.id.time);
+        mTotalTime = findViewById(R.id.total_time);
         mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener());
         mSeekBarLayout = findViewById(R.id.seekbar_layout);
         mSeekBarLayout.setVisibility(View.GONE);
@@ -171,13 +175,13 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
             mediaPlayer.stop();
         }
         mediaPlayer.reset();
-        mSurfaceView.postDelayed(()-> {
+        mSurfaceView.postDelayed(() -> {
             try {
                 loadContent(videos[pos]);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        },500);
+        }, 500);
     }
 
     protected void loadContent(SalmonFile file) throws Exception {
@@ -191,10 +195,30 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         @Override
         public void run() {
             try {
-                if (mediaPlayer != null && mediaPlayer.isPlaying())
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                     mSeekBar.setProgress((int) (mediaPlayer.getCurrentPosition() / (float) mediaPlayer.getDuration() * 100));
-            } catch (Exception ignored) {}
+                    mTime.setText(getTime(mediaPlayer.getCurrentPosition()));
+                    mTotalTime.setText(getTime(mediaPlayer.getDuration()));
+                } else {
+                    mTime.setText("");
+                    mTotalTime.setText("");
+                }
+            } catch (Exception ignored) {
+            }
         }
+    }
+
+    private String getTime(int time) {
+        String secs = ((int) (time / 1000) % 60) + "";
+        if(secs.length() == 1)
+            secs = "0" + secs;
+        String mins = ((int) (time / 1000) / 60) + "";
+        if(mins.length() == 1)
+            mins = "0" + mins;
+        String hours = ((int) (time / 1000) / 3600) + "";
+        if(hours.length() == 1)
+            hours = "0" + hours;
+        return hours + ":" + mins + ":" + secs;
     }
 
     @Override

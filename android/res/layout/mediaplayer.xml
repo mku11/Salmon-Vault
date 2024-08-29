@@ -85,6 +85,23 @@
             android:layout_height="52dp"
             android:layout_alignParentBottom="true"
             android:max="100" />
-    </RelativeLayout>
 
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/seekbar"
+            android:layout_alignParentLeft="true"
+            android:padding="4dp"
+            android:text="00:00:00" />
+
+        <TextView
+            android:id="@+id/total_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/seekbar"
+            android:layout_alignParentRight="true"
+            android:padding="4dp"
+            android:text="00:00:00" />
+    </RelativeLayout>
 </RelativeLayout>
