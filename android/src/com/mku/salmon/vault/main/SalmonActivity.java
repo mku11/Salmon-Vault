@@ -324,7 +324,12 @@ public class SalmonActivity extends AppCompatActivity {
                             .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 
                     menu.add(2, ActionType.DELETE.ordinal(), 0, getResources().getString(R.string.Delete))
-                            .setIcon(R.drawable.delete_small);
+                            .setIcon(R.drawable.delete_small)
+                            .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    menu.add(2, ActionType.DELETE.ordinal(), 0, getResources().getString(R.string.Delete))
+                            .setIcon(R.drawable.delete_small)
+                            .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+
                     menu.add(2, ActionType.RENAME.ordinal(), 0, getString(R.string.Rename))
                             .setIcon(R.drawable.rename_small);
                     menu.add(2, ActionType.EXPORT.ordinal(), 0, getResources().getString(R.string.ExportFiles))
