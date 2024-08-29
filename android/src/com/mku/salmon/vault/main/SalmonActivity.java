@@ -265,9 +265,10 @@ public class SalmonActivity extends AppCompatActivity {
         if (manager.getFileItemList() != null) {
             fileItemList.addAll(manager.getFileItemList());
         }
-        if (sortType != SortType.Default)
+        if (sortType != SortType.Default) {
             sortFiles(sortType);
-        adapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void fileItemAdded(int position, SalmonFile file) {

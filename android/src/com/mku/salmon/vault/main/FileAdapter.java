@@ -124,7 +124,6 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             selectedFiles.clear();
         mode = value ? Mode.MULTI_SELECT : Mode.SINGLE_SELECT;
         propertyChanged(this, "SelectedFiles");
-        notifyDataSetChanged();
     }
 
     public void stop() {
@@ -394,6 +393,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                     adapter.lastSelected = salmonFile;
                     itemView.showContextMenu();
                 }
+                notifyItemChanged(getLayoutPosition());
                 if(selectedFiles.size() == 0)
                     setMultiSelect(false);
             });
@@ -405,13 +405,13 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                     if (selected.isChecked())
                         selectedFiles.add(salmonFile);
                     else selectedFiles.remove(salmonFile);
-                    adapter.propertyChanged(this, "SelectedFiles");
-                    updateBackgroundColor(this);
                 } else if(mode == Mode.SINGLE_SELECT) {
                     setMultiSelect(true);
                     selectedFiles.add(salmonFile);
-                    adapter.propertyChanged(this, "SelectedFiles");
                 }
+                updateBackgroundColor(this);
+                notifyItemChanged(getLayoutPosition());
+                adapter.propertyChanged(this, "SelectedFiles");
                 if(selectedFiles.size() == 0)
                     setMultiSelect(false);
                 adapter.lastSelected = salmonFile;
