@@ -56,38 +56,38 @@ public class Thumbnails {
      *
      * @param salmonFile The encrypted media file which will be used to get the thumbnail
      */
-    public static Bitmap getVideoThumbnail(SalmonFile salmonFile) {
-        return getVideoThumbnail(salmonFile, 0);
+    public static Bitmap getVideoThumbnail(SalmonFile salmonFile) throws Exception {
+        java.io.File tmpFile = Thumbnails.getVideoTmpFile(salmonFile);
+        return getVideoThumbnail(tmpFile, 0, true);
     }
 
-    public static Bitmap getVideoThumbnail(SalmonFile salmonFile, long ms) {
+    public static Bitmap getVideoThumbnail(java.io.File file, long ms, boolean delete) {
         Bitmap bitmap = null;
-        java.io.File tmpFile = null;
         try {
-            tmpFile = getVideoTmpFile(salmonFile);
             if (ms > 0)
-                bitmap = getVideoThumbnailMedia(tmpFile, ms);
+                bitmap = getVideoThumbnailMedia(file, ms);
             else
-                bitmap = ThumbnailUtils.createVideoThumbnail(tmpFile.getPath(), MediaStore.Images.Thumbnails.FULL_SCREEN_KIND);
+                bitmap = ThumbnailUtils.createVideoThumbnail(file.getPath(), MediaStore.Images.Thumbnails.FULL_SCREEN_KIND);
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            if (tmpFile != null) {
-                tmpFile.delete();
-                tmpFile.deleteOnExit();
+            if (delete && file != null) {
+                file.delete();
+                file.deleteOnExit();
             }
         }
         return bitmap;
     }
 
     public static Bitmap getVideoThumbnailMedia(File file, long ms) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        MediaMetadataRetriever retriever = null;
         Bitmap bitmap = null;
         try {
+            retriever = new MediaMetadataRetriever();
             retriever.setDataSource(file.getPath());
             bitmap = retriever.getFrameAtTime(ms * 1000);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             try {
                 retriever.release();
@@ -106,7 +106,7 @@ public class Thumbnails {
      *
      * @param salmonFile The encrypted file that will be used to get the temp file
      */
-    private static java.io.File getVideoTmpFile(SalmonFile salmonFile) throws Exception {
+    public static java.io.File getVideoTmpFile(SalmonFile salmonFile) throws Exception {
         java.io.File tmpDir = new java.io.File(SalmonApplication.getInstance().getApplicationContext().getCacheDir(), TMP_THUMB_DIR);
         if (!tmpDir.exists())
             tmpDir.mkdir();

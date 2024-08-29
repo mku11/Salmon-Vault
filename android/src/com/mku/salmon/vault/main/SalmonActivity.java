@@ -261,6 +261,7 @@ public class SalmonActivity extends AppCompatActivity {
     }
 
     private void UpdateFileAdapter() {
+        adapter.resetAnimation();
         fileItemList.clear();
         if (manager.getFileItemList() != null) {
             fileItemList.addAll(manager.getFileItemList());
@@ -361,10 +362,10 @@ public class SalmonActivity extends AppCompatActivity {
         // Operations
         if (manager.isJobRunning()) {
             menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Stop))
-                    .setIcon(android.R.drawable.ic_menu_close_clear_cancel)
+                    .setIcon(R.drawable.cancel_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
             menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Stop))
-                    .setIcon(android.R.drawable.ic_menu_close_clear_cancel)
+                    .setIcon(R.drawable.cancel_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         }
         if (!manager.isJobRunning() && (manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
