@@ -92,15 +92,25 @@ public class SalmonDialog {
                 } else {
                     text.setInputType(InputType.TYPE_CLASS_TEXT);
                 }
-                if (isFileName) {
-                    String ext = FileUtils.getExtensionFromFileName(value);
-                    if (ext != null && ext.length() > 0)
-                        text.setSelection(0, value.length() - ext.length() - 1);
-                    else
-                        text.setSelection(0, value.length());
-                } else {
-                    text.selectAll();
-                }
+                text.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    boolean once = false;
+                    @Override
+                    public void onFocusChange(View view, boolean b) {
+                        if(!once) {
+                            if (isFileName) {
+                                String ext = FileUtils.getExtensionFromFileName(value);
+                                if (ext != null && ext.length() > 0)
+                                    text.setSelection(0, value.length() - ext.length() - 1);
+                                else
+                                    text.setSelection(0, value.length());
+                            } else {
+                                text.selectAll();
+                            }
+                            once = true;
+                        }
+                    }
+                });
+                text.requestFocus();
                 valueText = text;
             }
             LinearLayout.LayoutParams parameters = new LinearLayout.LayoutParams(
