@@ -143,7 +143,9 @@ public class SalmonDialog {
             AlertDialog alertDialog = builder.create();
             alertDialog.setTitle(title);
             alertDialog.setCancelable(true);
+            alertDialog.setCanceledOnTouchOutside(false);
             alertDialog.setView(layout);
+
             valueText.requestFocus();
             alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             if (!activity.isFinishing())
@@ -181,6 +183,7 @@ public class SalmonDialog {
             AlertDialog alertDialog = builder.create();
             alertDialog.setTitle(title);
             alertDialog.setCancelable(true);
+            alertDialog.setCanceledOnTouchOutside(false);
 
             if (!activity.isFinishing())
                 alertDialog.show();
@@ -200,6 +203,7 @@ public class SalmonDialog {
         AlertDialog alertDialog = builder.create();
         alertDialog.setTitle(title);
         alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(false);
 
         if (!activity.isFinishing())
             alertDialog.show();
@@ -239,6 +243,8 @@ public class SalmonDialog {
             }
         });
         AlertDialog alert = builder.create();
+        alert.setCancelable(true);
+        alert.setCanceledOnTouchOutside(false);
         alert.show();
     }
 
