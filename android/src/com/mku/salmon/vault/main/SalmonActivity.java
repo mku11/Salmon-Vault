@@ -360,14 +360,6 @@ public class SalmonActivity extends AppCompatActivity {
         }
 
         // Operations
-        if (manager.isJobRunning()) {
-            menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Cancel))
-                    .setIcon(R.drawable.cancel_small)
-                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-            menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Cancel))
-                    .setIcon(R.drawable.cancel_small)
-                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-        }
         if (!manager.isJobRunning() && (manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
                 || manager.getFileManagerMode() == SalmonVaultManager.Mode.Move)) {
             menu.add(5, ActionType.PASTE.ordinal(), 0, getResources().getString(R.string.Paste))
@@ -377,6 +369,18 @@ public class SalmonActivity extends AppCompatActivity {
                     .setIcon(R.drawable.file_paste_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         }
+        if (manager.isJobRunning()
+                || adapter.getSelectedFiles().size() > 0
+                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
+                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Move) {
+            menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Cancel))
+                    .setIcon(R.drawable.cancel_small)
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Cancel))
+                    .setIcon(R.drawable.cancel_small)
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+        }
+
         if (manager.getDrive() != null) {
             if (adapter.getMode() != FileAdapter.Mode.MULTI_SELECT
                     && !manager.isJobRunning()) {
@@ -513,7 +517,7 @@ public class SalmonActivity extends AppCompatActivity {
                 SalmonDialogs.promptSearch();
                 return true;
             case STOP:
-                manager.stopOperation();
+                stopOperations();
                 return true;
             case SORT:
                 promptSortFiles();
@@ -545,6 +549,13 @@ public class SalmonActivity extends AppCompatActivity {
         }
         super.onOptionsItemSelected(item);
         return false;
+    }
+
+    private void stopOperations() {
+        manager.stopOperation();
+        adapter.setMultiSelect(false);
+        adapter.selectAll(false);
+
     }
 
     @Override
@@ -911,11 +922,14 @@ public class SalmonActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (adapter.getMode() == FileAdapter.Mode.MULTI_SELECT) {
-            adapter.setMultiSelect(false);
-            adapter.selectAll(false);
-        } else
+        if (manager.isJobRunning()
+                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
+                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
+                || adapter.getSelectedFiles().size() > 0) {
+            stopOperations();
+        } else {
             manager.goBack();
+        }
     }
 
     public enum SortType {
