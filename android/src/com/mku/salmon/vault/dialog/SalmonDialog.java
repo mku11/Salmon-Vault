@@ -192,7 +192,7 @@ public class SalmonDialog {
         });
     }
 
-    public static Consumer<String> promptUpdateableDialog(String title, String msg) {
+    public static Consumer<String> promptUpdatableDialog(String title, String msg) {
         Activity activity = WindowUtils.getUiActivity();
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
 

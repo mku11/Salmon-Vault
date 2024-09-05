@@ -553,7 +553,7 @@ public class SalmonActivity extends AppCompatActivity {
 
     private void showDiskUsage(SalmonFile[] toArray) {
 
-        Consumer<String> updateBody = SalmonDialog.promptUpdateableDialog("Disk Usage", "");
+        Consumer<String> updateBody = SalmonDialog.promptUpdatableDialog("Disk Usage", "");
         AtomicInteger fItems = new AtomicInteger();
         AtomicLong fSize = new AtomicLong();
         BiConsumer<Integer, Long> updateDiskUsage = (items, size) -> {
