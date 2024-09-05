@@ -68,6 +68,7 @@ public class SalmonDialog {
 
             TextInputLayout msgText = new TextInputLayout(activity, null,
                     R.style.Widget_MaterialComponents_TextInputLayout_OutlinedBox);
+            msgText.setPadding(20, 20, 20, 20);
             msgText.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE);
             msgText.setBoxCornerRadii(5, 5, 5, 5);
             msgText.setHint(msg);
