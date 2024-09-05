@@ -399,10 +399,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
             this.drive = SalmonDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
             this.currDir = this.drive.getRoot();
             SalmonSettings.getInstance().setVaultLocation(dir.getPath());
+            refresh();
         } catch (Exception | Error e) {
             SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage());
         }
-        refresh();
     }
 
     protected Class<?> getDriveClassType() {
