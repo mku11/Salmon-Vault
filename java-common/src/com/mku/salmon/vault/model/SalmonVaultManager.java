@@ -390,7 +390,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             closeVault();
             this.drive = SalmonDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
             this.currDir = this.drive.getRoot();
-            SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
+            SalmonSettings.getInstance().setVaultLocation(dir.getPath());
         } catch (Exception | Error e) {
             SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage());
         }
@@ -798,7 +798,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void createVault(IRealFile dir, String password) throws IOException {
         this.drive = SalmonDrive.createDrive(dir, getDriveClassType(), password, this.sequencer);
         this.currDir = this.drive.getRoot();
-        SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
+        SalmonSettings.getInstance().setVaultLocation(dir.getPath());
         this.refresh();
     }
 
