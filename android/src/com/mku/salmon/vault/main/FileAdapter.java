@@ -164,6 +164,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             } else {
                 viewHolder.thumbnail.setImageBitmap(null);
             }
+            viewHolder.animate = false;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -240,8 +241,10 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             viewHolder.thumbnail.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View view, MotionEvent motionEvent) {
-                    if (animationViewHolder != viewHolder) {
+                    if (animationViewHolder != viewHolder || !animationViewHolder.animate) {
+                        resetAnimation();
                         animationViewHolder = viewHolder;
+                        animationViewHolder.animate = true;
                         if (ext.equals("mp4")) {
                             animateVideo(viewHolder);
                         } else {
@@ -265,7 +268,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                 tmpFile = Thumbnails.getVideoTmpFile(viewHolder.salmonFile);
                 retriever = new MediaMetadataRetriever();
                 retriever.setDataSource(tmpFile.getPath());
-                while (animationViewHolder == viewHolder) {
+                while (animationViewHolder == viewHolder && animationViewHolder.animate) {
                     i++;
                     i %= THUMBNAIL_MAX_STEPS;
                     try {
@@ -284,7 +287,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                         continue;
                     Bitmap finalBitmap = bitmap;
                     activity.runOnUiThread(() -> {
-                        if(animationViewHolder == viewHolder)
+                        if(animationViewHolder == viewHolder && animationViewHolder.animate)
                             updateThumbnailIcon(viewHolder, finalBitmap);
                     });
                 }
@@ -437,6 +440,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         public TextView extension;
         public CheckBox selected;
         public SalmonFile salmonFile;
+        public boolean animate;
 
         public ViewHolder(View itemView, Function<Integer, Boolean> itemClicked, FileAdapter adapter) {
             super(itemView);
@@ -484,7 +488,9 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         }
     }
 
-    public void resetAnimation() {
+    public synchronized void resetAnimation() {
+        if(animationViewHolder != null)
+            animationViewHolder.animate = false;
         animationViewHolder = null;
     }
 }
