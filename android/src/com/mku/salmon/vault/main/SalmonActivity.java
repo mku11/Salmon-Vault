@@ -47,7 +47,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mku.android.file.AndroidFile;
-import com.mku.android.file.AndroidSharedFileObserver;
 import com.mku.android.salmon.drive.AndroidDrive;
 import com.mku.file.IRealFile;
 import com.mku.func.Consumer;
@@ -473,9 +472,6 @@ public class SalmonActivity extends AppCompatActivity {
             case VIEW_AS_TEXT:
                 startTextViewer(adapter.getLastSelected());
                 break;
-            case VIEW_EXTERNAL:
-                openWith(adapter.getLastSelected(), ActionType.VIEW_EXTERNAL.ordinal());
-                break;
 
 
             case NEW_FOLDER:
@@ -652,106 +648,6 @@ public class SalmonActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void openWith(SalmonFile salmonFile, int action) {
-        try {
-            long size = salmonFile.getRealFile().length();
-            if (size > MAX_FILE_SIZE_TO_SHARE) {
-                Toast toast = Toast.makeText(this, getString(R.string.FileSizeTooLarge), Toast.LENGTH_LONG);
-                toast.show();
-                return;
-            }
-            if (size > MEDIUM_FILE_SIZE_TO_SHARE) {
-                Toast toast = Toast.makeText(this, getString(R.string.PleaseWaitWhileDecrypting), Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.CENTER, 0, 0);
-                toast.show();
-            }
-            new Thread(() -> {
-                try {
-                    ExternalAppChooser.chooseApp(this, salmonFile, action, this::reimportSharedFile);
-                } catch (Exception exception) {
-                    exception.printStackTrace();
-                    WindowUtils.runOnMainThread(() -> {
-                        Toast toast = Toast.makeText(this, "Could not open file: " + exception, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    });
-                }
-            }).start();
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            WindowUtils.runOnMainThread(() -> {
-                Toast toast = Toast.makeText(this, "Could not open file: " + exception, Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.CENTER, 0, 0);
-                toast.show();
-            });
-        }
-    }
-
-    private void reimportSharedFile(android.net.Uri uri, AndroidSharedFileObserver fileObserver) {
-        try {
-            done.acquire(1);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        try {
-            if (SalmonVaultManager.getInstance().getDrive().getRoot() == null)
-                return;
-        } catch (SalmonAuthException e) {
-            SalmonDialog.promptDialog("Could not reimport shared file: " + e.getMessage());
-            return;
-        }
-        DocumentFile docFile = DocumentFile.fromSingleUri(SalmonApplication.getInstance().getApplicationContext(), uri);
-        IRealFile realFile = new AndroidFile(docFile, this);
-
-        SalmonFile oldSalmonFile = fileObserver.getSalmonFile();
-        SalmonFile parentDir = oldSalmonFile.getParent();
-
-        manager.importFiles(new IRealFile[]{realFile}, parentDir, false, (SalmonFile[]
-                                                                                  importedSalmonFiles) ->
-        {
-            try {
-                if (!importedSalmonFiles[0].exists())
-                    return;
-                // in case the list is meanwhile refreshed
-
-                SalmonFile oldFile = null;
-                for (SalmonFile file : fileItemList) {
-                    if (file.getRealFile().getBaseName().equals(oldSalmonFile.getRealFile().getBaseName())) {
-                        oldFile = file;
-                    }
-                }
-                if (oldFile == null)
-                    return;
-                if (oldFile.exists())
-                    oldFile.delete();
-                if (oldFile.exists())
-                    return;
-                importedSalmonFiles[0].rename(oldSalmonFile.getBaseName());
-
-                fileObserver.setSalmonFile(importedSalmonFiles[0]);
-                runOnUiThread(() ->
-                {
-                    int index = fileItemList.indexOf(oldSalmonFile);
-                    if (index < 0)
-                        return;
-                    fileItemList.remove(oldSalmonFile);
-                    fileItemList.add(index, importedSalmonFiles[0]);
-
-                    manager.getFileItemList().remove(oldSalmonFile);
-                    manager.getFileItemList().add(index, importedSalmonFiles[0]);
-
-                    adapter.notifyItemChanged(index);
-
-                    Toast.makeText(this, getString(R.string.FileSavedInSalmonVault), Toast.LENGTH_LONG).show();
-                });
-                done.release(1);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                SalmonDialog.promptDialog("Could not reimport shared file: " + ex.getMessage());
-            }
-        });
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -815,7 +711,9 @@ public class SalmonActivity extends AppCompatActivity {
                 startWebViewer(fileItemList.indexOf(file));
                 return true;
             } else {
-                openWith(file, ActionType.VIEW_EXTERNAL.ordinal());
+                WindowUtils.runOnMainThread(() -> {
+                    SalmonDialog.promptDialog(getString(R.string.OpenExternalInstructions));
+                });
             }
         } catch (Exception ex) {
             ex.printStackTrace();

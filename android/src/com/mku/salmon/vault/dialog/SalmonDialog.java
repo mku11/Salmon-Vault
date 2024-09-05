@@ -19,7 +19,6 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.mku.android.file.AndroidSharedFileObserver;
 import com.mku.func.Consumer;
 import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.android.R;
@@ -207,45 +206,6 @@ public class SalmonDialog {
 
         if (!activity.isFinishing())
             alertDialog.show();
-    }
-
-    public static void promptOpenWith(Intent intent, TreeMap<String, String> apps,
-                                      android.net.Uri uri, java.io.File sharedFile,
-                                      SalmonFile salmonFile, boolean allowWrite,
-                                      Consumer<AndroidSharedFileObserver> OnFileContentsChanged) {
-        Activity activity = WindowUtils.getUiActivity();
-        String[] names = apps.keySet().toArray(new String[0]);
-        String[] packageNames = apps.values().toArray(new String[0]);
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
-        builder.setTitle(activity.getString(R.string.ChooseApp));
-        builder.setSingleChoiceItems(names, -1, (sender, which) ->
-        {
-            try {
-                AlertDialog alertDialog = (AlertDialog) sender;
-                alertDialog.dismiss();
-
-                int activityFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
-                if (allowWrite)
-                    activityFlags |= Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
-
-                AndroidSharedFileObserver fileObserver = AndroidSharedFileObserver.createFileObserver(sharedFile,
-                        salmonFile, OnFileContentsChanged);
-                fileObserver.startWatching();
-
-                activity.grantUriPermission(packageNames[which], uri, activityFlags);
-                intent.setPackage(packageNames[which]);
-                activity.startActivity(intent);
-            } catch (Exception ex) {
-                Toast.makeText(activity, "Could not start application", Toast.LENGTH_LONG).show();
-                ex.printStackTrace();
-                sharedFile.delete();
-            }
-        });
-        AlertDialog alert = builder.create();
-        alert.setCancelable(true);
-        alert.setCanceledOnTouchOutside(false);
-        alert.show();
     }
 
     public static void promptDialog(String body) {
