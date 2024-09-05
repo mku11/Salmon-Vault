@@ -49,6 +49,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.mku.android.file.AndroidFile;
 import com.mku.android.salmon.drive.AndroidDrive;
 import com.mku.file.IRealFile;
+import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
 import com.mku.salmon.SalmonAuthException;
 import com.mku.salmon.SalmonDrive;
@@ -75,11 +76,16 @@ import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.utils.FileUtils;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SalmonActivity extends AppCompatActivity {
     private static final String TAG = SalmonApplication.class.getSimpleName();
@@ -495,9 +501,7 @@ public class SalmonActivity extends AppCompatActivity {
                 SalmonDialogs.showProperties(adapter.getLastSelected());
                 break;
             case DISK_USAGE:
-                SalmonDialogs.showDiskUsage(
-                        manager.getTotalItems(adapter.getSelectedFiles().toArray(new SalmonFile[0])),
-                        manager.getTotalBytes(adapter.getSelectedFiles().toArray(new SalmonFile[0])));
+                showDiskUsage(adapter.getSelectedFiles().toArray(new SalmonFile[0]));
                 break;
 
             case PASTE:
@@ -545,6 +549,21 @@ public class SalmonActivity extends AppCompatActivity {
         }
         super.onOptionsItemSelected(item);
         return false;
+    }
+
+    private void showDiskUsage(SalmonFile[] toArray) {
+
+        Consumer<String> updateBody = SalmonDialog.promptUpdateableDialog("Disk Usage", "");
+        AtomicInteger fItems = new AtomicInteger();
+        AtomicLong fSize = new AtomicLong();
+        BiConsumer<Integer, Long> updateDiskUsage = (items, size) -> {
+            if (items > fItems.get())
+                updateBody.accept(SalmonDialogs.getFormattedDiskUsage(items, size));
+            fItems.set(items);
+            fSize.set(size);
+        };
+        manager.getDiskUsage(adapter.getSelectedFiles().toArray(new SalmonFile[0]), updateDiskUsage);
+        updateBody.accept(SalmonDialogs.getFormattedDiskUsage(fItems.get(), fSize.get()));
     }
 
     private void stopOperations() {

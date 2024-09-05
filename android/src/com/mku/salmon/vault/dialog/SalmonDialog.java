@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -97,9 +98,10 @@ public class SalmonDialog {
                 }
                 text.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                     boolean once = false;
+
                     @Override
                     public void onFocusChange(View view, boolean b) {
-                        if(!once) {
+                        if (!once) {
                             if (isFileName) {
                                 String ext = FileUtils.getExtensionFromFileName(value);
                                 if (ext != null && ext.length() > 0)
@@ -187,6 +189,27 @@ public class SalmonDialog {
             if (!activity.isFinishing())
                 alertDialog.show();
         });
+    }
+
+    public static Consumer<String> promptUpdateableDialog(String title, String msg) {
+        Activity activity = WindowUtils.getUiActivity();
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
+
+        LinearLayout layout = new LinearLayout(activity);
+        layout.setPadding(20, 20, 20, 20);
+        TextView textView = new TextView(activity);
+        textView.setPadding(20, 20, 20, 20);
+        layout.addView(textView);
+        builder.setPositiveButton(android.R.string.ok, null);
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.setTitle(title);
+        alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(false);
+        alertDialog.setView(layout);
+        if (!activity.isFinishing())
+            alertDialog.show();
+        return (body) -> WindowUtils.runOnMainThread(() -> textView.setText(body));
     }
 
     public static void promptSingleValue(ArrayAdapter<String> adapter, String title,

@@ -25,6 +25,7 @@ SOFTWARE.
 
 import com.mku.file.IRealFile;
 import com.mku.func.Consumer;
+import com.mku.func.Function;
 import com.mku.salmon.SalmonAuthConfig;
 import com.mku.salmon.SalmonDrive;
 import com.mku.salmon.SalmonFile;
@@ -41,6 +42,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SalmonDialogs {
     public static void promptPassword(Consumer<String> onSubmit) {
@@ -169,17 +172,11 @@ public class SalmonDialogs {
         }
     }
 
-    public static void showDiskUsage(int items, long totalSize) {
-        try {
-            DecimalFormat format = new DecimalFormat();
-            format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.US));
-            SalmonDialog.promptDialog("Disk Usage", format.format(items) + " items\n"
-            + "Size on disk: " + ByteUtils.getBytes(totalSize, 2));
-        } catch (Exception exception) {
-            SalmonDialog.promptDialog("Disk Usage", "Could not get file properties: "
-                    + exception.getMessage());
-            exception.printStackTrace();
-        }
+    public static String getFormattedDiskUsage(int items, long size) {
+        DecimalFormat format = new DecimalFormat();
+        format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.US));
+        return format.format(items) + " items\n"
+                + "Size on disk: " + ByteUtils.getBytes(size, 2);
     }
 
     public static void promptSequenceReset(Consumer<Boolean> resetSequencer) {

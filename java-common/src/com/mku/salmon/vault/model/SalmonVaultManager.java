@@ -263,7 +263,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void setPathText(String value) {
-        if(value == null) {
+        if (value == null) {
             setPath("");
             return;
         }
@@ -404,10 +404,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
         }
         refresh();
     }
-	
-	protected Class<?> getDriveClassType() {
-		return JavaDrive.class;
-	}
+
+    protected Class<?> getDriveClassType() {
+        return JavaDrive.class;
+    }
 
     public void deleteSelectedFiles() {
         deleteFiles(selectedFiles.toArray(new SalmonFile[0]));
@@ -631,7 +631,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     protected void setSequencer(INonceSequencer sequencer) {
         this.sequencer = sequencer;
-        if(this.drive != null)
+        if (this.drive != null)
             this.drive.setSequencer(sequencer);
     }
 
@@ -793,7 +793,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 }
             }, null);
             this.salmonFiles = new SalmonFile[files.length];
-            for(int i=0; i<files.length; i++)
+            for (int i = 0; i < files.length; i++)
                 this.salmonFiles[i] = (SalmonFile) files[i];
             if (!fileCommander.isFileSearcherStopped())
                 setStatus("Search Complete");
@@ -837,4 +837,26 @@ public class SalmonVaultManager implements IPropertyNotifier {
         this.promptExitOnBack = promptExitOnBack;
     }
 
+    public static void getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<Integer, Long> updateUsage) {
+        executor.submit(() -> {
+            getDiskUsage(selectedFiles, updateUsage, 0, 0);
+        });
+    }
+
+    private static long getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<Integer, Long> updateUsage,
+                                     int totalItems, long totalSize) {
+        for (SalmonFile file : selectedFiles) {
+            totalItems++;
+            if (file.isFile()) {
+                totalSize += file.getRealFile().length();
+            } else {
+                getDiskUsage(file.listFiles(), updateUsage, totalItems, totalSize);
+            }
+            if (updateUsage != null)
+                updateUsage.accept(totalItems, totalSize);
+        }
+        if (updateUsage != null)
+            updateUsage.accept(totalItems, totalSize);
+        return totalSize;
+    }
 }
