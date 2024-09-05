@@ -263,6 +263,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void setPathText(String value) {
+        if(value == null) {
+            setPath("");
+            return;
+        }
+
         if (value.startsWith("/"))
             value = value.substring(1);
         setPath("fs://" + value);
@@ -548,7 +553,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             setFileItemList(null);
             currDir = null;
             clearCopiedFiles();
-            setPathText("");
+            setPathText(null);
             if (this.drive != null)
                 this.drive.close();
         } catch (Exception ex) {
