@@ -52,7 +52,7 @@ public class AndroidFileDialogService implements IFileDialogService {
         ActivityCommon.openFilesystem(activity, false, true, filter, null, requestCode);
     }
 
-    public void pickFolder(String title, String initialDirectory, Consumer<Object> onFolderPicked, int requestCode) {
+    public void openFolder(String title, String initialDirectory, Consumer<Object> onFolderPicked, int requestCode) {
         handlers.put(requestCode, onFolderPicked);
         ActivityCommon.openFilesystem(activity, true, false, null, initialDirectory, requestCode);
     }

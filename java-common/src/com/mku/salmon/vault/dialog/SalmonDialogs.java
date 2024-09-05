@@ -40,7 +40,6 @@ import com.mku.utils.FileUtils;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Locale;
 
 public class SalmonDialogs {
@@ -247,7 +246,7 @@ public class SalmonDialogs {
     }
 
     public static void promptCreateVault() {
-        ServiceLocator.getInstance().resolve(IFileDialogService.class).pickFolder("Select the vault",
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder("Select the vault",
                 SalmonSettings.getInstance().getVaultLocation(), (file) -> {
                     SalmonDialogs.promptSetPassword((String pass) ->
                     {
@@ -263,7 +262,7 @@ public class SalmonDialogs {
     }
 
     public static void promptOpenVault() {
-        ServiceLocator.getInstance().resolve(IFileDialogService.class).pickFolder("Select the vault",
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder("Select the vault",
                 SalmonSettings.getInstance().getVaultLocation(),
                 (dir) -> {
                     SalmonDialogs.promptPassword((String password) -> {
@@ -303,7 +302,7 @@ public class SalmonDialogs {
     public static void promptImportFolder(String text, int requestCode) {
         if (!SalmonDialogs.isDriveLoaded())
             return;
-        ServiceLocator.getInstance().resolve(IFileDialogService.class).pickFolder(text,
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder(text,
                 SalmonSettings.getInstance().getLastImportDir(), (obj) ->
                 {
                     IRealFile[] filesToImport = (IRealFile[]) obj;
