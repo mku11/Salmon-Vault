@@ -923,9 +923,8 @@ public class SalmonActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (manager.isJobRunning()
-                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
-                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
-                || adapter.getSelectedFiles().size() > 0) {
+                || (manager.getFileManagerMode() == SalmonVaultManager.Mode.Browse &&
+                adapter.getSelectedFiles().size() > 0)) {
             stopOperations();
         } else {
             manager.goBack();
