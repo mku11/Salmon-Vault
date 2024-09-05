@@ -41,6 +41,7 @@ import com.mku.utils.FileUtils;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * Utility class that generates thumbnails for encrypted salmon files
@@ -50,6 +51,7 @@ public class Thumbnails {
     private static final int TMP_VIDEO_THUMB_MAX_SIZE = 5 * 1024 * 1024;
     private static final int TMP_GIF_THUMB_MAX_SIZE = 512 * 1024;
     private static final int BUFFER_SIZE = 256 * 1024;
+    private static Random random = new Random(System.currentTimeMillis());
 
     /**
      * Returns a bitmap thumbnail from an encrypted file
@@ -111,7 +113,7 @@ public class Thumbnails {
         if (!tmpDir.exists())
             tmpDir.mkdir();
 
-        java.io.File tmpFile = new java.io.File(tmpDir, System.currentTimeMillis() + "." + FileUtils.getExtensionFromFileName(salmonFile.getBaseName()));
+        java.io.File tmpFile = new java.io.File(tmpDir, random.nextInt() + "." + FileUtils.getExtensionFromFileName(salmonFile.getBaseName()));
         if (tmpFile.exists())
             tmpFile.delete();
         tmpFile.createNewFile();
