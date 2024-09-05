@@ -175,7 +175,7 @@ public class SalmonDialogs {
     public static String getFormattedDiskUsage(int items, long size) {
         DecimalFormat format = new DecimalFormat();
         format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.US));
-        return format.format(items) + " items\n"
+        return "Total items: " + format.format(items) + "\n"
                 + "Size on disk: " + ByteUtils.getBytes(size, 2);
     }
 
@@ -198,7 +198,7 @@ public class SalmonDialogs {
         if (!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialog.promptDialog(
-                "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size() + " item(s)?",
+                "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size() + " item(s) and subfolders?",
                 "Ok",
                 () -> SalmonVaultManager.getInstance().deleteSelectedFiles(),
                 "Cancel", null);
@@ -285,7 +285,7 @@ public class SalmonDialogs {
                         return;
 
                     IRealFile parent = filesToImport[0].getParent();
-                    if(parent != null && parent.getPath() != null)
+                    if (parent != null && parent.getPath() != null)
                         SalmonSettings.getInstance().setLastImportDir(parent.getPath());
                     SalmonVaultManager.getInstance().importFiles(filesToImport,
                             SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
@@ -307,7 +307,7 @@ public class SalmonDialogs {
                         return;
 
                     IRealFile parent = filesToImport[0].getParent();
-                    if(parent != null && parent.getPath() != null)
+                    if (parent != null && parent.getPath() != null)
                         SalmonSettings.getInstance().setLastImportDir(parent.getPath());
                     SalmonVaultManager.getInstance().importFiles(filesToImport,
                             SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
