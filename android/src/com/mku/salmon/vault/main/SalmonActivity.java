@@ -361,10 +361,10 @@ public class SalmonActivity extends AppCompatActivity {
 
         // Operations
         if (manager.isJobRunning()) {
-            menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Stop))
+            menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Cancel))
                     .setIcon(R.drawable.cancel_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-            menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Stop))
+            menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Cancel))
                     .setIcon(R.drawable.cancel_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         }
@@ -378,7 +378,8 @@ public class SalmonActivity extends AppCompatActivity {
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         }
         if (manager.getDrive() != null) {
-            if (adapter.getMode() != FileAdapter.Mode.MULTI_SELECT) {
+            if (adapter.getMode() != FileAdapter.Mode.MULTI_SELECT
+                    && !manager.isJobRunning()) {
                 if (manager.getFileManagerMode() != SalmonVaultManager.Mode.Copy
                         && manager.getFileManagerMode() != SalmonVaultManager.Mode.Move) {
                     menu.add(5, ActionType.IMPORT_FILES.ordinal(), 0, getResources().getString(R.string.ImportFiles))

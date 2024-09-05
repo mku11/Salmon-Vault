@@ -98,6 +98,7 @@
     <string name="Searching">Searching</string>
     <string name="Stopped">Stopped</string>
     <string name="Stop">Stop</string>
+    <string name="Cancel">Cancel</string>
     <string name="Any">Any</string>
     <string name="MatchAnyTerm">Match any term</string>
     <string name="HideScreenContents">Hide Screen Contents</string>
