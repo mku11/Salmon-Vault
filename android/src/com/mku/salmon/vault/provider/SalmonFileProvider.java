@@ -10,6 +10,7 @@ import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.DocumentsProvider;
+import android.view.Gravity;
 import android.webkit.MimeTypeMap;
 
 import static android.provider.DocumentsContract.Root;
@@ -17,11 +18,16 @@ import static android.provider.DocumentsContract.Root;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mku.android.salmon.drive.AndroidDrive;
+import com.mku.file.IRealFile;
+import com.mku.file.JavaFile;
 import com.mku.salmon.SalmonDrive;
 import com.mku.salmon.SalmonFile;
 import com.mku.salmon.streams.SalmonFileInputStream;
 import com.mku.salmon.streams.SalmonStream;
 import com.mku.salmon.vault.android.R;
+import com.mku.salmon.vault.dialog.SalmonDialog;
+import com.mku.salmon.vault.main.SalmonApplication;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.services.AndroidBrowserService;
 import com.mku.salmon.vault.services.AndroidFileDialogService;
@@ -43,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class SalmonFileProvider extends DocumentsProvider {
+    public static final long MAX_FILE_SIZE_TO_SHARE = 50 * 1024 * 1024;
     private static final String MIME_TYPE = "salmon/encrypted";
     private static String rootPath = "/";
     private static String[] rootProjection = new String[]{
@@ -106,8 +113,8 @@ public class SalmonFileProvider extends DocumentsProvider {
         else {
             String ext = FileUtils.getExtensionFromFileName(file.getBaseName()).toLowerCase();
             String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
-            if(mimeType == null)
-                mimeType = "application/octet-stream";
+            if (mimeType == null)
+                mimeType = "application/octetstream";
             row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, mimeType);
         }
         int flags = 0;
@@ -150,7 +157,7 @@ public class SalmonFileProvider extends DocumentsProvider {
     @Override
     public Cursor queryChildDocuments(String parentDocumentId, String[] projection, String sortOrder) throws FileNotFoundException {
         final MatrixCursor result = new MatrixCursor(documentProjection);
-        if(getManager().getDrive() == null)
+        if (getManager().getDrive() == null)
             return result;
         try {
             SalmonFile dir = parsePath(parentDocumentId);
@@ -179,38 +186,57 @@ public class SalmonFileProvider extends DocumentsProvider {
                                              @Nullable CancellationSignal signal)
             throws FileNotFoundException {
         // TODO: check the CancellationSignal periodically
-        final File file;
+        SalmonFile salmonFile = null;
+        File sharedFile = null;
+        String filename = null;
+        final int accessMode = ParcelFileDescriptor.parseMode(mode);
         try {
-            file = createFileDocument(documentId);
-        } catch (IOException e) {
+            salmonFile = parsePath(documentId);
+            if (salmonFile.getSize() > MAX_FILE_SIZE_TO_SHARE) {
+                throw new RuntimeException(SalmonApplication.getInstance().getString(R.string.FileSizeTooLarge));
+            }
+            filename = salmonFile.getBaseName();
+            sharedFile = ((AndroidDrive) SalmonVaultManager.getInstance().getDrive())
+                    .copyToSharedFolder(salmonFile);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        final int accessMode = ParcelFileDescriptor.parseMode(mode);
 
         final boolean isWrite = (mode.indexOf('w') != -1);
-        if(isWrite) {
+        if (isWrite) {
             try {
                 Handler handler = new Handler(getContext().getMainLooper());
-                return ParcelFileDescriptor.open(file, accessMode, handler,
+                SalmonFile file = salmonFile;
+                IRealFile importFile = new JavaFile(sharedFile.getPath());
+                String finalFilename = filename;
+                return ParcelFileDescriptor.open(sharedFile, accessMode, handler,
                         new ParcelFileDescriptor.OnCloseListener() {
                             @Override
                             public void onClose(IOException e) {
-                                // re-import file into the vault
+                                SalmonFile parentDir = file.getParent();
+                                getManager().importFiles(new IRealFile[]{importFile}, parentDir, false,
+                                        (SalmonFile[] importedSalmonFiles) ->
+                                        {
+                                            try {
+                                                if (!importedSalmonFiles[0].exists())
+                                                    return;
+                                                importedSalmonFiles[0].rename(finalFilename);
+                                                file.delete();
+                                                if (getManager().getDrive() != null)
+                                                    getManager().refresh();
+                                            } catch (Exception ex) {
+                                                ex.printStackTrace();
+                                                throw new RuntimeException("Could not reimport file: " + ex.getMessage());
+                                            }
+                                        });
                             }
                         });
             } catch (IOException e) {
-                throw new FileNotFoundException("Failed to open document with id"
-                        + documentId + " and mode " + mode);
+                throw new FileNotFoundException("Could not reimport shared file: " + e.getMessage());
             }
         } else {
-            return ParcelFileDescriptor.open(file, accessMode);
+            return ParcelFileDescriptor.open(sharedFile, accessMode);
         }
-    }
-
-    private File createFileDocument(String documentId) throws IOException {
-        SalmonFile file = parsePath(documentId);
-        File sharedFile = null;
-        return sharedFile;
     }
 
     @Override
@@ -224,11 +250,12 @@ public class SalmonFileProvider extends DocumentsProvider {
 
     private class SalmonAssetFileDescriptor extends AssetFileDescriptor {
         private SalmonFile file;
+
         public SalmonAssetFileDescriptor(SalmonFile file) throws IOException {
             super(null, 0, file.getSize());
             String ext = FileUtils.getExtensionFromFileName(file.getBaseName()).toLowerCase();
             String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
-            if(mimeType == null)
+            if (mimeType == null)
                 mimeType = "*/*";
             this.file = file;
         }
@@ -241,6 +268,7 @@ public class SalmonFileProvider extends DocumentsProvider {
     private class SalmonInputStream extends FileInputStream {
         private SalmonFile file;
         private SalmonStream stream;
+
         public SalmonInputStream(SalmonFile file) throws FileNotFoundException {
             super((String) null);
             this.file = file;

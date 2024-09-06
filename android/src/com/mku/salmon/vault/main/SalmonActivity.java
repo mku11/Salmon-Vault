@@ -31,6 +31,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -40,6 +41,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ShareCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.view.MenuCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -56,10 +59,12 @@ import com.mku.salmon.SalmonDrive;
 import com.mku.salmon.SalmonFile;
 import com.mku.salmon.utils.SalmonFileComparators;
 import com.mku.salmon.vault.android.R;
+import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.model.android.SalmonAndroidVaultManager;
+import com.mku.salmon.vault.provider.SalmonFileProvider;
 import com.mku.salmon.vault.services.AndroidBrowserService;
 import com.mku.salmon.vault.services.AndroidFileDialogService;
 import com.mku.salmon.vault.services.AndroidFileService;
@@ -89,9 +94,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class SalmonActivity extends AppCompatActivity {
     private static final String TAG = SalmonApplication.class.getSimpleName();
-
-    private static final long MAX_FILE_SIZE_TO_SHARE = 50 * 1024 * 1024;
-    private static final long MEDIUM_FILE_SIZE_TO_SHARE = 10 * 1024 * 1024;
 
     private List<SalmonFile> fileItemList = new ArrayList<>();
 
@@ -350,7 +352,7 @@ public class SalmonActivity extends AppCompatActivity {
                 menu.add(3, ActionType.VIEW_AS_TEXT.ordinal(), 0, getString(R.string.ViewAsText))
                         .setIcon(R.drawable.text_file_small);
                 menu.add(3, ActionType.VIEW_EXTERNAL.ordinal(), 0, getString(R.string.ViewExternal))
-                        .setIcon(R.drawable.open_external_small);
+                        .setIcon(R.drawable.view_external_small);
                 menu.add(3, ActionType.PROPERTIES.ordinal(), 0, getString(R.string.Properties))
                         .setIcon(R.drawable.file_properties_small);
                 menu.add(3, ActionType.DISK_USAGE.ordinal(), 0, getString(R.string.DiskUsage))
@@ -478,6 +480,9 @@ public class SalmonActivity extends AppCompatActivity {
             case VIEW_AS_TEXT:
                 startTextViewer(adapter.getLastSelected());
                 break;
+            case VIEW_EXTERNAL:
+                openWith(adapter.getLastSelected());
+                break;
 
 
             case NEW_FOLDER:
@@ -549,6 +554,42 @@ public class SalmonActivity extends AppCompatActivity {
         }
         super.onOptionsItemSelected(item);
         return false;
+    }
+
+    private void openWith(SalmonFile salmonFile) {
+        java.io.File sharedFile = null;
+        try {
+            sharedFile = ((AndroidDrive) SalmonVaultManager.getInstance().getDrive()).
+                    copyToSharedFolder(salmonFile);
+            if (salmonFile.getSize() > SalmonFileProvider.MAX_FILE_SIZE_TO_SHARE) {
+                Toast.makeText(this, getString(R.string.FileSizeTooLarge), Toast.LENGTH_LONG).show();
+                return;
+            }
+            sharedFile.deleteOnExit();
+            String ext = FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
+            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+            android.net.Uri uri = FileProvider.getUriForFile(this, SalmonConfig.FILE_PROVIDER, sharedFile);
+            ShareCompat.IntentBuilder builder = ShareCompat.IntentBuilder.from(this).setType(mimeType);
+
+            Intent intent = builder.createChooserIntent();
+            intent.setAction(Intent.ACTION_VIEW);
+            intent.setData(uri);
+
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Intent finalIntent1 = intent;
+            runOnUiThread(() ->
+            {
+                try {
+                    startActivity(finalIntent1);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Toast.makeText(this, getString(R.string.NoApplicationsFound), Toast.LENGTH_LONG).show();
+                }
+            });
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void showDiskUsage(SalmonFile[] toArray) {
