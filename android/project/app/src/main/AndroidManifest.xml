@@ -22,6 +22,17 @@
                 android:resource="@xml/fileprovider" />
         </provider>
 
+        <provider
+            android:name="com.mku.salmon.vault.provider.SalmonFileProvider"
+            android:authorities="com.mku.salmon.vault.provider.documents"
+            android:grantUriPermissions="true"
+            android:exported="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+		
         <activity
             android:name="com.mku.salmon.vault.main.SalmonActivity"
             android:configChanges="orientation|screenSize"
