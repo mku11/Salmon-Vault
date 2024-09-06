@@ -771,9 +771,10 @@ public class SalmonActivity extends AppCompatActivity {
                 startWebViewer(fileItemList.indexOf(file));
                 return true;
             } else {
-                WindowUtils.runOnMainThread(() -> {
-                    SalmonDialog.promptDialog(getString(R.string.OpenExternalInstructions));
-                });
+                SalmonDialog.promptDialog("Open External", this.getString(R.string.OpenExternalInstructions),
+                        "Ok", () -> {
+                            openWith(file);
+                        }, "Cancel", null);
             }
         } catch (Exception ex) {
             ex.printStackTrace();

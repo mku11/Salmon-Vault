@@ -41,7 +41,7 @@
     <string name="View">View</string>
     <string name="ViewAsText">View As Text</string>
     <string name="ViewExternal">View External</string>
-    <string name="OpenExternalInstructions">There are no internal viewers available. To view this file use an external app and open the file with \'Browse files in Other Apps\'</string>
+    <string name="OpenExternalInstructions">There are no internal viewers available. To view this file using an external app click Ok. To edit this file open it from within the other app or use export.</string>
 
     <string name="ImportStopped">Import Stopped</string>
     <string name="ImportFailed">Import Failed</string>
