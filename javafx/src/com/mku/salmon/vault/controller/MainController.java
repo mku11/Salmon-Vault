@@ -449,6 +449,7 @@ public class MainController {
         ContextMenu contextMenu = new ContextMenu();
 
         MenuItem item = new MenuItem("View");
+        item.setGraphic(getImageIcon("/icons/file_small.png"));
         item.setOnAction((event) -> onOpenItem(table.getSelectionModel().getSelectedIndex()));
         contextMenu.getItems().add(item);
 
