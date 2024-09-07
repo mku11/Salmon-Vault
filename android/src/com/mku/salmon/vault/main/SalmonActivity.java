@@ -611,7 +611,6 @@ public class SalmonActivity extends AppCompatActivity {
         manager.stopOperation();
         adapter.setMultiSelect(false);
         adapter.selectAll(false);
-
     }
 
     @Override

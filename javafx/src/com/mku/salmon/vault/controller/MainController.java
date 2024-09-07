@@ -105,6 +105,15 @@ public class MainController {
         return progressVisibility.get();
     }
 
+    private final SimpleBooleanProperty cancelVisibility = new SimpleBooleanProperty();
+    @FXML
+    public SimpleBooleanProperty cancelVisibilityProperty() {
+        return cancelVisibility;
+    }
+    public boolean getCancelVisibility() {
+        return cancelVisibility.get();
+    }
+
     @FXML
     private final SimpleDoubleProperty fileprogress = new SimpleDoubleProperty();
 
@@ -178,11 +187,20 @@ public class MainController {
             selectItem(manager.getCurrentItem());
         } else if (propertyName.equals("Status")) {
             WindowUtils.runOnMainThread(() -> status.setValue(manager.getStatus()));
+            if (manager.isJobRunning()
+                    || table.getSelectionModel().getSelectedCells().size() > 0
+                    || manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
+                    || manager.getFileManagerMode() == SalmonVaultManager.Mode.Move) {
+                cancelVisibility.setValue(true);
+            } else {
+                cancelVisibility.setValue(manager.isJobRunning());
+            }
         } else if (propertyName == "IsJobRunning") {
             WindowUtils.runOnMainThread(() ->
             {
                 if (manager.getFileManagerMode() != SalmonVaultManager.Mode.Search) {
                     progressVisibility.setValue(manager.isJobRunning());
+                    cancelVisibility.setValue(manager.isJobRunning());
                 }
                 if (!manager.isJobRunning())
                     status.setValue("");
@@ -350,6 +368,7 @@ public class MainController {
 
     public void onStop() {
         manager.stopOperation();
+        table.getSelectionModel().clearSelection();
     }
 
     public void onSettings() {

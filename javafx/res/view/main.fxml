@@ -111,7 +111,11 @@
                         <KeyCodeCombination alt="UP" code="BACK_SPACE" control="UP" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem id="menu-stop" onAction="#onStop" text="Stop" visible="${controller.progressVisibility}" />
+                <MenuItem id="menu-stop" onAction="#onStop" text="Cancel" visible="${controller.cancelVisibility}">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="ESCAPE" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                    </accelerator>
+                </MenuItem>
             </Menu>
             <Menu text="Help">
                 <MenuItem id="menu-about" onAction="#onAbout" text="About" />

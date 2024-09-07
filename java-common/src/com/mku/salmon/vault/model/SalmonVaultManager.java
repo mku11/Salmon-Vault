@@ -180,7 +180,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         return isJobRunning;
     }
 
-    public void setJobRunning(boolean value) {
+    private void setJobRunning(boolean value) {
         if (value != isJobRunning) {
             isJobRunning = value;
             propertyChanged(this, "IsJobRunning");
@@ -276,8 +276,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void stopOperation() {
         fileCommander.cancel();
         fileManagerMode = Mode.Browse;
-        clearCopiedFiles();
         clearSelectedFiles();
+        clearCopiedFiles();
+        fileProgress = 0;
+        filesProgress = 0;
         setTaskRunning(false);
         setTaskMessage("");
     }
