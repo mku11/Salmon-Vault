@@ -302,14 +302,14 @@ public class SalmonDialogs {
         ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder(text,
                 SalmonSettings.getInstance().getLastImportDir(), (obj) ->
                 {
-                    IRealFile[] filesToImport = (IRealFile[]) obj;
-                    if (filesToImport.length == 0)
+                    IRealFile folder = (IRealFile) obj;
+                    if (folder == null)
                         return;
 
-                    IRealFile parent = filesToImport[0].getParent();
+                    IRealFile parent = folder.getParent();
                     if (parent != null && parent.getPath() != null)
                         SalmonSettings.getInstance().setLastImportDir(parent.getPath());
-                    SalmonVaultManager.getInstance().importFiles(filesToImport,
+                    SalmonVaultManager.getInstance().importFiles(new IRealFile[]{folder},
                             SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
                             {
                                 SalmonVaultManager.getInstance().refresh();

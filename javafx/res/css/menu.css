@@ -1,0 +1,174 @@
+ #menu-open-vault > .label{
+     -fx-graphic: url("../icons/open_vault_small.png");
+ }
+ #menu-open-vault .accelerator-text {
+     -fx-graphic: none;
+  }
+  #menu-create-vault > .label{
+      -fx-graphic: url("../icons/add_vault_small.png");
+  }
+  #menu-create-vault .accelerator-text {
+      -fx-graphic: none;
+   }
+  #menu-close-vault > .label{
+      -fx-graphic: url("../icons/close_vault_small.png");
+  }
+  #menu-close-vault .accelerator-text {
+      -fx-graphic: none;
+   }
+  #menu-change-passwd > .label{
+      -fx-graphic: url("../icons/key_small.png");
+  }
+  #menu-change-passwd .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-import-auth > .label{
+      -fx-graphic: url("../icons/auth_import_small.png");
+  }
+  #menu-import-auth .accelerator-text {
+      -fx-graphic: none;
+  }
+
+
+  #menu-export-auth > .label{
+      -fx-graphic: url("../icons/auth_export_small.png");
+  }
+  #menu-export-auth .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-revoke-auth > .label{
+      -fx-graphic: url("../icons/auth_revoke_small.png");
+  }
+  #menu-revoke-auth .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-display-auth > .label{
+      -fx-graphic: url("../icons/auth_small.png");
+  }
+  #menu-display-auth .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-settings > .label{
+      -fx-graphic: url("../icons/settings_small.png");
+  }
+  #menu-settings .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-exit > .label{
+      -fx-graphic: url("../icons/exit_small.png");
+  }
+  #menu-exit .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-create-folder > .label{
+      -fx-graphic: url("../icons/add_folder_small.png");
+  }
+  #menu-create-folder .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-copy > .label{
+      -fx-graphic: url("../icons/copy_file_small.png");
+  }
+  #menu-copy .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-move > .label{
+      -fx-graphic: url("../icons/move_file_small.png");
+  }
+  #menu-move .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-paste > .label{
+      -fx-graphic: url("../icons/file_paste_small.png");
+  }
+  #menu-paste .accelerator-text {
+      -fx-graphic: none;
+  }
+
+
+  #menu-delete > .label{
+      -fx-graphic: url("../icons/delete_small.png");
+  }
+  #menu-delete .accelerator-text {
+      -fx-graphic: none;
+  }
+
+
+  #menu-import > .label{
+      -fx-graphic: url("../icons/import_file_small.png");
+  }
+  #menu-import .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-import-files > .label{
+      -fx-graphic: url("../icons/import_file_small.png");
+  }
+  #menu-import-files .accelerator-text {
+      -fx-graphic: none;
+  }
+  #menu-import-folder > .label{
+      -fx-graphic: url("../icons/import_folder_small.png");
+  }
+  #menu-import-folder .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-export > .label{
+      -fx-graphic: url("../icons/export_file_small.png");
+  }
+  #menu-export .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-export-and-delete > .label{
+      -fx-graphic: url("../icons/export_and_delete_file_small.png");
+  }
+  #menu-export-and-delete .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-search > .label{
+      -fx-graphic: url("../icons/search_small.png");
+  }
+  #menu-search .accelerator-text {
+      -fx-graphic: none;
+  }
+  #menu-refresh > .label{
+      -fx-graphic: url("../icons/refresh_small.png");
+  }
+  #menu-refresh .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-back > .label{
+      -fx-graphic: url("../icons/back_small.png");
+  }
+  #menu-back .accelerator-text {
+      -fx-graphic: none;
+  }
+
+
+  #menu-stop > .label{
+      -fx-graphic: url("../icons/cancel_small.png");
+  }
+  #menu-stop .accelerator-text {
+      -fx-graphic: none;
+  }
+
+
+  #menu-about > .label{
+      -fx-graphic: url("../icons/info_small.png");
+  }
+  #menu-about .accelerator-text {
+      -fx-graphic: none;
+  }

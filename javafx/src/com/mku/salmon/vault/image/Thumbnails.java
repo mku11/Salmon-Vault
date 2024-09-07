@@ -162,7 +162,7 @@ public class Thumbnails {
     }
 
     private static Image getIcon(SalmonFile salmonFile) {
-        String icon = salmonFile.isFile() ? "/icons/file.png" : "/icons/folder.png";
+        String icon = salmonFile.isFile() ? "/icons/file_item.png" : "/icons/folder.png";
         Image image = null;
         if (salmonFile.isFile()) {
             try {
@@ -196,7 +196,7 @@ public class Thumbnails {
 
     private static void addText(Graphics g, String text, int width, int height) {
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Comic sans MS", Font.PLAIN, 102));
+        g.setFont(new Font("Comic sans MS", Font.PLAIN, 128));
         FontMetrics fontMetrics = g.getFontMetrics();
         int textWidth = fontMetrics.stringWidth(text);
         int textHeight = fontMetrics.getHeight();

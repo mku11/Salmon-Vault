@@ -289,10 +289,13 @@ public class MainController {
         manager.refresh();
     }
 
-    public void onImport() {
+    public void onImportFiles() {
         SalmonDialogs.promptImportFiles("Import Files", SalmonVaultManager.REQUEST_IMPORT_FILES);
     }
 
+    public void onImportFolder() {
+        SalmonDialogs.promptImportFolder("Import Folder", SalmonVaultManager.REQUEST_IMPORT_FOLDER);
+    }
     public void onExport() {
         try {
             manager.exportSelectedFiles(false);
