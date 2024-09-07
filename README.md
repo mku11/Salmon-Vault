@@ -1,10 +1,12 @@
 ![alt text](https://github.com/mku11/Salmon-Vault/blob/wip/common/common-res/icons/logo.png)
 
 # Salmon Vault
-Secure all your personal files in Salmon Vault with AES-256 encryption. Salmon Vault works on Android, Windows, Linux, and MacOS devices. Powered by [Salmon](https://github.com/mku11/Salmon-AES-CTR) encryption library.
+Secure all your personal files in Salmon Vault with AES-256 encryption.  
+Salmon Vault works on Android, Windows, Linux, and MacOS devices.  
+Powered by [Salmon](https://github.com/mku11/Salmon-AES-CTR) encryption library.
 
 [![License: MIT](https://img.shields.io/github/license/mku11/Salmon-Vault.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/mku11/Salmon-Vault/releases)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://mku11.github.io/Salmon-Vault/downloads.html)
 [![GitHub Releases](https://img.shields.io/github/downloads/mku11/Salmon-Vault/latest/total?logo=github)](https://github.com/mku11/Salmon-Vault/releases)
 
 ## Features
@@ -18,7 +20,7 @@ Secure all your personal files in Salmon Vault with AES-256 encryption. Salmon V
 * No birthday problem unlike other encryption software.
 * Back up your drives as often as you wish.
 
-## Specs
+## Specifications
 * AES-256 encryption 
 * HMAC SHA-256 authentication.
 * SHA-256 Text password key derivation.
@@ -28,7 +30,7 @@ Secure all your personal files in Salmon Vault with AES-256 encryption. Salmon V
 * Protected nonce sequencer with SHA256 checksum anti-tampering (Windows only).
 * Protected account sequencer service (Optional / Windows only).
 
-## Applications
+## Platforms
 Salmon Vault app is offered on several different platforms:  
 * JavaFx for Windows x86_64, MacOS x86_64, and Linux x86_64/ARM64
 * .NET WPF (Windows Only)
@@ -37,9 +39,9 @@ Salmon Vault app is offered on several different platforms:
 * .NET MAUI (Android/Windows 10+ experimental)
 * Javascript Web App (Chrome, Firefox, Safari support remote read-only drives, Chrome supports also local read-write drives)
 
-[**Live Web Demo**](https://mku11.github.io/Salmon-AES-CTR/demo)
+[**Live Web Demo**](https://mku11.github.io/Salmon-Vault/demo.html)
 
-[**Downloads**](https://github.com/mku11/Salmon-Vault/releases)
+[**Downloads**](https://mku11.github.io/Salmon-Vault/downloads.html)
 
 ---
 
@@ -59,4 +61,4 @@ Unfortunately I cannot accept any code contributions. Though, bug reports and se
 Salmon is released under MIT Licence, see [LICENSE](https://github.com/mku11/Salmon-Vault/blob/main/LICENSE) file.
 Make sure you read the LICENSE file and display proper attribution if you decide to use this software.
 Dependency libraries from Github, Maven, and NuGet are covered by their own license  
-see [NOTICE](https://github.com/mku11/Salmon-Vault/blob/main/LICENSE)  
+see [NOTICE](https://github.com/mku11/Salmon-Vault/blob/main/NOTICE)  
