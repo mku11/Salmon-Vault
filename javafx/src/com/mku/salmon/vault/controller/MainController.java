@@ -27,6 +27,7 @@ import com.mku.salmon.SalmonAuthException;
 import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
+import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.model.win.SalmonWinVaultManager;
 import com.mku.salmon.vault.services.*;
@@ -40,8 +41,11 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
@@ -449,39 +453,53 @@ public class MainController {
         contextMenu.getItems().add(item);
 
         item = new MenuItem("View as Text");
+        item.setGraphic(getImageIcon("/icons/text_file_small.png"));
         item.setOnAction((event) -> startTextEditor(items.get(0)));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Copy (Ctrl+C)");
+        item.setGraphic(getImageIcon("/icons/copy_file_small.png"));
         item.setOnAction((event) -> onCopy());
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Cut (Ctrl+X)");
+        item.setGraphic(getImageIcon("/icons/move_file_small.png"));
         item.setOnAction((event) -> onCut());
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Delete");
+        item.setGraphic(getImageIcon("/icons/delete_small.png"));
         item.setOnAction((event) -> onDelete());
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Rename");
+        item.setGraphic(getImageIcon("/icons/rename_small.png"));
         item.setOnAction((event) -> SalmonDialogs.promptRenameFile(items.get(0).getSalmonFile()));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Export (Ctrl+E)");
+        item.setGraphic(getImageIcon("/icons/export_file_small.png"));
         item.setOnAction((event) -> onExport());
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Export And Delete (Ctrl+U)");
+        item.setGraphic(getImageIcon("/icons/export_and_delete_file_small.png"));
         item.setOnAction((event) -> onExportAndDelete());
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Properties");
+        item.setGraphic(getImageIcon("/icons/info_small.png"));
         item.setOnAction((event) -> SalmonDialogs.showProperties(items.get(0).getSalmonFile()));
         contextMenu.getItems().add(item);
 
         Point p = MouseInfo.getPointerInfo().getLocation();
         contextMenu.show(stage, p.x, p.y);
+    }
+
+    private Node getImageIcon(String path) {
+        ImageView imageView = new ImageView();
+        imageView.setImage(new Image(Thumbnails.class.getResourceAsStream(path)));
+        return imageView;
     }
 
     protected void openItem(int position) throws Exception {
