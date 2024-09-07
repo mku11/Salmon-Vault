@@ -1,6 +1,5 @@
 .root {
     -fx-base: #2d3343;
-
     -fx-control-inner-background: derive(-fx-base, 42%);
 }
 
@@ -38,7 +37,7 @@
 
 .table-row-cell:selected {
     -fx-table-cell-border-color: transparent;
-    -fx-background-color: #909090;
+    -fx-background-color: #955151;
     -fx-text-fill: white;
 }
 
