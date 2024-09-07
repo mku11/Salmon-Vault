@@ -93,14 +93,14 @@ Javascript Web App (Chrome, Firefox, Safari support remote read-only drives, Chr
 		<div class="functional-limitations-container">
 			<H3>Functional Limitations</H3>
 			<pre>
-	- Salmon streams are seekable only if the backed resource supports random access (disk, memory, network).  
-	- Salmon API is not Thread Safe! If you want to use parallel processing you need to use SalmonEncryptor/SalmonDecryptor and SalmonFileImporter/SalmonFileExporter.  
-	- Maximum guaranteed file size: 2^64 bytes or limited by the backed resource (disk, memory, network).  
-	- Maximum drive file size: 2^64 bytes  
-	- Maximum number of drive files: 2^62 (64 bit nonces used for the filename and the file contents.  
-	- Python parallel processing (multiple cpus) in Windows is slow due to python being single-threaded.  
-	- Javascript service worker handler does not support parallel processing.  
-	- Javascript implementation is ESM so in order to work in Node.js you need to use --experimental-vm-modules  
+- Salmon streams are seekable only if the backed resource supports random access (disk, memory, network).  
+- Salmon API is not Thread Safe! If you want to use parallel processing you need to use SalmonEncryptor/SalmonDecryptor and SalmonFileImporter/SalmonFileExporter.  
+- Maximum guaranteed file size: 2^64 bytes or limited by the backed resource (disk, memory, network).  
+- Maximum drive file size: 2^64 bytes  
+- Maximum number of drive files: 2^62 (64 bit nonces used for the filename and the file contents.  
+- Python parallel processing (multiple cpus) in Windows is slow due to python being single-threaded.  
+- Javascript service worker handler does not support parallel processing.  
+- Javascript implementation is ESM so in order to work in Node.js you need to use --experimental-vm-modules  
 			</pre>
 		</div>
 	</div>
