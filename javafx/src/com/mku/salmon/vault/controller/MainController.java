@@ -290,7 +290,7 @@ public class MainController {
     }
 
     public void onImport() {
-        SalmonDialogs.promptImportFiles();
+        SalmonDialogs.promptImportFiles("Import Files", SalmonVaultManager.REQUEST_IMPORT_FILES);
     }
 
     public void onExport() {

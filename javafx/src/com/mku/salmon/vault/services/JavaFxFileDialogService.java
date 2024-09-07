@@ -122,7 +122,7 @@ public class JavaFxFileDialogService implements IFileDialogService {
         onFilesPicked.accept(javaFiles.toArray(new JavaFile[0]));
     }
 
-    public void pickFolder(String title, String initialDirectory, Consumer<Object> onFolderPicked, int requestCode) {
+    public void openFolder(String title, String initialDirectory, Consumer<Object> onFolderPicked, int requestCode) {
         handlers.put(requestCode, onFolderPicked);
         DirectoryChooser directoryChooser = new DirectoryChooser();
         if (title != null)
