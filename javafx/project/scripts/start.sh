@@ -3,7 +3,7 @@
 # export JAVAFX_HOME="/path/to/javafx-sdk-17.0.10"
 
 export SALMON_PATH="./*"
-export JAVAFX_MODULES="--add-modules=javafx.controls --add-modules=javafx.swing --add-modules=javafx.fxml --add-modules=javafx.media --add-modules=javafx.graphics"
+export JAVAFX_MODULES="--add-modules=javafx.controls,javafx.swing,javafx.fxml,javafx.media,javafx.graphics"
 
 if [ -d "$JAVAFX_HOME" ]; then
 	java -Djava.library.path="." --module-path "$JAVAFX_HOME"/lib $JAVAFX_MODULES -cp "$SALMON_PATH" com.mku.salmon.vault.main.Main
