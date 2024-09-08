@@ -56,6 +56,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     public static readonly int REQUEST_EXPORT_DIR = 1003;
     public static readonly int REQUEST_IMPORT_AUTH_FILE = 1004;
     public static readonly int REQUEST_EXPORT_AUTH_FILE = 1005;
+    public static readonly int REQUEST_IMPORT_FOLDER = 1006;
 
     public bool PromptExitOnBack { get; set; }
 

@@ -295,8 +295,11 @@ public class MainViewModel : INotifyPropertyChanged
             case ActionType.STOP:
                 manager.StopOperation();
                 break;
-            case ActionType.IMPORT:
-                SalmonDialogs.PromptImportFiles();
+            case ActionType.IMPORT_FILES:
+                SalmonDialogs.PromptImportFiles("Import Files", SalmonVaultManager.REQUEST_IMPORT_FILES);
+                break;
+            case ActionType.IMPORT_FOLDER:
+                SalmonDialogs.PromptImportFolder("Import Folder", SalmonVaultManager.REQUEST_IMPORT_FOLDER);
                 break;
             case ActionType.EXPORT:
                 manager.ExportSelectedFiles(false);

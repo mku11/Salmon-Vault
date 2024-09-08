@@ -36,7 +36,7 @@ public class WPFFileDialogService : IFileDialogService
         throw new NotSupportedException();
     }
 
-    public void PickFolder(string title, string initialDirectory, Action<object> OnFolderPicked, int requestCode)
+    public void OpenFolder(string title, string initialDirectory, Action<object> OnFolderPicked, int requestCode)
     {
         FolderBrowserDialog directoryChooser = new FolderBrowserDialog();
         directoryChooser.Description = title;

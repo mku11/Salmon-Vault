@@ -161,11 +161,18 @@
                     </MenuItem>
                 </MenuItem>
                 <MenuItem Header="Operations">
-                    <MenuItem Header="Import"  InputGestureText="Ctrl+I"
+                    <MenuItem Header="Import Files"  InputGestureText="Ctrl+I"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.IMPORT}">
+                              CommandParameter="{x:Static viewmodel:ActionType.IMPORT_FILES}">
                         <MenuItem.Icon>
                             <Image Source="/Icons/import_file_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Import Folder"  InputGestureText="Ctrl+I"
+                        Command="{Binding ClickCommand}"
+                            CommandParameter="{x:Static viewmodel:ActionType.IMPORT_FOLDER}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/import_folder_small.png"/>
                         </MenuItem.Icon>
                     </MenuItem>
                     <MenuItem Header="Export"  InputGestureText="Ctrl+E"
@@ -282,7 +289,7 @@
                         </MenuItem>
                         <MenuItem Header="Delete" Click="MenuItem_Delete" >
                             <MenuItem.Icon>
-                                <Image Source="/Icons/delete_file_small.png"/>
+                                <Image Source="/Icons/delete_small.png"/>
                             </MenuItem.Icon>
                         </MenuItem>
                         <MenuItem Header="Rename" Click="MenuItem_Rename" >

@@ -33,10 +33,7 @@ using Salmon.Vault.Settings;
 using Salmon.Vault.Utils;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using Action = System.Action;
 
 namespace Salmon.Vault.Dialog;
 
@@ -279,7 +276,7 @@ public class SalmonDialogs
 
     public static void PromptCreateVault()
     {
-        ServiceLocator.GetInstance().Resolve<IFileDialogService>().PickFolder("Select the vault",
+        ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFolder("Select the vault",
                 SalmonSettings.GetInstance().VaultLocation, (file) =>
                 {
                     SalmonDialogs.PromptSetPassword((string pass) =>
@@ -300,7 +297,7 @@ public class SalmonDialogs
 
     public static void PromptOpenVault()
     {
-        ServiceLocator.GetInstance().Resolve<IFileDialogService>().PickFolder("Select the vault",
+        ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFolder("Select the vault",
                 SalmonSettings.GetInstance().VaultLocation, (dir) =>
                 {
                     SalmonDialogs.PromptPassword((string password) =>
@@ -311,11 +308,11 @@ public class SalmonDialogs
         SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
     }
 
-    public static void PromptImportFiles()
+    public static void PromptImportFiles(string text, int requestCode)
     {
         if (!SalmonDialogs.IsDriveLoaded())
             return;
-        ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFiles("Select files to import",
+        ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFiles(text,
                     null, SalmonSettings.GetInstance().LastImportDir, (obj) =>
                     {
                         IRealFile[] filesToImport = (IRealFile[])obj;
@@ -329,7 +326,28 @@ public class SalmonDialogs
                             {
                                 SalmonVaultManager.Instance.Refresh();
                             });
-                    }, SalmonVaultManager.REQUEST_IMPORT_FILES);
+                    }, requestCode);
+    }
+
+    public static void PromptImportFolder(string text, int requestCode)
+    {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
+        ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFolder(text,
+                    SalmonSettings.GetInstance().LastImportDir, (obj) =>
+                    {
+                        IRealFile folder = (IRealFile)obj;
+                        if (folder == null)
+                            return;
+                        IRealFile parent = folder.Parent;
+                        if (parent != null && parent.AbsolutePath != null)
+                            SalmonSettings.GetInstance().LastImportDir = parent.AbsolutePath;
+                        SalmonVaultManager.Instance.ImportFiles(new IRealFile[] { folder },
+                            SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (SalmonFile[] importedFiles) =>
+                            {
+                                SalmonVaultManager.Instance.Refresh();
+                            });
+                    }, requestCode);
     }
 
     public static void PromptNewFolder()
