@@ -278,7 +278,12 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         fileCommander.Cancel();
         FileManagerMode = Mode.Browse;
+        ClearSelectedFiles();
+        ClearCopiedFiles();
+        FileProgress = 0;
+        FilesProgress = 0;
         SetTaskRunning(false);
+        SetTaskMessage("");
     }
 
     public void CopySelectedFiles()
