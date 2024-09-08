@@ -260,15 +260,51 @@
                 </DataGrid.InputBindings>
                 <DataGrid.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="View" Click="MenuItem_View" />
-                        <MenuItem Header="View As Text" Click="MenuItem_ViewAsText" />
-                        <MenuItem Header="Copy" Click="MenuItem_Copy" InputGestureText="Ctrl-C"/>
-                        <MenuItem Header="Cut" Click="MenuItem_Cut" InputGestureText="Ctrl-X"/>
-                        <MenuItem Header="Delete" Click="MenuItem_Delete" />
-                        <MenuItem Header="Rename" Click="MenuItem_Rename" />
-                        <MenuItem Header="Export" Click="MenuItem_Export" InputGestureText="Ctrl-E"/>
-                        <MenuItem Header="Export And Delete" Click="MenuItem_ExportAndDelete" InputGestureText="Ctrl-U"/>
-                        <MenuItem Header="Properties" Click="MenuItem_Properties" />
+                        <MenuItem Header="View" Click="MenuItem_View" >
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/file_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="View As Text" Click="MenuItem_ViewAsText" >
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/text_file_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Copy" Click="MenuItem_Copy" InputGestureText="Ctrl-C">
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/copy_file_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Cut" Click="MenuItem_Cut" InputGestureText="Ctrl-X">
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/move_file_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Delete" Click="MenuItem_Delete" >
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/delete_file_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Rename" Click="MenuItem_Rename" >
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/rename_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Export" Click="MenuItem_Export" InputGestureText="Ctrl-E">
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/export_file_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Export And Delete" Click="MenuItem_ExportAndDelete" InputGestureText="Ctrl-U">
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/export_and_delete_file_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Properties" Click="MenuItem_Properties" >
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/info_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.Columns>
