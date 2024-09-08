@@ -1,21 +1,16 @@
 package com.mku.salmon.vault.provider;
 
-import android.content.res.AssetFileDescriptor;
+import static android.provider.DocumentsContract.Root;
+
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Handler;
-import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.DocumentsProvider;
-import android.view.Gravity;
 import android.webkit.MimeTypeMap;
 
-import static android.provider.DocumentsContract.Root;
-
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mku.android.salmon.drive.AndroidDrive;
@@ -23,30 +18,17 @@ import com.mku.file.IRealFile;
 import com.mku.file.JavaFile;
 import com.mku.salmon.SalmonDrive;
 import com.mku.salmon.SalmonFile;
-import com.mku.salmon.streams.SalmonFileInputStream;
-import com.mku.salmon.streams.SalmonStream;
 import com.mku.salmon.vault.android.R;
-import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.main.SalmonApplication;
 import com.mku.salmon.vault.model.SalmonVaultManager;
-import com.mku.salmon.vault.services.AndroidBrowserService;
-import com.mku.salmon.vault.services.AndroidFileDialogService;
-import com.mku.salmon.vault.services.AndroidFileService;
-import com.mku.salmon.vault.services.AndroidKeyboardService;
 import com.mku.salmon.vault.services.AndroidSettingsService;
-import com.mku.salmon.vault.services.IFileDialogService;
-import com.mku.salmon.vault.services.IFileService;
-import com.mku.salmon.vault.services.IKeyboardService;
 import com.mku.salmon.vault.services.ISettingsService;
-import com.mku.salmon.vault.services.IWebBrowserService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.utils.FileUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class SalmonFileProvider extends DocumentsProvider {
     public static final long MAX_FILE_SIZE_TO_SHARE = 50 * 1024 * 1024;
@@ -132,7 +114,7 @@ public class SalmonFileProvider extends DocumentsProvider {
     }
 
     @Override
-    public Cursor queryDocument(String documentId, String[] projection) throws FileNotFoundException {
+    public Cursor queryDocument(String documentId, String[] projection) {
         setupServices();
         final MatrixCursor result = new MatrixCursor(documentProjection);
         SalmonDrive drive = getManager().getDrive();
@@ -142,9 +124,8 @@ public class SalmonFileProvider extends DocumentsProvider {
         if (documentId.equals(rootPath))
             getRootDocument(row);
         else {
-            SalmonFile file = null;
             try {
-                file = parsePath(documentId);
+                SalmonFile file = parsePath(documentId);
                 getDocument(row, file);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -245,40 +226,5 @@ public class SalmonFileProvider extends DocumentsProvider {
 
     protected SalmonVaultManager getManager() {
         return SalmonVaultManager.getInstance();
-    }
-
-    private class SalmonAssetFileDescriptor extends AssetFileDescriptor {
-        private SalmonFile file;
-
-        public SalmonAssetFileDescriptor(SalmonFile file) throws IOException {
-            super(null, 0, file.getSize());
-            String ext = FileUtils.getExtensionFromFileName(file.getBaseName()).toLowerCase();
-            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
-            if (mimeType == null)
-                mimeType = "*/*";
-            this.file = file;
-        }
-
-        public FileInputStream createInputStream() throws IOException {
-            return new SalmonInputStream(file);
-        }
-    }
-
-    private class SalmonInputStream extends FileInputStream {
-        private SalmonFile file;
-        private SalmonStream stream;
-
-        public SalmonInputStream(SalmonFile file) throws FileNotFoundException {
-            super((String) null);
-            this.file = file;
-        }
-
-        public int read(byte buffer[], int offset, int length) throws IOException {
-            return stream.read(buffer, offset, length);
-        }
-
-        public void close() throws IOException {
-            stream.close();
-        }
     }
 }
