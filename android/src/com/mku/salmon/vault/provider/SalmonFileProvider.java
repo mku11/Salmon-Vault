@@ -50,7 +50,6 @@ import java.util.ArrayList;
 
 public class SalmonFileProvider extends DocumentsProvider {
     public static final long MAX_FILE_SIZE_TO_SHARE = 50 * 1024 * 1024;
-    private static final String MIME_TYPE = "salmon/encrypted";
     private static String rootPath = "/";
     private static String[] rootProjection = new String[]{
             DocumentsContract.Root.COLUMN_ROOT_ID,
