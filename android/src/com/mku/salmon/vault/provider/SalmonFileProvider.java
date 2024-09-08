@@ -136,11 +136,8 @@ public class SalmonFileProvider extends DocumentsProvider {
             row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, mimeType);
         }
         int flags = 0;
-        if (file.isDirectory())
-            flags |= DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE;
-        else {
+        if (file.isFile())
             flags |= DocumentsContract.Document.FLAG_SUPPORTS_WRITE;
-        }
         row.add(DocumentsContract.Document.COLUMN_FLAGS, flags);
         row.add(DocumentsContract.Document.COLUMN_SIZE, file.getRealFile().length());
         row.add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, file.getLastDateTimeModified());
