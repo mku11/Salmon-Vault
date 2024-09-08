@@ -96,7 +96,6 @@ public class SalmonFileProvider extends DocumentsProvider {
     private void getRoot(MatrixCursor.RowBuilder row) {
         row.add(Root.COLUMN_ROOT_ID, rootPath);
         row.add(Root.COLUMN_DOCUMENT_ID, rootPath);
-        row.add(Root.COLUMN_FLAGS, Root.FLAG_SUPPORTS_CREATE);
         row.add(Root.COLUMN_TITLE, "Salmon Files");
         row.add(Root.COLUMN_ICON, R.drawable.logo_128x128);
     }
@@ -107,8 +106,7 @@ public class SalmonFileProvider extends DocumentsProvider {
         row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, rootPath);
         row.add(DocumentsContract.Document.COLUMN_MIME_TYPE,
                 DocumentsContract.Document.MIME_TYPE_DIR);
-        row.add(DocumentsContract.Document.COLUMN_FLAGS,
-                DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE);
+        row.add(DocumentsContract.Document.COLUMN_FLAGS, 0);
         row.add(DocumentsContract.Document.COLUMN_SIZE, 0);
         row.add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, System.currentTimeMillis());
     }
@@ -152,13 +150,12 @@ public class SalmonFileProvider extends DocumentsProvider {
         setupServices();
         final MatrixCursor result = new MatrixCursor(documentProjection);
         SalmonDrive drive = getManager().getDrive();
-        if (drive == null) {
-            MatrixCursor.RowBuilder row = result.newRow();
+        final MatrixCursor.RowBuilder row = result.newRow();
+		if (drive == null) {
             getErrorDocument(row, "No opened vaults");
             return result;
         }
 
-        final MatrixCursor.RowBuilder row = result.newRow();
         if (documentId.equals(rootPath))
             getRootDocument(row);
         else {
@@ -271,7 +268,6 @@ public class SalmonFileProvider extends DocumentsProvider {
 
     private boolean checkAppAuthorized() {
         String callingPackageName = getCallingPackage();
-        System.out.println("requesting access: " + callingPackageName);
         boolean allowed = false;
         if (!authorizedApps.containsKey(callingPackageName)) {
             authorizedApps.put(callingPackageName, false);
@@ -279,7 +275,6 @@ public class SalmonFileProvider extends DocumentsProvider {
             Boolean res = authorizedApps.get(callingPackageName);
             allowed = res == null ? false : res;
         }
-        System.out.println("access allowed: " + true);
         return allowed;
     }
 

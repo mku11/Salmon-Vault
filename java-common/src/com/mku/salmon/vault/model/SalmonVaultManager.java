@@ -842,13 +842,13 @@ public class SalmonVaultManager implements IPropertyNotifier {
         this.promptExitOnBack = promptExitOnBack;
     }
 
-    public static void getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<Integer, Long> updateUsage) {
+    public void getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<Integer, Long> updateUsage) {
         executor.submit(() -> {
             getDiskUsage(selectedFiles, updateUsage, 0, 0);
         });
     }
 
-    private static long getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<Integer, Long> updateUsage,
+    private long getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<Integer, Long> updateUsage,
                                      int totalItems, long totalSize) {
         for (SalmonFile file : selectedFiles) {
             totalItems++;

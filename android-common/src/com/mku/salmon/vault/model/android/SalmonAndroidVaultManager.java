@@ -25,12 +25,8 @@ SOFTWARE.
 
 import com.mku.android.salmon.drive.AndroidDrive;
 import com.mku.android.sequence.AndroidSequenceSerializer;
-import com.mku.func.Consumer;
-import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.sequence.INonceSequenceSerializer;
-
-import java.util.LinkedHashSet;
 
 public class SalmonAndroidVaultManager extends SalmonVaultManager {
     synchronized
