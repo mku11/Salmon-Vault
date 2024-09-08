@@ -71,6 +71,8 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     private Timer timer;
     private SurfaceView mSurfaceView;
     private SeekBar mSeekBar;
+    private TextView mTime;
+    private TextView mTotalTime;
     private MediaPlayer mediaPlayer;
     private SalmonMediaDataSource source;
     private RelativeLayout mSeekBarLayout;
@@ -143,6 +145,8 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         mSeekBar.SetOnSeekBarChangeListener(new OnSeekBarChangeListener(this));
         mSeekBarLayout = (RelativeLayout)FindViewById(Resource.Id.seekbar_layout);
         mSeekBarLayout.Visibility = ViewStates.Gone;
+        mTime = (TextView)FindViewById(Resource.Id.time);
+        mTotalTime = (TextView)FindViewById(Resource.Id.total_time);
         mTitleLayout = (RelativeLayout)FindViewById(Resource.Id.title_layout);
         mTitleLayout.Visibility = ViewStates.Gone;
         mTitle = (TextView)FindViewById(Resource.Id.title);
@@ -217,11 +221,31 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         {
             try
             {
-                if (activity.mediaPlayer != null && activity.mediaPlayer.IsPlaying)
-                    activity.mSeekBar.Progress = (int)(activity.mediaPlayer.CurrentPosition / (float)activity.mediaPlayer.Duration * 100);
+                 if (activity.mediaPlayer != null && activity.mediaPlayer.IsPlaying) {
+                    activity.mSeekBar.Progress = (int) (activity.mediaPlayer.CurrentPosition / (float)activity.mediaPlayer.Duration * 100);
+                    activity.mTime.Text = activity.GetTime(activity.mediaPlayer.CurrentPosition);
+                    activity.mTotalTime.Text = activity.GetTime(activity.mediaPlayer.Duration);
+                } else {
+                    activity.mTime.Text = "";
+                    activity.mTotalTime.Text = "";
+                }
             }
             catch (Exception ignored) { }
         }
+    }
+
+    private string GetTime(int time)
+    {
+        string secs = ((int)(time / 1000) % 60) + "";
+        if (secs.Length == 1)
+            secs = "0" + secs;
+        string mins = ((int)(time / 1000) / 60) + "";
+        if (mins.Length == 1)
+            mins = "0" + mins;
+        string hours = ((int)(time / 1000) / 3600) + "";
+        if (hours.Length == 1)
+            hours = "0" + hours;
+        return hours + ":" + mins + ":" + secs;
     }
 
     override

@@ -42,6 +42,9 @@ using Salmon.Vault.Extensions;
 using Runnable = Java.Lang.Runnable;
 using Android.Widget;
 using System.ComponentModel;
+using Java.Lang;
+using Android.Media;
+using System.Runtime.CompilerServices;
 
 namespace Salmon.Vault.Main;
 
@@ -49,6 +52,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 {
     private static readonly string TAG = typeof(FileAdapter).Name;
     private const int MAX_CACHE_SIZE = 20 * 1024 * 1024;
+    private static readonly int THUMBNAIL_MAX_STEPS = 10;
     private const long VIDEO_THUMBNAIL_MSECS = 3000;
     private static readonly int TASK_THREADS = 4;
 
@@ -60,7 +64,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     private ConcurrentDictionary<SalmonFile, Bitmap> bitmapCache = new ConcurrentDictionary<SalmonFile, Bitmap>();
     // we use a deque and add jobs to the front for better user experience
     private LinkedBlockingDeque tasks = new LinkedBlockingDeque();
-    private int lastPositionPressed;
+    private SalmonFile lastSelected;
     private int cacheSize = 0;
     public HashSet<SalmonFile> SelectedFiles { get; } = new HashSet<SalmonFile>();
     private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/YYYY");
@@ -68,6 +72,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     private IExecutorService executor;
     public event EventHandler OnCacheCleared;
     public event PropertyChangedEventHandler PropertyChanged;
+    private ViewHolder animationViewHolder;
 
     public FileAdapter(Activity activity, List<SalmonFile> items, Func<int, bool> itemClicked)
     {
@@ -105,11 +110,10 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
     public void SetMultiSelect(bool value, bool clear = true)
     {
-        if(clear)
+        if (clear)
             SelectedFiles.Clear();
         mode = value ? Mode.MULTI_SELECT : Mode.SINGLE_SELECT;
         PropertyChanged(this, new PropertyChangedEventArgs("SelectedFiles"));
-        NotifyDataSetChanged();
     }
 
     public void Stop()
@@ -130,14 +134,6 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         ViewHolder viewHolder = (ViewHolder)holder;
         try
         {
-            if (mode == Mode.MULTI_SELECT)
-            {
-                viewHolder.selected.Visibility = ViewStates.Visible;
-            }
-            else
-            {
-                viewHolder.selected.Visibility = ViewStates.Gone;
-            }
             viewHolder.salmonFile = items[position];
             UpdateSelected(viewHolder, viewHolder.salmonFile);
             UpdateBackgroundColor(viewHolder);
@@ -154,6 +150,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
             {
                 viewHolder.thumbnail.SetImageBitmap(null);
             }
+            viewHolder.animate = false;
         }
         catch (System.Exception ex)
         {
@@ -223,7 +220,10 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                 Bitmap bitmap = null;
                 try
                 {
-                    bitmap = GetFileThumbnail(viewHolder.salmonFile);
+                    Java.IO.File tmpFile = null;
+                    if (ext.Equals("mp4"))
+                        tmpFile = Thumbnails.GetVideoTmpFile(viewHolder.salmonFile);
+                    bitmap = GetFileThumbnail(viewHolder.salmonFile, 0, tmpFile, true);
                 }
                 catch (System.Exception e)
                 {
@@ -246,11 +246,90 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                     }
                 });
             }
+
+            viewHolder.thumbnail.Touch += (sender, args) =>
+            {
+                if (animationViewHolder != viewHolder || !animationViewHolder.animate)
+                {
+                    ResetAnimation();
+                    animationViewHolder = viewHolder;
+                    animationViewHolder.animate = true;
+                    if (ext.Equals("mp4"))
+                    {
+                        AnimateVideo(viewHolder);
+                    }
+                    else
+                    {
+                        args.Handled = false;
+                        return;
+                    }
+                }
+                args.Handled = true;
+            };
         }
         catch (System.Exception ex)
         {
             ex.PrintStackTrace();
         }
+    }
+
+    private void AnimateVideo(ViewHolder viewHolder)
+    {
+        executor.Submit(new Runnable(() =>
+        {
+            int i = 0;
+            Java.IO.File tmpFile = null;
+            MediaMetadataRetriever retriever = null;
+            try
+            {
+                tmpFile = Thumbnails.GetVideoTmpFile(viewHolder.salmonFile);
+                retriever = new MediaMetadataRetriever();
+                retriever.SetDataSource(tmpFile.Path);
+                while (animationViewHolder == viewHolder && animationViewHolder.animate)
+                {
+                    i++;
+                    i %= THUMBNAIL_MAX_STEPS;
+                    try
+                    {
+                        Thread.Sleep(1000);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                    Bitmap bitmap = null;
+                    try
+                    {
+                        bitmap = retriever.GetFrameAtTime(
+                                (i + 1) * FileAdapter.VIDEO_THUMBNAIL_MSECS * 1000);
+                    }
+                    catch (System.Exception e)
+                    {
+                        e.PrintStackTrace();
+                    }
+                    if (bitmap == null)
+                        continue;
+                    Bitmap finalBitmap = bitmap;
+                    activity.RunOnUiThread(() =>
+                    {
+                        if (animationViewHolder == viewHolder && animationViewHolder.animate)
+                            UpdateThumbnailIcon(viewHolder, finalBitmap);
+                    });
+                }
+            }
+            catch (System.Exception e)
+            {
+                e.PrintStackTrace();
+            }
+            finally
+            {
+                if (tmpFile != null)
+                {
+                    tmpFile.Delete();
+                    tmpFile.DeleteOnExit();
+                }
+            }
+        }));
     }
 
     private void UpdateFileInfo(ViewHolder viewHolder, string filename,
@@ -300,7 +379,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
     private void UpdateFileIcon(ViewHolder viewHolder, string extension)
     {
-        viewHolder.thumbnail.SetImageResource(Resource.Drawable.file);
+        viewHolder.thumbnail.SetImageResource(Resource.Drawable.file_item);
         int extColor;
         try
         {
@@ -344,16 +423,17 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
             if (bitmap != null)
                 cacheSize -= bitmap.AllocationByteCount;
         }
-        OnCacheCleared(this,new EventArgs());
+        OnCacheCleared(this, new EventArgs());
     }
 
-    private Bitmap GetFileThumbnail(SalmonFile salmonFile)
+    private Bitmap GetFileThumbnail(SalmonFile salmonFile, int step, Java.IO.File tmpFile,
+                                    bool delete)
     {
         Bitmap bitmap = null;
         string ext = FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
         if (ext.Equals("mp4"))
         {
-            bitmap = Thumbnails.GetVideoThumbnail(salmonFile, VIDEO_THUMBNAIL_MSECS);
+            bitmap = Thumbnails.GetVideoThumbnail(tmpFile, VIDEO_THUMBNAIL_MSECS * (step + 1), delete);
         }
         else if (ext.Equals("png") || ext.Equals("jpg") || ext.Equals("bmp") || ext.Equals("webp") || ext.Equals("gif"))
         {
@@ -385,15 +465,15 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         return new ViewHolder(view, itemClicked, this);
     }
 
-    public int GetPosition()
+    public SalmonFile GetLastSelected()
     {
-        return lastPositionPressed;
+        return lastSelected;
     }
 
     private void UpdateBackgroundColor(ViewHolder viewHolder)
     {
         if (viewHolder.selected.Checked)
-            viewHolder.ItemView.SetBackgroundColor(new Color(activity.GetColor(Resource.Color.colorPrimary)));
+            viewHolder.ItemView.SetBackgroundColor(new Color(activity.GetColor(Resource.Color.salmonItemSelectedBackground)));
         else
             viewHolder.ItemView.SetBackgroundColor(new Color(0));
     }
@@ -413,6 +493,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         public TextView extension;
         public CheckBox selected;
         public SalmonFile salmonFile;
+        public bool animate;
 
         public ViewHolder(View itemView, Func<int, bool> itemClicked, FileAdapter adapter) : base(itemView)
         {
@@ -426,10 +507,10 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
             itemView.Click += (object sender, EventArgs e) =>
             {
+                SalmonFile salmonFile = adapter.items[base.LayoutPosition];
                 if (adapter.mode == Mode.MULTI_SELECT)
                 {
                     selected.Checked = !selected.Checked;
-                    SalmonFile salmonFile = adapter.items[base.LayoutPosition];
                     if (selected.Checked)
                         adapter.SelectedFiles.Add(salmonFile);
                     else adapter.SelectedFiles.Remove(salmonFile);
@@ -438,16 +519,39 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                 }
                 else if (itemClicked == null || !itemClicked(base.LayoutPosition))
                 {
-                    adapter.lastPositionPressed = base.LayoutPosition;
+                    adapter.lastSelected = salmonFile;
                     itemView.ShowContextMenu();
                 }
+                adapter.NotifyItemChanged(LayoutPosition);
+                if (adapter.SelectedFiles.Count == 0)
+                    adapter.SetMultiSelect(false);
             };
 
             itemView.LongClick += (object sender, View.LongClickEventArgs e) =>
             {
-                adapter.lastPositionPressed = base.LayoutPosition;
-                itemView.ShowContextMenu();
+                SalmonFile salmonFile = adapter.items[LayoutPosition];
+                if (adapter.mode == Mode.SINGLE_SELECT)
+                {
+                    adapter.SetMultiSelect(true);
+                }
+                selected.Checked = true;
+                adapter.SelectedFiles.Add(salmonFile);
+                adapter.UpdateBackgroundColor(this);
+                adapter.NotifyItemChanged(LayoutPosition);
+                adapter.PropertyChanged(this, new PropertyChangedEventArgs("SelectedFiles"));
+                if (adapter.SelectedFiles.Count == 0)
+                    adapter.SetMultiSelect(false);
+                adapter.lastSelected = salmonFile;
+                e.Handled = true;
             };
         }
+    }
+
+    [MethodImpl(MethodImplOptions.Synchronized)]
+    public void ResetAnimation()
+    {
+        if (animationViewHolder != null)
+            animationViewHolder.animate = false;
+        animationViewHolder = null;
     }
 }

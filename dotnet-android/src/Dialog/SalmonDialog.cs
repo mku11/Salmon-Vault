@@ -57,6 +57,7 @@ public class SalmonDialog
 
             TextInputLayout msgText = new TextInputLayout(activity, null,
                 Resource.Style.Widget_MaterialComponents_TextInputLayout_OutlinedBox);
+            msgText.SetPadding(20, 20, 20, 20);
             msgText.BoxBackgroundMode = TextInputLayout.BoxBackgroundOutline;
             msgText.SetBoxCornerRadii(5, 5, 5, 5);
             msgText.Hint = msg;
@@ -91,18 +92,26 @@ public class SalmonDialog
                 {
                     text.InputType = Android.Text.InputTypes.ClassText;
                 }
-                if (isFileName)
+                bool once = false;
+                text.FocusChange += (sender, args) =>
                 {
-                    string ext = FileUtils.GetExtensionFromFileName(value);
-                    if (ext != null && ext.Length > 0)
-                        text.SetSelection(0, value.Length - ext.Length - 1);
-                    else
-                        text.SetSelection(0, value.Length);
-                }
-                else
-                {
-                    text.SelectAll();
-                }
+                    if (!once)
+                    {
+                        if (isFileName)
+                        {
+                            string ext = FileUtils.GetExtensionFromFileName(value);
+                            if (ext != null && ext.Length > 0)
+                                text.SetSelection(0, value.Length - ext.Length - 1);
+                            else
+                                text.SetSelection(0, value.Length);
+                        }
+                        else
+                        {
+                            text.SelectAll();
+                        }
+                        once = true;
+                    }
+                };
                 valueText = text;
             }
             LinearLayout.LayoutParams parameters = new LinearLayout.LayoutParams(
@@ -119,7 +128,7 @@ public class SalmonDialog
             {
                 if (OnEdit != null)
                 {
-                    if(isPassword)
+                    if (isPassword)
                         OnEdit(typePasswd.Text.ToString(), optionCheckBox.Checked);
                     else
                         OnEdit((valueText as EditText).Text.ToString(), optionCheckBox.Checked);
@@ -133,8 +142,11 @@ public class SalmonDialog
             AlertDialog alertDialog = builder.Create();
             alertDialog.SetTitle(title);
             alertDialog.SetCancelable(true);
+            alertDialog.SetCanceledOnTouchOutside(false);
             alertDialog.SetView(layout);
 
+            valueText.RequestFocus();
+            alertDialog.Window.SetSoftInputMode(SoftInput.AdjustResize);
             if (!activity.IsFinishing)
                 alertDialog.Show();
         });
@@ -152,25 +164,48 @@ public class SalmonDialog
                 builder.SetTitle(title);
             builder.SetMessage(body);
             if (buttonLabel1 != null)
-                builder.SetPositiveButton(buttonLabel1, (s,e)=>
+                builder.SetPositiveButton(buttonLabel1, (s, e) =>
                 {
                     if (buttonListener1 != null)
                         buttonListener1();
                 });
-        if (buttonLabel2 != null)
-            builder.SetNegativeButton(buttonLabel2, (s, e) =>
-            {
-                if (buttonListener2 != null)
-                    buttonListener2();
-            });
+            if (buttonLabel2 != null)
+                builder.SetNegativeButton(buttonLabel2, (s, e) =>
+                {
+                    if (buttonListener2 != null)
+                        buttonListener2();
+                });
 
             AlertDialog alertDialog = builder.Create();
             alertDialog.SetTitle(title);
             alertDialog.SetCancelable(true);
+            alertDialog.SetCanceledOnTouchOutside(false);
 
             if (!activity.IsFinishing)
                 alertDialog.Show();
         });
+    }
+
+    public static Action<string> promptUpdatableDialog(String title, String msg)
+    {
+        Activity activity = WindowUtils.UiActivity;
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
+
+        LinearLayout layout = new LinearLayout(activity);
+        layout.SetPadding(20, 20, 20, 20);
+        TextView textView = new TextView(activity);
+        textView.SetPadding(20, 20, 20, 20);
+        layout.AddView(textView);
+        builder.SetPositiveButton(Android.Resource.String.Ok, (sender, e) => { });
+
+        AlertDialog alertDialog = builder.Create();
+        alertDialog.SetTitle(title);
+        alertDialog.SetCancelable(true);
+        alertDialog.SetCanceledOnTouchOutside(false);
+        alertDialog.SetView(layout);
+        if (!activity.IsFinishing)
+            alertDialog.Show();
+        return (body) => WindowUtils.RunOnMainThread(() => textView.Text = body);
     }
 
     public static void PromptSingleValue(ArrayAdapter<string> adapter, string title,
@@ -187,49 +222,9 @@ public class SalmonDialog
         AlertDialog alertDialog = builder.Create();
         alertDialog.SetTitle(title);
         alertDialog.SetCancelable(true);
-
+        alertDialog.SetCanceledOnTouchOutside(false);
         if (!activity.IsFinishing)
             alertDialog.Show();
-    }
-
-    public static void PromptOpenWith(Intent intent, SortedDictionary<string, string> apps,
-        Android.Net.Uri uri, Java.IO.File sharedFile, SalmonFile salmonFile, bool allowWrite,
-        AndroidSharedFileObserver.OnFileContentsChanged OnFileContentsChanged)
-    {
-        Activity activity = WindowUtils.UiActivity;
-        string[] names = apps.Keys.ToArray();
-        string[] packageNames = apps.Values.ToArray();
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
-        builder.SetTitle(activity.GetString(Resource.String.ChooseApp));
-        builder.SetSingleChoiceItems(names, -1, (object sender, DialogClickEventArgs e) =>
-        {
-            try
-            {
-                AlertDialog alertDialog = sender as AlertDialog;
-                alertDialog.Dismiss();
-
-                ActivityFlags activityFlags = ActivityFlags.GrantReadUriPermission;
-                if (allowWrite)
-                    activityFlags |= ActivityFlags.GrantWriteUriPermission;
-
-                AndroidSharedFileObserver fileObserver = AndroidSharedFileObserver.CreateFileObserver(sharedFile,
-                    salmonFile, OnFileContentsChanged);
-                fileObserver.StartWatching();
-
-                activity.GrantUriPermission(packageNames[e.Which], uri, activityFlags);
-                intent.SetPackage(packageNames[e.Which]);
-                activity.StartActivity(intent);
-            }
-            catch (System.Exception ex)
-            {
-                Toast.MakeText(activity, "Could not start application", ToastLength.Long).Show();
-                ex.PrintStackTrace();
-                sharedFile.Delete();
-            }
-        });
-        AlertDialog alert = builder.Create();
-        alert.Show();
     }
 
     public static void PromptDialog(string body)

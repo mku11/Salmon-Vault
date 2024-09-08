@@ -27,10 +27,13 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/toolbarLayout"
         android:ellipsize="start"
-        android:gravity="center"
-        android:padding="2dp"
-        android:text="salmonfs://"
-        android:textColor="#FFFFFF" />
+        android:gravity="left"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:text="fs://"
+        />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"

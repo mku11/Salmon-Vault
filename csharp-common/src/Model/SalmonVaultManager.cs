@@ -90,15 +90,17 @@ public class SalmonVaultManager : INotifyPropertyChanged
         }
     }
 
-	private INonceSequencer _sequencer;
-    public INonceSequencer Sequencer { 
-		get => _sequencer;
-		protected set {
-			_sequencer = value;
-			if(this.Drive != null)
-				this.Drive.Sequencer = value;
-		}
-	}
+    private INonceSequencer _sequencer;
+    public INonceSequencer Sequencer
+    {
+        get => _sequencer;
+        protected set
+        {
+            _sequencer = value;
+            if (this.Drive != null)
+                this.Drive.Sequencer = value;
+        }
+    }
 
     public static int GetBufferSize()
     {
@@ -270,6 +272,12 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void SetPathText(string value)
     {
+        if (value == null)
+        {
+            Path = "";
+            return;
+        }
+
         if (value.StartsWith("/"))
             value = value.Substring(1);
         Path = "fs://" + value;
@@ -279,8 +287,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         fileCommander.Cancel();
         FileManagerMode = Mode.Browse;
-        ClearCopiedFiles();
         ClearSelectedFiles();
+        ClearCopiedFiles();
         FileProgress = 0;
         FilesProgress = 0;
         SetTaskRunning(false);
@@ -393,7 +401,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
     }
 
     virtual
-    protected INonceSequenceSerializer CreateSerializer() {
+    protected INonceSequenceSerializer CreateSerializer()
+    {
         return new SalmonSequenceSerializer();
     }
 
@@ -423,13 +432,18 @@ public class SalmonVaultManager : INotifyPropertyChanged
             CloseVault();
             this.Drive = SalmonDrive.OpenDrive(dir, GetDriveClassType(), password, this.Sequencer);
             this.CurrDir = this.Drive.Root;
-            SalmonSettings.GetInstance().VaultLocation = dir.AbsolutePath;
+            SalmonSettings.GetInstance().VaultLocation = dir.Path;
+            Refresh();
+        }
+        catch (ArgumentException e)
+        {
+            SalmonDialog.PromptDialog("Error", "Could not open vault: " + e.Message + ". "
+            + "Make sure your vault folder contains a file named " + SalmonDrive.ConfigFilename);
         }
         catch (Exception e)
         {
             SalmonDialog.PromptDialog("Error", "Could not open vault: " + e.Message);
         }
-        Refresh();
     }
 
     virtual
@@ -606,7 +620,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             FileItemList = null;
             CurrDir = null;
             ClearCopiedFiles();
-            SetPathText("");
+            SetPathText(null);
             if (this.Drive != null)
                 this.Drive.Close();
         }
@@ -877,7 +891,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         this.Drive = SalmonDrive.CreateDrive(dir, GetDriveClassType(), password, Sequencer);
         this.CurrDir = this.Drive.Root;
-        SalmonSettings.GetInstance().VaultLocation = dir.AbsolutePath;
+        SalmonSettings.GetInstance().VaultLocation = dir.Path;
         Refresh();
     }
 
@@ -904,5 +918,36 @@ public class SalmonVaultManager : INotifyPropertyChanged
     public bool CanGoBack()
     {
         return CurrDir != null && CurrDir.Parent != null;
+    }
+
+
+    public void GetDiskUsage(SalmonFile[] selectedFiles, Action<int, long> updateUsage)
+    {
+        Task.Run(() =>
+        {
+            GetDiskUsage(selectedFiles, updateUsage, 0, 0);
+        });
+    }
+
+    private long GetDiskUsage(SalmonFile[] selectedFiles, Action<int, long> updateUsage,
+                                     int totalItems, long totalSize)
+    {
+        foreach (SalmonFile file in selectedFiles)
+        {
+            totalItems++;
+            if (file.IsFile)
+            {
+                totalSize += file.RealFile.Length;
+            }
+            else
+            {
+                GetDiskUsage(file.ListFiles(), updateUsage, totalItems, totalSize);
+            }
+            if (updateUsage != null)
+                updateUsage(totalItems, totalSize);
+        }
+        if (updateUsage != null)
+            updateUsage(totalItems, totalSize);
+        return totalSize;
     }
 }

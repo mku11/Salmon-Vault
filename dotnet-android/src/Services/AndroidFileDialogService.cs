@@ -55,7 +55,7 @@ public class AndroidFileDialogService : IFileDialogService
         ActivityCommon.OpenFilesystem(activity, false, true, filter, null, requestCode);
     }
 
-    public void PickFolder(string title, string initialDirectory, Action<object> OnFolderPicked, int requestCode)
+    public void OpenFolder(string title, string initialDirectory, Action<object> OnFolderPicked, int requestCode)
     {
         handlers[requestCode] = OnFolderPicked;
         ActivityCommon.OpenFilesystem(activity, true, false, null, initialDirectory, requestCode);
