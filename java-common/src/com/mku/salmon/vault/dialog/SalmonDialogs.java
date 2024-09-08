@@ -32,6 +32,7 @@ import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonVaultManager;
+import com.mku.salmon.vault.provider.SalmonFileProvider;
 import com.mku.salmon.vault.services.IFileDialogService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.ByteUtils;
@@ -372,5 +373,17 @@ public class SalmonDialogs {
             return false;
         }
         return true;
+    }
+
+    public static void promptAuthorizeApp(String packageName) {
+        SalmonDialog.promptDialog("External app authorization",
+                "Application with package name:\n"
+                        + packageName + "\n"
+                        + "is requesting access to Salmon Files, allow?",
+                "Ok",
+                () ->
+                {
+                    SalmonFileProvider.authorizeApp(packageName);
+                }, "Cancel", null);
     }
 }

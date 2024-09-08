@@ -29,10 +29,15 @@ import com.mku.utils.FileUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class SalmonFileProvider extends DocumentsProvider {
     public static final long MAX_FILE_SIZE_TO_SHARE = 50 * 1024 * 1024;
     private static String rootPath = "/";
+
+    private static HashMap<String, Boolean> authorizedApps = new HashMap<>();
     private static String[] rootProjection = new String[]{
             DocumentsContract.Root.COLUMN_ROOT_ID,
             DocumentsContract.Root.COLUMN_DOCUMENT_ID,
@@ -51,6 +56,11 @@ public class SalmonFileProvider extends DocumentsProvider {
 
     private boolean hasServices;
 
+    public static void authorizeApp(String packageName) {
+        if (packageName != null && authorizedApps.containsKey(packageName))
+            authorizedApps.put(packageName, true);
+    }
+
     protected void setupServices() {
         if (hasServices)
             return;
@@ -59,7 +69,7 @@ public class SalmonFileProvider extends DocumentsProvider {
     }
 
     @Override
-    public Cursor queryRoots(String[] projection) throws FileNotFoundException {
+    public Cursor queryRoots(String[] projection) {
         final MatrixCursor result = new MatrixCursor(rootProjection);
         final MatrixCursor.RowBuilder row = result.newRow();
         getRoot(row);
@@ -83,7 +93,17 @@ public class SalmonFileProvider extends DocumentsProvider {
         row.add(DocumentsContract.Document.COLUMN_FLAGS,
                 DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE);
         row.add(DocumentsContract.Document.COLUMN_SIZE, 0);
-        row.add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, drive.getRoot().getLastDateTimeModified());
+        row.add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, System.currentTimeMillis());
+    }
+
+    private void getErrorDocument(MatrixCursor.RowBuilder row, String text) {
+        row.add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, "0");
+        row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, text);
+        row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, "application/octetstream");
+        row.add(DocumentsContract.Document.COLUMN_FLAGS, 0);
+        row.add(DocumentsContract.Document.COLUMN_SIZE, 0);
+        row.add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, System.currentTimeMillis());
+        row.add(DocumentsContract.Document.COLUMN_ICON, R.drawable.info_small);
     }
 
     private void getDocument(MatrixCursor.RowBuilder row, SalmonFile file) throws IOException {
@@ -118,12 +138,19 @@ public class SalmonFileProvider extends DocumentsProvider {
         setupServices();
         final MatrixCursor result = new MatrixCursor(documentProjection);
         SalmonDrive drive = getManager().getDrive();
-        if (drive == null)
+        if (drive == null) {
+            MatrixCursor.RowBuilder row = result.newRow();
+            getErrorDocument(row, "No opened vaults");
             return result;
+        }
+
         final MatrixCursor.RowBuilder row = result.newRow();
         if (documentId.equals(rootPath))
             getRootDocument(row);
         else {
+            if (!checkAppAuthorized()) {
+                return result;
+            }
             try {
                 SalmonFile file = parsePath(documentId);
                 getDocument(row, file);
@@ -137,8 +164,16 @@ public class SalmonFileProvider extends DocumentsProvider {
     @Override
     public Cursor queryChildDocuments(String parentDocumentId, String[] projection, String sortOrder) throws FileNotFoundException {
         final MatrixCursor result = new MatrixCursor(documentProjection);
-        if (getManager().getDrive() == null)
+        if (getManager().getDrive() == null) {
+            MatrixCursor.RowBuilder row = result.newRow();
+            getErrorDocument(row, "No opened vaults");
             return result;
+        }
+        if (!checkAppAuthorized()) {
+            MatrixCursor.RowBuilder row = result.newRow();
+            getErrorDocument(row, "App not authorized");
+            return result;
+        }
         try {
             SalmonFile dir = parsePath(parentDocumentId);
             SalmonFile[] files = dir.listFiles();
@@ -165,6 +200,9 @@ public class SalmonFileProvider extends DocumentsProvider {
     public ParcelFileDescriptor openDocument(String documentId, String mode,
                                              @Nullable CancellationSignal signal)
             throws FileNotFoundException {
+        if (!checkAppAuthorized()) {
+            throw new RuntimeException("App not authorized");
+        }
         // TODO: check the CancellationSignal periodically
         SalmonFile salmonFile = null;
         File sharedFile = null;
@@ -217,6 +255,28 @@ public class SalmonFileProvider extends DocumentsProvider {
         } else {
             return ParcelFileDescriptor.open(sharedFile, accessMode);
         }
+    }
+
+    private boolean checkAppAuthorized() {
+        String callingPackageName = getCallingPackage();
+        System.out.println("access: " + callingPackageName);
+        if (!authorizedApps.containsKey(callingPackageName)) {
+            authorizedApps.put(callingPackageName, false);
+            return false;
+        } else {
+            Boolean allowed = authorizedApps.get(callingPackageName);
+            return allowed == null ? false : allowed;
+        }
+    }
+
+    public static ArrayList<String> getApps(boolean authorized) {
+        ArrayList<String> list = new ArrayList<>();
+        for (String packageName : authorizedApps.keySet()) {
+            Boolean allowed = authorizedApps.get(packageName);
+            if (packageName != null && allowed != null && authorized == allowed)
+                list.add(packageName);
+        }
+        return list;
     }
 
     @Override

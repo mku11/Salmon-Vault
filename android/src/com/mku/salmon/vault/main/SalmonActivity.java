@@ -901,4 +901,16 @@ public class SalmonActivity extends AppCompatActivity {
     protected List<SalmonFile> getFileItemList() {
         return fileItemList;
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkPendingAppAuthorizations();
+    }
+
+    private void checkPendingAppAuthorizations() {
+        for(String packageName : SalmonFileProvider.getApps(false)) {
+            SalmonDialogs.promptAuthorizeApp(packageName);
+        }
+    }
 }
