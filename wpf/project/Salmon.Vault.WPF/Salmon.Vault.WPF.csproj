@@ -1,176 +1,302 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
-    <StartupObject>Salmon.Vault.WPF.App</StartupObject>
-    <ApplicationIcon>logo_48x48.ico</ApplicationIcon>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ImplicitUsings>false</ImplicitUsings>
-    <Version>2.0.0</Version>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net7.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<UseWindowsForms>true</UseWindowsForms>
+		<StartupObject>Salmon.Vault.WPF.App</StartupObject>
+		<ApplicationIcon>logo_48x48.ico</ApplicationIcon>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<ImplicitUsings>false</ImplicitUsings>
+		<Version>2.0.0</Version>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="logo_48x48.ico" />
-    <None Remove="README.txt" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="logo_48x48.ico" />
+		<None Remove="README.txt" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\src\Config\SalmonConfig.cs" Link="Config\SalmonConfig.cs" />
-    <Compile Include="..\..\src\Dialog\SalmonDialog.cs" Link="Dialog\SalmonDialog.cs" />
+	<ItemGroup>
+		<Compile Include="..\..\src\Config\SalmonConfig.cs" Link="Config\SalmonConfig.cs" />
+		<Compile Include="..\..\src\Dialog\SalmonDialog.cs" Link="Dialog\SalmonDialog.cs" />
 
-    <Compile Include="..\..\src\Image\Thumbnails.cs" Link="Image\Thumbnails.cs" />
-    <Compile Include="..\..\src\Utils\URLUtils.cs" Link="Utils\URLUtils.cs" />
-    <Compile Include="..\..\src\Utils\WindowUtils.cs" Link="Utils\WindowUtils.cs" />
-    <Compile Include="..\..\src\ViewModel\ImageViewerViewModel.cs" Link="ViewModel\ImageViewerViewModel.cs" />
-    <Compile Include="..\..\src\ViewModel\MainViewModel.cs" Link="ViewModel\MainViewModel.cs" />
-    <Compile Include="..\..\src\ViewModel\MediaPlayerViewModel.cs" Link="ViewModel\MediaPlayerViewModel.cs" />
-    <Compile Include="..\..\src\ViewModel\SettingsViewModel.cs" Link="ViewModel\SettingsViewModel.cs" />
-    <Compile Include="..\..\src\ViewModel\TextEditorViewModel.cs" Link="ViewModel\TextEditorViewModel.cs" />
-    <Compile Include="..\..\src\ViewModel\SalmonFileViewModel.cs" Link="ViewModel\SalmonFileViewModel.cs" />
-    <Compile Include="..\..\src\ViewModel\ContentViewerViewModel.cs" Link="ViewModel\ContentViewerViewModel.cs" />
-    <Compile Include="..\..\src\ViewModel\ActionType.cs" Link="ViewModel\ActionType.cs" />
-    <Compile Include="..\..\src\View\ImageViewer.xaml.cs" Link="View\ImageViewer.xaml.cs" />
-    <Compile Include="..\..\src\View\MainWindow.xaml.cs" Link="View\MainWindow.xaml.cs" />
-    <Compile Include="..\..\src\View\MediaPlayer.xaml.cs" Link="View\MediaPlayer.xaml.cs" />
-    <Compile Include="..\..\src\View\SettingsViewer.xaml.cs" Link="View\SettingsViewer.xaml.cs" />
-    <Compile Include="..\..\src\View\TextEditor.xaml.cs" Link="View\TextEditor.xaml.cs" />
-    <Compile Include="..\..\src\View\ContentViewer.xaml.cs" Link="View\ContentViewer.xaml.cs" />
-    <Compile Include="..\..\src\View\LongToTimeSpanConverter.cs" Link="View\LongToTimeSpanConverter.cs" />
-    <Compile Include="..\..\src\View\LongToStringTimeCounterConverter.cs" Link="View\LongToStringTimeCounterConverter.cs" />
-    <Compile Include="..\..\src\View\StringToUriConverter.cs" Link="View\StringToUriConverter.cs" />
-    
+		<Compile Include="..\..\src\Image\Thumbnails.cs" Link="Image\Thumbnails.cs" />
+		<Compile Include="..\..\src\Utils\URLUtils.cs" Link="Utils\URLUtils.cs" />
+		<Compile Include="..\..\src\Utils\WindowUtils.cs" Link="Utils\WindowUtils.cs" />
+		<Compile Include="..\..\src\ViewModel\ImageViewerViewModel.cs" Link="ViewModel\ImageViewerViewModel.cs" />
+		<Compile Include="..\..\src\ViewModel\MainViewModel.cs" Link="ViewModel\MainViewModel.cs" />
+		<Compile Include="..\..\src\ViewModel\MediaPlayerViewModel.cs" Link="ViewModel\MediaPlayerViewModel.cs" />
+		<Compile Include="..\..\src\ViewModel\SettingsViewModel.cs" Link="ViewModel\SettingsViewModel.cs" />
+		<Compile Include="..\..\src\ViewModel\TextEditorViewModel.cs" Link="ViewModel\TextEditorViewModel.cs" />
+		<Compile Include="..\..\src\ViewModel\SalmonFileViewModel.cs" Link="ViewModel\SalmonFileViewModel.cs" />
+		<Compile Include="..\..\src\ViewModel\ContentViewerViewModel.cs" Link="ViewModel\ContentViewerViewModel.cs" />
+		<Compile Include="..\..\src\ViewModel\ActionType.cs" Link="ViewModel\ActionType.cs" />
+		<Compile Include="..\..\src\View\ImageViewer.xaml.cs" Link="View\ImageViewer.xaml.cs" />
+		<Compile Include="..\..\src\View\MainWindow.xaml.cs" Link="View\MainWindow.xaml.cs" />
+		<Compile Include="..\..\src\View\MediaPlayer.xaml.cs" Link="View\MediaPlayer.xaml.cs" />
+		<Compile Include="..\..\src\View\SettingsViewer.xaml.cs" Link="View\SettingsViewer.xaml.cs" />
+		<Compile Include="..\..\src\View\TextEditor.xaml.cs" Link="View\TextEditor.xaml.cs" />
+		<Compile Include="..\..\src\View\ContentViewer.xaml.cs" Link="View\ContentViewer.xaml.cs" />
+		<Compile Include="..\..\src\View\LongToTimeSpanConverter.cs" Link="View\LongToTimeSpanConverter.cs" />
+		<Compile Include="..\..\src\View\LongToStringTimeCounterConverter.cs" Link="View\LongToStringTimeCounterConverter.cs" />
+		<Compile Include="..\..\src\View\StringToUriConverter.cs" Link="View\StringToUriConverter.cs" />
 
-    <Compile Include="..\..\src\Media\FFMPEGMediaInput.cs" Link="Media\FFMPEGMediaInput.cs" />
 
-    <Compile Include="..\..\src\Services\WPFFileDialogService.cs" Link="Services\WPFFileDialogService.cs" />
-    <Compile Include="..\..\src\Services\WPFBrowserService.cs" Link="Services\WPFBrowserService.cs" />
-    <Compile Include="..\..\src\Services\WPFFileService.cs" Link="Services\WPFFileService.cs" />
-    <Compile Include="..\..\src\Services\WPFKeyboardService.cs" Link="Services\WPFKeyboardService.cs" />
-    <Compile Include="..\..\src\Services\WPFSettingsService.cs" Link="Services\WPFSettingsService.cs" />
+		<Compile Include="..\..\src\Media\FFMPEGMediaInput.cs" Link="Media\FFMPEGMediaInput.cs" />
 
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonContentViewer.cs" Link="Common\Model\SalmonContentViewer.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonVaultManager.cs" Link="Common\Model\SalmonVaultManager.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonFileAttrQueue.cs" Link="Common\Model\SalmonFileAttrQueue.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonTextEditor.cs" Link="Common\Model\SalmonTextEditor.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonImageViewer.cs" Link="Common\Model\SalmonImageViewer.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonSettings.cs" Link="Common\Model\SalmonSettings.cs" />
+		<Compile Include="..\..\src\Services\WPFFileDialogService.cs" Link="Services\WPFFileDialogService.cs" />
+		<Compile Include="..\..\src\Services\WPFBrowserService.cs" Link="Services\WPFBrowserService.cs" />
+		<Compile Include="..\..\src\Services\WPFFileService.cs" Link="Services\WPFFileService.cs" />
+		<Compile Include="..\..\src\Services\WPFKeyboardService.cs" Link="Services\WPFKeyboardService.cs" />
+		<Compile Include="..\..\src\Services\WPFSettingsService.cs" Link="Services\WPFSettingsService.cs" />
 
-    <Compile Include="..\..\..\csharp-common\src\Services\ServiceLocator.cs" Link="Common\Services\ServiceLocator.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\IFileService.cs" Link="Common\Services\IFileService.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\IWebBrowserService.cs" Link="Common\Services\IWebBrowserService.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\IFileDialogService.cs" Link="Common\Services\IFileDialogService.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\IKeyboardService.cs" Link="Common\Services\IKeyboardService.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\IMediaPlayerService.cs" Link="Common\Services\IMediaPlayerService.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\ISettingsService.cs" Link="Common\Services\ISettingsService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonContentViewer.cs" Link="Common\Model\SalmonContentViewer.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonVaultManager.cs" Link="Common\Model\SalmonVaultManager.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonFileAttrQueue.cs" Link="Common\Model\SalmonFileAttrQueue.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonTextEditor.cs" Link="Common\Model\SalmonTextEditor.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonImageViewer.cs" Link="Common\Model\SalmonImageViewer.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonSettings.cs" Link="Common\Model\SalmonSettings.cs" />
 
-    <Compile Include="..\..\..\csharp-common\src\Extensions\EnumExtensions.cs" Link="Common\Extensions\EnumExtensions.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Extensions\ExceptionExtensions.cs" Link="Common\Extensions\ExceptionExtensions.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\ServiceLocator.cs" Link="Common\Services\ServiceLocator.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IFileService.cs" Link="Common\Services\IFileService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IWebBrowserService.cs" Link="Common\Services\IWebBrowserService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IFileDialogService.cs" Link="Common\Services\IFileDialogService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IKeyboardService.cs" Link="Common\Services\IKeyboardService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IMediaPlayerService.cs" Link="Common\Services\IMediaPlayerService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\ISettingsService.cs" Link="Common\Services\ISettingsService.cs" />
 
-    <Compile Include="..\..\..\csharp-common\src\Utils\ByteUtils.cs" Link="Common\Utils\ByteUtils.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Extensions\EnumExtensions.cs" Link="Common\Extensions\EnumExtensions.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Extensions\ExceptionExtensions.cs" Link="Common\Extensions\ExceptionExtensions.cs" />
 
-    <Compile Include="..\..\..\csharp-common\src\Dialog\SalmonDialogs.cs" Link="Common\Dialog\SalmonDialogs.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Utils\ByteUtils.cs" Link="Common\Utils\ByteUtils.cs" />
 
-    <Compile Include="..\..\..\csharp-common\src\Model\Win\SalmonWinVaultManager.cs" Link="Common\Model\Win\SalmonWinVaultManager.cs" />
-  </ItemGroup>
+		<Compile Include="..\..\..\csharp-common\src\Dialog\SalmonDialogs.cs" Link="Common\Dialog\SalmonDialogs.cs" />
 
-  <ItemGroup>
-    <Content Include="README.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+		<Compile Include="..\..\..\csharp-common\src\Model\Win\SalmonWinVaultManager.cs" Link="Common\Model\Win\SalmonWinVaultManager.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="..\..\..\common\common-res\icons\file_small.png" Link="Icons\file_small.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="..\..\..\common\common-res\icons\file.png" Link="Icons\file.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="..\..\..\common\common-res\icons\folder_small.png" Link="Icons\folder_small.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="..\..\..\common\common-res\icons\folder.png" Link="Icons\folder.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="..\..\..\common\common-res\icons\key.png" Link="Icons\key.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="..\..\..\common\common-res\icons\logo.ico" Link="Icons\logo.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="..\..\..\common\common-res\icons\logo.png" Link="Icons\logo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="..\..\..\common\common-res\icons\pause.png" Link="Icons\pause.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="..\..\..\common\common-res\icons\play.png" Link="Icons\play.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="..\..\..\common\common-res\icons\refresh.png" Link="Icons\refresh.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="..\..\..\common\common-res\icons\up.png" Link="Icons\up.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="logo_48x48.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="README.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="FFME.Windows" Version="4.4.350" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2088.41" />
-    <PackageReference Include="MimeTypesMap" Version="1.0.8" />
-    <PackageReference Include="Salmon.Core" Version="2.0.0" />
-    <PackageReference Include="Salmon.FS" Version="2.0.0" />
-    <PackageReference Include="Salmon.Native" Version="2.0.0" />
-    <PackageReference Include="Salmon.Win" Version="2.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<Resource Include="..\..\..\common\common-res\icons\file_small.png" Link="Icons\file_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\file.png" Link="Icons\file.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\folder_small.png" Link="Icons\folder_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\folder.png" Link="Icons\folder.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\key.png" Link="Icons\key.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\logo.ico" Link="Icons\logo.ico">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\logo.png" Link="Icons\logo.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\pause.png" Link="Icons\pause.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\play.png" Link="Icons\play.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\refresh.png" Link="Icons\refresh.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\up.png" Link="Icons\up.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
 
-  <ItemGroup>
-    <Page Include="..\..\src\View\ContentViewer.xaml" Link="View\ContentViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="..\..\src\View\ImageViewer.xaml" Link="View\ImageViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="..\..\src\View\MainWindow.xaml" Link="View\MainWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="..\..\src\View\MediaPlayer.xaml" Link="View\MediaPlayer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="..\..\src\View\SettingsViewer.xaml" Link="View\SettingsViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="..\..\src\View\TextEditor.xaml" Link="View\TextEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
+		<Resource Include="..\..\..\common\common-res\icons\add_file_small.png" Link="Icons\add_file_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\add_folder_small.png" Link="Icons\add_folder_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\add_vault_small.png" Link="Icons\add_vault_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\auth_export_small.png" Link="Icons\auth_export_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\auth_import_small.png" Link="Icons\auth_import_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\auth_revoke_small.png" Link="Icons\auth_revoke_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\auth_small.png" Link="Icons\auth_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\back_small.png" Link="Icons\back_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\cancel_small.png" Link="Icons\cancel_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\close_vault_small.png" Link="Icons\close_vault_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\copy_file_small.png" Link="Icons\copy_file_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\delete_small.png" Link="Icons\delete_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\disk_small.png" Link="Icons\disk_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\exit_small.png" Link="Icons\exit_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\export_file_small.png" Link="Icons\export_file_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\export_and_delete_file_small.png" Link="Icons\export_and_delete_file_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\file_item_small.png" Link="Icons\file_item_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
 
-  <ItemGroup>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-  </ItemGroup>
+		<Resource Include="..\..\..\common\common-res\icons\file_paste_small.png" Link="Icons\file_paste_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
 
-  <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
+		<Resource Include="..\..\..\common\common-res\icons\file_properties_small.png" Link="Icons\file_properties_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		
+		<Resource Include="..\..\..\common\common-res\icons\import_file_small.png" Link="Icons\import_file_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		
+		<Resource Include="..\..\..\common\common-res\icons\import_folder_small.png" Link="Icons\import_folder_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		
+		<Resource Include="..\..\..\common\common-res\icons\info_small.png" Link="Icons\info_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+		<Resource Include="..\..\..\common\common-res\icons\key_small.png" Link="Icons\key_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\move_file_small.png" Link="Icons\move_file_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+		<Resource Include="..\..\..\common\common-res\icons\open_vault_small.png" Link="Icons\open_vault_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+		<Resource Include="..\..\..\common\common-res\icons\refresh_small.png" Link="Icons\refresh_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+		<Resource Include="..\..\..\common\common-res\icons\rename_small.png" Link="Icons\rename_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+		<Resource Include="..\..\..\common\common-res\icons\search_small.png" Link="Icons\search_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+		<Resource Include="..\..\..\common\common-res\icons\select_small.png" Link="Icons\select_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+		<Resource Include="..\..\..\common\common-res\icons\settings_small.png" Link="Icons\settings_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+		<Resource Include="..\..\..\common\common-res\icons\sort_small.png" Link="Icons\sort_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+		<Resource Include="..\..\..\common\common-res\icons\text_file_small.png" Link="Icons\text_file_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\unselect_small.png" Link="Icons\unselect_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="..\..\..\common\common-res\icons\up_small.png" Link="Icons\up_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+		<Resource Include="..\..\..\common\common-res\icons\view_external_small.png" Link="Icons\view_external_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+
+
+
+
+
+		<Resource Include="logo_48x48.ico">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="FFME.Windows" Version="4.4.350" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2088.41" />
+		<PackageReference Include="MimeTypesMap" Version="1.0.8" />
+		<PackageReference Include="Salmon.Core" Version="2.0.0" />
+		<PackageReference Include="Salmon.FS" Version="2.0.0" />
+		<PackageReference Include="Salmon.Native" Version="2.0.0" />
+		<PackageReference Include="Salmon.Win" Version="2.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Page Include="..\..\src\View\ContentViewer.xaml" Link="View\ContentViewer.xaml">
+			<SubType>Designer</SubType>
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Include="..\..\src\View\ImageViewer.xaml" Link="View\ImageViewer.xaml">
+			<SubType>Designer</SubType>
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Include="..\..\src\View\MainWindow.xaml" Link="View\MainWindow.xaml">
+			<SubType>Designer</SubType>
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Include="..\..\src\View\MediaPlayer.xaml" Link="View\MediaPlayer.xaml">
+			<SubType>Designer</SubType>
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Include="..\..\src\View\SettingsViewer.xaml" Link="View\SettingsViewer.xaml">
+			<SubType>Designer</SubType>
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Include="..\..\src\View\TextEditor.xaml" Link="View\TextEditor.xaml">
+			<SubType>Designer</SubType>
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Properties\Settings.Designer.cs">
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Properties\Settings.settings">
+			<Generator>SettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
 
 </Project>

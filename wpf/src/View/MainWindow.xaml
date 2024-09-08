@@ -57,80 +57,168 @@
                 <MenuItem Header="File">
                     <MenuItem Header="Open Vault" InputGestureText="Ctrl+O"
                               Command="{Binding ClickCommand}"
-                       CommandParameter="{x:Static viewmodel:ActionType.OPEN_VAULT}"/>
+                       CommandParameter="{x:Static viewmodel:ActionType.OPEN_VAULT}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/open_vault_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="New Vault" InputGestureText="Ctrl+N"
                               Command="{Binding ClickCommand}"
-                       CommandParameter="{x:Static viewmodel:ActionType.CREATE_VAULT}"/>
+                       CommandParameter="{x:Static viewmodel:ActionType.CREATE_VAULT}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/add_vault_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="Close Vault" InputGestureText="Ctrl+L"
                               Command="{Binding ClickCommand}"
-                       CommandParameter="{x:Static viewmodel:ActionType.CLOSE_VAULT}"/>
+                       CommandParameter="{x:Static viewmodel:ActionType.CLOSE_VAULT}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/close_vault_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator/>
                     <MenuItem Header="Import Auth File"
                               Command="{Binding ClickCommand}"
-                       CommandParameter="{x:Static viewmodel:ActionType.IMPORT_AUTH}"/>
-                    <MenuItem Header="Export Auth File"
+                       CommandParameter="{x:Static viewmodel:ActionType.IMPORT_AUTH}">
+                    <MenuItem.Icon>
+                        <Image Source="/Icons/auth_import_small.png"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Export Auth File"
                               Command="{Binding ClickCommand}"
-                       CommandParameter="{x:Static viewmodel:ActionType.EXPORT_AUTH}"/>
-                    <MenuItem Header="Revoke Auth"
+                       CommandParameter="{x:Static viewmodel:ActionType.EXPORT_AUTH}">
+                <MenuItem.Icon>
+                    <Image Source="/Icons/auth_export_small.png"/>
+                </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Revoke Auth"
                               Command="{Binding ClickCommand}"
-                       CommandParameter="{x:Static viewmodel:ActionType.REVOKE_AUTH}"/>
-                    <MenuItem Header="Display Auth ID"
+                       CommandParameter="{x:Static viewmodel:ActionType.REVOKE_AUTH}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/auth_revoke_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                <MenuItem Header="Display Auth ID"
                               Command="{Binding ClickCommand}"
-                       CommandParameter="{x:Static viewmodel:ActionType.DISPLAY_AUTH_ID}"/>
-                    <Separator/>
-                    <MenuItem Header="Settings" 
+                       CommandParameter="{x:Static viewmodel:ActionType.DISPLAY_AUTH_ID}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/auth_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                <Separator/>
+                <MenuItem Header="Settings" 
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.SETTINGS}"/>
-                    <Separator/>
-                    <MenuItem Header="Exit" 
+                              CommandParameter="{x:Static viewmodel:ActionType.SETTINGS}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/settings_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                <Separator/>
+                <MenuItem Header="Exit" 
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.EXIT}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.EXIT}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/exit_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="Edit">
                     <MenuItem Header="New Folder" 
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.NEW_FOLDER}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.NEW_FOLDER}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/add_folder_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator/>
                     <MenuItem Header="Copy " InputGestureText="Ctrl+C" 
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.COPY}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.COPY}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/copy_file_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="Cut" InputGestureText="Ctrl+X"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.CUT}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.CUT}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/move_file_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="Paste" InputGestureText="Ctrl+P"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.PASTE}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.PASTE}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/file_paste_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="Delete"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.DELETE}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.DELETE}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/delete_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="Operations">
                     <MenuItem Header="Import"  InputGestureText="Ctrl+I"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.IMPORT}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.IMPORT}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/import_file_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="Export"  InputGestureText="Ctrl+E"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.EXPORT}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.EXPORT}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/export_file_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="Export And Delete"  InputGestureText="Ctrl+U"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.EXPORT_AND_DELETE}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.EXPORT_AND_DELETE}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/export_and_delete_file_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="Search"  InputGestureText="Ctrl+F"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.SEARCH}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.SEARCH}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/search_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator/>
                     <MenuItem Header="Refresh" InputGestureText="Ctrl+R"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.REFRESH}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.REFRESH}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/refresh_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="Back" InputGestureText="Backspace"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.BACK}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.BACK}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/back_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="Stop" Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.STOP}"
-                              Visibility="{Binding Path=StopVisibility, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"/>
+                              Visibility="{Binding Path=StopVisibility, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/cancel_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="Help">
                     <MenuItem Header="About" Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.ABOUT}"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.ABOUT}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/info_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
             </Menu>
         </DockPanel>
@@ -140,17 +228,18 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" MinWidth="24" HorizontalAlignment="Left" IsTabStop="True"
-                    Command="{Binding ClickCommand}" Content="⮬" FontSize="20" VerticalAlignment="Center"
-                    CommandParameter="{x:Static viewmodel:ActionType.BACK}"
-                    >
+            <Button Grid.Column="0" HorizontalAlignment="Left" IsTabStop="True"
+                    Command="{Binding ClickCommand}" VerticalAlignment="Center"
+                    CommandParameter="{x:Static viewmodel:ActionType.BACK}">
+                <Image Source="/Icons/up_small.png" Margin="4" Width="16" Height="16"/>
             </Button>
             <TextBox Grid.Column="1" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" 
                      Text="{Binding Path=Path, Mode=OneWay}" IsReadOnly="True" VerticalAlignment="Stretch" Background="Black"
                      IsTabStop="True"/>
-            <Button Grid.Column="2" MinWidth="24" HorizontalAlignment="Right" IsTabStop="True"
-                    Command="{Binding ClickCommand}" Content="↺" FontSize="20" VerticalAlignment="Center"
+            <Button Grid.Column="2" HorizontalAlignment="Right" IsTabStop="True"
+                    Command="{Binding ClickCommand}" VerticalAlignment="Center"
                     CommandParameter="{x:Static viewmodel:ActionType.REFRESH}">
+                <Image Source="/Icons/refresh_small.png" Margin="4" Width="16" Height="16"/>
             </Button>
         </Grid>
         <Grid Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -260,7 +349,7 @@
                     <ProgressBar Grid.Row="1" Minimum="0" Maximum="100" d:Value="50" Value="{Binding Path=FileProgress, Mode=OneWay}" 
                                         Width="60" BorderThickness="1"
                                             Background="#31313F" Foreground="DarkSlateGray"/>
-                    
+
                 </Grid>
                 <Grid>
                     <Grid.RowDefinitions>
