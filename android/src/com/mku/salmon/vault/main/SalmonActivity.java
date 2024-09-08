@@ -559,8 +559,18 @@ public class SalmonActivity extends AppCompatActivity {
     private void openWith(SalmonFile salmonFile) {
         java.io.File sharedFile = null;
         try {
-            sharedFile = ((AndroidDrive) SalmonVaultManager.getInstance().getDrive()).
-                    copyToSharedFolder(salmonFile);
+            long size = salmonFile.getRealFile().length();
+            if (size > SalmonFileProvider.MAX_FILE_SIZE_TO_SHARE) {
+                Toast toast = Toast.makeText(this, getString(R.string.FileSizeTooLarge), Toast.LENGTH_LONG);
+                toast.show();
+                return;
+            }
+            if (size > SalmonFileProvider.MEDIUM_FILE_SIZE_TO_SHARE) {
+                Toast toast = Toast.makeText(this, getString(R.string.PleaseWaitWhileDecrypting), Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            }
+            sharedFile = SalmonFileProvider.createSharedFile(salmonFile);
             if (salmonFile.getSize() > SalmonFileProvider.MAX_FILE_SIZE_TO_SHARE) {
                 Toast.makeText(this, getString(R.string.FileSizeTooLarge), Toast.LENGTH_LONG).show();
                 return;

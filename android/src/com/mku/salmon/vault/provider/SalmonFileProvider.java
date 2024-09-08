@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.os.CancellationSignal;
 import android.os.Handler;
+import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.DocumentsProvider;
@@ -14,10 +15,12 @@ import android.webkit.MimeTypeMap;
 import androidx.annotation.Nullable;
 
 import com.mku.android.salmon.drive.AndroidDrive;
+import com.mku.convert.BitConverter;
 import com.mku.file.IRealFile;
 import com.mku.file.JavaFile;
 import com.mku.salmon.SalmonDrive;
 import com.mku.salmon.SalmonFile;
+import com.mku.salmon.SalmonGenerator;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.main.SalmonApplication;
 import com.mku.salmon.vault.model.SalmonVaultManager;
@@ -35,6 +38,7 @@ import java.util.HashSet;
 
 public class SalmonFileProvider extends DocumentsProvider {
     public static final long MAX_FILE_SIZE_TO_SHARE = 50 * 1024 * 1024;
+    public static final long MEDIUM_FILE_SIZE_TO_SHARE = 10 * 1024 * 1024;
     private static String rootPath = "/";
 
     private static HashMap<String, Boolean> authorizedApps = new HashMap<>();
@@ -59,6 +63,19 @@ public class SalmonFileProvider extends DocumentsProvider {
     public static void authorizeApp(String packageName) {
         if (packageName != null && authorizedApps.containsKey(packageName))
             authorizedApps.put(packageName, true);
+    }
+
+    public static File createSharedFile(SalmonFile salmonFile) throws Exception {
+        File sharedFile = ((AndroidDrive) SalmonVaultManager.getInstance().getDrive())
+                .copyToSharedFolder(salmonFile);
+        byte[] rand = SalmonGenerator.getSecureRandomBytes(32);
+        File dir = new File(sharedFile.getParentFile(), BitConverter.toHex(rand));
+        if(!dir.mkdir())
+            throw new RuntimeException("Could not create dir");
+        File nFile = new File(dir, sharedFile.getName());
+        if(!sharedFile.renameTo(nFile))
+            throw new RuntimeException("Could not rename file");
+        return nFile;
     }
 
     protected void setupServices() {
@@ -204,9 +221,9 @@ public class SalmonFileProvider extends DocumentsProvider {
             throw new RuntimeException("App not authorized");
         }
         // TODO: check the CancellationSignal periodically
-        SalmonFile salmonFile = null;
-        File sharedFile = null;
-        String filename = null;
+        SalmonFile salmonFile;
+        File sharedFile;
+        String filename;
         final int accessMode = ParcelFileDescriptor.parseMode(mode);
         try {
             salmonFile = parsePath(documentId);
@@ -214,12 +231,12 @@ public class SalmonFileProvider extends DocumentsProvider {
                 throw new RuntimeException(SalmonApplication.getInstance().getString(R.string.FileSizeTooLarge));
             }
             filename = salmonFile.getBaseName();
-            sharedFile = ((AndroidDrive) SalmonVaultManager.getInstance().getDrive())
-                    .copyToSharedFolder(salmonFile);
+            sharedFile = createSharedFile(salmonFile);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
+        ParcelFileDescriptor descriptor;
         final boolean isWrite = (mode.indexOf('w') != -1);
         if (isWrite) {
             try {
@@ -227,46 +244,46 @@ public class SalmonFileProvider extends DocumentsProvider {
                 SalmonFile file = salmonFile;
                 IRealFile importFile = new JavaFile(sharedFile.getPath());
                 String finalFilename = filename;
-                return ParcelFileDescriptor.open(sharedFile, accessMode, handler,
-                        new ParcelFileDescriptor.OnCloseListener() {
-                            @Override
-                            public void onClose(IOException e) {
-                                SalmonFile parentDir = file.getParent();
-                                getManager().importFiles(new IRealFile[]{importFile}, parentDir, false,
-                                        (SalmonFile[] importedSalmonFiles) ->
-                                        {
-                                            try {
-                                                if (!importedSalmonFiles[0].exists())
-                                                    return;
-                                                importedSalmonFiles[0].rename(finalFilename);
-                                                file.delete();
-                                                if (getManager().getDrive() != null)
-                                                    getManager().refresh();
-                                            } catch (Exception ex) {
-                                                ex.printStackTrace();
-                                                throw new RuntimeException("Could not reimport file: " + ex.getMessage());
-                                            }
-                                        });
-                            }
+                descriptor = ParcelFileDescriptor.open(sharedFile, accessMode, handler,
+                        e -> {
+                            SalmonFile parentDir = file.getParent();
+                            getManager().importFiles(new IRealFile[]{importFile}, parentDir, false,
+                                    (SalmonFile[] importedSalmonFiles) ->
+                                    {
+                                        try {
+                                            if (!importedSalmonFiles[0].exists())
+                                                return;
+                                            importedSalmonFiles[0].rename(finalFilename);
+                                            file.delete();
+                                            if (getManager().getDrive() != null)
+                                                getManager().refresh();
+                                        } catch (Exception ex) {
+                                            ex.printStackTrace();
+                                            throw new RuntimeException("Could not reimport file: " + ex.getMessage());
+                                        }
+                                    });
                         });
             } catch (IOException e) {
                 throw new FileNotFoundException("Could not reimport shared file: " + e.getMessage());
             }
         } else {
-            return ParcelFileDescriptor.open(sharedFile, accessMode);
+            descriptor = ParcelFileDescriptor.open(sharedFile, accessMode);
         }
+        return descriptor;
     }
 
     private boolean checkAppAuthorized() {
         String callingPackageName = getCallingPackage();
-        System.out.println("access: " + callingPackageName);
+        System.out.println("requesting access: " + callingPackageName);
+        boolean allowed = false;
         if (!authorizedApps.containsKey(callingPackageName)) {
             authorizedApps.put(callingPackageName, false);
-            return false;
         } else {
-            Boolean allowed = authorizedApps.get(callingPackageName);
-            return allowed == null ? false : allowed;
+            Boolean res = authorizedApps.get(callingPackageName);
+            allowed = res == null ? false : res;
         }
+        System.out.println("access allowed: " + true);
+        return allowed;
     }
 
     public static ArrayList<String> getApps(boolean authorized) {
