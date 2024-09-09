@@ -923,4 +923,17 @@ public class SalmonActivity extends AppCompatActivity {
             SalmonDialogs.promptAuthorizeApp(packageName);
         }
     }
+	
+    private void promptAuthorizeApp(String packageName) {
+        SalmonDialog.promptDialog("External app authorization",
+                "Application with package name:\n"
+                        + packageName + "\n"
+                        + "is requesting access to Salmon Files, allow?",
+                "Ok",
+                () ->
+                {
+                    SalmonFileProvider.authorizeApp(packageName);
+                }, "Cancel", null);
+    }
+	
 }

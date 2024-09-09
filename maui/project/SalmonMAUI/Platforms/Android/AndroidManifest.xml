@@ -2,13 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
           package="com.mku.salmon.vault.maui"
-          android:versionCode="200"
-          android:versionName="2.0.0">
-  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="33" />
-  <!-- We need to able to query apps on the device to let the user choose which one to 
-	give temporary permission to share encrypted files with -->
-  <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" 
-                   tools:ignore="QueryAllPackagesPermission" />
+          android:versionCode="210"
+          android:versionName="2.1.0">
+  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34" />
+
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
   <application
     android:label="Salmon Vault"
@@ -17,4 +14,16 @@
     android:icon="@drawable/logo_128x128"
     android:allowBackup="false">
   </application>
+
+
+	<provider
+            android:name="salmon.vault.provider.SalmonFileProvider"
+            android:authorities="salmon.vault.provider.documents"
+            android:grantUriPermissions="true"
+            android:exported="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+		<intent-filter>
+			<action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+		</intent-filter>
+	</provider>
 </manifest>

@@ -85,7 +85,7 @@ public class WinFileDialogService : IFileDialogService
         }
     }
 
-    public async void PickFolder(string title, string initialDirectory, Action<object> OnFolderPicked, int requestCode)
+    public async void OpenFolder(string title, string initialDirectory, Action<object> OnFolderPicked, int requestCode)
     {
         FolderPicker picker = new FolderPicker();
         picker.FileTypeFilter.Add("*");

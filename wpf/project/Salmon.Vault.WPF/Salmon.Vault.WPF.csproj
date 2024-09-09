@@ -98,9 +98,6 @@
 		<Resource Include="..\..\..\common\common-res\icons\key.png" Link="Icons\key.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
-		<Resource Include="..\..\..\common\common-res\icons\logo.ico" Link="Icons\logo.ico">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
 		<Resource Include="..\..\..\common\common-res\icons\logo.png" Link="Icons\logo.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>

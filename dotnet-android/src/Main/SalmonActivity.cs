@@ -1045,5 +1045,17 @@ public class SalmonActivity : AppCompatActivity
             SalmonDialogs.PromptAuthorizeApp(packageName);
         }
     }
-
+	
+    private void PromptAuthorizeApp(String packageName)
+    {
+        SalmonDialog.PromptDialog("External app authorization",
+                "Application with package name:\n"
+                        + packageName + "\n"
+                        + "is requesting access to Salmon Files, allow?",
+                "Ok",
+                () =>
+                {
+                    SalmonFileProvider.authorizeApp(packageName);
+                }, "Cancel", null);
+    }
 }

@@ -22,16 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Java.Text;
-using Java.Util;
 using Mku.File;
 using Mku.Salmon;
 using Mku.Utils;
 using Salmon.Vault.Config;
 using Salmon.Vault.Extensions;
-using Salmon.Vault.Main;
 using Salmon.Vault.Model;
-using Salmon.Vault.Provider;
 using Salmon.Vault.Services;
 using Salmon.Vault.Settings;
 using Salmon.Vault.Utils;
@@ -205,10 +201,8 @@ public class SalmonDialogs
 
     public static string GetFormattedDiskUsage(int items, long size)
     {
-        DecimalFormat format = new DecimalFormat();
-        format.DecimalFormatSymbols = DecimalFormatSymbols.GetInstance(Locale.Us);
-        return "Total items: " + format.Format(items) + "\n"
-                + "Size on disk: " + ByteUtils.GetBytes(size, 2);
+        return "Total items: " + items + "\n"
+                + "Size on disk: " + string.Format("{F2}", ByteUtils.GetBytes(size, 2));
     }
 
     internal static void PromptSequenceReset(Action<bool> ResetSequencer)
@@ -443,18 +437,5 @@ public class SalmonDialogs
             return false;
         }
         return true;
-    }
-
-    public static void PromptAuthorizeApp(String packageName)
-    {
-        SalmonDialog.PromptDialog("External app authorization",
-                "Application with package name:\n"
-                        + packageName + "\n"
-                        + "is requesting access to Salmon Files, allow?",
-                "Ok",
-                () =>
-                {
-                    SalmonFileProvider.authorizeApp(packageName);
-                }, "Cancel", null);
     }
 }

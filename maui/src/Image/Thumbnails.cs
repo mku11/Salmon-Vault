@@ -180,7 +180,7 @@ public class Thumbnails
 
     public static ImageSource GetIcon(SalmonFile salmonFile)
     {
-        string icon = salmonFile.IsFile ? "file_small.png" : "folder_small.png";
+        string icon = salmonFile.IsFile ? "file_item_small.png" : "folder_small.png";
         // make sure that the image files are marked as MauiImage in VS properties
         ImageSource image = ImageSource.FromFile(icon);
         return image;
