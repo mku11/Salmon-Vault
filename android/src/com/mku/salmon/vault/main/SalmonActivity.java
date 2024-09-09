@@ -920,7 +920,7 @@ public class SalmonActivity extends AppCompatActivity {
 
     private void checkPendingAppAuthorizations() {
         for(String packageName : SalmonFileProvider.getApps(false)) {
-            SalmonDialogs.promptAuthorizeApp(packageName);
+            promptAuthorizeApp(packageName);
         }
     }
 	
