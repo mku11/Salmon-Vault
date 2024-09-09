@@ -37,7 +37,7 @@ public class SalmonConfig
             "webview2 - https://learn.microsoft.com/en-us/microsoft-edge/webview2/\n" +
             "uxwing icons - https://uxwing.com/computer-folder-open-icon/\n\n" +
             "For more information visit the project website";
-    public static readonly string SourceCodeURL = "https://github.com/mku11/Salmon-AES-CTR";
+    public static readonly string SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
     public static readonly string REGISTRY_CHKSUM_KEY = "FILESEQCHKSUM";
     public static readonly string FILE_SEQ_FILENAME = "config.xml";
     public static readonly string FFMPEGLibraryURL = "https://github.com/BtbN/FFmpeg-Builds/releases";

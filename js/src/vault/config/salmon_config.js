@@ -24,10 +24,12 @@ SOFTWARE.
 
 export class SalmonConfig {
     static APP_NAME = "Salmon Vault";
-    static VERSION = "2.0.0";
+    static VERSION = "2.1.0";
     static ABOUT_TEXT = "License: MIT License\n\n" +
+            "Salmon-AES-CTR - MIT License - https://github.com/mku11/Salmon-AES-CTR\n" +
+            "uxwing icons - https://uxwing.com/computer-folder-open-icon/\n\n" +
             "For more information visit the project website";
-    static SourceCodeURL = "https://github.com/mku11/Salmon-AES-CTR";
+    static SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
     static FILE_SEQ_FILENAME = "config.json";
     static APP_ICON = "common-res/icons/logo_48x48.png";
     
