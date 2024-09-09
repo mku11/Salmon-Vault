@@ -441,6 +441,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 fileCommander.deleteFiles(files,
                         (taskProgress) ->
                         {
+                            // workaround for stopping file commander, this should be done
+                            // in the library
+                            if(fileCommander.areJobsStopped())
+                                throw new RuntimeException("User canceled operation");
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     if (taskProgress.getProcessedBytes() != taskProgress.getTotalBytes()) {
@@ -473,8 +477,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 setTaskMessage("Delete Complete");
             setFileProgress(1);
             setFilesProgress(1);
-            refresh();
             setTaskRunning(false);
+            refresh();
             copyFiles = null;
             fileManagerMode = Mode.Browse;
         });
@@ -497,6 +501,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 fileCommander.copyFiles(files, dir, move,
                         (taskProgress) ->
                         {
+                            // workaround for stopping file commander, this should be done
+                            // in the library
+                            if(fileCommander.areJobsStopped())
+                                throw new RuntimeException("User canceled operation");
+
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     setTaskMessage(action + ": " + taskProgress.getFile().getBaseName()
@@ -666,6 +675,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         deleteSource, true,
                         (taskProgress) ->
                         {
+                            // workaround for stopping file commander, this should be done
+                            // in the library
+                            if(fileCommander.areJobsStopped())
+                                throw new RuntimeException("User canceled operation");
+
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     setTaskMessage("Exporting: " + taskProgress.getFile().getBaseName()
@@ -700,8 +714,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
             }
             setFileProgress(1);
             setFilesProgress(1);
-
             setTaskRunning(false);
+            refresh();
         });
     }
 
@@ -723,6 +737,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         deleteSource, true,
                         (taskProgress) ->
                         {
+                            // workaround for stopping file commander, this should be done
+                            // in the library
+                            if(fileCommander.areJobsStopped())
+                                throw new RuntimeException("User canceled operation");
+
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     setTaskMessage("Importing: " + taskProgress.getFile().getBaseName()
@@ -740,7 +759,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
                             failedFiles.add(file);
                             exception[0] = ex;
                         });
-                onFinished.accept(files);
+                if(onFinished!=null)
+                    onFinished.accept(files);
             } catch (Exception e) {
                 e.printStackTrace();
                 if (!handleException(e)) {
@@ -756,6 +776,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             setFileProgress(1);
             setFilesProgress(1);
             setTaskRunning(false);
+            refresh();
         });
     }
 
