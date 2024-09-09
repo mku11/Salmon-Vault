@@ -146,7 +146,7 @@ export class Thumbnails {
     }
 
     static async getIcon(salmonFile, width, height) {
-        let icon = await salmonFile.isFile() ? "common-res/icons/file_small.png" : "common-res/icons/folder_small.png";
+        let icon = await salmonFile.isFile() ? "common-res/icons/file_item_small.png" : "common-res/icons/folder_small.png";
         let image = new Image();
         if (image.width > image.height) {
             image.width = width;

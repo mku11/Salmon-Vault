@@ -14,6 +14,7 @@
     <link rel="stylesheet" type="text/css" href="css/text-editor.css">
     <link rel="stylesheet" type="text/css" href="css/media-player.css">
     <link rel="stylesheet" type="text/css" href="css/settings.css">
+    <link rel="stylesheet" type="text/css" href="css/menu.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
     <link rel="stylesheet" type="text/css" href="css/dark.css">
 </head>
@@ -35,47 +36,109 @@
                 <button onclick="onMenuClicked('fileDropdown')" class="dropbtn">File
                     <i class="fa fa-caret-down"></i></button>
                 <div id="fileDropdown" class="dropdown-content">
-                    <a href="javascript:mainController.onOpenVault()">Open Vault (Ctrl-O)</a>
-                    <a href="javascript:mainController.onCreateVault()">New Vault (Ctrl-N)</a>
-                    <a href="javascript:mainController.onCloseVault()">Close Vault (Ctrl-Q)</a>
-                    <a href="javascript:mainController.onChangePassword()">Change Password</a>
-                    <SeparatorMenuItem />
-                    <a href="javascript:mainController.onImportAuth()">Import Auth File</a>
-                    <a href="javascript:mainController.onExportAuth()">Export Auth File</a>
-                    <a href="javascript:mainController.onRevokeAuth()">Revoke Auth</a>
-                    <a href="javascript:mainController.onDisplayAuthId()">Display Auth ID</a>
-                    <SeparatorMenuItem />
-                    <a href="javascript:mainController.onSettings()">Settings</a>
-                    <SeparatorMenuItem />
+                    <a href="javascript:mainController.onOpenVault()">
+                        <img class="menu-item-image" src="common-res/icons/open_vault_small.png"/>
+                        Open Vault (Ctrl-O)
+                    </a>
+                    <a href="javascript:mainController.onCreateVault()">
+                        <img class="menu-item-image" src="common-res/icons/add_vault_small.png"/>
+                        New Vault (Ctrl-N)
+                    </a>
+                    <a href="javascript:mainController.onCloseVault()">
+                        <img class="menu-item-image" src="common-res/icons/close_vault_small.png"/>
+                        Close Vault (Ctrl-Q)
+                    </a>
+                    <a href="javascript:mainController.onChangePassword()">
+                        <img class="menu-item-image" src="common-res/icons/key_small.png"/>
+                        Change Password
+                    </a>
+                    <a href="javascript:mainController.onImportAuth()">
+                        <img class="menu-item-image" src="common-res/icons/auth_import_small.png"/>
+                        Import Auth File
+                    </a>
+                    <a href="javascript:mainController.onExportAuth()">
+                        <img class="menu-item-image" src="common-res/icons/auth_export_small.png"/>
+                        Export Auth File
+                    </a>
+                    <a href="javascript:mainController.onRevokeAuth()">
+                        <img class="menu-item-image" src="common-res/icons/auth_revoke_small.png"/>
+                        Revoke Auth
+                    </a>
+                    <a href="javascript:mainController.onDisplayAuthId()">
+                        <img class="menu-item-image" src="common-res/icons/auth_small.png"/>
+                        Display Auth ID
+                    </a>
+                    <a href="javascript:mainController.onSettings()">
+                        <img class="menu-item-image" src="common-res/icons/settings_small.png"/>
+                        Settings
+                    </a>
                 </div>
             </div>
             <div id="editMenu" class="dropdown">
                 <button onclick="onMenuClicked('editDropdown')" class="dropbtn">Edit</button>
                 <div id="editDropdown" class="dropdown-content">
-                    <a href="javascript:mainController.onNewFolder()">New Folder</a>
-                    <SeparatorMenuItem />
-                    <a href="javascript:mainController.onCopy()">Copy (Ctrl-C)</a>
-                    <a href="javascript:mainController.onCut()">Cut (Ctrl-X)</a>
-                    <a href="javascript:mainController.onPaste()">Paste (Ctrl-V)</a>
-                    <a href="javascript:mainController.onDelete()">Delete (Del)</a>
+                    <a href="javascript:mainController.onNewFolder()">
+                        <img class="menu-item-image" src="common-res/icons/add_folder_small.png"/>
+                        New Folder
+                    </a>
+                    <a href="javascript:mainController.onCopy()">
+                        <img class="menu-item-image" src="common-res/icons/copy_file_small.png"/>
+                        Copy (Ctrl-C)
+                    </a>
+                    <a href="javascript:mainController.onCut()">
+                        <img class="menu-item-image" src="common-res/icons/move_file_small.png"/>
+                        Cut (Ctrl-X)
+                    </a>
+                    <a href="javascript:mainController.onPaste()">
+                        <img class="menu-item-image" src="common-res/icons/file_paste_small.png"/>
+                        Paste (Ctrl-V)
+                    </a>
+                    <a href="javascript:mainController.onDelete()">
+                        <img class="menu-item-image" src="common-res/icons/delete_small.png"/>
+                        Delete (Del)
+                    </a>
                 </div>
             </div>
             <div id="operationsMenu" class="dropdown">
                 <button onclick="onMenuClicked('operationsDropdown')" class="dropbtn">Operations</button>
                 <div id="operationsDropdown" class="dropdown-content">
-                    <a href="javascript:mainController.onImport()">Import Files (Ctrl-I)</a>
-                    <a href="javascript:mainController.onExport()">Export Files (Ctrl-E)</a>
-                    <a href="javascript:mainController.onExportAndDelete()">Export Files And Delete (Ctrl-U)</a>
-                    <a href="javascript:mainController.onSearch()">Search (Ctrl-F)</a>
-                    <a href="javascript:mainController.onRefresh()">Refresh (Ctrl-R)</a>
-                    <a href="javascript:mainController.onBack()">Back (Backspace)</a>
-                    <a href="javascript:mainController.onStop()">Stop</a>
+                    <a href="javascript:mainController.onImport()">
+                        <img class="menu-item-image" src="common-res/icons/import_file_small.png"/>
+                        Import Files (Ctrl-I)
+                    </a>
+                    <a href="javascript:mainController.onExport()">
+                        <img class="menu-item-image" src="common-res/icons/export_file_small.png"/>
+                        Export Files (Ctrl-E)
+                    </a>
+                    <a href="javascript:mainController.onExportAndDelete()">
+                        <img class="menu-item-image" src="common-res/icons/export_and_delete_file_small.png"/>
+                        Export Files And Delete (Ctrl-U)
+                    </a>
+                    <a href="javascript:mainController.onSearch()">
+                        <img class="menu-item-image" src="common-res/icons/search_small.png"/>
+                        Search (Ctrl-F)
+                    </a>
+                    <a href="javascript:mainController.onRefresh()">
+                        <img class="menu-item-image" src="common-res/icons/refresh_small.png"/>
+                        Refresh (Ctrl-R)
+                    </a>
+                    <a href="javascript:mainController.onBack()">
+                        <img class="menu-item-image" src="common-res/icons/back_small.png"/>
+                        Back (Backspace)
+                    </a>
+                    <a href="javascript:mainController.onStop()">
+                        <img class="menu-item-image" src="common-res/icons/cancel_small.png"/>
+                        Stop
+                    </a>
                 </div>
             </div>
             <div id="helpMenu" class="dropdown">
                 <button onclick="onMenuClicked('helpDropdown')" class="dropbtn">Help</button>
                 <div id="helpDropdown" class="dropdown-content">
-                    <a href="javascript:mainController.onAbout()">About</a>
+                    <a href="javascript:mainController.onAbout()">
+                        <img class="menu-item-image" src="common-res/icons/info_small.png"/>
+                        About
+                    </a>
                 </div>
             </div>
         </div>
