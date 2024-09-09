@@ -25,14 +25,12 @@ SOFTWARE.
 
 import com.mku.file.IRealFile;
 import com.mku.func.Consumer;
-import com.mku.func.Function;
 import com.mku.salmon.SalmonAuthConfig;
 import com.mku.salmon.SalmonDrive;
 import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonVaultManager;
-import com.mku.salmon.vault.provider.SalmonFileProvider;
 import com.mku.salmon.vault.services.IFileDialogService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.ByteUtils;
@@ -43,8 +41,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class SalmonDialogs {
     public static void promptPassword(Consumer<String> onSubmit) {
