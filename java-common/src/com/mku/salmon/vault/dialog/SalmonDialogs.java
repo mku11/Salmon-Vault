@@ -194,8 +194,15 @@ public class SalmonDialogs {
     public static void promptDelete() {
         if (!SalmonDialogs.isDriveLoaded())
             return;
+        String itemsString = "item(s)?";
+        for(SalmonFile file : SalmonVaultManager.getInstance().getSelectedFiles()) {
+            if (file.isDirectory()) {
+                itemsString = "item(s) and subfolders?";
+                break;
+            }
+        }
         SalmonDialog.promptDialog(
-                "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size() + " item(s) and subfolders?",
+                "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size() + " " + itemsString,
                 "Ok",
                 () -> SalmonVaultManager.getInstance().deleteSelectedFiles(),
                 "Cancel", null);
