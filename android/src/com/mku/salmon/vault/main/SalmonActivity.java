@@ -742,7 +742,10 @@ public class SalmonActivity extends AppCompatActivity {
                         requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER);
             }
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
-            callback.accept(files);
+            if(requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES)
+                callback.accept(files);
+            else if(requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER)
+                callback.accept(files[0]);
         } else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE) {
             String[] files = ActivityCommon.getFilesFromIntent(this, data);
             String importFile = files != null ? files[0] : null;
