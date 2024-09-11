@@ -31,12 +31,14 @@ public class SalmonConfig
     public static readonly string APP_NAME = "Salmon Vault";
     public static string ABOUT_TEXT = "License: MIT License\n\n" +
             "Open source projects included:\n" +
+            "Salmon-AES-CTR - MIT License - https://github.com/mku11/Salmon-AES-CTR\n" +
             "TinyAES - The Unlicense - https://github.com/kokke/tiny-AES-c\n" +
             "MimeTypesMap - MIT License - https://github.com/hey-red/MimeTypesMap/blob/master/LICENSE\n" +
             "webview2 - https://learn.microsoft.com/en-us/microsoft-edge/webview2/\n" +
             "Xamarin Android bindings - MIT and Apache 2.0 License - https://github.com/xamarin/AndroidX\n\n" +
+            "uxwing icons - https://uxwing.com/computer-folder-open-icon/\n\n" +
             "For more information visit the project website";
-    public static readonly string SourceCodeURL = "https://github.com/mku11/Salmon-AES-CTR";
+    public static readonly string SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
 
     // maui winui3 will be using a virtualized registry so we need to set different names
     // so they don't clash with other salmon apps

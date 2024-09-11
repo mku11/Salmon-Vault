@@ -33,10 +33,14 @@ import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.services.IFileDialogService;
 import com.mku.salmon.vault.services.ServiceLocator;
+import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.URLUtils;
 import com.mku.utils.FileUtils;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class SalmonDialogs {
     public static void promptPassword(Consumer<String> onSubmit) {
@@ -165,6 +169,13 @@ public class SalmonDialogs {
         }
     }
 
+    public static String getFormattedDiskUsage(int items, long size) {
+        DecimalFormat format = new DecimalFormat();
+        format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.US));
+        return "Total items: " + format.format(items) + "\n"
+                + "Size on disk: " + ByteUtils.getBytes(size, 2);
+    }
+
     public static void promptSequenceReset(Consumer<Boolean> resetSequencer) {
         SalmonDialog.promptDialog("Warning", "The nonce sequencer file seems to be tampered.\n" +
                         "This could be a sign of a malicious attack. " +
@@ -183,8 +194,15 @@ public class SalmonDialogs {
     public static void promptDelete() {
         if (!SalmonDialogs.isDriveLoaded())
             return;
+        String itemsString = "item(s)?";
+        for(SalmonFile file : SalmonVaultManager.getInstance().getSelectedFiles()) {
+            if (file.isDirectory()) {
+                itemsString = "item(s) and subfolders?";
+                break;
+            }
+        }
         SalmonDialog.promptDialog(
-                "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size() + " item(s)?",
+                "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size() + " " + itemsString,
                 "Ok",
                 () -> SalmonVaultManager.getInstance().deleteSelectedFiles(),
                 "Cancel", null);
@@ -229,7 +247,7 @@ public class SalmonDialogs {
     }
 
     public static void promptCreateVault() {
-        ServiceLocator.getInstance().resolve(IFileDialogService.class).pickFolder("Select the vault",
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder("Select the vault",
                 SalmonSettings.getInstance().getVaultLocation(), (file) -> {
                     SalmonDialogs.promptSetPassword((String pass) ->
                     {
@@ -245,20 +263,25 @@ public class SalmonDialogs {
     }
 
     public static void promptOpenVault() {
-        ServiceLocator.getInstance().resolve(IFileDialogService.class).pickFolder("Select the vault",
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder("Select the vault",
                 SalmonSettings.getInstance().getVaultLocation(),
                 (dir) -> {
                     SalmonDialogs.promptPassword((String password) -> {
-                        SalmonVaultManager.getInstance().openVault((IRealFile) dir, password);
+                        try {
+                            SalmonVaultManager.getInstance().openVault((IRealFile) dir, password);
+                        } catch (Exception ex) {
+                            SalmonDialog.promptDialog("Error", "Could not create vault: "
+                                    + ex.getMessage());
+                        }
                     });
                 },
                 SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
     }
 
-    public static void promptImportFiles() {
+    public static void promptImportFiles(String text, int requestCode) {
         if (!SalmonDialogs.isDriveLoaded())
             return;
-        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFiles("Select files to import",
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFiles(text,
                 null, SalmonSettings.getInstance().getLastImportDir(), (obj) ->
                 {
                     IRealFile[] filesToImport = (IRealFile[]) obj;
@@ -266,14 +289,34 @@ public class SalmonDialogs {
                         return;
 
                     IRealFile parent = filesToImport[0].getParent();
-                    if(parent != null && parent.getAbsolutePath() != null)
-                        SalmonSettings.getInstance().setLastImportDir(parent.getAbsolutePath());
+                    if (parent != null && parent.getPath() != null)
+                        SalmonSettings.getInstance().setLastImportDir(parent.getPath());
                     SalmonVaultManager.getInstance().importFiles(filesToImport,
                             SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
                             {
                                 SalmonVaultManager.getInstance().refresh();
                             });
-                }, SalmonVaultManager.REQUEST_IMPORT_FILES);
+                }, requestCode);
+    }
+
+
+    public static void promptImportFolder(String text, int requestCode) {
+        if (!SalmonDialogs.isDriveLoaded())
+            return;
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder(text,
+                SalmonSettings.getInstance().getLastImportDir(), (obj) ->
+                {
+                    IRealFile folder = (IRealFile) obj;
+                    if (folder == null)
+                        return;
+                    
+                    SalmonSettings.getInstance().setLastImportDir(folder.getPath());
+                    SalmonVaultManager.getInstance().importFiles(new IRealFile[]{folder},
+                            SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
+                            {
+                                SalmonVaultManager.getInstance().refresh();
+                            });
+                }, requestCode);
     }
 
     public static void promptNewFolder() {

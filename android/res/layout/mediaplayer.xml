@@ -39,7 +39,8 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="2dp">
 
             <ImageButton
                 android:id="@+id/rew"
@@ -85,6 +86,23 @@
             android:layout_height="52dp"
             android:layout_alignParentBottom="true"
             android:max="100" />
-    </RelativeLayout>
 
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/seekbar"
+            android:layout_alignParentLeft="true"
+            android:gravity="left"
+            android:text="00:00:00" />
+
+        <TextView
+            android:id="@+id/total_time"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/seekbar"
+            android:layout_alignParentRight="true"
+            android:gravity="right"
+            android:text="00:00:00" />
+    </RelativeLayout>
 </RelativeLayout>

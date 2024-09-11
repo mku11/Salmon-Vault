@@ -7,7 +7,11 @@
 <?import javafx.scene.input.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane stylesheets="@../css/dark.css" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mku.salmon.vault.controller.MainController">
+<GridPane xmlns="http://javafx.com/javafx/17.0.2-ea"
+          xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="com.mku.salmon.vault.controller.MainController"
+          stylesheets="@../css/dark.css,@../css/menu.css"
+          GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
 
     <VBox id="vbox" spacing="1" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
         <padding>
@@ -15,97 +19,106 @@
         </padding>
         <MenuBar id="menuContainer">
             <Menu text="File">
-                <MenuItem onAction="#onOpenVault" text="Open Vault">
+                <MenuItem id="menu-open-vault" onAction="#onOpenVault" text="Open Vault">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onCreateVault" text="New Vault">
+                <MenuItem id="menu-create-vault" onAction="#onCreateVault" text="New Vault">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="N" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onCloseVault" text="Close Vault">
+                <MenuItem id="menu-close-vault" onAction="#onCloseVault" text="Close Vault">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onChangePassword" text="Change Password">
+                <MenuItem id="menu-change-passwd" onAction="#onChangePassword" text="Password">
                 </MenuItem>
                 <SeparatorMenuItem />
-                <MenuItem onAction="#onImportAuth" text="Import Auth File">
+                <MenuItem id="menu-import-auth" onAction="#onImportAuth" text="Import Auth File">
                 </MenuItem>
-                <MenuItem onAction="#onExportAuth" text="Export Auth File">
+                <MenuItem id="menu-export-auth" onAction="#onExportAuth" text="Export Auth File">
                 </MenuItem>
-                <MenuItem onAction="#onRevokeAuth" text="Revoke Auth">
+                <MenuItem id="menu-revoke-auth" onAction="#onRevokeAuth" text="Revoke Auth">
                 </MenuItem>
-                <MenuItem onAction="#onDisplayAuthID" text="Display Auth ID">
+                <MenuItem id="menu-display-auth" onAction="#onDisplayAuthID" text="Display Auth ID">
                 </MenuItem>
                 <SeparatorMenuItem />
-                <MenuItem onAction="#onSettings" text="Settings" />
+                <MenuItem id="menu-settings" onAction="#onSettings" text="Settings" />
                 <SeparatorMenuItem />
-                <MenuItem onAction="#onExit" text="Exit" />
+                <MenuItem id="menu-exit" onAction="#onExit" text="Exit" />
             </Menu>
             <Menu text="Edit">
-                <MenuItem onAction="#onNewFolder" text="New Folder" />
+                <MenuItem id="menu-create-folder" onAction="#onNewFolder" text="New Folder" />
                 <SeparatorMenuItem />
-                <MenuItem onAction="#onCopy" text="Copy">
+                <MenuItem id="menu-copy" onAction="#onCopy" text="Copy">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="C" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onCut" text="Cut">
+                <MenuItem id="menu-move" onAction="#onCut" text="Move">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="X" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onPaste" text="Paste">
+                <MenuItem id="menu-paste" onAction="#onPaste" text="Paste">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="V" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onDelete" text="Delete">
+                <MenuItem id="menu-delete" onAction="#onDelete" text="Delete">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="DELETE" control="UP" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
             </Menu>
             <Menu text="Operations">
-                <MenuItem onAction="#onImport" text="Import Files">
+                <MenuItem id="menu-import-files" onAction="#onImportFiles" text="Import Files">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="I" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onExport" text="Export Files">
+                <MenuItem id="menu-import-folder" onAction="#onImportFolder" text="Import Folder">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="I" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                    </accelerator>
+                </MenuItem>
+                <MenuItem id="menu-export" onAction="#onExport" text="Export Files">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onExportAndDelete" text="Export And Delete">
+                <MenuItem id="menu-export-and-delete" onAction="#onExportAndDelete" text="Export And Delete">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="U" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onSearch" text="Search">
+                <MenuItem id="menu-search" onAction="#onSearch" text="Search">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="F" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
                 <SeparatorMenuItem />
-                <MenuItem onAction="#onRefresh" text="Refresh">
+                <MenuItem id="menu-refresh" onAction="#onRefresh" text="Refresh">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onBack" text="Back">
+                <MenuItem id="menu-back" onAction="#onBack" text="Back">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="BACK_SPACE" control="UP" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
-                <MenuItem onAction="#onStop" text="Stop" visible="${controller.progressVisibility}" />
+                <MenuItem id="menu-stop" onAction="#onStop" text="Cancel" visible="${controller.cancelVisibility}">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="ESCAPE" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                    </accelerator>
+                </MenuItem>
             </Menu>
             <Menu text="Help">
-                <MenuItem onAction="#onAbout" text="About" />
+                <MenuItem id="menu-about" onAction="#onAbout" text="About" />
             </Menu>
         </MenuBar>
         <HBox id="pathContainer" spacing="1">

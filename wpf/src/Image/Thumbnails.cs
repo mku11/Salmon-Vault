@@ -172,7 +172,7 @@ public class Thumbnails
 
     private static BitmapImage GetIcon(SalmonFile salmonFile)
     {
-        string icon = salmonFile.IsFile ? "Icons/file_small.png" : "Icons/folder_small.png";
+        string icon = salmonFile.IsFile ? "Icons/file_item_small.png" : "Icons/folder_small.png";
         Uri uri = new Uri("pack://application:,,,/"
             + Assembly.GetAssembly(typeof(Thumbnails)).GetName().Name
             + ";component/" + icon, UriKind.RelativeOrAbsolute);

@@ -30,6 +30,7 @@ using Mku.Salmon;
 using Mku.Time;
 using Salmon.Vault.Main;
 using Mku.Utils;
+using System;
 
 namespace Salmon.Vault.Image;
 
@@ -42,6 +43,7 @@ public class Thumbnails
     private static readonly int TMP_VIDEO_THUMB_MAX_SIZE = 5 * 1024 * 1024;
     private static readonly int TMP_GIF_THUMB_MAX_SIZE = 512 * 1024;
     private static readonly int BUFFER_SIZE = 256 * 1024;
+    private static Random random = new Random(DateTime.Now.Millisecond);
 
     /**
      * Returns a bitmap thumbnail from an encrypted file
@@ -50,20 +52,19 @@ public class Thumbnails
      */
     public static Bitmap GetVideoThumbnail(SalmonFile salmonFile)
     {
-        return GetVideoThumbnail(salmonFile, 0);
+        File tmpFile = Thumbnails.GetVideoTmpFile(salmonFile);
+        return GetVideoThumbnail(tmpFile, 0, true);
     }
 
-    public static Bitmap GetVideoThumbnail(SalmonFile salmonFile, long ms)
+    public static Bitmap GetVideoThumbnail(File file, long ms, bool delete)
     {
         Bitmap bitmap = null;
-        Java.IO.File tmpFile = null;
         try
         {
-            tmpFile = GetVideoTmpFile(salmonFile);
             if (ms > 0)
-                bitmap = GetVideoThumbnailMedia(tmpFile, ms);
+                bitmap = GetVideoThumbnailMedia(file, ms);
             else
-                bitmap = ThumbnailUtils.CreateVideoThumbnail(tmpFile.Path, ThumbnailKind.FullScreenKind);
+                bitmap = ThumbnailUtils.CreateVideoThumbnail(file.Path, ThumbnailKind.FullScreenKind);
         }
         catch (System.Exception ex)
         {
@@ -71,27 +72,28 @@ public class Thumbnails
         }
         finally
         {
-            if (tmpFile != null)
+            if (delete && file != null)
             {
-                tmpFile.Delete();
-                tmpFile.DeleteOnExit();
+                file.Delete();
+                file.DeleteOnExit();
             }
         }
         return bitmap;
     }
 
-    public static Bitmap GetVideoThumbnailMedia(Java.IO.File file, long ms)
+    public static Bitmap GetVideoThumbnailMedia(File file, long ms)
     {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        MediaMetadataRetriever retriever = null;
         Bitmap bitmap = null;
         try
         {
+            retriever = new MediaMetadataRetriever();
             retriever.SetDataSource(file.Path);
             bitmap = retriever.GetFrameAtTime(ms * 1000);
         }
-        catch (System.Exception ex)
+        catch (Exception e)
         {
-            System.Console.Error.WriteLine(ex);
+            System.Console.Error.WriteLine(e);
         }
         finally
         {
@@ -115,13 +117,13 @@ public class Thumbnails
      *
      * @param salmonFile The encrypted file that will be used to get the temp file
      */
-    private static Java.IO.File GetVideoTmpFile(SalmonFile salmonFile)
+    public static File GetVideoTmpFile(SalmonFile salmonFile)
     {
         Java.IO.File tmpDir = new Java.IO.File(SalmonApplication.GetInstance().ApplicationContext.CacheDir, TMP_THUMB_DIR);
         if (!tmpDir.Exists())
             tmpDir.Mkdir();
 
-        Java.IO.File tmpFile = new Java.IO.File(tmpDir, Time.CurrentTimeMillis() + "." + FileUtils.GetExtensionFromFileName(salmonFile.BaseName));
+        Java.IO.File tmpFile = new Java.IO.File(tmpDir, random.Next() + "." + FileUtils.GetExtensionFromFileName(salmonFile.BaseName));
         if (tmpFile.Exists())
             tmpFile.Delete();
         tmpFile.CreateNewFile();

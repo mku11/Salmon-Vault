@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <resources>
-  <style name="AppTheme" parent="AppBaseTheme" />
+    <style name="AppTheme" parent="AppBaseTheme" />
 
-  <style name="AppBaseTheme" parent="Theme.MaterialComponents.NoActionBar">
-  </style>
+    <style name="AppBaseTheme" parent="Theme.MaterialComponents.NoActionBar">
+    </style>
+    <color name="salmonItemSelectedBackground">#955151</color>
 </resources>
 

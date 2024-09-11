@@ -1,13 +1,18 @@
 package com.mku.salmon.vault.dialog;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.text.InputType;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -15,7 +20,6 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.mku.android.file.AndroidSharedFileObserver;
 import com.mku.func.Consumer;
 import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.android.R;
@@ -64,6 +68,7 @@ public class SalmonDialog {
 
             TextInputLayout msgText = new TextInputLayout(activity, null,
                     R.style.Widget_MaterialComponents_TextInputLayout_OutlinedBox);
+            msgText.setPadding(20, 20, 20, 20);
             msgText.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE);
             msgText.setBoxCornerRadii(5, 5, 5, 5);
             msgText.setHint(msg);
@@ -92,15 +97,25 @@ public class SalmonDialog {
                 } else {
                     text.setInputType(InputType.TYPE_CLASS_TEXT);
                 }
-                if (isFileName) {
-                    String ext = FileUtils.getExtensionFromFileName(value);
-                    if (ext != null && ext.length() > 0)
-                        text.setSelection(0, value.length() - ext.length() - 1);
-                    else
-                        text.setSelection(0, value.length());
-                } else {
-                    text.selectAll();
-                }
+                text.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    boolean once = false;
+
+                    @Override
+                    public void onFocusChange(View view, boolean b) {
+                        if (!once) {
+                            if (isFileName) {
+                                String ext = FileUtils.getExtensionFromFileName(value);
+                                if (ext != null && ext.length() > 0)
+                                    text.setSelection(0, value.length() - ext.length() - 1);
+                                else
+                                    text.setSelection(0, value.length());
+                            } else {
+                                text.selectAll();
+                            }
+                            once = true;
+                        }
+                    }
+                });
                 valueText = text;
             }
             LinearLayout.LayoutParams parameters = new LinearLayout.LayoutParams(
@@ -130,10 +145,14 @@ public class SalmonDialog {
             AlertDialog alertDialog = builder.create();
             alertDialog.setTitle(title);
             alertDialog.setCancelable(true);
+            alertDialog.setCanceledOnTouchOutside(false);
             alertDialog.setView(layout);
 
+            valueText.requestFocus();
+            alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             if (!activity.isFinishing())
                 alertDialog.show();
+
         });
     }
 
@@ -166,10 +185,32 @@ public class SalmonDialog {
             AlertDialog alertDialog = builder.create();
             alertDialog.setTitle(title);
             alertDialog.setCancelable(true);
+            alertDialog.setCanceledOnTouchOutside(false);
 
             if (!activity.isFinishing())
                 alertDialog.show();
         });
+    }
+
+    public static Consumer<String> promptUpdatableDialog(String title, String msg) {
+        Activity activity = WindowUtils.getUiActivity();
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
+
+        LinearLayout layout = new LinearLayout(activity);
+        layout.setPadding(20, 20, 20, 20);
+        TextView textView = new TextView(activity);
+        textView.setPadding(20, 20, 20, 20);
+        layout.addView(textView);
+        builder.setPositiveButton(android.R.string.ok, null);
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.setTitle(title);
+        alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(false);
+        alertDialog.setView(layout);
+        if (!activity.isFinishing())
+            alertDialog.show();
+        return (body) -> WindowUtils.runOnMainThread(() -> textView.setText(body));
     }
 
     public static void promptSingleValue(ArrayAdapter<String> adapter, String title,
@@ -185,46 +226,10 @@ public class SalmonDialog {
         AlertDialog alertDialog = builder.create();
         alertDialog.setTitle(title);
         alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(false);
 
         if (!activity.isFinishing())
             alertDialog.show();
-    }
-
-    public static void promptOpenWith(Intent intent, TreeMap<String, String> apps,
-                                      android.net.Uri uri, java.io.File sharedFile,
-                                      SalmonFile salmonFile, boolean allowWrite,
-                                      Consumer<AndroidSharedFileObserver> OnFileContentsChanged) {
-        Activity activity = WindowUtils.getUiActivity();
-        String[] names = apps.keySet().toArray(new String[0]);
-        String[] packageNames = apps.values().toArray(new String[0]);
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
-        builder.setTitle(activity.getString(R.string.ChooseApp));
-        builder.setSingleChoiceItems(names, -1, (sender, which) ->
-        {
-            try {
-                AlertDialog alertDialog = (AlertDialog) sender;
-                alertDialog.dismiss();
-
-                int activityFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
-                if (allowWrite)
-                    activityFlags |= Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
-
-                AndroidSharedFileObserver fileObserver = AndroidSharedFileObserver.createFileObserver(sharedFile,
-                        salmonFile, OnFileContentsChanged);
-                fileObserver.startWatching();
-
-                activity.grantUriPermission(packageNames[which], uri, activityFlags);
-                intent.setPackage(packageNames[which]);
-                activity.startActivity(intent);
-            } catch (Exception ex) {
-                Toast.makeText(activity, "Could not start application", Toast.LENGTH_LONG).show();
-                ex.printStackTrace();
-                sharedFile.delete();
-            }
-        });
-        AlertDialog alert = builder.create();
-        alert.show();
     }
 
     public static void promptDialog(String body) {

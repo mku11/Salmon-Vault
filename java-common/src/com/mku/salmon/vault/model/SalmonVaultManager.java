@@ -64,6 +64,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public static final int REQUEST_EXPORT_DIR = 1003;
     public static final int REQUEST_IMPORT_AUTH_FILE = 1004;
     public static final int REQUEST_EXPORT_AUTH_FILE = 1005;
+    public static final int REQUEST_IMPORT_FOLDER = 1006;
 
     private static ExecutorService executor = Executors.newFixedThreadPool(2);
 
@@ -179,7 +180,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         return isJobRunning;
     }
 
-    public void setJobRunning(boolean value) {
+    private void setJobRunning(boolean value) {
         if (value != isJobRunning) {
             isJobRunning = value;
             propertyChanged(this, "IsJobRunning");
@@ -262,6 +263,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void setPathText(String value) {
+        if (value == null) {
+            setPath("");
+            return;
+        }
+
         if (value.startsWith("/"))
             value = value.substring(1);
         setPath("fs://" + value);
@@ -270,7 +276,12 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void stopOperation() {
         fileCommander.cancel();
         fileManagerMode = Mode.Browse;
+        clearSelectedFiles();
+        clearCopiedFiles();
+        fileProgress = 0;
+        filesProgress = 0;
         setTaskRunning(false);
+        setTaskMessage("");
     }
 
     public void copySelectedFiles() {
@@ -389,16 +400,19 @@ public class SalmonVaultManager implements IPropertyNotifier {
             closeVault();
             this.drive = SalmonDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
             this.currDir = this.drive.getRoot();
-            SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
+            SalmonSettings.getInstance().setVaultLocation(dir.getPath());
+            refresh();
+        } catch (Error e) {
+            SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". "
+            + "Make sure your vault folder contains a file named " + SalmonDrive.getConfigFilename());
         } catch (Exception e) {
-            SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage());
+            SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". ");
         }
-        refresh();
     }
-	
-	protected Class<?> getDriveClassType() {
-		return JavaDrive.class;
-	}
+
+    protected Class<?> getDriveClassType() {
+        return JavaDrive.class;
+    }
 
     public void deleteSelectedFiles() {
         deleteFiles(selectedFiles.toArray(new SalmonFile[0]));
@@ -427,6 +441,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 fileCommander.deleteFiles(files,
                         (taskProgress) ->
                         {
+                            // workaround for stopping file commander, this should be done
+                            // in the library
+                            if(fileCommander.areJobsStopped())
+                                throw new RuntimeException("User canceled operation");
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     if (taskProgress.getProcessedBytes() != taskProgress.getTotalBytes()) {
@@ -459,8 +477,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 setTaskMessage("Delete Complete");
             setFileProgress(1);
             setFilesProgress(1);
-            refresh();
             setTaskRunning(false);
+            refresh();
             copyFiles = null;
             fileManagerMode = Mode.Browse;
         });
@@ -483,6 +501,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 fileCommander.copyFiles(files, dir, move,
                         (taskProgress) ->
                         {
+                            // workaround for stopping file commander, this should be done
+                            // in the library
+                            if(fileCommander.areJobsStopped())
+                                throw new RuntimeException("User canceled operation");
+
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     setTaskMessage(action + ": " + taskProgress.getFile().getBaseName()
@@ -544,7 +567,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             setFileItemList(null);
             currDir = null;
             clearCopiedFiles();
-            setPathText("");
+            setPathText(null);
             if (this.drive != null)
                 this.drive.close();
         } catch (Exception ex) {
@@ -622,7 +645,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     protected void setSequencer(INonceSequencer sequencer) {
         this.sequencer = sequencer;
-        if(this.drive != null)
+        if (this.drive != null)
             this.drive.setSequencer(sequencer);
     }
 
@@ -652,6 +675,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         deleteSource, true,
                         (taskProgress) ->
                         {
+                            // workaround for stopping file commander, this should be done
+                            // in the library
+                            if(fileCommander.areJobsStopped())
+                                throw new RuntimeException("User canceled operation");
+
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     setTaskMessage("Exporting: " + taskProgress.getFile().getBaseName()
@@ -686,8 +714,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
             }
             setFileProgress(1);
             setFilesProgress(1);
-
             setTaskRunning(false);
+            refresh();
         });
     }
 
@@ -709,6 +737,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         deleteSource, true,
                         (taskProgress) ->
                         {
+                            // workaround for stopping file commander, this should be done
+                            // in the library
+                            if(fileCommander.areJobsStopped())
+                                throw new RuntimeException("User canceled operation");
+
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     setTaskMessage("Importing: " + taskProgress.getFile().getBaseName()
@@ -726,7 +759,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
                             failedFiles.add(file);
                             exception[0] = ex;
                         });
-                onFinished.accept(files);
+                if(onFinished!=null)
+                    onFinished.accept(files);
             } catch (Exception e) {
                 e.printStackTrace();
                 if (!handleException(e)) {
@@ -742,6 +776,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             setFileProgress(1);
             setFilesProgress(1);
             setTaskRunning(false);
+            refresh();
         });
     }
 
@@ -784,7 +819,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 }
             }, null);
             this.salmonFiles = new SalmonFile[files.length];
-            for(int i=0; i<files.length; i++)
+            for (int i = 0; i < files.length; i++)
                 this.salmonFiles[i] = (SalmonFile) files[i];
             if (!fileCommander.isFileSearcherStopped())
                 setStatus("Search Complete");
@@ -794,11 +829,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
         });
     }
 
-    public void createVault(IRealFile dir, String password)
-            throws IOException {
-        this.drive = SalmonDrive.createDrive(dir, JavaDrive.class, password, this.sequencer);
+    public void createVault(IRealFile dir, String password) throws IOException {
+        this.drive = SalmonDrive.createDrive(dir, getDriveClassType(), password, this.sequencer);
         this.currDir = this.drive.getRoot();
-        SalmonSettings.getInstance().setVaultLocation(dir.getAbsolutePath());
+        SalmonSettings.getInstance().setVaultLocation(dir.getPath());
         this.refresh();
     }
 
@@ -829,4 +863,26 @@ public class SalmonVaultManager implements IPropertyNotifier {
         this.promptExitOnBack = promptExitOnBack;
     }
 
+    public void getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<Integer, Long> updateUsage) {
+        executor.submit(() -> {
+            getDiskUsage(selectedFiles, updateUsage, 0, 0);
+        });
+    }
+
+    private long getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<Integer, Long> updateUsage,
+                                     int totalItems, long totalSize) {
+        for (SalmonFile file : selectedFiles) {
+            totalItems++;
+            if (file.isFile()) {
+                totalSize += file.getRealFile().length();
+            } else {
+                getDiskUsage(file.listFiles(), updateUsage, totalItems, totalSize);
+            }
+            if (updateUsage != null)
+                updateUsage.accept(totalItems, totalSize);
+        }
+        if (updateUsage != null)
+            updateUsage.accept(totalItems, totalSize);
+        return totalSize;
+    }
 }

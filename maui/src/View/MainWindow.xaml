@@ -21,81 +21,81 @@
         see: https://github.com/dotnet/maui/issues/5382-->
         <MenuBarItem Text="File" BindingContext="{Binding Source={x:Reference this}}">
             <MenuFlyoutItem Text="Open Vault (Ctrl-O)"
-                              Command="{Binding ClickCommand}"
+                              Command="{Binding ClickCommand}" IconImageSource="open_vault_small.png"
                        CommandParameter="{x:Static viewmodel:ActionType.OPEN_VAULT}"/>
             <MenuFlyoutItem Text="New Vault (Ctrl-N)" 
-                              Command="{Binding ClickCommand}"
+                              Command="{Binding ClickCommand}" IconImageSource="add_vault_small.png"
                        CommandParameter="{x:Static viewmodel:ActionType.CREATE_VAULT}"/>
             <MenuFlyoutItem Text="Close Vault (Ctrl-L)"
-                              Command="{Binding ClickCommand}"
+                              Command="{Binding ClickCommand}" IconImageSource="close_vault_small.png"
                        CommandParameter="{x:Static viewmodel:ActionType.CLOSE_VAULT}"/>
             <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Import Auth File"
+            <MenuFlyoutItem Text="Import Auth File" IconImageSource="auth_import_small.png"
                               Command="{Binding ClickCommand}"
                        CommandParameter="{x:Static viewmodel:ActionType.IMPORT_AUTH}"/>
-            <MenuFlyoutItem Text="Export Auth File"
+            <MenuFlyoutItem Text="Export Auth File" IconImageSource="auth_export_small.png"
                               Command="{Binding ClickCommand}"
                        CommandParameter="{x:Static viewmodel:ActionType.EXPORT_AUTH}"/>
-            <MenuFlyoutItem Text="Revoke Auth"
+            <MenuFlyoutItem Text="Revoke Auth" IconImageSource="auth_revoke_small.png"
                               Command="{Binding ClickCommand}"
                        CommandParameter="{x:Static viewmodel:ActionType.REVOKE_AUTH}"/>
-            <MenuFlyoutItem Text="Display Auth ID"
+            <MenuFlyoutItem Text="Display Auth ID" IconImageSource="auth_small.png"
                               Command="{Binding ClickCommand}"
                        CommandParameter="{x:Static viewmodel:ActionType.DISPLAY_AUTH_ID}"/>
             <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Settings" 
+            <MenuFlyoutItem Text="Settings"  IconImageSource="settings_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.SETTINGS}"/>
             <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Exit" 
+            <MenuFlyoutItem Text="Exit"  IconImageSource="exit_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.EXIT}"/>
         </MenuBarItem>
         <MenuBarItem Text="Edit" BindingContext="{Binding Source={x:Reference this}}">
-            <MenuFlyoutItem Text="New Folder" 
+            <MenuFlyoutItem Text="New Folder"  IconImageSource="add_folder_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.NEW_FOLDER}"/>
             <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Copy (Ctrl-C)"
+            <MenuFlyoutItem Text="Copy (Ctrl-C)" IconImageSource="copy_file_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.COPY}"/>
-            <MenuFlyoutItem Text="Cut (Ctrl-X)"
+            <MenuFlyoutItem Text="Cut (Ctrl-X)" IconImageSource="move_file_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.CUT}"/>
-            <MenuFlyoutItem Text="Paste (Ctrl-V)"
+            <MenuFlyoutItem Text="Paste (Ctrl-V)" IconImageSource="file_paste_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.PASTE}"/>
-            <MenuFlyoutItem Text="Delete"
+            <MenuFlyoutItem Text="Delete" IconImageSource="delete_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.DELETE}"/>
         </MenuBarItem>
         <MenuBarItem Text="Operations" BindingContext="{Binding Source={x:Reference this}}">
-            <MenuFlyoutItem Text="Import (Ctrl-I)"  
+            <MenuFlyoutItem Text="Import (Ctrl-I)"   IconImageSource="import_file_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.IMPORT}"/>
-            <MenuFlyoutItem Text="Export (Ctrl-E)"  
+            <MenuFlyoutItem Text="Export (Ctrl-E)"   IconImageSource="export_file_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.EXPORT}"/>
-            <MenuFlyoutItem Text="Export And Delete (Ctrl-U)"
+            <MenuFlyoutItem Text="Export And Delete (Ctrl-U)" IconImageSource="export_and_delete_file_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.EXPORT_AND_DELETE}"/>
             <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Search (Ctrl-F)"  
+            <MenuFlyoutItem Text="Search (Ctrl-F)"   IconImageSource="search_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.SEARCH}"/>
-            <MenuFlyoutItem Text="Refresh (Ctrl-R)" 
+            <MenuFlyoutItem Text="Refresh (Ctrl-R)" IconImageSource="refresh_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.REFRESH}"/>
             <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Back" 
+            <MenuFlyoutItem Text="Back"  IconImageSource="back_small.png"
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.BACK}"/>
-            <MenuFlyoutItem Text="Stop" Command="{Binding ClickCommand}"
+            <MenuFlyoutItem Text="Stop" Command="{Binding ClickCommand}" IconImageSource="cancel_small.png"
                               CommandParameter="{x:Static viewmodel:ActionType.STOP}"
                               IsEnabled="{Binding StopIsVisible}"/>
         </MenuBarItem>
         <MenuBarItem Text="Help" BindingContext="{Binding Source={x:Reference this}}">
-            <MenuFlyoutItem Text="About" Command="{Binding ClickCommand}"
+            <MenuFlyoutItem Text="About" Command="{Binding ClickCommand}" IconImageSource="info_small.png"
                               CommandParameter="{x:Static viewmodel:ActionType.ABOUT}"/>
         </MenuBarItem>
     </ContentPage.MenuBarItems>
@@ -182,7 +182,7 @@
                             SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
                             SelectionMode="{Binding IsMultiSelection, Converter={StaticResource BooleanToMultiSelectionConverter}, Mode=TwoWay}"
                             SelectionChanged="DataGrid_SelectionChanged">
-                
+
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="viewmodel:SalmonFileViewModel">
                         <!-- Android is showing an orange background and not updating selected color -->

@@ -30,7 +30,7 @@ import java.util.HashMap;
 public interface IFileDialogService {
     public Consumer<Object> getCallback(int requestCode);
 
-    public void pickFolder(String title, String initialDirectory, Consumer<Object> OnFolderPicked, int requestCode);
+    public void openFolder(String title, String initialDirectory, Consumer<Object> OnFolderPicked, int requestCode);
 
     public void openFile(String title, String filename, HashMap<String, String> filter, String initialDirectory, Consumer<Object> OnFilePicked, int requestCode);
 

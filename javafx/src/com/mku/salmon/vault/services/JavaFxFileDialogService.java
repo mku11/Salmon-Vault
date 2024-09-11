@@ -90,7 +90,7 @@ public class JavaFxFileDialogService implements IFileDialogService {
         File file = fileChooser.showOpenDialog(stage);
         if (file == null)
             return;
-        JavaFile javaFile = new JavaFile(file.getAbsolutePath());
+        JavaFile javaFile = new JavaFile(file.getPath());
         onFilePicked.accept(javaFile);
 
     }
@@ -117,12 +117,12 @@ public class JavaFxFileDialogService implements IFileDialogService {
             return;
         List<JavaFile> javaFiles = new ArrayList<>();
         for (File file : files) {
-            javaFiles.add(new JavaFile(file.getAbsolutePath()));
+            javaFiles.add(new JavaFile(file.getPath()));
         }
         onFilesPicked.accept(javaFiles.toArray(new JavaFile[0]));
     }
 
-    public void pickFolder(String title, String initialDirectory, Consumer<Object> onFolderPicked, int requestCode) {
+    public void openFolder(String title, String initialDirectory, Consumer<Object> onFolderPicked, int requestCode) {
         handlers.put(requestCode, onFolderPicked);
         DirectoryChooser directoryChooser = new DirectoryChooser();
         if (title != null)
@@ -136,7 +136,7 @@ public class JavaFxFileDialogService implements IFileDialogService {
         File selectedDirectory = directoryChooser.showDialog(stage);
         if (selectedDirectory == null)
             return;
-        JavaFile javaFile = new JavaFile(selectedDirectory.getAbsolutePath());
+        JavaFile javaFile = new JavaFile(selectedDirectory.getPath());
         onFolderPicked.accept(javaFile);
     }
 
@@ -163,7 +163,7 @@ public class JavaFxFileDialogService implements IFileDialogService {
         File file = fileChooser.showSaveDialog(stage);
         if (file == null)
             return;
-        JavaFile javaFile = new JavaFile(file.getAbsolutePath());
+        JavaFile javaFile = new JavaFile(file.getPath());
         onFilePicked.accept(javaFile);
     }
 }

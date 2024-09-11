@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.mku.salmon'
-version '2.0.0'
+version '2.1.0'
 
 repositories {
     maven {
@@ -109,14 +109,18 @@ test {
 
 ext {
     javaMainClass = "com.mku.salmon.vault.main.Main"
+    // change this to the javafx lib path
+    javaFxLib = "D:\\tools\\javafx-sdk-17.0.10\\lib"
 }
 
+// To run the app execute runApp instead of run task
 task runApp(type: JavaExec) {
     group = "application"
     description = "Run the application"
     classpath = sourceSets.main.runtimeClasspath
     main = javaMainClass
     systemProperty "java.library.path", "build/libs/natives/lib"
+    jvmArgs = ["--module-path", javaFxLib, "--add-modules=javafx.controls,javafx.swing,javafx.fxml,javafx.media,javafx.graphics"]
 }
 
 // run the unzipNative task first

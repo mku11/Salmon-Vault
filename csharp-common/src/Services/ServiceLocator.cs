@@ -49,6 +49,8 @@ public class ServiceLocator
 
     public void Register(Type type, object impl)
     {
+        if (_services.ContainsKey(type))
+            _services.Remove(type);
         _services.Add(type, impl);
     }
 

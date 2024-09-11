@@ -30,7 +30,7 @@ namespace Salmon.Vault.Services;
 public interface IFileDialogService
 {
     public Action<object> GetCallback(int requestCode);
-    public void PickFolder(string title, string initialDirectory, Action<object> OnFolderPicked, int requestCode);
+    public void OpenFolder(string title, string initialDirectory, Action<object> OnFolderPicked, int requestCode);
     public void OpenFile(string title, string filename, Dictionary<string, string> filter, string initialDirectory, Action<object> OnFilePicked, int requestCode);
     public void OpenFiles(string title, Dictionary<string, string> filter, string initialDirectory, Action<object> OnFilesPicked, int requestCode);
     public void SaveFile(string title, string filename, Dictionary<string, string> filter, string initialDirectory, Action<object> OnFilePicked, int requestCode);

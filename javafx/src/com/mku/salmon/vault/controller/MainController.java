@@ -27,6 +27,7 @@ import com.mku.salmon.SalmonAuthException;
 import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
+import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.model.win.SalmonWinVaultManager;
 import com.mku.salmon.vault.services.*;
@@ -40,8 +41,11 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
@@ -99,6 +103,15 @@ public class MainController {
 
     public boolean getProgressVisibility() {
         return progressVisibility.get();
+    }
+
+    private final SimpleBooleanProperty cancelVisibility = new SimpleBooleanProperty();
+    @FXML
+    public SimpleBooleanProperty cancelVisibilityProperty() {
+        return cancelVisibility;
+    }
+    public boolean getCancelVisibility() {
+        return cancelVisibility.get();
     }
 
     @FXML
@@ -174,11 +187,20 @@ public class MainController {
             selectItem(manager.getCurrentItem());
         } else if (propertyName.equals("Status")) {
             WindowUtils.runOnMainThread(() -> status.setValue(manager.getStatus()));
+            if (manager.isJobRunning()
+                    || table.getSelectionModel().getSelectedCells().size() > 0
+                    || manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
+                    || manager.getFileManagerMode() == SalmonVaultManager.Mode.Move) {
+                cancelVisibility.setValue(true);
+            } else {
+                cancelVisibility.setValue(manager.isJobRunning());
+            }
         } else if (propertyName == "IsJobRunning") {
             WindowUtils.runOnMainThread(() ->
             {
                 if (manager.getFileManagerMode() != SalmonVaultManager.Mode.Search) {
                     progressVisibility.setValue(manager.isJobRunning());
+                    cancelVisibility.setValue(manager.isJobRunning());
                 }
                 if (!manager.isJobRunning())
                     status.setValue("");
@@ -289,10 +311,13 @@ public class MainController {
         manager.refresh();
     }
 
-    public void onImport() {
-        SalmonDialogs.promptImportFiles();
+    public void onImportFiles() {
+        SalmonDialogs.promptImportFiles("Import Files", SalmonVaultManager.REQUEST_IMPORT_FILES);
     }
 
+    public void onImportFolder() {
+        SalmonDialogs.promptImportFolder("Import Folder", SalmonVaultManager.REQUEST_IMPORT_FOLDER);
+    }
     public void onExport() {
         try {
             manager.exportSelectedFiles(false);
@@ -343,6 +368,7 @@ public class MainController {
 
     public void onStop() {
         manager.stopOperation();
+        table.getSelectionModel().clearSelection();
     }
 
     public void onSettings() {
@@ -442,43 +468,58 @@ public class MainController {
         ContextMenu contextMenu = new ContextMenu();
 
         MenuItem item = new MenuItem("View");
+        item.setGraphic(getImageIcon("/icons/file_small.png"));
         item.setOnAction((event) -> onOpenItem(table.getSelectionModel().getSelectedIndex()));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("View as Text");
+        item.setGraphic(getImageIcon("/icons/text_file_small.png"));
         item.setOnAction((event) -> startTextEditor(items.get(0)));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Copy (Ctrl+C)");
+        item.setGraphic(getImageIcon("/icons/copy_file_small.png"));
         item.setOnAction((event) -> onCopy());
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Cut (Ctrl+X)");
+        item.setGraphic(getImageIcon("/icons/move_file_small.png"));
         item.setOnAction((event) -> onCut());
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Delete");
+        item.setGraphic(getImageIcon("/icons/delete_small.png"));
         item.setOnAction((event) -> onDelete());
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Rename");
+        item.setGraphic(getImageIcon("/icons/rename_small.png"));
         item.setOnAction((event) -> SalmonDialogs.promptRenameFile(items.get(0).getSalmonFile()));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Export (Ctrl+E)");
+        item.setGraphic(getImageIcon("/icons/export_file_small.png"));
         item.setOnAction((event) -> onExport());
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Export And Delete (Ctrl+U)");
+        item.setGraphic(getImageIcon("/icons/export_and_delete_file_small.png"));
         item.setOnAction((event) -> onExportAndDelete());
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Properties");
+        item.setGraphic(getImageIcon("/icons/info_small.png"));
         item.setOnAction((event) -> SalmonDialogs.showProperties(items.get(0).getSalmonFile()));
         contextMenu.getItems().add(item);
 
         Point p = MouseInfo.getPointerInfo().getLocation();
         contextMenu.show(stage, p.x, p.y);
+    }
+
+    private Node getImageIcon(String path) {
+        ImageView imageView = new ImageView();
+        imageView.setImage(new Image(Thumbnails.class.getResourceAsStream(path)));
+        return imageView;
     }
 
     protected void openItem(int position) throws Exception {

@@ -27,7 +27,10 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.media.MediaMetadataRetriever;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -56,6 +59,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -65,6 +69,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifier {
     private static final String TAG = FileAdapter.class.getName();
     private static final int MAX_CACHE_SIZE = 20 * 1024 * 1024;
+    private static final int THUMBNAIL_MAX_STEPS = 10;
     private static final long VIDEO_THUMBNAIL_MSECS = 3000;
     private static final int TASK_THREADS = 4;
 
@@ -76,14 +81,16 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     private final LinkedHashMap<SalmonFile, Bitmap> bitmapCache = new LinkedHashMap<>();
     // we use a deque and add jobs to the front for better user experience
     private final LinkedBlockingDeque<ViewHolder> tasks = new LinkedBlockingDeque<>();
-    private int lastPositionPressed;
+    private SalmonFile lastSelected;
     private int cacheSize = 0;
-    private HashSet<SalmonFile> selectedFiles = new HashSet<>();
+    private LinkedHashSet<SalmonFile> selectedFiles = new LinkedHashSet<>();
     private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     private Mode mode = Mode.SINGLE_SELECT;
     private ExecutorService executor;
     private Runnable onCacheCleared;
     private HashSet<BiConsumer<Object, String>> observers = new HashSet<>();
+
+    private ViewHolder animationViewHolder;
 
     public void setOnCacheCleared(Runnable onCacheCleared) {
         this.onCacheCleared = onCacheCleared;
@@ -97,7 +104,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         createThread();
     }
 
-    public HashSet<SalmonFile> getSelectedFiles() {
+    public LinkedHashSet<SalmonFile> getSelectedFiles() {
         return selectedFiles;
     }
 
@@ -123,7 +130,6 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             selectedFiles.clear();
         mode = value ? Mode.MULTI_SELECT : Mode.SINGLE_SELECT;
         propertyChanged(this, "SelectedFiles");
-        notifyDataSetChanged();
     }
 
     public void stop() {
@@ -145,11 +151,6 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ViewHolder viewHolder = (ViewHolder) holder;
         try {
-            if (mode == Mode.MULTI_SELECT) {
-                viewHolder.selected.setVisibility(View.VISIBLE);
-            } else {
-                viewHolder.selected.setVisibility(View.GONE);
-            }
             viewHolder.salmonFile = items.get(position);
             updateSelected(viewHolder, viewHolder.salmonFile);
             updateBackgroundColor(viewHolder);
@@ -163,6 +164,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             } else {
                 viewHolder.thumbnail.setImageBitmap(null);
             }
+            viewHolder.animate = false;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -215,7 +217,10 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             } else if (viewHolder.salmonFile.isFile()) {
                 Bitmap bitmap = null;
                 try {
-                    bitmap = getFileThumbnail(viewHolder.salmonFile);
+                    java.io.File tmpFile = null;
+                    if (ext.equals("mp4"))
+                        tmpFile = Thumbnails.getVideoTmpFile(viewHolder.salmonFile);
+                    bitmap = getFileThumbnail(viewHolder.salmonFile, 0, tmpFile, true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -232,9 +237,69 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                     }
                 });
             }
+
+            viewHolder.thumbnail.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    if (animationViewHolder != viewHolder || !animationViewHolder.animate) {
+                        resetAnimation();
+                        animationViewHolder = viewHolder;
+                        animationViewHolder.animate = true;
+                        if (ext.equals("mp4")) {
+                            animateVideo(viewHolder);
+                        } else {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            });
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private void animateVideo(ViewHolder viewHolder) {
+        executor.submit(() -> {
+            int i = 0;
+            java.io.File tmpFile = null;
+            MediaMetadataRetriever retriever = null;
+            try {
+                tmpFile = Thumbnails.getVideoTmpFile(viewHolder.salmonFile);
+                retriever = new MediaMetadataRetriever();
+                retriever.setDataSource(tmpFile.getPath());
+                while (animationViewHolder == viewHolder && animationViewHolder.animate) {
+                    i++;
+                    i %= THUMBNAIL_MAX_STEPS;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    Bitmap bitmap = null;
+                    try {
+                        bitmap = retriever.getFrameAtTime(
+                                (i + 1) * FileAdapter.VIDEO_THUMBNAIL_MSECS * 1000);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (bitmap == null)
+                        continue;
+                    Bitmap finalBitmap = bitmap;
+                    activity.runOnUiThread(() -> {
+                        if(animationViewHolder == viewHolder && animationViewHolder.animate)
+                            updateThumbnailIcon(viewHolder, finalBitmap);
+                    });
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (tmpFile != null) {
+                    tmpFile.delete();
+                    tmpFile.deleteOnExit();
+                }
+            }
+        });
     }
 
     private void updateFileInfo(ViewHolder viewHolder, String filename,
@@ -275,7 +340,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     }
 
     private void updateFileIcon(ViewHolder viewHolder, String extension) {
-        viewHolder.thumbnail.setImageResource(R.drawable.file);
+        viewHolder.thumbnail.setImageResource(R.drawable.file_item);
         int extColor;
         try {
             extColor = getFileColorFromExtension(extension);
@@ -315,11 +380,12 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         onCacheCleared.run();
     }
 
-    private Bitmap getFileThumbnail(SalmonFile salmonFile) throws Exception {
+    private Bitmap getFileThumbnail(SalmonFile salmonFile, int step, java.io.File tmpFile,
+                                    boolean delete) throws Exception {
         Bitmap bitmap = null;
         String ext = FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
         if (ext.equals("mp4")) {
-            bitmap = Thumbnails.getVideoThumbnail(salmonFile, VIDEO_THUMBNAIL_MSECS);
+            bitmap = Thumbnails.getVideoThumbnail(tmpFile, VIDEO_THUMBNAIL_MSECS * (step + 1), delete);
         } else if (ext.equals("png") || ext.equals("jpg") || ext.equals("bmp") || ext.equals("webp") || ext.equals("gif")) {
             bitmap = Thumbnails.getImageThumbnail(salmonFile);
         }
@@ -346,13 +412,13 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         return new ViewHolder(view, itemClicked, this);
     }
 
-    public int getPosition() {
-        return lastPositionPressed;
+    public SalmonFile getLastSelected() {
+        return lastSelected;
     }
 
     private void updateBackgroundColor(ViewHolder viewHolder) {
         if (viewHolder.selected.isChecked())
-            viewHolder.itemView.setBackgroundColor(activity.getColor(R.color.colorPrimaryDark));
+            viewHolder.itemView.setBackgroundColor(activity.getColor(R.color.salmonItemSelectedBackground));
         else
             viewHolder.itemView.setBackgroundColor(0);
     }
@@ -374,6 +440,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         public TextView extension;
         public CheckBox selected;
         public SalmonFile salmonFile;
+        public boolean animate;
 
         public ViewHolder(View itemView, Function<Integer, Boolean> itemClicked, FileAdapter adapter) {
             super(itemView);
@@ -386,25 +453,44 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
             itemView.setOnClickListener((View view) ->
             {
+                SalmonFile salmonFile = items.get(super.getLayoutPosition());
                 if (mode == Mode.MULTI_SELECT) {
                     selected.setChecked(!selected.isChecked());
-                    SalmonFile salmonFile = items.get(super.getLayoutPosition());
                     if (selected.isChecked())
                         selectedFiles.add(salmonFile);
                     else selectedFiles.remove(salmonFile);
                     adapter.propertyChanged(this, "SelectedFiles");
                     updateBackgroundColor(this);
                 } else if (itemClicked == null || !itemClicked.apply(super.getLayoutPosition())) {
-                    adapter.lastPositionPressed = super.getLayoutPosition();
+                    adapter.lastSelected = salmonFile;
                     itemView.showContextMenu();
                 }
+                notifyItemChanged(getLayoutPosition());
+                if (selectedFiles.size() == 0)
+                    setMultiSelect(false);
             });
 
             itemView.setOnLongClickListener((View view) -> {
-                adapter.lastPositionPressed = super.getLayoutPosition();
-                itemView.showContextMenu();
+                SalmonFile salmonFile = items.get(super.getLayoutPosition());
+                if (mode == Mode.SINGLE_SELECT) {
+                    setMultiSelect(true);
+                }
+                selected.setChecked(true);
+                selectedFiles.add(salmonFile);
+                updateBackgroundColor(this);
+                notifyItemChanged(getLayoutPosition());
+                adapter.propertyChanged(this, "SelectedFiles");
+                if (selectedFiles.size() == 0)
+                    setMultiSelect(false);
+                adapter.lastSelected = salmonFile;
                 return true;
             });
         }
+    }
+
+    public synchronized void resetAnimation() {
+        if(animationViewHolder != null)
+            animationViewHolder.animate = false;
+        animationViewHolder = null;
     }
 }

@@ -1,5 +1,5 @@
 Salmon Vault - JavaFx
-version: 2.0.0
+version: 2.1.0
 project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 
@@ -31,7 +31,7 @@ Run the build task from gradle instead of the Intellij IDEA. This will include t
 Alternatively you can build from the command line:
 gradlew.bat build -x test --rerun-tasks
 
-To refresh developement packages make sure you delete the salmon packages in the cache:
+To refresh development packages make sure you delete the salmon packages in the cache:
 C:\Users\<username>\.gradle\caches\modules-2\files-2.1\com.mku.salmon.*
 Then refresh the gradle dependencies from the IDE or from command line:
 gradlew.bat --refresh-dependencies

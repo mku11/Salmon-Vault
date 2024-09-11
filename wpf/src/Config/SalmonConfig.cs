@@ -34,9 +34,10 @@ public class SalmonConfig
             "TinyAES - The Unlicense - https://github.com/kokke/tiny-AES-c\n" +
             "ffmediaelement - Microsoft Public License (Ms-PL) - https://github.com/unosquare/ffmediaelement\n" +
             "MimeTypesMap - MIT License - https://github.com/hey-red/MimeTypesMap/blob/master/LICENSE\n" +
-            "webview2 - https://learn.microsoft.com/en-us/microsoft-edge/webview2/\n\n" +
+            "webview2 - https://learn.microsoft.com/en-us/microsoft-edge/webview2/\n" +
+            "uxwing icons - https://uxwing.com/computer-folder-open-icon/\n\n" +
             "For more information visit the project website";
-    public static readonly string SourceCodeURL = "https://github.com/mku11/Salmon-AES-CTR";
+    public static readonly string SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
     public static readonly string REGISTRY_CHKSUM_KEY = "FILESEQCHKSUM";
     public static readonly string FILE_SEQ_FILENAME = "config.xml";
     public static readonly string FFMPEGLibraryURL = "https://github.com/BtbN/FFmpeg-Builds/releases";

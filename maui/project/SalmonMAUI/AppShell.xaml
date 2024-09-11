@@ -7,8 +7,16 @@
     xmlns:salmon="clr-namespace:Salmon.Vault.View"
     Shell.FlyoutBehavior="Disabled"
     Title="Salmon Vault Beta">
-    <ShellContent
+    <ShellContent Style="{StaticResource MyPageStyle}"
         ContentTemplate="{DataTemplate salmon:MainWindow}"
         Route="MainWindow" />
-
+    <Shell.Resources>
+        <Style x:Key="MyPageStyle" TargetType="Element">
+            <Setter Property="Shell.BackgroundColor" Value="Purple" />
+            <Setter Property="Shell.TitleColor" Value="Yellow" />
+            <Setter Property="Shell.FlyoutBackdrop" Value="Yellow" />
+            <Setter Property="Shell.FlyoutBackground" Value="Yellow" />
+            <Setter Property="Shell.TabBarBackgroundColor" Value="Yellow" />
+        </Style>
+    </Shell.Resources>
 </Shell>

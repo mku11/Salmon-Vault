@@ -10,8 +10,9 @@
     <string name="IntegrityCheckTitle">Integrity Check</string>
 
     <string name="ImportFiles">Import File(s)</string>
-    <string name="ExportFiles">Export File(s)</string>
-    <string name="ExportAndDeleteFiles">Export And Delete File(s)</string>
+    <string name="ImportFolder">Import Folder</string>
+    <string name="ExportFiles">Export</string>
+    <string name="ExportAndDeleteFiles">Export/Delete</string>
     <string name="Sort">Sort</string>
     <string name="ExportAll">Export All</string>
     <string name="Action">Action</string>
@@ -40,6 +41,7 @@
     <string name="View">View</string>
     <string name="ViewAsText">View As Text</string>
     <string name="ViewExternal">View External</string>
+    <string name="OpenExternalInstructions">There are no internal viewers available. To view this file using an external app click Ok. To edit this file open it from within an external app that uses the Android File Picker or re-import it manually.</string>
 
     <string name="ImportStopped">Import Stopped</string>
     <string name="ImportFailed">Import Failed</string>
@@ -57,7 +59,6 @@
 
     <string name="FilesImported">Files Imported</string>
     <string name="Edit">Edit</string>
-    <string name="EditExternal">Edit External</string>
     <string name="Delete">Delete</string>
     <string name="SelectFolderForFiles">Select or create a folder for your vault</string>
     <string name="FilesExportedTo">Files exported to</string>
@@ -74,6 +75,7 @@
     <string name="Search">Search</string>
     <string name="AnotherProcessRunning">Another process is running</string>
     <string name="Properties">Properties</string>
+    <string name="DiskUsage">Disk Usage</string>
     <string name="CouldNotGetFileProperties">Could not get file properties</string>
     <string name="Name">Name</string>
     <string name="Path">Path</string>
@@ -97,6 +99,7 @@
     <string name="Searching">Searching</string>
     <string name="Stopped">Stopped</string>
     <string name="Stop">Stop</string>
+    <string name="Cancel">Cancel</string>
     <string name="Any">Any</string>
     <string name="MatchAnyTerm">Match any term</string>
     <string name="HideScreenContents">Hide Screen Contents</string>

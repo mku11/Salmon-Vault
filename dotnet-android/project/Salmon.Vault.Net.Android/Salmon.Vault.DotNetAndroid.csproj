@@ -1,106 +1,106 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net7.0-android</TargetFramework>
-    <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
-    <OutputType>Exe</OutputType>
-    <ImplicitUsings>false</ImplicitUsings>
-    <ApplicationId>com.mku.salmon.vault.net.android</ApplicationId>
-    <ApplicationVersion>200</ApplicationVersion>
-    <ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
-    <!-- WORKAROUND: ListeneableFuture see: https://github.com/dotnet/maui/issues/6022
+	<PropertyGroup>
+		<TargetFramework>net7.0-android</TargetFramework>
+		<SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+		<OutputType>Exe</OutputType>
+		<ImplicitUsings>false</ImplicitUsings>
+		<ApplicationId>com.mku.salmon.vault.net.android</ApplicationId>
+		<ApplicationVersion>200</ApplicationVersion>
+		<ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
+		<!-- WORKAROUND: ListeneableFuture see: https://github.com/dotnet/maui/issues/6022
     and: https://github.com/xamarin/AndroidX/issues/535 -->
-    <XamarinGoogleGuavaListenableFutureOptOut>true</XamarinGoogleGuavaListenableFutureOptOut>
-    <Version>2.0.0</Version>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <AndroidPackageFormat>apk</AndroidPackageFormat>
-  </PropertyGroup>
+		<XamarinGoogleGuavaListenableFutureOptOut>true</XamarinGoogleGuavaListenableFutureOptOut>
+		<Version>2.0.0</Version>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\src\Config\SalmonConfig.cs">
-      <Link>Config\SalmonConfig.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Dialog\SalmonDialog.cs">
-      <Link>Dialog\SalmonDialog.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Image\Thumbnails.cs">
-      <Link>Image\Thumbnails.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Main\ActionType.cs">
-      <Link>Main\ActionType.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Main\ExternalAppChooser.cs">
-      <Link>Main\ExternalAppChooser.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Main\ActivityCommon.cs">
-      <Link>Main\ActivityCommon.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Main\FileAdapter.cs">
-      <Link>Main\FileAdapter.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Main\MediaPlayerActivity.cs">
-      <Link>Main\MediaPlayerActivity.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Main\SalmonActivity.cs">
-      <Link>Main\SalmonActivity.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Main\SalmonApplication.cs">
-      <Link>Main\SalmonApplication.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Main\SettingsActivity.cs">
-      <Link>Main\SettingsActivity.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Main\WebViewerActivity.cs">
-      <Link>Main\WebViewerActivity.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Utils\WindowUtils.cs">
-      <Link>Utils\WindowUtils.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Utils\URLUtils.cs" Link="Utils\URLUtils.cs" />
+	<ItemGroup>
+		<Compile Include="..\..\src\Config\SalmonConfig.cs">
+			<Link>Config\SalmonConfig.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Dialog\SalmonDialog.cs">
+			<Link>Dialog\SalmonDialog.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Image\Thumbnails.cs">
+			<Link>Image\Thumbnails.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Main\ActionType.cs">
+			<Link>Main\ActionType.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Main\ActivityCommon.cs">
+			<Link>Main\ActivityCommon.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Main\FileAdapter.cs">
+			<Link>Main\FileAdapter.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Main\MediaPlayerActivity.cs">
+			<Link>Main\MediaPlayerActivity.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Main\SalmonActivity.cs">
+			<Link>Main\SalmonActivity.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Main\SalmonApplication.cs">
+			<Link>Main\SalmonApplication.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Main\SettingsActivity.cs">
+			<Link>Main\SettingsActivity.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Main\WebViewerActivity.cs">
+			<Link>Main\WebViewerActivity.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Utils\WindowUtils.cs">
+			<Link>Utils\WindowUtils.cs</Link>
+		</Compile>
+		<Compile Include="..\..\src\Utils\URLUtils.cs" Link="Utils\URLUtils.cs" />
+		<Compile Include="..\..\src\Provider\SalmonFileProvider.cs">
+			<Link>Provider\SalmonFileProvider.cs</Link>
+		</Compile>
 
-    <Compile Include="..\..\src\Services\AndroidFileDialogService.cs" Link="Services\AndroidFileDialogService.cs" />
-    <Compile Include="..\..\src\Services\AndroidBrowserService.cs" Link="Services\AndroidBrowserService.cs" />
-    <Compile Include="..\..\src\Services\AndroidFileService.cs" Link="Services\AndroidFileService.cs" />
-    <Compile Include="..\..\src\Services\AndroidKeyboardService.cs" Link="Services\AndroidKeyboardService.cs" />
-    <Compile Include="..\..\src\Services\AndroidSettingsService.cs" Link="Services\AndroidSettingsService.cs" />
+		<Compile Include="..\..\src\Services\AndroidFileDialogService.cs" Link="Services\AndroidFileDialogService.cs" />
+		<Compile Include="..\..\src\Services\AndroidBrowserService.cs" Link="Services\AndroidBrowserService.cs" />
+		<Compile Include="..\..\src\Services\AndroidFileService.cs" Link="Services\AndroidFileService.cs" />
+		<Compile Include="..\..\src\Services\AndroidKeyboardService.cs" Link="Services\AndroidKeyboardService.cs" />
+		<Compile Include="..\..\src\Services\AndroidSettingsService.cs" Link="Services\AndroidSettingsService.cs" />
 
-    <Compile Include="..\..\..\dotnet-android-common\src\Model\SalmonAndroidVaultManager.cs" Link="Common\Model\SalmonAndroidVaultManager.cs" />
-    
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonContentViewer.cs" Link="Common\Model\SalmonContentViewer.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonVaultManager.cs" Link="Common\Model\SalmonVaultManager.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonFileAttrQueue.cs" Link="Common\Model\SalmonFileAttrQueue.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonTextEditor.cs" Link="Common\Model\SalmonTextEditor.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonImageViewer.cs" Link="Common\Model\SalmonImageViewer.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Model\SalmonSettings.cs" Link="Common\Model\SalmonSettings.cs" />
+		<Compile Include="..\..\..\dotnet-android-common\src\Model\SalmonAndroidVaultManager.cs" Link="Common\Model\SalmonAndroidVaultManager.cs" />
 
-    <Compile Include="..\..\..\csharp-common\src\Services\ServiceLocator.cs" Link="Common\Services\ServiceLocator.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\IFileService.cs" Link="Common\Services\IFileService.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\IWebBrowserService.cs" Link="Common\Services\IWebBrowserService.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\IFileDialogService.cs" Link="Common\Services\IFileDialogService.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\IKeyboardService.cs" Link="Common\Services\IKeyboardService.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\IMediaPlayerService.cs" Link="Common\Services\IMediaPlayerService.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Services\ISettingsService.cs" Link="Common\Services\ISettingsService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonContentViewer.cs" Link="Common\Model\SalmonContentViewer.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonVaultManager.cs" Link="Common\Model\SalmonVaultManager.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonFileAttrQueue.cs" Link="Common\Model\SalmonFileAttrQueue.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonTextEditor.cs" Link="Common\Model\SalmonTextEditor.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonImageViewer.cs" Link="Common\Model\SalmonImageViewer.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Model\SalmonSettings.cs" Link="Common\Model\SalmonSettings.cs" />
 
-    <Compile Include="..\..\..\csharp-common\src\Extensions\EnumExtensions.cs" Link="Common\Extensions\EnumExtensions.cs" />
-    <Compile Include="..\..\..\csharp-common\src\Extensions\ExceptionExtensions.cs" Link="Common\Extensions\ExceptionExtensions.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\ServiceLocator.cs" Link="Common\Services\ServiceLocator.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IFileService.cs" Link="Common\Services\IFileService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IWebBrowserService.cs" Link="Common\Services\IWebBrowserService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IFileDialogService.cs" Link="Common\Services\IFileDialogService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IKeyboardService.cs" Link="Common\Services\IKeyboardService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IMediaPlayerService.cs" Link="Common\Services\IMediaPlayerService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\ISettingsService.cs" Link="Common\Services\ISettingsService.cs" />
 
-    <Compile Include="..\..\..\csharp-common\src\Utils\ByteUtils.cs" Link="Common\Utils\ByteUtils.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Extensions\EnumExtensions.cs" Link="Common\Extensions\EnumExtensions.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Extensions\ExceptionExtensions.cs" Link="Common\Extensions\ExceptionExtensions.cs" />
 
-    <Compile Include="..\..\..\csharp-common\src\Dialog\SalmonDialogs.cs" Link="Common\Dialog\SalmonDialogs.cs" />
-  </ItemGroup>
+		<Compile Include="..\..\..\csharp-common\src\Utils\ByteUtils.cs" Link="Common\Utils\ByteUtils.cs" />
 
-  <ItemGroup>
-    <PackageReference Include="MimeTypesMap" Version="1.0.8" />
-    <PackageReference Include="Salmon.Core" Version="2.0.0" />
-    <PackageReference Include="Salmon.FS" Version="2.0.0" />
-    <PackageReference Include="Salmon.FS.Android" Version="2.0.0" />
-    <PackageReference Include="Salmon.Native.Android" Version="2.0.0" />
-    <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1.4" />
-    <PackageReference Include="Xamarin.AndroidX.RecyclerView" Version="1.3.1.1" />
-    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.9.0.3" />
-    <!-- WORKAROUND: ListeneableFuture see: https://github.com/dotnet/maui/issues/6022
+		<Compile Include="..\..\..\csharp-common\src\Dialog\SalmonDialogs.cs" Link="Common\Dialog\SalmonDialogs.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MimeTypesMap" Version="1.0.8" />
+		<PackageReference Include="Salmon.Core" Version="2.0.0" />
+		<PackageReference Include="Salmon.FS" Version="2.0.0" />
+		<PackageReference Include="Salmon.FS.Android" Version="2.0.0" />
+		<PackageReference Include="Salmon.Native.Android" Version="2.0.0" />
+		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1.4" />
+		<PackageReference Include="Xamarin.AndroidX.RecyclerView" Version="1.3.1.1" />
+		<PackageReference Include="Xamarin.Google.Android.Material" Version="1.9.0.3" />
+		<!-- WORKAROUND: ListeneableFuture see: https://github.com/dotnet/maui/issues/6022
       and: https://github.com/xamarin/AndroidX/issues/535 -->
-    <PackageReference Include="Xamarin.Google.Guava" Version="32.0.1" />
+		<PackageReference Include="Xamarin.Google.Guava" Version="32.0.1" />
 
-  </ItemGroup>
+	</ItemGroup>
 </Project>

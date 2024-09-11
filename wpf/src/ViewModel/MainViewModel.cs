@@ -91,6 +91,20 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private SalmonFileViewModel _selectedItem;
+    public SalmonFileViewModel SelectedItem
+    {
+        get => _selectedItem;
+        set
+        {
+            if (value != _selectedItem)
+            {
+                _selectedItem = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("SelectedItem"));
+            }
+        }
+    }
+
     private string _status = "";
     public string Status
     {
@@ -206,7 +220,10 @@ public class MainViewModel : INotifyPropertyChanged
         {
             CurrentItem = GetViewModel(manager.CurrentItem);
         }
-        else if (e.PropertyName == "Status") Status = manager.Status;
+        else if (e.PropertyName == "Status")
+        {
+            Status = manager.Status;
+        }
         else if (e.PropertyName == "IsJobRunning")
         {
             WindowUtils.RunOnMainThread(() =>
@@ -294,9 +311,13 @@ public class MainViewModel : INotifyPropertyChanged
                 break;
             case ActionType.STOP:
                 manager.StopOperation();
+                SelectedItem = null;
                 break;
-            case ActionType.IMPORT:
-                SalmonDialogs.PromptImportFiles();
+            case ActionType.IMPORT_FILES:
+                SalmonDialogs.PromptImportFiles("Import Files", SalmonVaultManager.REQUEST_IMPORT_FILES);
+                break;
+            case ActionType.IMPORT_FOLDER:
+                SalmonDialogs.PromptImportFolder("Import Folder", SalmonVaultManager.REQUEST_IMPORT_FOLDER);
                 break;
             case ActionType.EXPORT:
                 manager.ExportSelectedFiles(false);
@@ -504,6 +525,17 @@ public class MainViewModel : INotifyPropertyChanged
         foreach (SalmonFileViewModel item in selectedItems)
         {
             manager.SelectedFiles.Add(item.GetSalmonFile());
+        }
+        if (manager.IsJobRunning
+        || selectedItems.Count > 0
+        || manager.FileManagerMode == SalmonVaultManager.Mode.Copy
+        || manager.FileManagerMode == SalmonVaultManager.Mode.Move)
+        {
+            StopVisibility = true;
+        }
+        else
+        {
+            StopVisibility = manager.IsJobRunning;
         }
     }
 }
