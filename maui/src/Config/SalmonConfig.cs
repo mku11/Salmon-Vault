@@ -36,7 +36,7 @@ public class SalmonConfig
             "MimeTypesMap - MIT License - https://github.com/hey-red/MimeTypesMap/blob/master/LICENSE\n" +
             "webview2 - https://learn.microsoft.com/en-us/microsoft-edge/webview2/\n" +
             "Xamarin Android bindings - MIT and Apache 2.0 License - https://github.com/xamarin/AndroidX\n\n" +
-            "uxwing icons - https://uxwing.com/computer-folder-open-icon/\n\n" +
+            "uxwing icons - https://uxwing.com\n\n" +
             "For more information visit the project website";
     public static readonly string SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
 

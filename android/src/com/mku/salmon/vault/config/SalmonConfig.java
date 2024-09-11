@@ -9,7 +9,7 @@ public class SalmonConfig {
             "Open source projects included:\n" +
             "Salmon-AES-CTR - MIT License - https://github.com/mku11/Salmon-AES-CTR\n" +
             "TinyAES - The Unlicense - https://github.com/kokke/tiny-AES-c\n" +
-            "uxwing icons - https://uxwing.com/computer-folder-open-icon/\n" +
+            "uxwing icons - https://uxwing.com\n\n" +
             "For more information visit the project website";
     public static final String SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
     public static final String FILE_SEQ_FILENAME = "config.xml";

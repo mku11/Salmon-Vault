@@ -27,7 +27,7 @@ export class SalmonConfig {
     static VERSION = "2.1.0";
     static ABOUT_TEXT = "License: MIT License\n\n" +
             "Salmon-AES-CTR - MIT License - https://github.com/mku11/Salmon-AES-CTR\n" +
-            "uxwing icons - https://uxwing.com/computer-folder-open-icon/\n\n" +
+            "uxwing icons - https://uxwing.com\n\n" +
             "For more information visit the project website";
     static SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
     static FILE_SEQ_FILENAME = "config.json";

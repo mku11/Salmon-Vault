@@ -33,7 +33,7 @@ public class SalmonConfig {
             "TinyAES - The Unlicense - https://github.com/kokke/tiny-AES-c\n" +
             "Java Native Access - Apache 2.0 - https://github.com/java-native-access/jna\n" +
             "JavaFX - GPLv2.0 - https://github.com/openjdk/jfx\n" +
-            "uxwing icons - https://uxwing.com/computer-folder-open-icon/\n\n" +
+            "uxwing icons - https://uxwing.com\n\n" +
             "For more information visit the project website";
     public static final String SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
     public static final String icon = "icons/logo_48x48.png";

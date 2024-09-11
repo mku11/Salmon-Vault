@@ -35,7 +35,7 @@ public class SalmonConfig
             "ffmediaelement - Microsoft Public License (Ms-PL) - https://github.com/unosquare/ffmediaelement\n" +
             "MimeTypesMap - MIT License - https://github.com/hey-red/MimeTypesMap/blob/master/LICENSE\n" +
             "webview2 - https://learn.microsoft.com/en-us/microsoft-edge/webview2/\n" +
-            "uxwing icons - https://uxwing.com/computer-folder-open-icon/\n\n" +
+            "uxwing icons - https://uxwing.com\n\n" +
             "For more information visit the project website";
     public static readonly string SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
     public static readonly string REGISTRY_CHKSUM_KEY = "FILESEQCHKSUM";
