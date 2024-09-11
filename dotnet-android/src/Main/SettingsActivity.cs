@@ -66,19 +66,19 @@ public class SettingsActivity : PreferenceActivity
 
         PreferenceManager.FindPreference("aesType").PreferenceChange += (s, args) =>
         {
-            SalmonSettings.GetInstance().AesType = (SalmonSettings.AESType)Enum.Parse(typeof(SalmonSettings.AESType), (String)args.NewValue);
+            SalmonSettings.GetInstance().AesType = (SalmonSettings.AESType)Enum.Parse(typeof(SalmonSettings.AESType), (string)args.NewValue);
             ((Preference)s).Summary = (string)args.NewValue;
         };
 
         PreferenceManager.FindPreference("pbkdfType").PreferenceChange += (s, args) =>
         {
-            SalmonSettings.GetInstance().PbkdfImpl = (SalmonSettings.PbkdfImplType)Enum.Parse(typeof(SalmonSettings.PbkdfImplType), (String)args.NewValue);
+            SalmonSettings.GetInstance().PbkdfImpl = (SalmonSettings.PbkdfImplType)Enum.Parse(typeof(SalmonSettings.PbkdfImplType), (string)args.NewValue);
             ((Preference)s).Summary = (string)args.NewValue;
         };
 
         PreferenceManager.FindPreference("pbkdfAlgo").PreferenceChange += (s, args) =>
         {
-            SalmonSettings.GetInstance().PbkdfAlgo = (SalmonSettings.PbkdfAlgoType)Enum.Parse(typeof(SalmonSettings.PbkdfAlgoType), (String)args.NewValue);
+            SalmonSettings.GetInstance().PbkdfAlgo = (SalmonSettings.PbkdfAlgoType)Enum.Parse(typeof(SalmonSettings.PbkdfAlgoType), (string)args.NewValue);
             ((Preference)s).Summary = (string)args.NewValue;
         };
 

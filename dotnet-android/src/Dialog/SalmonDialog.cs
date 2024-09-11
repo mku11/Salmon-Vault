@@ -186,7 +186,7 @@ public class SalmonDialog
         });
     }
 
-    public static Action<string> promptUpdatableDialog(String title, String msg)
+    public static Action<string> promptUpdatableDialog(string title, string msg)
     {
         Activity activity = WindowUtils.UiActivity;
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);

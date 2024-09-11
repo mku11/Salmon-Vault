@@ -1042,11 +1042,11 @@ public class SalmonActivity : AppCompatActivity
     {
         foreach (string packageName in SalmonFileProvider.GetApps(false))
         {
-            SalmonDialogs.PromptAuthorizeApp(packageName);
+            PromptAuthorizeApp(packageName);
         }
     }
 	
-    private void PromptAuthorizeApp(String packageName)
+    private void PromptAuthorizeApp(string packageName)
     {
         SalmonDialog.PromptDialog("External app authorization",
                 "Application with package name:\n"
