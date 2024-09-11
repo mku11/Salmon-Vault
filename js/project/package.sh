@@ -8,7 +8,7 @@ CSS=../css
 JS_VAULT_SRC=../src/vault
 JS_COMMON_SRC=../../js-common/src/common
 JS_COMMON_RES=../../common/common-res
-FAVICON=../../common/common-res/icons/logo.ico
+FAVICON=../../common/common-res/icons/logo_48x48.ico
 
 VERSION=2.1.0
 PACKAGES_DIR=app_package
