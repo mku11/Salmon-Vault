@@ -29,7 +29,7 @@
 		</div>
 		<br>
 		<div class="link-container">
-			<a href="https://mku11.github.io/Salmon-Vault/demo.html" class="demo-link">Live Web Demo</a>
+			<a href="demo.html" class="demo-link">Live Web Demo</a>
 			<a href="https://github.com/mku11/Salmon-Vault/blob/main/LICENSE" target="_blank" class="license-link">MIT License</a>
 			<a href="https://github.com/mku11/Salmon-Vault" target="_blank" class="project-link">Source Code</a>
 			<a href="downloads.html" class="downloads-link">Downloads</a><br>
@@ -51,7 +51,7 @@ Back up your drives as often as you wish.
 		</div>
 		
 		<div class="specs-container">
-			<H3>Specifications?</H3>
+			<H3>Specifications</H3>
 			<pre>
 AES-256 encryption 
 HMAC SHA-256 authentication.
@@ -63,20 +63,7 @@ Protected nonce sequencer with SHA256 checksum anti-tampering (Windows only).
 Protected account sequencer service (Optional / Windows only).
 			</pre>
 		</div>
-	
-		<div class="security-limitations-container">
-			<H3>Security Limitations</H3>
-			<pre>
-- User sequencer files are not secure from other apps by default.  
-For Android: you must create sequencer files in protected app space and not on external storage! Android apps work on sandbox environments though this is true only if you have **NOT ROOTED** your devices.  
-For Windows: you can create sequencer files preferably within %LOCALAPPDATA% folder. Windows will notify you if it detects tampering though it is recommended for additional security you use the Salmon Windows Service. The Salmon windows service is a better solution because it protects the sequencer files under a system administrator (LocalSystem) account.  
-For Linux and Mac: make sure you keep the sequencer files in a safe place since salmon has no anti-tampering support for these OSes. What you can do is implement a secure nonce service or your own tampering detection! You can do that by extending SalmonFileSequencer class, for an example see WinFileSequencer.  
-- Importing files to a salmon virtual drive using different devices requires authorization by an already authorized device for each  virtual drive. The device that created the drive is by default authorized. The authorization mechanism works by assigning new nonce ranges for each authorized device which prevents nonce reuse.
-- Make sure that you never backup and restore the nonce sequencer files! You should always create them under a directory that is not backed up, this will prevent nonce reuse!  
-- Data integrity is not supported for filenames only for file contents.    
-			</pre>
-		</div>
-	
+		
 		<div class="platforms-container">
 			<H3>Platforms</H3>
 			<pre>
@@ -90,17 +77,16 @@ Javascript Web App (Chrome, Firefox, Safari support remote read-only drives, Chr
 			</pre>
 		</div>
 		
-		<div class="functional-limitations-container">
-			<H3>Functional Limitations</H3>
+		<div class="security-limitations-container">
+			<H3>Limitations</H3>
 			<pre>
-- Salmon streams are seekable only if the backed resource supports random access (disk, memory, network).  
-- Salmon API is not Thread Safe! If you want to use parallel processing you need to use SalmonEncryptor/SalmonDecryptor and SalmonFileImporter/SalmonFileExporter.  
-- Maximum guaranteed file size: 2^64 bytes or limited by the backed resource (disk, memory, network).  
-- Maximum drive file size: 2^64 bytes  
-- Maximum number of drive files: 2^62 (64 bit nonces used for the filename and the file contents.  
-- Python parallel processing (multiple cpus) in Windows is slow due to python being single-threaded.  
-- Javascript service worker handler does not support parallel processing.  
-- Javascript implementation is ESM so in order to work in Node.js you need to use --experimental-vm-modules  
+* Importing files to a salmon virtual drive using different devices requires authorization by an already authorized device for each  virtual drive. The device that created the drive is by default authorized. The authorization mechanism protects against repeated access based attacks!
+* Make sure that you never backup and restore the Nonce Sequencer files in your device. This is really important to prevent nonce reuse! For Windows the files are located under %LOCALAPPDATA%\\.salmon directory, for Linux and MacOS under the $HOME/.salmon directory. For Android they are under a no backup folder so they are safe.
+* User Sequencer files are not secure from other apps. The sequencer file for Android is secure located in app private space but not for Android rooted devices! For Windows Salmon will notify you if it detects tampering though it is recommended for additional security that you use the Salmon Windows Service. The Windows Service protects the sequencer files under the system administrator (LocalSystem) space. For Linux and Mac make sure you do not share your account with other users!
+* Integrity is not supported for filenames only for file contents.
+* Maximum guaranteed file size: 2^64 bytes or limited by the backed resource (disk, memory, network).
+* Maximum drive file size: 2^64 bytes
+* Maximum number of drive files: 2^62 (64 bit nonces used for the filename and the file contents.
 			</pre>
 		</div>
 	</div>
