@@ -1,4 +1,4 @@
-![alt text](https://github.com/mku11/Salmon-Vault/blob/wip/common/common-res/icons/logo.png)
+![alt text](https://github.com/mku11/Salmon-Vault/blob/main/common/common-res/icons/logo.png)
 
 # Salmon Vault
 Secure all your personal files in Salmon Vault with AES-256 encryption.  
