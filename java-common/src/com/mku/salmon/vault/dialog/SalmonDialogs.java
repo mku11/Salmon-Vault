@@ -321,8 +321,13 @@ public class SalmonDialogs {
                         IRealFile folder = (IRealFile) obj;
                         if (folder == null)
                             return;
-
-                        SalmonSettings.getInstance().setLastImportDir(folder.getPath());
+                        if (SalmonSettings.getInstance().isDeleteAfterImport()) {
+                            IRealFile parent = folder.getParent();
+                            if (parent != null && parent.getPath() != null)
+                                SalmonSettings.getInstance().setLastImportDir(parent.getPath());
+                        } else {
+                            SalmonSettings.getInstance().setLastImportDir(folder.getPath());
+                        }
                         SalmonVaultManager.getInstance().importFiles(new IRealFile[]{folder},
                                 SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
                                 {
