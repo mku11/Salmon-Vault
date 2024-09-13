@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.func.BiConsumer;
+import com.mku.func.Consumer;
 import com.mku.salmon.SalmonAuthException;
 import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.dialog.SalmonDialog;
@@ -52,6 +54,8 @@ import javafx.stage.Stage;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class MainController {
@@ -366,6 +370,21 @@ public class MainController {
         SalmonDialogs.promptSearch();
     }
 
+    private void showDiskUsage(SalmonFile[] files) {
+
+        Consumer<String> updateBody = SalmonDialog.promptUpdatableDialog("Disk Usage", "");
+        AtomicInteger fItems = new AtomicInteger();
+        AtomicLong fSize = new AtomicLong();
+        BiConsumer<AtomicInteger, AtomicLong> updateDiskUsage = (items, size) -> {
+            if (items.get() > fItems.get())
+                updateBody.accept(SalmonDialogs.getFormattedDiskUsage(items.get(), size.get()));
+            fItems.set(items.get());
+            fSize.set(size.get());
+        };
+        manager.getDiskUsage(files, updateDiskUsage);
+        updateBody.accept(SalmonDialogs.getFormattedDiskUsage(fItems.get(), fSize.get()));
+    }
+
     public void onStop() {
         manager.stopOperation();
         table.getSelectionModel().clearSelection();
@@ -510,6 +529,14 @@ public class MainController {
         item = new MenuItem("Properties");
         item.setGraphic(getImageIcon("/icons/info_small.png"));
         item.setOnAction((event) -> SalmonDialogs.showProperties(items.get(0).getSalmonFile()));
+        contextMenu.getItems().add(item);
+
+        item = new MenuItem("Disk Usage");
+        item.setGraphic(getImageIcon("/icons/disk_small.png"));
+        item.setOnAction((event) -> {
+            ObservableList<SalmonFileViewModel> files = table.getSelectionModel().getSelectedItems();
+            showDiskUsage(files.stream().map(x->x.getSalmonFile()).collect(Collectors.toList()).toArray(new SalmonFile[0]));
+        });
         contextMenu.getItems().add(item);
 
         Point p = MouseInfo.getPointerInfo().getLocation();

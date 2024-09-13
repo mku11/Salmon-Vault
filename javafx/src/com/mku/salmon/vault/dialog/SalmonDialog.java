@@ -24,6 +24,7 @@ SOFTWARE.
 */
 
 import com.mku.func.BiConsumer;
+import com.mku.func.Consumer;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.utils.FileUtils;
 import javafx.event.ActionEvent;
@@ -166,5 +167,21 @@ public class SalmonDialog extends javafx.scene.control.Alert {
                 buttonListener2.run();
             }
         });
+    }
+
+    public static Consumer<String> promptUpdatableDialog(String title, String msg) {
+        SalmonDialog alert = new SalmonDialog(Alert.AlertType.NONE, "", ButtonType.OK, ButtonType.CANCEL);
+        alert.setTitle(title);
+        Label msgText = new Label();
+        msgText.setText(msg);
+        VBox box = new VBox();
+        box.setSpacing(10);
+        box.getChildren().addAll(msgText);
+
+        alert.getDialogPane().setContent(box);
+        alert.getDialogPane().setMinSize(340, 150);
+        alert.show();
+        alert.getDialogPane().autosize();
+        return (body) -> WindowUtils.runOnMainThread(() -> msgText.setText(body));
     }
 }

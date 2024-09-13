@@ -50,6 +50,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SalmonVaultManager implements IPropertyNotifier {
     protected static final String SEQUENCER_DIR_NAME = ".salmon";
@@ -404,7 +406,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             refresh();
         } catch (Error e) {
             SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". "
-            + "Make sure your vault folder contains a file named " + SalmonDrive.getConfigFilename());
+                    + "Make sure your vault folder contains a file named " + SalmonDrive.getConfigFilename());
         } catch (Exception e) {
             SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". ");
         }
@@ -443,7 +445,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         {
                             // workaround for stopping file commander, this should be done
                             // in the library
-                            if(fileCommander.areJobsStopped())
+                            if (fileCommander.areJobsStopped())
                                 throw new RuntimeException("User canceled operation");
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
@@ -503,7 +505,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         {
                             // workaround for stopping file commander, this should be done
                             // in the library
-                            if(fileCommander.areJobsStopped())
+                            if (fileCommander.areJobsStopped())
                                 throw new RuntimeException("User canceled operation");
 
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
@@ -677,7 +679,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         {
                             // workaround for stopping file commander, this should be done
                             // in the library
-                            if(fileCommander.areJobsStopped())
+                            if (fileCommander.areJobsStopped())
                                 throw new RuntimeException("User canceled operation");
 
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
@@ -739,7 +741,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         {
                             // workaround for stopping file commander, this should be done
                             // in the library
-                            if(fileCommander.areJobsStopped())
+                            if (fileCommander.areJobsStopped())
                                 throw new RuntimeException("User canceled operation");
 
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
@@ -759,7 +761,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                             failedFiles.add(file);
                             exception[0] = ex;
                         });
-                if(onFinished!=null)
+                if (onFinished != null)
                     onFinished.accept(files);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -863,18 +865,18 @@ public class SalmonVaultManager implements IPropertyNotifier {
         this.promptExitOnBack = promptExitOnBack;
     }
 
-    public void getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<Integer, Long> updateUsage) {
+    public void getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<AtomicInteger, AtomicLong> updateUsage) {
         executor.submit(() -> {
-            getDiskUsage(selectedFiles, updateUsage, 0, 0);
+            getDiskUsage(selectedFiles, updateUsage, new AtomicInteger(0), new AtomicLong(0));
         });
     }
 
-    private long getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<Integer, Long> updateUsage,
-                                     int totalItems, long totalSize) {
+    private long getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<AtomicInteger, AtomicLong> updateUsage,
+                              AtomicInteger totalItems, AtomicLong totalSize) {
         for (SalmonFile file : selectedFiles) {
-            totalItems++;
+            totalItems.incrementAndGet();
             if (file.isFile()) {
-                totalSize += file.getRealFile().length();
+                totalSize.addAndGet(file.getRealFile().length());
             } else {
                 getDiskUsage(file.listFiles(), updateUsage, totalItems, totalSize);
             }
@@ -883,6 +885,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
         }
         if (updateUsage != null)
             updateUsage.accept(totalItems, totalSize);
-        return totalSize;
+        return totalSize.get();
     }
 }

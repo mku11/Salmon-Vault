@@ -200,6 +200,7 @@ public class SalmonDialog {
         layout.setPadding(20, 20, 20, 20);
         TextView textView = new TextView(activity);
         textView.setPadding(20, 20, 20, 20);
+		textView.setText(msg);
         layout.addView(textView);
         builder.setPositiveButton(android.R.string.ok, null);
 

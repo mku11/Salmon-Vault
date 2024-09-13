@@ -602,7 +602,7 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    private void showDiskUsage(SalmonFile[] toArray) {
+    private void showDiskUsage(SalmonFile[] files) {
 
         Consumer<String> updateBody = SalmonDialog.promptUpdatableDialog("Disk Usage", "");
         AtomicInteger fItems = new AtomicInteger();
@@ -613,7 +613,7 @@ public class SalmonActivity extends AppCompatActivity {
             fItems.set(items);
             fSize.set(size);
         };
-        manager.getDiskUsage(adapter.getSelectedFiles().toArray(new SalmonFile[0]), updateDiskUsage);
+        manager.getDiskUsage(files, updateDiskUsage);
         updateBody.accept(SalmonDialogs.getFormattedDiskUsage(fItems.get(), fSize.get()));
     }
 
