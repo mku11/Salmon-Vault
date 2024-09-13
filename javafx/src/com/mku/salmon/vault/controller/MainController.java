@@ -111,10 +111,12 @@ public class MainController {
     }
 
     private final SimpleBooleanProperty cancelVisibility = new SimpleBooleanProperty();
+
     @FXML
     public SimpleBooleanProperty cancelVisibilityProperty() {
         return cancelVisibility;
     }
+
     public boolean getCancelVisibility() {
         return cancelVisibility.get();
     }
@@ -221,14 +223,16 @@ public class MainController {
     }
 
     private void updateFileViewModels() {
-        if (manager.getFileItemList() == null)
-            fileItemList.clear();
-        else {
-            fileItemList.clear();
-            fileItemList.addAll(manager.getFileItemList().stream()
-                    .map(SalmonFileViewModel::new)
-                    .collect(Collectors.toList()));
-        }
+        WindowUtils.runOnMainThread(() -> {
+            if (manager.getFileItemList() == null)
+                fileItemList.clear();
+            else {
+                fileItemList.clear();
+                fileItemList.addAll(manager.getFileItemList().stream()
+                        .map(SalmonFileViewModel::new)
+                        .collect(Collectors.toList()));
+            }
+        });
     }
 
     synchronized void onSelectedItems(java.util.List<SalmonFileViewModel> selectedItems) {
@@ -323,6 +327,7 @@ public class MainController {
     public void onImportFolder() {
         SalmonDialogs.promptImportFolder("Import Folder", SalmonVaultManager.REQUEST_IMPORT_FOLDER);
     }
+
     public void onExport() {
         try {
             manager.exportSelectedFiles(false);
@@ -536,7 +541,7 @@ public class MainController {
         item.setGraphic(getImageIcon("/icons/disk_small.png"));
         item.setOnAction((event) -> {
             ObservableList<SalmonFileViewModel> files = table.getSelectionModel().getSelectedItems();
-            showDiskUsage(files.stream().map(x->x.getSalmonFile()).collect(Collectors.toList()).toArray(new SalmonFile[0]));
+            showDiskUsage(files.stream().map(x -> x.getSalmonFile()).collect(Collectors.toList()).toArray(new SalmonFile[0]));
         });
         contextMenu.getItems().add(item);
 
