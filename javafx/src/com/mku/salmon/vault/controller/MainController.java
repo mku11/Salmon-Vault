@@ -617,17 +617,23 @@ public class MainController {
                         "visible to all other apps in this device. If you edit this file externally you will have to " +
                         "import the file manually back into the vault.\n",
                 "Ok", () -> {
-                    openWith(file);
+                    try {
+                        openWith(file);
+                    } catch (Exception e) {
+                        new SalmonDialog(Alert.AlertType.ERROR, "Could not open file: " + e).show();
+                    }
                 }, "Cancel", null);
     }
 
     private void openWith(SalmonFile salmonFile) {
+        if (manager.isJobRunning())
+            throw new RuntimeException("Another job is running");
         manager.exportFiles(new SalmonFile[]{salmonFile}, (files) ->
         {
             WindowUtils.runOnMainThread(() -> {
                 try {
                     Runtime.getRuntime().exec("rundll32.exe SHELL32.DLL,OpenAs_RunDLL " + files[0].getPath());
-                } catch (IOException e) {
+                } catch (Exception e) {
                     new SalmonDialog(Alert.AlertType.ERROR, "Could not launch external app: " + e).show();
                 }
             });
