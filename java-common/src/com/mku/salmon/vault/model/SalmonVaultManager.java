@@ -287,6 +287,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void copySelectedFiles() {
+        if(isJobRunning())
+            throw new RuntimeException("Another Job is Running");
         fileManagerMode = Mode.Copy;
         copyFiles = selectedFiles.toArray(new SalmonFile[0]);
         setTaskRunning(true, false);
@@ -294,6 +296,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void cutSelectedFiles() {
+        if(isJobRunning())
+            throw new RuntimeException("Another Job is Running");
         fileManagerMode = Mode.Move;
         copyFiles = selectedFiles.toArray(new SalmonFile[0]);
         setTaskRunning(true, false);
@@ -378,6 +382,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void pasteSelected() {
+        if(isJobRunning())
+            throw new RuntimeException("Another Job is Running");
         copySelectedFiles(fileManagerMode == Mode.Move);
     }
 
@@ -429,6 +435,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void deleteFiles(SalmonFile[] files) {
         if (files == null)
             return;
+        if(isJobRunning())
+            throw new RuntimeException("Another job is running");
         executor.execute(() ->
         {
             setFileProgress(0);
@@ -651,6 +659,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void exportFiles(SalmonFile[] items, Consumer<IRealFile[]> onFinished, boolean deleteSource) {
+        if(isJobRunning())
+            throw new RuntimeException("Another job is running");
         executor.execute(() ->
         {
             setFileProgress(0);
@@ -709,6 +719,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public void importFiles(IRealFile[] fileNames, SalmonFile importDir, boolean deleteSource,
                             Consumer<SalmonFile[]> onFinished) {
+        if(isJobRunning())
+            throw new RuntimeException("Another job is running");
         executor.execute(() ->
         {
             setFileProgress(0);

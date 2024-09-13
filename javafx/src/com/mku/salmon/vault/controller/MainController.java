@@ -332,7 +332,7 @@ public class MainController {
     public void onExport() {
         try {
             manager.exportSelectedFiles(false);
-        } catch (SalmonAuthException e) {
+        } catch (Exception e) {
             SalmonDialog.promptDialog("Error", "Could not export files: " + e);
         }
     }
@@ -340,8 +340,8 @@ public class MainController {
     public void onExportAndDelete() {
         try {
             manager.exportSelectedFiles(true);
-        } catch (SalmonAuthException e) {
-            SalmonDialog.promptDialog("Error", "Could not export and delete files: + e");
+        } catch (Exception e) {
+            SalmonDialog.promptDialog("Error", "Could not export and delete files: " + e);
         }
     }
 
@@ -352,13 +352,21 @@ public class MainController {
     public void onCopy() {
         if (!table.isFocused())
             return;
-        manager.copySelectedFiles();
+        try {
+            manager.copySelectedFiles();
+        } catch (Exception ex) {
+            SalmonDialog.promptDialog("Error", "Could not select files for copy: " + ex);
+        }
     }
 
     public void onCut() {
         if (!table.isFocused())
             return;
-        manager.cutSelectedFiles();
+        try {
+            manager.cutSelectedFiles();
+        } catch (Exception ex) {
+            SalmonDialog.promptDialog("Error", "Could not select files for move: " + ex);
+        }
     }
 
     public void onDelete() {
@@ -370,7 +378,11 @@ public class MainController {
     public void onPaste() {
         if (!table.isFocused())
             return;
-        manager.pasteSelected();
+        try {
+            manager.pasteSelected();
+        } catch (Exception ex) {
+            SalmonDialog.promptDialog("Error", "Could not paste files: " + ex);
+        }
     }
 
     public void onSearch() {
