@@ -72,7 +72,6 @@ public class MainController {
 
     @FXML
     private final SimpleStringProperty status = new SimpleStringProperty();
-    private SalmonFileViewModel lastItemSelected;
 
     @FXML
     public SimpleStringProperty statusProperty() {
@@ -273,9 +272,6 @@ public class MainController {
         });
         table.getSelectionModel().getSelectedCells().addListener((ListChangeListener<TablePosition>) c -> {
             onSelectedItems(table.getSelectionModel().getSelectedItems());
-        });
-        table.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            lastItemSelected = newValue;
         });
         Platform.runLater(() -> table.requestFocus());
     }
