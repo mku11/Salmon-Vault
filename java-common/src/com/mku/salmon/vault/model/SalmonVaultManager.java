@@ -443,10 +443,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 fileCommander.deleteFiles(files,
                         (taskProgress) ->
                         {
-                            // workaround for stopping file commander, this should be done
-                            // in the library
-                            if (fileCommander.areJobsStopped())
-                                throw new RuntimeException("User canceled operation");
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     if (taskProgress.getProcessedBytes() != taskProgress.getTotalBytes()) {
@@ -503,11 +499,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 fileCommander.copyFiles(files, dir, move,
                         (taskProgress) ->
                         {
-                            // workaround for stopping file commander, this should be done
-                            // in the library
-                            if (fileCommander.areJobsStopped())
-                                throw new RuntimeException("User canceled operation");
-
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     setTaskMessage(action + ": " + taskProgress.getFile().getBaseName()
@@ -677,11 +668,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         deleteSource, true,
                         (taskProgress) ->
                         {
-                            // workaround for stopping file commander, this should be done
-                            // in the library
-                            if (fileCommander.areJobsStopped())
-                                throw new RuntimeException("User canceled operation");
-
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     setTaskMessage("Exporting: " + taskProgress.getFile().getBaseName()
@@ -739,11 +725,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
                         deleteSource, true,
                         (taskProgress) ->
                         {
-                            // workaround for stopping file commander, this should be done
-                            // in the library
-                            if (fileCommander.areJobsStopped())
-                                throw new RuntimeException("User canceled operation");
-
                             if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                                 try {
                                     setTaskMessage("Importing: " + taskProgress.getFile().getBaseName()
