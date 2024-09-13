@@ -54,6 +54,7 @@ import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -502,6 +503,11 @@ public class MainController {
         item.setOnAction((event) -> startTextEditor(items.get(0)));
         contextMenu.getItems().add(item);
 
+        item = new MenuItem("View External");
+        item.setGraphic(getImageIcon("/icons/view_external_small.png"));
+        item.setOnAction((event) -> promptOpenExternalApp(items.get(0).getSalmonFile(), null));
+        contextMenu.getItems().add(item);
+
         item = new MenuItem("Copy (Ctrl+C)");
         item.setGraphic(getImageIcon("/icons/copy_file_small.png"));
         item.setOnAction((event) -> onCopy());
@@ -584,13 +590,36 @@ public class MainController {
                 startTextEditor(vm);
                 return true;
             } else {
-                new SalmonDialog(Alert.AlertType.WARNING, "No internal viewers found\n").show();
+                promptOpenExternalApp(file, "No internal viewers found.");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
             new SalmonDialog(Alert.AlertType.WARNING, "Could not open: " + ex).show();
         }
         return false;
+    }
+
+    private void promptOpenExternalApp(SalmonFile file, String msg) {
+        SalmonDialog.promptDialog("Open External", (msg != null ? msg + " " : "") + "Press Ok to export the file and " +
+                        "open it with an external app. This file will be placed in the export folder and will also be " +
+                        "visible to all other apps in this device. If you edit this file externally you will have to " +
+                        "import the file manually back into the vault.\n",
+                "Ok", () -> {
+                    openWith(file);
+                }, "Cancel", null);
+    }
+
+    private void openWith(SalmonFile salmonFile) {
+        manager.exportFiles(new SalmonFile[]{salmonFile}, (files) ->
+        {
+            WindowUtils.runOnMainThread(() -> {
+                try {
+                    Runtime.getRuntime().exec("rundll32.exe SHELL32.DLL,OpenAs_RunDLL " + files[0].getPath());
+                } catch (IOException e) {
+                    new SalmonDialog(Alert.AlertType.ERROR, "Could not launch external app: " + e).show();
+                }
+            });
+        }, false);
     }
 
     private void startTextEditor(SalmonFileViewModel item) {
