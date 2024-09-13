@@ -72,6 +72,7 @@ public class MainController {
 
     @FXML
     private final SimpleStringProperty status = new SimpleStringProperty();
+    private SalmonFileViewModel lastItemSelected;
 
     @FXML
     public SimpleStringProperty statusProperty() {
@@ -256,11 +257,9 @@ public class MainController {
             TableRow<SalmonFileViewModel> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && (!row.isEmpty())) {
-                    TableView.TableViewSelectionModel<SalmonFileViewModel> rowData = table.getSelectionModel();
-                    onOpenItem(rowData.getSelectedIndex());
+                    onOpenItem(fileItemList.indexOf(row.getItem()));
                 } else if (event.getButton() == MouseButton.SECONDARY) {
-                    ObservableList<SalmonFileViewModel> items = table.getSelectionModel().getSelectedItems();
-                    openContextMenu(items);
+                    openContextMenu(row.getItem());
                 }
             });
             return row;
@@ -274,6 +273,9 @@ public class MainController {
         });
         table.getSelectionModel().getSelectedCells().addListener((ListChangeListener<TablePosition>) c -> {
             onSelectedItems(table.getSelectionModel().getSelectedItems());
+        });
+        table.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            lastItemSelected = newValue;
         });
         Platform.runLater(() -> table.requestFocus());
     }
@@ -502,22 +504,22 @@ public class MainController {
         }
     }
 
-    private void openContextMenu(ObservableList<SalmonFileViewModel> items) {
+    private void openContextMenu(SalmonFileViewModel fileItem) {
         ContextMenu contextMenu = new ContextMenu();
 
         MenuItem item = new MenuItem("View");
         item.setGraphic(getImageIcon("/icons/file_small.png"));
-        item.setOnAction((event) -> onOpenItem(table.getSelectionModel().getSelectedIndex()));
+        item.setOnAction((event) -> onOpenItem(fileItemList.indexOf(fileItem)));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("View as Text");
         item.setGraphic(getImageIcon("/icons/text_file_small.png"));
-        item.setOnAction((event) -> startTextEditor(items.get(0)));
+        item.setOnAction((event) -> startTextEditor(fileItem));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("View External");
         item.setGraphic(getImageIcon("/icons/view_external_small.png"));
-        item.setOnAction((event) -> promptOpenExternalApp(items.get(0).getSalmonFile(), null));
+        item.setOnAction((event) -> promptOpenExternalApp(fileItem.getSalmonFile(), null));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Copy (Ctrl+C)");
@@ -537,7 +539,7 @@ public class MainController {
 
         item = new MenuItem("Rename");
         item.setGraphic(getImageIcon("/icons/rename_small.png"));
-        item.setOnAction((event) -> SalmonDialogs.promptRenameFile(items.get(0).getSalmonFile()));
+        item.setOnAction((event) -> SalmonDialogs.promptRenameFile(fileItem.getSalmonFile()));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Export (Ctrl+E)");
@@ -552,7 +554,7 @@ public class MainController {
 
         item = new MenuItem("Properties");
         item.setGraphic(getImageIcon("/icons/info_small.png"));
-        item.setOnAction((event) -> SalmonDialogs.showProperties(items.get(0).getSalmonFile()));
+        item.setOnAction((event) -> SalmonDialogs.showProperties(fileItem.getSalmonFile()));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Disk Usage");
