@@ -51,7 +51,11 @@
                 <MenuItem id="menu-exit" onAction="#onExit" text="Exit" />
             </Menu>
             <Menu text="Edit">
-                <MenuItem id="menu-create-folder" onAction="#onNewFolder" text="New Folder" />
+                <MenuItem id="menu-create-folder" onAction="#onNewFolder" text="New Folder">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="N" control="DOWN" meta="UP" shift="DOWN" shortcut="UP" />
+                    </accelerator>
+                </MenuItem>
                 <SeparatorMenuItem />
                 <MenuItem id="menu-copy" onAction="#onCopy" text="Copy">
                     <accelerator>
