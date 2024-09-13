@@ -33,6 +33,7 @@ import com.mku.utils.FileUtils;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -209,7 +210,7 @@ public class Thumbnails {
             if (task.file.isFile() && FileUtils.isImage(task.file.getBaseName())) {
                 image = Thumbnails.fromFile(task.file);
             }
-            if(image == null)
+            if (image == null)
                 image = getIcon(task.file);
             addCache(task.file, image);
             task.view.setImage(image);
@@ -225,9 +226,17 @@ public class Thumbnails {
         cacheSize += image.getWidth() * image.getHeight() * 4;
     }
 
-    private static void resetCache() {
+    public static void resetCache() {
         cacheSize = 0;
         cache.clear();
+    }
+
+    public static void resetCache(SalmonFile file) {
+        if (cache.containsKey(file)) {
+            Image image = cache.get(file);
+            cacheSize -= image.getWidth() * image.getHeight() * 4;
+            cache.remove(file);
+        }
     }
 
     private static Image fromFile(SalmonFile file) {

@@ -131,6 +131,8 @@ public class SalmonFileViewModel {
             size.setValue(getSizeText());
             type.setValue(getExtText());
             path.setValue(salmonFile.getPath());
+            Thumbnails.resetCache(salmonFile);
+            image.set(null);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
