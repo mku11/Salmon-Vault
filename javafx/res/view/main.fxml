@@ -82,7 +82,7 @@
                 </MenuItem>
                 <MenuItem id="menu-import-folder" onAction="#onImportFolder" text="Import Folder">
                     <accelerator>
-                        <KeyCodeCombination alt="UP" code="I" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                        <KeyCodeCombination alt="UP" code="I" control="DOWN" meta="UP" shift="DOWN" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
                 <MenuItem id="menu-export" onAction="#onExport" text="Export Files">
@@ -92,7 +92,7 @@
                 </MenuItem>
                 <MenuItem id="menu-export-and-delete" onAction="#onExportAndDelete" text="Export And Delete">
                     <accelerator>
-                        <KeyCodeCombination alt="UP" code="U" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                        <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="DOWN" shortcut="UP" />
                     </accelerator>
                 </MenuItem>
                 <MenuItem id="menu-search" onAction="#onSearch" text="Search">
