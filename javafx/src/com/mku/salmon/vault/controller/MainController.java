@@ -41,6 +41,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -266,7 +267,7 @@ public class MainController {
                 onOpenItem(rowData.getSelectedIndex());
             }
         });
-        table.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+        table.getSelectionModel().getSelectedCells().addListener((ListChangeListener<TablePosition>) c -> {
             onSelectedItems(table.getSelectionModel().getSelectedItems());
         });
         Platform.runLater(() -> table.requestFocus());
