@@ -577,6 +577,8 @@ public class MainController {
             } else if (FileUtils.isText(file.getBaseName())) {
                 startTextEditor(vm);
                 return true;
+            } else {
+                new SalmonDialog(Alert.AlertType.WARNING, "No internal viewers found\n").show();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
