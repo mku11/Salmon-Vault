@@ -22,13 +22,13 @@
       <element id="file-copy" path="$PROJECT_DIR$/build/libs/natives/lib/salmon.dll" />
       <element id="file-copy" path="$PROJECT_DIR$/../../LICENSE" />
       <element id="file-copy" path="$PROJECT_DIR$/README.txt" />
-      <element id="library" level="project" name="Gradle: com.mku.salmon:salmon-core:2.0.0" />
-      <element id="library" level="project" name="Gradle: com.mku.salmon:salmon-fs:2.0.0" />
-      <element id="library" level="project" name="Gradle: com.mku.salmon:salmon-win:2.0.0" />
       <element id="library" level="project" name="Gradle: org.openjfx:javafx-media:17.0.2" />
       <element id="library" level="project" name="Gradle: org.openjfx:javafx-fxml:17.0.2" />
       <element id="library" level="project" name="Gradle: org.openjfx:javafx-controls:17.0.2" />
       <element id="library" level="project" name="Gradle: org.openjfx:javafx-swing:17.0.2" />
+      <element id="library" level="project" name="Gradle: com.mku.salmon:salmon-win:2.1.0" />
+      <element id="library" level="project" name="Gradle: com.mku.salmon:salmon-core:2.1.0" />
+      <element id="library" level="project" name="Gradle: com.mku.salmon:salmon-fs:2.1.0" />
     </root>
   </artifact>
 </component>
