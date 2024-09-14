@@ -497,7 +497,7 @@ public class MainController {
 
         MenuItem item;
 
-        if(fileItem.getSalmonFile().isFile()) {
+        if (fileItem.getSalmonFile().isFile()) {
             item = new MenuItem("View");
             item.setGraphic(getImageIcon("/icons/file_small.png"));
             item.setOnAction((event) -> onOpenItem(fileItemList.indexOf(fileItem)));
@@ -631,7 +631,16 @@ public class MainController {
         {
             WindowUtils.runOnMainThread(() -> {
                 try {
-                    Runtime.getRuntime().exec("rundll32.exe SHELL32.DLL,OpenAs_RunDLL " + files[0].getPath());
+                    String os = System.getProperty("os.name").toUpperCase();
+                    if (os.startsWith("WINDOWS")) { // for windows we let the user choose the app
+                        Runtime.getRuntime().exec("rundll32.exe SHELL32.DLL,OpenAs_RunDLL " + files[0].getPath());
+                    } else {
+                        if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+                            Desktop.getDesktop().edit(new File(files[0].getPath()));
+                        } else if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                            Desktop.getDesktop().open(new File(files[0].getPath()));
+                        }
+                    }
                 } catch (Exception e) {
                     new SalmonDialog(Alert.AlertType.ERROR, "Could not launch external app: " + e).show();
                 }
