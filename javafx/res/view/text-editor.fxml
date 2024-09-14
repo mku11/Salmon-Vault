@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.scene.input.KeyCodeCombination?>
-<GridPane stylesheets="/css/dark.css" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"
+<GridPane stylesheets="/css/dark.css,@../css/menu.css" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"
           xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="com.mku.salmon.vault.controller.TextEditorController"
           minWidth="800" minHeight="600">
@@ -17,11 +17,11 @@
         <GridPane GridPane.hgrow="ALWAYS">
             <MenuBar GridPane.columnIndex="0" GridPane.hgrow="ALWAYS">
                 <Menu text="File">
-                    <MenuItem onAction="#onSave" text="Save (Ctrl+S)"/>
-                    <MenuItem onAction="#onClose" text="Close"/>
+                    <MenuItem id="menu-save-file" onAction="#onSave" text="Save (Ctrl+S)"/>
+                    <MenuItem id="menu-close-file" onAction="#onClose" text="Close"/>
                 </Menu>
                 <Menu text="Operations">
-                    <MenuItem onAction="#onFind" text="Search">
+                    <MenuItem id="menu-find-text" onAction="#onFind" text="Search">
                         <accelerator>
                             <KeyCodeCombination alt="UP" code="F" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
                         </accelerator>

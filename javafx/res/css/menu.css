@@ -165,10 +165,30 @@
       -fx-graphic: none;
   }
 
-
   #menu-about > .label{
       -fx-graphic: url("../icons/info_small.png");
   }
   #menu-about .accelerator-text {
       -fx-graphic: none;
   }
+
+  #menu-save-file > .label{
+      -fx-graphic: url("../icons/save_small.png");
+  }
+  #menu-save-file .accelerator-text {
+      -fx-graphic: none;
+  }
+
+  #menu-close-file > .label{
+      -fx-graphic: url("../icons/cancel_small.png");
+  }
+  #menu-close-file .accelerator-text {
+      -fx-graphic: none;
+  }
+  #menu-find-text > .label{
+      -fx-graphic: url("../icons/search_small.png");
+  }
+  #menu-find-text .accelerator-text {
+      -fx-graphic: none;
+  }
+
