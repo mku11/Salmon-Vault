@@ -25,6 +25,10 @@ JavaFX
 project: https://github.com/openjdk/jfx
 license: GPLv2.0 https://github.com/openjdk/jfx/blob/master/LICENSE
 
+Icons:
+"uxwing icons - https://uxwing.com\n\n" +
+license: https://uxwing.com/license/
+
 Build
 To build the app you will need:  
 1. Intellij IDEA.
