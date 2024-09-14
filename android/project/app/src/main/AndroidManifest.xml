@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.mku.salmon.vault.android"
-    android:versionCode="210"
-    android:versionName="2.1.0">
+    android:versionCode="211"
+    android:versionName="2.1.1">
 
     <application
         android:name="com.mku.salmon.vault.main.SalmonApplication"

@@ -44,7 +44,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuCompat;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -346,13 +345,20 @@ public class SalmonActivity extends AppCompatActivity {
                             .setIcon(R.drawable.export_and_delete_file_small);
                 }
 
-                // view
-                menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.View))
-                        .setIcon(R.drawable.file_small);
-                menu.add(3, ActionType.VIEW_AS_TEXT.ordinal(), 0, getString(R.string.ViewAsText))
-                        .setIcon(R.drawable.text_file_small);
-                menu.add(3, ActionType.VIEW_EXTERNAL.ordinal(), 0, getString(R.string.ViewExternal))
-                        .setIcon(R.drawable.view_external_small);
+                if (adapter.getSelectedFiles().size() == 1) {
+                    if (adapter.getLastSelected().isFile()) {
+                        // view
+                        menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.View))
+                                .setIcon(R.drawable.file_small);
+                        menu.add(3, ActionType.VIEW_AS_TEXT.ordinal(), 0, getString(R.string.ViewAsText))
+                                .setIcon(R.drawable.text_file_small);
+                        menu.add(3, ActionType.VIEW_EXTERNAL.ordinal(), 0, getString(R.string.ViewExternal))
+                                .setIcon(R.drawable.view_external_small);
+                    } else {
+                        menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.Open))
+                                .setIcon(R.drawable.folder_menu_small);
+                    }
+                }
                 menu.add(3, ActionType.PROPERTIES.ordinal(), 0, getString(R.string.Properties))
                         .setIcon(R.drawable.file_properties_small);
                 menu.add(3, ActionType.DISK_USAGE.ordinal(), 0, getString(R.string.DiskUsage))
@@ -489,12 +495,10 @@ public class SalmonActivity extends AppCompatActivity {
                 SalmonDialogs.promptNewFolder();
                 return true;
             case COPY:
-                manager.copySelectedFiles();
-                adapter.setMultiSelect(false, false);
+                onCopy();
                 return true;
             case CUT:
-                manager.cutSelectedFiles();
-                adapter.setMultiSelect(false, false);
+                onCut();
                 return true;
             case DELETE:
                 SalmonDialogs.promptDelete();
@@ -510,7 +514,7 @@ public class SalmonActivity extends AppCompatActivity {
                 break;
 
             case PASTE:
-                manager.pasteSelected();
+                onPaste();
                 return true;
             case SELECT_ALL:
                 selectAll(true);
@@ -555,6 +559,33 @@ public class SalmonActivity extends AppCompatActivity {
         super.onOptionsItemSelected(item);
         return false;
     }
+
+    private void onCopy() {
+        try {
+            manager.copySelectedFiles();
+            adapter.setMultiSelect(false, false);
+        } catch (Exception ex) {
+            SalmonDialog.promptDialog("Error", "Could not select files for copy: " + ex);
+        }
+    }
+
+    private void onCut() {
+        try {
+            manager.cutSelectedFiles();
+            adapter.setMultiSelect(false, false);
+        } catch (Exception ex) {
+            SalmonDialog.promptDialog("Error", "Could not select files for move: " + ex);
+        }
+    }
+
+    private void onPaste() {
+        try {
+            manager.pasteSelected();
+        } catch (Exception ex) {
+            SalmonDialog.promptDialog("Error", "Could not paste files: " + ex);
+        }
+    }
+
 
     private void openWith(SalmonFile salmonFile) {
         java.io.File sharedFile = null;
@@ -602,16 +633,17 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
+
     private void showDiskUsage(SalmonFile[] files) {
 
         Consumer<String> updateBody = SalmonDialog.promptUpdatableDialog("Disk Usage", "");
         AtomicInteger fItems = new AtomicInteger();
         AtomicLong fSize = new AtomicLong();
-        BiConsumer<Integer, Long> updateDiskUsage = (items, size) -> {
-            if (items > fItems.get())
-                updateBody.accept(SalmonDialogs.getFormattedDiskUsage(items, size));
-            fItems.set(items);
-            fSize.set(size);
+        BiConsumer<AtomicInteger, AtomicLong> updateDiskUsage = (items, size) -> {
+            if (items.get() > fItems.get())
+                updateBody.accept(SalmonDialogs.getFormattedDiskUsage(items.get(), size.get()));
+            fItems.set(items.get());
+            fSize.set(size.get());
         };
         manager.getDiskUsage(files, updateDiskUsage);
         updateBody.accept(SalmonDialogs.getFormattedDiskUsage(fItems.get(), fSize.get()));
@@ -742,9 +774,9 @@ public class SalmonActivity extends AppCompatActivity {
                         requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER);
             }
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
-            if(requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES)
+            if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES)
                 callback.accept(files);
-            else if(requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER)
+            else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER)
                 callback.accept(files[0]);
         } else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE) {
             String[] files = ActivityCommon.getFilesFromIntent(this, data);
@@ -922,11 +954,11 @@ public class SalmonActivity extends AppCompatActivity {
     }
 
     private void checkPendingAppAuthorizations() {
-        for(String packageName : SalmonFileProvider.getApps(false)) {
+        for (String packageName : SalmonFileProvider.getApps(false)) {
             promptAuthorizeApp(packageName);
         }
     }
-	
+
     private void promptAuthorizeApp(String packageName) {
         SalmonDialog.promptDialog("External app authorization",
                 "Application with package name:\n"
@@ -938,5 +970,5 @@ public class SalmonActivity extends AppCompatActivity {
                     SalmonFileProvider.authorizeApp(packageName);
                 }, "Cancel", null);
     }
-	
+
 }
