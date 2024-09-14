@@ -34,15 +34,22 @@ import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -59,17 +66,28 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class MediaPlayerController {
-
     @FXML
     public Button playButton;
     @FXML
     public Slider slider;
+
+    @FXML
+    public HBox mediaContainer;
+
+    @FXML
+    public VBox root;
+
+    @FXML
+    public HBox controlContainer;
 
     private Stage stage;
 
     @FXML
     private MediaView mediaView;
     private MediaPlayer mp;
+
+    @FXML
+    private MenuBar menuBar;
 
     private String url;
 
@@ -122,10 +140,14 @@ public class MediaPlayerController {
 
     private SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
 
+    private static double mediaViewMargin = 64;
+
     @FXML
     private void initialize() {
-        setImage(playImage);
         format.setTimeZone(TimeZone.getTimeZone("UTC"));
+        image.setValue(playImage);
+        currtime.setValue(format.format(new Date()));
+        totaltime.setValue(format.format(new Date()));
     }
 
     private Executor executor = Executors.newSingleThreadExecutor();
@@ -151,8 +173,22 @@ public class MediaPlayerController {
         Scene scene = new Scene(root);
         stage.setScene(scene);
         WindowUtils.setDefaultIconPath(SalmonConfig.icon);
-        stage.setMinHeight(600);
-        stage.setMinWidth(800);
+        stage.widthProperty().addListener((observable, oldValue, newValue) -> {
+            controller.mediaView.setFitWidth(newValue.doubleValue()
+                    - controller.root.getPadding().getLeft()
+                    - controller.root.getPadding().getRight()
+                    - mediaViewMargin
+            );
+        });
+        stage.heightProperty().addListener((observable, oldValue, newValue) -> {
+            controller.mediaView.setFitHeight(newValue.doubleValue()
+                    - controller.root.getPadding().getTop()
+                    - controller.root.getPadding().getBottom()
+                    - controller.controlContainer.getHeight()
+                    - controller.menuBar.getHeight()
+                    - mediaViewMargin
+            );
+        });
         stage.show();
         controller.play();
     }
