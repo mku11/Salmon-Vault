@@ -395,4 +395,27 @@ public class SalmonDialogs {
         }
         return true;
     }
+
+    public static void promptExport(boolean delete) {
+        if (!SalmonDialogs.isDriveLoaded())
+            return;
+        String itemsString = "item(s)?";
+        for (SalmonFile file : SalmonVaultManager.getInstance().getSelectedFiles()) {
+            if (file.isDirectory()) {
+                itemsString = "item(s) and subfolders?";
+                break;
+            }
+        }
+        SalmonDialog.promptDialog(
+                "Export", "Export " + (delete?"and delete ":"") + SalmonVaultManager.getInstance().getSelectedFiles().size() + " " + itemsString,
+                "Ok",
+                () -> {
+                    try {
+                        SalmonVaultManager.getInstance().exportSelectedFiles(delete);
+                    } catch (Exception e) {
+                        SalmonDialog.promptDialog("Error", "Could not export files: " + e);
+                    }
+                },
+                "Cancel", null);
+    }
 }

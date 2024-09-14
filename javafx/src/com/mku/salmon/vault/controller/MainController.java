@@ -328,19 +328,11 @@ public class MainController {
     }
 
     public void onExport() {
-        try {
-            manager.exportSelectedFiles(false);
-        } catch (Exception e) {
-            SalmonDialog.promptDialog("Error", "Could not export files: " + e);
-        }
+        SalmonDialogs.promptExport(false);
     }
 
     public void onExportAndDelete() {
-        try {
-            manager.exportSelectedFiles(true);
-        } catch (Exception e) {
-            SalmonDialog.promptDialog("Error", "Could not export and delete files: " + e);
-        }
+        SalmonDialogs.promptExport(true);
     }
 
     public void onNewFolder() {
@@ -543,7 +535,7 @@ public class MainController {
         item.setOnAction((event) -> onExport());
         contextMenu.getItems().add(item);
 
-        item = new MenuItem("Export And Delete (Ctrl+U)");
+        item = new MenuItem("Export And Delete (Ctrl+Shift+E)");
         item.setGraphic(getImageIcon("/icons/export_and_delete_file_small.png"));
         item.setOnAction((event) -> onExportAndDelete());
         contextMenu.getItems().add(item);
