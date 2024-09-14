@@ -46,7 +46,6 @@ public class SalmonConfig {
     public static String getPrivateDir() {
         String fileFolder = null;
         String os = System.getProperty("os.name").toUpperCase();
-        System.out.println("Running on: " + os);
         if (os.startsWith("WINDOWS")) {
             fileFolder = System.getenv("LOCALAPPDATA");
         } else if (os.startsWith("MAC")) {
