@@ -30,11 +30,15 @@ import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.MenuBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -46,6 +50,15 @@ public class ImageViewerController {
 
     public ImageView imageView;
     private Stage stage;
+
+    @FXML
+    private MenuBar menuBar;
+
+    @FXML
+    private VBox root;
+
+    @FXML
+    private HBox imageContainer;
 
     private final ObjectProperty<Image> image = new SimpleObjectProperty<>(this, "image");
     private SalmonImageViewer viewer;
@@ -66,6 +79,8 @@ public class ImageViewerController {
         this.stage = stage;
     }
 
+    private static double imageViewMargin = 64;
+
     public static void openImageViewer(SalmonFileViewModel file, Stage owner) throws IOException {
         FXMLLoader loader = new FXMLLoader(SalmonSettings.getInstance().getClass().getResource("/view/image-viewer.fxml"));
         Parent root = loader.load();
@@ -80,8 +95,21 @@ public class ImageViewerController {
         Scene scene = new Scene(root);
         stage.setScene(scene);
         WindowUtils.setDefaultIconPath(SalmonConfig.icon);
-        stage.setMinHeight(600);
-        stage.setMinWidth(800);
+        stage.widthProperty().addListener((observable, oldValue, newValue) -> {
+            controller.imageView.setFitWidth(newValue.doubleValue()
+                    - controller.root.getPadding().getLeft()
+                    - controller.root.getPadding().getRight()
+                    - imageViewMargin
+            );
+        });
+        stage.heightProperty().addListener((observable, oldValue, newValue) -> {
+            controller.imageView.setFitHeight(newValue.doubleValue()
+                    - controller.root.getPadding().getTop()
+                    - controller.root.getPadding().getBottom()
+                    - controller.menuBar.getHeight()
+                    - imageViewMargin
+            );
+        });
         stage.show();
     }
 

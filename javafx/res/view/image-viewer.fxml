@@ -11,20 +11,21 @@
           fx:controller="com.mku.salmon.vault.controller.ImageViewerController"
           GridPane.hgrow="ALWAYS"
           GridPane.vgrow="ALWAYS"
-          minWidth="800"
-          minHeight="600"
-          stylesheets="/css/dark.css"
->
-    <VBox id="vbox" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+          minHeight="128"
+          minWidth="128"
+          prefWidth="800"
+          prefHeight="600"
+          stylesheets="/css/dark.css">
+    <VBox fx:id="root" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
         <padding>
             <Insets bottom="10" left="10" right="10" top="10"/>
         </padding>
-        <MenuBar>
+        <MenuBar fx:id="menuBar">
             <Menu text="File">
                 <MenuItem text="Close" onAction="#onClose"/>
             </Menu>
         </MenuBar>
-        <HBox id="topContainer" VBox.vgrow="ALWAYS" GridPane.hgrow="ALWAYS" alignment="CENTER" minWidth="100" minHeight="100">
+        <HBox id="imageContainer" VBox.vgrow="ALWAYS" GridPane.hgrow="ALWAYS" alignment="CENTER" minWidth="100" minHeight="100">
             <ImageView fx:id="imageView" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS" >
 
             </ImageView>
