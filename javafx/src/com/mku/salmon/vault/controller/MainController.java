@@ -495,20 +495,29 @@ public class MainController {
     private void openContextMenu(SalmonFileViewModel fileItem) {
         ContextMenu contextMenu = new ContextMenu();
 
-        MenuItem item = new MenuItem("View");
-        item.setGraphic(getImageIcon("/icons/file_small.png"));
-        item.setOnAction((event) -> onOpenItem(fileItemList.indexOf(fileItem)));
-        contextMenu.getItems().add(item);
+        MenuItem item;
 
-        item = new MenuItem("View as Text");
-        item.setGraphic(getImageIcon("/icons/text_file_small.png"));
-        item.setOnAction((event) -> startTextEditor(fileItem));
-        contextMenu.getItems().add(item);
+        if(fileItem.getSalmonFile().isFile()) {
+            item = new MenuItem("View");
+            item.setGraphic(getImageIcon("/icons/file_small.png"));
+            item.setOnAction((event) -> onOpenItem(fileItemList.indexOf(fileItem)));
+            contextMenu.getItems().add(item);
 
-        item = new MenuItem("View External");
-        item.setGraphic(getImageIcon("/icons/view_external_small.png"));
-        item.setOnAction((event) -> promptOpenExternalApp(fileItem.getSalmonFile(), null));
-        contextMenu.getItems().add(item);
+            item = new MenuItem("View as Text");
+            item.setGraphic(getImageIcon("/icons/text_file_small.png"));
+            item.setOnAction((event) -> startTextEditor(fileItem));
+            contextMenu.getItems().add(item);
+
+            item = new MenuItem("View External");
+            item.setGraphic(getImageIcon("/icons/view_external_small.png"));
+            item.setOnAction((event) -> promptOpenExternalApp(fileItem.getSalmonFile(), null));
+            contextMenu.getItems().add(item);
+        } else {
+            item = new MenuItem("Open");
+            item.setGraphic(getImageIcon("/icons/folder_menu_small.png"));
+            item.setOnAction((event) -> onOpenItem(fileItemList.indexOf(fileItem)));
+            contextMenu.getItems().add(item);
+        }
 
         item = new MenuItem("Copy (Ctrl+C)");
         item.setGraphic(getImageIcon("/icons/copy_file_small.png"));
