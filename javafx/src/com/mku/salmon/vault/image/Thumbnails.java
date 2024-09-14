@@ -197,11 +197,11 @@ public class Thumbnails {
 
     private static void addText(Graphics g, String text, int width, int height) {
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Comic sans MS", Font.PLAIN, 128));
+        g.setFont(new Font("Arial", Font.PLAIN, 128));
         FontMetrics fontMetrics = g.getFontMetrics();
         int textWidth = fontMetrics.stringWidth(text);
         int textHeight = fontMetrics.getHeight();
-        g.drawString(text, width - textWidth / 2, height + textHeight / 4);
+        g.drawString(text, width - (int) Math.ceil(textWidth / 2f), height + (int) Math.ceil(textHeight / 2f));
     }
 
     private static void generateThumbnail(ThumbnailTask task) {
