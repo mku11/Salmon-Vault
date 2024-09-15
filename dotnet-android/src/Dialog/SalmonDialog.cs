@@ -31,11 +31,6 @@ using System;
 using AndroidX.AppCompat.App;
 using Android.Views;
 using Activity = Android.App.Activity;
-using Mku.Android.File;
-using Mku.Salmon;
-using Salmon.Vault.Extensions;
-using System.Collections.Generic;
-using System.Linq;
 using Salmon.Vault.DotNetAndroid;
 
 namespace Salmon.Vault.Dialog;
@@ -195,6 +190,7 @@ public class SalmonDialog
         layout.SetPadding(20, 20, 20, 20);
         TextView textView = new TextView(activity);
         textView.SetPadding(20, 20, 20, 20);
+        textView.Text = msg;
         layout.AddView(textView);
         builder.SetPositiveButton(Android.Resource.String.Ok, (sender, e) => { });
 
