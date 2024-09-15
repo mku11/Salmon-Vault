@@ -326,10 +326,10 @@ public class MainViewModel : INotifyPropertyChanged
                 SalmonDialogs.PromptImportFolder("Import Folder", SalmonVaultManager.REQUEST_IMPORT_FOLDER);
                 break;
             case ActionType.EXPORT:
-                manager.ExportSelectedFiles(false);
+                OnExport();
                 break;
             case ActionType.EXPORT_AND_DELETE:
-                manager.ExportSelectedFiles(true);
+                OnExportAndDelete();
                 break;
             case ActionType.SEARCH:
                 SalmonDialogs.PromptSearch();
@@ -497,6 +497,16 @@ public class MainViewModel : INotifyPropertyChanged
         };
         manager.GetDiskUsage(files, updateDiskUsage);
         updateBody(SalmonDialogs.GetFormattedDiskUsage(fItems, fSize));
+    }
+
+    public void OnExport()
+    {
+        SalmonDialogs.PromptExport(false);
+    }
+
+    public void OnExportAndDelete()
+    {
+        SalmonDialogs.PromptExport(true);
     }
 
     internal void OnCopy()

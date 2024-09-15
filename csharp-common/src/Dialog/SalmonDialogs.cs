@@ -34,6 +34,7 @@ using Salmon.Vault.Utils;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Salmon.Vault.Dialog;
 
@@ -477,5 +478,36 @@ public class SalmonDialogs
             return false;
         }
         return true;
+    }
+
+
+    public static void PromptExport(bool delete)
+    {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
+        string itemsString = "item(s)?";
+        foreach (SalmonFile file in SalmonVaultManager.Instance.SelectedFiles)
+        {
+            if (file.IsDirectory)
+            {
+                itemsString = "item(s) and subfolders?";
+                break;
+            }
+        }
+        SalmonDialog.PromptDialog(
+                "Export", "Export " + (delete ? "and delete " : "") + SalmonVaultManager.Instance.SelectedFiles.Count + " " + itemsString,
+                "Ok",
+                () =>
+                {
+                    try
+                    {
+                        SalmonVaultManager.Instance.ExportSelectedFiles(delete);
+                    }
+                    catch (Exception e)
+                    {
+                        SalmonDialog.PromptDialog("Error", "Could not export files: " + e);
+                    }
+                },
+                "Cancel", null);
     }
 }
