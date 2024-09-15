@@ -212,7 +212,10 @@ public class SalmonDialog : System.Windows.Window
             SalmonDialog alert = new SalmonDialog("", ButtonType.Ok, ButtonType.Cancel);
             alert.Title = title;
             Label msgText = new Label();
-            msgText.Content = msg;
+            TextBlock block = new TextBlock();
+            msgText.Content = block;
+            block.TextWrapping = TextWrapping.Wrap;
+            block.Text = msg;
             Control valueText;
             if (isPassword)
             {
@@ -318,8 +321,14 @@ public class SalmonDialog : System.Windows.Window
             if (title != null)
                 alert.Title = title;
             Label ContentText = new Label();
-            ContentText.Content = body;
+            TextBlock block = new TextBlock();
+            ContentText.Content = block;
+            block.TextWrapping = TextWrapping.Wrap;
+            block.Text = body;
             alert.Content = ContentText;
+            alert.MaxWidth = 800;
+            alert.MaxHeight = 400;
+            alert.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             alert.ShowDialog();
         });
     }
@@ -340,9 +349,14 @@ public class SalmonDialog : System.Windows.Window
         if (title != null)
             alert.Title = title;
         Label ContentText = new Label();
-        ContentText.Content = body;
+        TextBlock block = new TextBlock();
+        ContentText.Content = block;
+        block.TextWrapping = TextWrapping.Wrap;
+        block.Text = body;
         alert.Content = ContentText;
+        alert.MaxWidth = 800;
+        alert.MaxHeight = 400;
         alert.ShowAsync();
-        return (body)=>WindowUtils.RunOnMainThread(()=> ContentText.Content = body);
+        return (body)=>WindowUtils.RunOnMainThread(()=> block.Text = body);
     }
 }
