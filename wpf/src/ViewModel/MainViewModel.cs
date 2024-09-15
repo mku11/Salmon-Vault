@@ -244,11 +244,14 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void UpdateFileViewModels()
     {
-        if (manager.FileItemList == null)
-            FileItemList = new ObservableCollection<SalmonFileViewModel>();
-        else
-            FileItemList = new ObservableCollection<SalmonFileViewModel>(manager.FileItemList
-                .Select(x => new SalmonFileViewModel(x)));
+        WindowUtils.RunOnMainThread(() =>
+        {
+            if (manager.FileItemList == null)
+                FileItemList = new ObservableCollection<SalmonFileViewModel>();
+            else
+                FileItemList = new ObservableCollection<SalmonFileViewModel>(manager.FileItemList
+                    .Select(x => new SalmonFileViewModel(x)));
+        });
     }
 
     private SalmonFileViewModel GetViewModel(SalmonFile item)
