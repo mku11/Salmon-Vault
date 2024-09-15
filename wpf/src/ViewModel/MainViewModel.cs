@@ -476,6 +476,22 @@ public class MainViewModel : INotifyPropertyChanged
             SalmonDialogs.ShowProperties(viewModel.GetSalmonFile());
     }
 
+    internal void ShowDiskUsage(List<SalmonFileViewModel> viewModels)
+    {
+        SalmonFile[] files = viewModels.Select(x => x.GetSalmonFile()).ToArray();
+        Action<string> updateBody = SalmonDialog.PromptUpdatableDialog("Disk Usage", "");
+        int fItems = 0;
+        long fSize = 0;
+        Action<int, long> updateDiskUsage = (items, size) => {
+            if (items > fItems)
+                updateBody(SalmonDialogs.GetFormattedDiskUsage(items, size));
+            fItems = items;
+            fSize = size;
+        };
+        manager.GetDiskUsage(files, updateDiskUsage);
+        updateBody(SalmonDialogs.GetFormattedDiskUsage(fItems, fSize));
+    }
+
     internal void OnCopy()
     {
         manager.CopySelectedFiles();

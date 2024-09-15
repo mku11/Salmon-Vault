@@ -171,9 +171,7 @@ public class SalmonDialogs {
     }
 
     public static String getFormattedDiskUsage(int items, long size) {
-        DecimalFormat format = new DecimalFormat();
-        format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.US));
-        return "Total items: " + format.format(items) + "\n"
+        return "Total items: " + items + "\n"
                 + "Size on disk: " + ByteUtils.getBytes(size, 2);
     }
 

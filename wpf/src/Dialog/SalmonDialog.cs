@@ -29,7 +29,6 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using static System.Net.Mime.MediaTypeNames;
 using Label = System.Windows.Controls.Label;
 using Orientation = System.Windows.Controls.Orientation;
 
@@ -199,6 +198,11 @@ public class SalmonDialog : System.Windows.Window
         ShowDialog();
     }
 
+    public void ShowAsync()
+    {
+        base.Show();
+    }
+
     public static void PromptEdit(string title, string msg, Action<string, bool> OnEdit,
         string value = "", bool isFileName = false, bool readOnly = false, bool isPassword = false,
         string option = null)
@@ -326,5 +330,19 @@ public class SalmonDialog : System.Windows.Window
         {
             PromptDialog("", body, "Ok");
         });
+    }
+    
+    public static Action<string> PromptUpdatableDialog(string title, string body)
+    {
+        SalmonDialog alert = new SalmonDialog(body, ButtonType.Ok);
+        Button btnOk = alert.GetButton(ButtonType.Ok);
+        btnOk.Content = "Ok";
+        if (title != null)
+            alert.Title = title;
+        Label ContentText = new Label();
+        ContentText.Content = body;
+        alert.Content = ContentText;
+        alert.ShowAsync();
+        return (body)=>WindowUtils.RunOnMainThread(()=> ContentText.Content = body);
     }
 }

@@ -202,7 +202,7 @@ public class SalmonDialogs
     public static string GetFormattedDiskUsage(int items, long size)
     {
         return "Total items: " + items + "\n"
-                + "Size on disk: " + string.Format("{F2}", ByteUtils.GetBytes(size, 2));
+                + "Size on disk: " + ByteUtils.GetBytes(size, 2);
     }
 
     internal static void PromptSequenceReset(Action<bool> ResetSequencer)

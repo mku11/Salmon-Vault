@@ -314,6 +314,11 @@
                                 <Image Source="/Icons/info_small.png"/>
                             </MenuItem.Icon>
                         </MenuItem>
+                        <MenuItem Header="Disk Usage" Click="MenuItem_DiskUsage" >
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/disk_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.Columns>

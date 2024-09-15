@@ -194,6 +194,12 @@ namespace Salmon.Vault.View
                 ViewModel.ShowProperties((SalmonFileViewModel)DataGrid.SelectedItem);
         }
 
+        private void MenuItem_DiskUsage(object sender, RoutedEventArgs e)
+        {
+            if (DataGrid.SelectedItem != null)
+                ViewModel.ShowDiskUsage(DataGrid.SelectedItems.Cast<SalmonFileViewModel>().ToList());
+        }
+
         private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (DataGrid.SelectedItem != null)
