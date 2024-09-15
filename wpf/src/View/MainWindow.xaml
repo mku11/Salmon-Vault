@@ -327,7 +327,7 @@
                     <DataGridTemplateColumn Header="" Width="64" IsReadOnly="True">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Grid Width="42" Height="42" Margin="2">
+                                <Grid Width="42" Height="42" Margin="4">
                                     <Image Source="{Binding Image, Mode=OneWay, IsAsync=True}" Width="42" Height="42"/>
                                     <Rectangle Width="42" Height="42" Opacity="0.5">
                                         <Rectangle.Fill>
