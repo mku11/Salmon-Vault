@@ -517,7 +517,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            SalmonDialog.PromptDialog("Error", "Could not select files for copy: " + ex);
+            SalmonDialog.PromptDialog("Error", "Could not select files for copy: " + ex.Message);
         }
     }
 
@@ -529,7 +529,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            SalmonDialog.PromptDialog("Error", "Could not select files for move: " + ex);
+            SalmonDialog.PromptDialog("Error", "Could not select files for move: " + ex.Message);
         }
     }
 
@@ -541,7 +541,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            SalmonDialog.PromptDialog("Error", "Could not paste files: " + ex);
+            SalmonDialog.PromptDialog("Error", "Could not paste files: " + ex.Message);
         }
     }
 
