@@ -225,10 +225,28 @@ public class SalmonDialogs
     {
         if (!SalmonDialogs.IsDriveLoaded())
             return;
+        string itemsString = "item(s)?";
+        foreach (SalmonFile file in SalmonVaultManager.Instance.SelectedFiles)
+        {
+            if (file.IsDirectory)
+            {
+                itemsString = "item(s) and subfolders?";
+                break;
+            }
+        }
         SalmonDialog.PromptDialog(
-                "Delete", "Delete " + SalmonVaultManager.Instance.SelectedFiles.Count + " item(s)?",
+                "Delete", "Delete " + SalmonVaultManager.Instance.SelectedFiles.Count + " " + itemsString,
                 "Ok",
-                () => SalmonVaultManager.Instance.DeleteSelectedFiles(),
+                () => {
+                    try
+                    {
+                        SalmonVaultManager.Instance.DeleteSelectedFiles();
+                    }
+                    catch (Exception e)
+                    {
+                        SalmonDialog.PromptDialog("Error", "Could not delete files: " + e);
+                    }
+                },
                 "Cancel", null);
     }
 
