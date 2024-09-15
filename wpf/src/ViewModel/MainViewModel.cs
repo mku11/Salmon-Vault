@@ -306,6 +306,9 @@ public class MainViewModel : INotifyPropertyChanged
     {
         switch (actionType)
         {
+            case ActionType.VIEW:
+                manager.OpenItem(SelectedItem.GetSalmonFile());
+                break;
             case ActionType.REFRESH:
                 manager.Refresh();
                 break;

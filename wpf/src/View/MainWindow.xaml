@@ -27,7 +27,9 @@
         <KeyBinding Command="{Binding ClickCommand}"
                     CommandParameter="{x:Static viewmodel:ActionType.CLOSE_VAULT}" Key="L" Modifiers="Ctrl"  />
         <KeyBinding Command="{Binding ClickCommand}"
-                    CommandParameter="{x:Static viewmodel:ActionType.IMPORT}" Key="I" Modifiers="Ctrl"  />
+                    CommandParameter="{x:Static viewmodel:ActionType.IMPORT_FILES}" Key="I" Modifiers="Ctrl"  />
+        <KeyBinding Command="{Binding ClickCommand}"
+                    CommandParameter="{x:Static viewmodel:ActionType.IMPORT_FOLDER}" Key="I" Modifiers="Ctrl+Shift"  />
         <KeyBinding Command="{Binding ClickCommand}"
                     CommandParameter="{x:Static viewmodel:ActionType.EXPORT}" Key="E" Modifiers="Ctrl"  />
         <KeyBinding Command="{Binding ClickCommand}"
@@ -170,7 +172,7 @@
                             <Image Source="/Icons/import_file_small.png"/>
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Import Folder"  InputGestureText="Ctrl+I"
+                    <MenuItem Header="Import Folder"  InputGestureText="Ctrl+Shift+I"
                         Command="{Binding ClickCommand}"
                             CommandParameter="{x:Static viewmodel:ActionType.IMPORT_FOLDER}">
                         <MenuItem.Icon>
@@ -304,7 +306,7 @@
                                 <Image Source="/Icons/export_file_small.png"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Export And Delete" Click="MenuItem_ExportAndDelete" InputGestureText="Ctrl-U">
+                        <MenuItem Header="Export And Delete" Click="MenuItem_ExportAndDelete" InputGestureText="Ctrl-Shift-E">
                             <MenuItem.Icon>
                                 <Image Source="/Icons/export_and_delete_file_small.png"/>
                             </MenuItem.Icon>
