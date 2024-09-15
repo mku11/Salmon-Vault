@@ -221,7 +221,7 @@ public class Thumbnails
         }
     }
 
-    private static void ResetCache()
+    public static void ResetCache()
     {
         int reduceSize = 0;
         List<SalmonFile> keysToRemove = new List<SalmonFile>();
@@ -239,6 +239,16 @@ public class Thumbnails
             cache.Remove(key, out BitmapImage bitmap);
             if (bitmap != null)
                 cacheSize -= (int)(bitmap.Width * bitmap.Height * 4);
+        }
+    }
+
+    public static void ResetCache(SalmonFile file)
+    {
+        if (cache.ContainsKey(file))
+        {
+            BitmapImage image = cache[file];
+            cacheSize -= (int) (image.Width * image.Height * 4);
+            cache.Remove(file, out _);
         }
     }
 

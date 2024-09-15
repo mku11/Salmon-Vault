@@ -175,7 +175,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         }
         set
         {
-            if (value != null)
+            if (_imageSource != value)
             {
                 _imageSource = value;
                 NotifyProperty("Image");
@@ -199,7 +199,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         }
         set
         {
-            if (value != null)
+            if (_tintColor != value)
             {
                 _tintColor = value;
                 NotifyProperty("TintColor");
@@ -268,6 +268,10 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         SizeText = GetSizeText();
         Type = GetExtText();
         Path = salmonFile.Path;
+        Ext = GetExtText();
+        Thumbnails.ResetCache(salmonFile);
+        Image = null;
+        TintColor = null;
     }
 
     private string GetExtText()
