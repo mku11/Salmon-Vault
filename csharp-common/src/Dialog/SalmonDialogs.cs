@@ -237,7 +237,8 @@ public class SalmonDialogs
         SalmonDialog.PromptDialog(
                 "Delete", "Delete " + SalmonVaultManager.Instance.SelectedFiles.Count + " " + itemsString,
                 "Ok",
-                () => {
+                () =>
+                {
                     try
                     {
                         SalmonVaultManager.Instance.DeleteSelectedFiles();
@@ -347,17 +348,24 @@ public class SalmonDialogs
         ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFiles(text,
                     null, SalmonSettings.GetInstance().LastImportDir, (obj) =>
                     {
-                        IRealFile[] filesToImport = (IRealFile[])obj;
-                        if (filesToImport.Length == 0)
-                            return;
-                        IRealFile parent = filesToImport[0].Parent;
-                        if (parent != null && parent.Path != null)
-                            SalmonSettings.GetInstance().LastImportDir = parent.Path;
-                        SalmonVaultManager.Instance.ImportFiles(filesToImport,
-                            SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (SalmonFile[] importedFiles) =>
-                            {
-                                SalmonVaultManager.Instance.Refresh();
-                            });
+                        try
+                        {
+                            IRealFile[] filesToImport = (IRealFile[])obj;
+                            if (filesToImport.Length == 0)
+                                return;
+                            IRealFile parent = filesToImport[0].Parent;
+                            if (parent != null && parent.Path != null)
+                                SalmonSettings.GetInstance().LastImportDir = parent.Path;
+                            SalmonVaultManager.Instance.ImportFiles(filesToImport,
+                                SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (SalmonFile[] importedFiles) =>
+                                {
+                                    SalmonVaultManager.Instance.Refresh();
+                                });
+                        }
+                        catch (Exception e)
+                        {
+                            SalmonDialog.PromptDialog("Error", "Could not import files: " + e);
+                        }
                     }, requestCode);
     }
 
