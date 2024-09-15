@@ -297,6 +297,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void CopySelectedFiles()
     {
+        if (IsJobRunning)
+            throw new Exception("Another Job is Running");
         FileManagerMode = Mode.Copy;
         copyFiles = SelectedFiles.ToArray();
         SetTaskRunning(true, false);
@@ -305,6 +307,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void CutSelectedFiles()
     {
+        if (IsJobRunning)
+            throw new Exception("Another Job is Running");
         FileManagerMode = Mode.Move;
         copyFiles = SelectedFiles.ToArray();
         SetTaskRunning(true, false);
@@ -408,6 +412,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void PasteSelected()
     {
+        if (IsJobRunning)
+            throw new Exception("Another Job is Running");
         CopySelectedFiles(FileManagerMode == Mode.Move);
     }
 
@@ -468,6 +474,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         if (files == null)
             return;
+        if (IsJobRunning)
+            throw new Exception("Another Job is Running");
         ThreadPool.QueueUserWorkItem(state =>
         {
             FileProgress = 0;
@@ -533,6 +541,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         if (files == null)
             return;
+        if (IsJobRunning)
+            throw new Exception("Another Job is Running");
         ThreadPool.QueueUserWorkItem(state =>
         {
             FileProgress = 0;
@@ -714,6 +724,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void ExportFiles(SalmonFile[] items, Action<IRealFile[]> OnFinished, bool deleteSource)
     {
+        if (IsJobRunning)
+            throw new Exception("Another Job is Running");
         ThreadPool.QueueUserWorkItem(state =>
         {
             FileProgress = 0;
@@ -779,6 +791,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
     public void ImportFiles(IRealFile[] fileNames, SalmonFile importDir, bool deleteSource,
                             Action<SalmonFile[]> OnFinished)
     {
+        if (IsJobRunning)
+            throw new Exception("Another Job is Running");
         ThreadPool.QueueUserWorkItem(state =>
         {
             FileProgress = 0;

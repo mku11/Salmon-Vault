@@ -493,6 +493,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
     private void copyFiles(SalmonFile[] files, SalmonFile dir, boolean move) {
         if (files == null)
             return;
+		if(isJobRunning())
+            throw new RuntimeException("Another job is running");
         executor.execute(() ->
         {
             setFileProgress(0);
