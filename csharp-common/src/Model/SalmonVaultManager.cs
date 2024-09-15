@@ -939,12 +939,14 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         Task.Run(() =>
         {
-            GetDiskUsage(selectedFiles, updateUsage, 0, 0);
+            int items = 0;
+            long size = 0;
+            GetDiskUsage(selectedFiles, updateUsage, ref items, ref size);
         });
     }
 
     private long GetDiskUsage(SalmonFile[] selectedFiles, Action<int, long> updateUsage,
-                                     int totalItems, long totalSize)
+                                     ref int totalItems, ref long totalSize)
     {
         foreach (SalmonFile file in selectedFiles)
         {
@@ -955,7 +957,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             }
             else
             {
-                GetDiskUsage(file.ListFiles(), updateUsage, totalItems, totalSize);
+                GetDiskUsage(file.ListFiles(), updateUsage, ref totalItems, ref totalSize);
             }
             if (updateUsage != null)
                 updateUsage(totalItems, totalSize);
