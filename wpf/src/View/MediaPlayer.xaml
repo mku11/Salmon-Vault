@@ -7,6 +7,7 @@
         xmlns:viewmodel="clr-namespace:Salmon.Vault.ViewModel" 
         xmlns:ffme="clr-namespace:Unosquare.FFME;assembly=ffme.win"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
         Title="Media Player" Height="450" Width="800"
         Background="{StaticResource SalmonBackground}">
     <Window.DataContext>

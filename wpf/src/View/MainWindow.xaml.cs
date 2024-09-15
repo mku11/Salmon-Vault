@@ -31,6 +31,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Salmon.Vault.Settings;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace Salmon.Vault.View
 {
@@ -95,30 +96,35 @@ namespace Salmon.Vault.View
         public void OpenImageViewer(SalmonFileViewModel viewModel)
         {
             ImageViewer imageViewer = new ImageViewer(viewModel);
+            imageViewer.Owner = this;
             imageViewer.ShowDialog();
         }
 
         public void OpenTextEditor(SalmonFileViewModel viewModel)
         {
             TextEditor textEditor = new TextEditor(viewModel);
+            textEditor.Owner = this;
             textEditor.ShowDialog();
         }
 
         public void OpenMediaPlayer(SalmonFileViewModel viewModel)
         {
             MediaPlayer mediaPlayer = new MediaPlayer(viewModel);
+            mediaPlayer.Owner = this;
             mediaPlayer.ShowDialog();
         }
 
         public void OpenContentViewer(SalmonFileViewModel viewModel)
         {
             ContentViewer contentViewer = new ContentViewer(viewModel);
+            contentViewer.Owner = this;
             contentViewer.ShowDialog();
         }
 
-        public static void OpenSettings()
+        public void OpenSettings()
         {
             SettingsViewer settings = new SettingsViewer();
+            settings.Owner = this;
             settings.ShowDialog();
 
             SalmonSettings.GetInstance().AesType = settings.ViewModel.AesTypeSelected;
