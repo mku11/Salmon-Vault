@@ -30,11 +30,13 @@ namespace Salmon.Vault.WPF;
 
 public partial class App : Application
 {
+    public MainWindow MainWindow { get; set; }
+
     private void Application_Startup(object sender, StartupEventArgs e)
     {
         SetupServices();
-        MainWindow wnd = new MainWindow();
-        wnd.Show();
+        MainWindow = new MainWindow();
+        MainWindow.Show();
     }
 
     private void SetupServices()

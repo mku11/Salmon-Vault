@@ -171,6 +171,7 @@ public class SalmonDialog : System.Windows.Window
         stackPanel.Children.Add(buttonsLayout);
         base.Content = stackPanel;
         SizeToContent = SizeToContent.WidthAndHeight;
+        SetDimensions(this);
     }
 
     public Button GetButton(ButtonType buttonType)
@@ -181,7 +182,10 @@ public class SalmonDialog : System.Windows.Window
     private void SetTextContent(string content)
     {
         Label text = new Label();
-        text.Content = content;
+        TextBlock block = new TextBlock();
+        block.TextWrapping = TextWrapping.Wrap;
+        text.Content = block;
+        block.Text = content;
         Content = text;
     }
 
@@ -243,8 +247,6 @@ public class SalmonDialog : System.Windows.Window
                 panel.Children.Add(optionCheckBox);
             }
             alert.Content = panel;
-            alert.MinWidth = 280;
-            alert.MinHeight = 150;
 
             Button btOk = alert.GetButton(ButtonType.Ok);
             Action<object, RoutedEventArgs> OnOk = (sender, e) =>
@@ -281,6 +283,9 @@ public class SalmonDialog : System.Windows.Window
             {
                 (valueText as TextBox).SelectAll();
             }
+            SetDimensions(alert);
+            alert.MinWidth = 280;
+            alert.MinHeight = 150;
             alert.ShowDialog();
         });
     }
@@ -326,9 +331,7 @@ public class SalmonDialog : System.Windows.Window
             block.TextWrapping = TextWrapping.Wrap;
             block.Text = body;
             alert.Content = ContentText;
-            alert.MaxWidth = 800;
-            alert.MaxHeight = 400;
-            alert.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            SetDimensions(alert);
             alert.ShowDialog();
         });
     }
@@ -354,9 +357,16 @@ public class SalmonDialog : System.Windows.Window
         block.TextWrapping = TextWrapping.Wrap;
         block.Text = body;
         alert.Content = ContentText;
-        alert.MaxWidth = 800;
-        alert.MaxHeight = 400;
+        SetDimensions(alert);
         alert.ShowAsync();
         return (body)=>WindowUtils.RunOnMainThread(()=> block.Text = body);
+    }
+
+    private static void SetDimensions(SalmonDialog alert)
+    {
+        alert.MaxWidth = 600;
+        alert.MaxHeight = 300;
+        alert.Owner = App.Current.MainWindow;
+        alert.WindowStartupLocation = WindowStartupLocation.CenterOwner;
     }
 }
