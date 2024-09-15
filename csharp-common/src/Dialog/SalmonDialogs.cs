@@ -376,17 +376,31 @@ public class SalmonDialogs
         ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFolder(text,
                     SalmonSettings.GetInstance().LastImportDir, (obj) =>
                     {
-                        IRealFile folder = (IRealFile)obj;
-                        if (folder == null)
-                            return;
-                        IRealFile parent = folder.Parent;
-                        if (parent != null && parent.Path != null)
-                            SalmonSettings.GetInstance().LastImportDir = parent.Path;
-                        SalmonVaultManager.Instance.ImportFiles(new IRealFile[] { folder },
-                            SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (SalmonFile[] importedFiles) =>
+                        try
+                        {
+                            IRealFile folder = (IRealFile)obj;
+                            if (folder == null)
+                                return;
+                            if (SalmonSettings.GetInstance().DeleteAfterImport)
                             {
-                                SalmonVaultManager.Instance.Refresh();
-                            });
+                                IRealFile parent = folder.Parent;
+                                if (parent != null && parent.Path != null)
+                                    SalmonSettings.GetInstance().LastImportDir = parent.Path;
+                            }
+                            else
+                            {
+                                SalmonSettings.GetInstance().LastImportDir = folder.Path;
+                            }
+                            SalmonVaultManager.Instance.ImportFiles(new IRealFile[] { folder },
+                                SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (SalmonFile[] importedFiles) =>
+                                {
+                                    SalmonVaultManager.Instance.Refresh();
+                                });
+                        }
+                        catch (Exception e)
+                        {
+                            SalmonDialog.PromptDialog("Error", "Could not import folder: " + e);
+                        }
                     }, requestCode);
     }
 
