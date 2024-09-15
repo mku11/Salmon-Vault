@@ -281,6 +281,11 @@
                                 <Image Source="/Icons/text_file_small.png"/>
                             </MenuItem.Icon>
                         </MenuItem>
+                        <MenuItem Header="View External" Click="MenuItem_ViewExternal" >
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/view_external_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
                         <MenuItem Header="Copy" Click="MenuItem_Copy" InputGestureText="Ctrl-C">
                             <MenuItem.Icon>
                                 <Image Source="/Icons/copy_file_small.png"/>

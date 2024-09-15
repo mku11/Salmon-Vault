@@ -157,6 +157,11 @@ namespace Salmon.Vault.View
         {
             ViewModel.StartTextEditor((SalmonFileViewModel)DataGrid.SelectedItems[DataGrid.SelectedItems.Count - 1]);
         }
+        private void MenuItem_ViewExternal(object sender, RoutedEventArgs e)
+        {
+            ViewModel.PromptOpenExternalApp(((SalmonFileViewModel)DataGrid.SelectedItems[DataGrid.SelectedItems.Count - 1]).GetSalmonFile(), null);
+        }
+
 
         private void MenuItem_Copy(object sender, RoutedEventArgs e)
         {
@@ -191,7 +196,7 @@ namespace Salmon.Vault.View
         private void MenuItem_Properties(object sender, RoutedEventArgs e)
         {
             if (DataGrid.SelectedItem != null)
-                ViewModel.ShowProperties((SalmonFileViewModel)DataGrid.SelectedItems[DataGrid.SelectedItems.Count-1]);
+                ViewModel.ShowProperties((SalmonFileViewModel)DataGrid.SelectedItems[DataGrid.SelectedItems.Count - 1]);
         }
 
         private void MenuItem_DiskUsage(object sender, RoutedEventArgs e)

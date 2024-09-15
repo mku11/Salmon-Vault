@@ -36,6 +36,7 @@ using System.Windows.Input;
 using System.Runtime.CompilerServices;
 using Salmon.Vault.Model.Win;
 using Mku.Salmon;
+using System.Diagnostics;
 
 namespace Salmon.Vault.ViewModel;
 
@@ -454,6 +455,10 @@ public class MainViewModel : INotifyPropertyChanged
                 StartTextEditor(vm);
                 return true;
             }
+            else
+            {
+                PromptOpenExternalApp(file, "No internal viewers found.");
+            }
         }
         catch (Exception ex)
         {
@@ -461,6 +466,48 @@ public class MainViewModel : INotifyPropertyChanged
             SalmonDialog.PromptDialog("Error", "Could not open: " + ex.Message);
         }
         return false;
+    }
+
+
+    public void PromptOpenExternalApp(SalmonFile file, string msg)
+    {
+        SalmonDialog.PromptDialog("Open External", (msg != null ? msg + " " : "") + "Press Ok to export the file and " +
+                        "open it with an external app. This file will be placed in the export folder and will also be " +
+                        "visible to all other apps in this device. If you edit this file externally you will have to " +
+                        "import the file manually back into the vault.\n",
+                "Ok", () =>
+                {
+                    try
+                    {
+                        OpenWith(file);
+                    }
+                    catch (Exception e)
+                    {
+                        new SalmonDialog("Could not open file: " + e).Show();
+                    }
+                }, "Cancel", null);
+    }
+
+    private void OpenWith(SalmonFile salmonFile)
+    {
+        if (manager.IsJobRunning)
+            throw new Exception("Another job is running");
+        manager.ExportFiles(new SalmonFile[] { salmonFile }, (files)=>
+        {
+            WindowUtils.RunOnMainThread(()=> {
+                try
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo();
+                    psi.FileName = files[0].Path;
+                    psi.UseShellExecute = true;
+                    Process.Start(psi);
+                }
+                catch (Exception e)
+                {
+                    new SalmonDialog("Could not launch external app: " + e.Message).Show();
+                }
+            });
+        }, false);
     }
 
     public void OnShow()
