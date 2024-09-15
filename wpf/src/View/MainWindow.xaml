@@ -33,7 +33,7 @@
         <KeyBinding Command="{Binding ClickCommand}"
                     CommandParameter="{x:Static viewmodel:ActionType.EXPORT}" Key="E" Modifiers="Ctrl"  />
         <KeyBinding Command="{Binding ClickCommand}"
-                    CommandParameter="{x:Static viewmodel:ActionType.EXPORT_AND_DELETE}" Key="U" Modifiers="Ctrl"  />
+                    CommandParameter="{x:Static viewmodel:ActionType.EXPORT_AND_DELETE}" Key="E" Modifiers="Ctrl+Shift"  />
         <KeyBinding Command="{Binding ClickCommand}"
                     CommandParameter="{x:Static viewmodel:ActionType.COPY}" Key="C" Modifiers="Ctrl"  />
         <KeyBinding Command="{Binding ClickCommand}"
