@@ -345,20 +345,19 @@ public class SalmonActivity extends AppCompatActivity {
                             .setIcon(R.drawable.export_and_delete_file_small);
                 }
 
-                if (adapter.getSelectedFiles().size() == 1) {
-                    if (adapter.getLastSelected().isFile()) {
-                        // view
-                        menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.View))
-                                .setIcon(R.drawable.file_small);
-                        menu.add(3, ActionType.VIEW_AS_TEXT.ordinal(), 0, getString(R.string.ViewAsText))
-                                .setIcon(R.drawable.text_file_small);
-                        menu.add(3, ActionType.VIEW_EXTERNAL.ordinal(), 0, getString(R.string.ViewExternal))
-                                .setIcon(R.drawable.view_external_small);
-                    } else {
-                        menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.Open))
-                                .setIcon(R.drawable.folder_menu_small);
-                    }
-                }
+                if (adapter.getLastSelected().isFile()) {
+                    // view
+                    menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.View))
+                            .setIcon(R.drawable.file_small);
+                    menu.add(3, ActionType.VIEW_AS_TEXT.ordinal(), 0, getString(R.string.ViewAsText))
+                            .setIcon(R.drawable.text_file_small);
+                    menu.add(3, ActionType.VIEW_EXTERNAL.ordinal(), 0, getString(R.string.ViewExternal))
+                            .setIcon(R.drawable.view_external_small);
+                } else {
+                    menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.Open))
+                            .setIcon(R.drawable.folder_menu_small);
+				}
+					
                 menu.add(3, ActionType.PROPERTIES.ordinal(), 0, getString(R.string.Properties))
                         .setIcon(R.drawable.file_properties_small);
                 menu.add(3, ActionType.DISK_USAGE.ordinal(), 0, getString(R.string.DiskUsage))
