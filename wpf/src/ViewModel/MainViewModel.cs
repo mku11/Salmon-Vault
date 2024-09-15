@@ -335,16 +335,16 @@ public class MainViewModel : INotifyPropertyChanged
                 SalmonDialogs.PromptNewFolder();
                 break;
             case ActionType.COPY:
-                manager.CopySelectedFiles();
+                OnCopy();
                 break;
             case ActionType.CUT:
-                manager.CutSelectedFiles();
+                OnCut();
                 break;
             case ActionType.DELETE:
-                SalmonDialogs.PromptDelete();
+                OnDelete();
                 break;
             case ActionType.PASTE:
-                manager.PasteSelected();
+                OnPaste();
                 break;
             case ActionType.ABOUT:
                 SalmonDialogs.PromptAbout();
@@ -485,7 +485,8 @@ public class MainViewModel : INotifyPropertyChanged
         Action<string> updateBody = SalmonDialog.PromptUpdatableDialog("Disk Usage", "");
         int fItems = 0;
         long fSize = 0;
-        Action<int, long> updateDiskUsage = (items, size) => {
+        Action<int, long> updateDiskUsage = (items, size) =>
+        {
             if (items > fItems)
                 updateBody(SalmonDialogs.GetFormattedDiskUsage(items, size));
             fItems = items;
@@ -497,12 +498,38 @@ public class MainViewModel : INotifyPropertyChanged
 
     internal void OnCopy()
     {
-        manager.CopySelectedFiles();
+        try
+        {
+            manager.CopySelectedFiles();
+        }
+        catch (Exception ex)
+        {
+            SalmonDialog.PromptDialog("Error", "Could not select files for copy: " + ex);
+        }
     }
 
     internal void OnCut()
     {
-        manager.CutSelectedFiles();
+        try
+        {
+            manager.CutSelectedFiles();
+        }
+        catch (Exception ex)
+        {
+            SalmonDialog.PromptDialog("Error", "Could not select files for move: " + ex);
+        }
+    }
+
+    internal void OnPaste()
+    {
+        try
+        {
+            manager.PasteSelected();
+        }
+        catch (Exception ex)
+        {
+            SalmonDialog.PromptDialog("Error", "Could not paste files: " + ex);
+        }
     }
 
     internal void Refresh()
@@ -516,7 +543,7 @@ public class MainViewModel : INotifyPropertyChanged
             SalmonDialogs.PromptRenameFile(selectedItem.GetSalmonFile());
     }
 
-    internal void PromptDelete()
+    internal void OnDelete()
     {
         SalmonDialogs.PromptDelete();
     }

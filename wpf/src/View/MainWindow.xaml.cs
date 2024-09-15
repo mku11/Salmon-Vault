@@ -170,7 +170,7 @@ namespace Salmon.Vault.View
 
         private void MenuItem_Delete(object sender, RoutedEventArgs e)
         {
-            ViewModel.PromptDelete();
+            ViewModel.OnDelete();
         }
 
         private void MenuItem_Rename(object sender, RoutedEventArgs e)
