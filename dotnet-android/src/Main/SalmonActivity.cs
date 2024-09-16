@@ -537,12 +537,10 @@ public class SalmonActivity : AppCompatActivity
                 SalmonDialogs.PromptNewFolder();
                 return true;
             case ActionType.COPY:
-                manager.CopySelectedFiles();
-                adapter.SetMultiSelect(false, false);
+                OnCopy();
                 return true;
             case ActionType.CUT:
-                manager.CutSelectedFiles();
-                adapter.SetMultiSelect(false, false);
+                OnCut();
                 return true;
             case ActionType.DELETE:
                 SalmonDialogs.PromptDelete();
@@ -559,7 +557,7 @@ public class SalmonActivity : AppCompatActivity
                 break;
 
             case ActionType.PASTE:
-                manager.PasteSelected();
+                OnPaste();
                 return true;
             case ActionType.SELECT_ALL:
                 SelectAll(true);
@@ -604,6 +602,46 @@ public class SalmonActivity : AppCompatActivity
         base.OnOptionsItemSelected(item);
         return false;
     }
+
+
+    private void OnCopy()
+    {
+        try
+        {
+            manager.CopySelectedFiles();
+            adapter.SetMultiSelect(false, false);
+        }
+        catch (Exception ex)
+        {
+            SalmonDialog.PromptDialog("Error", "Could not select files for copy: " + ex.Message);
+        }
+    }
+
+    private void OnCut()
+    {
+        try
+        {
+            manager.CutSelectedFiles();
+            adapter.SetMultiSelect(false, false);
+        }
+        catch (Exception ex)
+        {
+            SalmonDialog.PromptDialog("Error", "Could not select files for move: " + ex.Message);
+        }
+    }
+
+    private void OnPaste()
+    {
+        try
+        {
+            manager.PasteSelected();
+        }
+        catch (Exception ex)
+        {
+            SalmonDialog.PromptDialog("Error", "Could not paste files: " + ex);
+        }
+    }
+
 
     private void OpenWith(SalmonFile salmonFile)
     {
