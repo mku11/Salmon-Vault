@@ -808,8 +808,11 @@ public class SalmonActivity : AppCompatActivity
             {
                 files[i] = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(filesToImport[i], requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER);
             }
-            Action<IRealFile[]> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
-            callback(files);
+            Action<object> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES)
+                callback(files);
+            else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER)
+                callback(files[0]);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE)
         {
