@@ -10,7 +10,7 @@ JS_COMMON_SRC=../../js-common/src/common
 JS_COMMON_RES=../../common/common-res
 FAVICON=../../common/common-res/icons/logo_48x48.ico
 
-VERSION=2.1.0
+VERSION=2.1.1
 PACKAGES_DIR=app_package
 SALMON_VAULT=salmon-vault-js
 JS_SALMON_VAULT_PACKAGE_NAME=$SALMON_VAULT.$VERSION
