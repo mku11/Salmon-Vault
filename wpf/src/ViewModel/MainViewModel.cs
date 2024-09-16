@@ -395,6 +395,8 @@ public class MainViewModel : INotifyPropertyChanged
             return;
         }
         OpenTextEditor(item);
+        SelectedItem = null;
+        SelectedItem = item;
     }
 
     private void StartImageViewer(SalmonFileViewModel item)
