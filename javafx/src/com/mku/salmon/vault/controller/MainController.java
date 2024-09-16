@@ -441,8 +441,16 @@ public class MainController {
 
     private void selectItem(SalmonFile file) {
         SalmonFileViewModel vm = getViewModel(file);
-        if (vm == null)
+        if (vm == null) {
+            WindowUtils.runOnMainThread(() -> {
+                try {
+                    table.getSelectionModel().clearSelection();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
             return;
+        }
         try {
             int index = 0;
             for (SalmonFileViewModel viewModel : fileItemList) {
@@ -655,6 +663,8 @@ public class MainController {
                 return;
             }
             TextEditorController.openTextEditor(item, stage);
+            selectItem(null);
+            selectItem(item.getSalmonFile());
         } catch (Exception e) {
             e.printStackTrace();
         }
