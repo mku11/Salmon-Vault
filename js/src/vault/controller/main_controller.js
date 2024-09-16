@@ -133,10 +133,11 @@ export class MainController {
                 this.onCloseVault();
             else if (this.metaKeysPressed.has('Control') && this.keysPressed.has("I"))
                 this.onImport();
+            else if (this.metaKeysPressed.has('Control') && this.metaKeysPressed.has('Shift') 
+                && this.keysPressed.has("E"))
+                this.onExportAndDelete();
             else if (this.metaKeysPressed.has('Control') && this.keysPressed.has("E"))
                 this.onExport();
-            else if (this.metaKeysPressed.has('Control') && this.keysPressed.has("U"))
-                this.onExportAndDelete();
             else if (this.metaKeysPressed.has('Control') && this.keysPressed.has("C"))
                 this.onCopy();
             else if (this.metaKeysPressed.has('Control') && this.keysPressed.has("X"))
@@ -428,7 +429,7 @@ export class MainController {
         contextMenu["Delete"] = { name: "Delete (Del)", icon: "delete", callback: async () => this.onDelete() };
         contextMenu["Rename"] = { name: "Rename", icon: "rename", callback: async () => SalmonDialogs.promptRenameFile(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
         contextMenu["Export"] = { name: "Export (Ctrl-E)", icon: "export", callback: async () => this.onExport() };
-        contextMenu["ExportAndDelete"] = { name: "Export And Delete (Ctrl-U)", icon: "export", callback: async () => this.onExportAndDelete() };
+        contextMenu["ExportAndDelete"] = { name: "Export And Delete (Ctrl-Shift-E)", icon: "export", callback: async () => this.onExportAndDelete() };
         contextMenu["Properties"] = { name: "Properties", icon: "export", callback: async () => await SalmonDialogs.showProperties(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
     }
 
