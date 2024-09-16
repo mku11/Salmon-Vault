@@ -212,7 +212,7 @@ public class SalmonFileProvider extends DocumentsProvider {
                                              @Nullable CancellationSignal signal)
             throws FileNotFoundException {
         if (!checkAppAuthorized()) {
-            throw new RuntimeException("App not authorized");
+            throw new FileNotFoundException("App not authorized, use Salmon Vault app to allow access");
         }
         // TODO: check the CancellationSignal periodically
         SalmonFile salmonFile;
