@@ -32,55 +32,41 @@ import com.mku.streams.RandomAccessStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-public class SalmonTextEditor
-{
+public class SalmonTextEditor {
     synchronized
-    public SalmonFile OnSave(SalmonFile file, String text)
-    {
+    public SalmonFile OnSave(SalmonFile file, String text) {
         SalmonFile targetFile = null;
         RandomAccessStream stream = null;
         MemoryStream ins = null;
         boolean success = false;
-        try
-        {
+        try {
             byte[] contents = text.getBytes(StandardCharsets.UTF_8);
             ins = new MemoryStream(contents);
             SalmonFile dir = file.getParent();
             targetFile = dir.createFile(file.getBaseName());
+            targetFile.setApplyIntegrity(true, null, null);
             stream = targetFile.getOutputStream();
             ins.copyTo(stream);
             stream.flush();
             success = true;
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             ex.printStackTrace();
             SalmonDialog.promptDialog("Error", "Error during saving file: " + ex.getMessage());
-        }
-        finally
-        {
-            if (success)
-            {
+        } finally {
+            if (success) {
                 if (file != null)
                     file.delete();
-            }
-            else
-            {
+            } else {
                 if (targetFile != null)
                     targetFile.delete();
             }
-            if (stream != null)
-            {
-                try
-                {
+            if (stream != null) {
+                try {
                     stream.close();
-                }
-                catch (IOException ignored)
-                {
+                } catch (IOException ignored) {
                 }
             }
-            if (ins != null)
-            {
+            if (ins != null) {
                 ins.close();
             }
         }
