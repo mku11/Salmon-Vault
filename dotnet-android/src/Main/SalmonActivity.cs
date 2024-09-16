@@ -1006,11 +1006,10 @@ public class SalmonActivity : AppCompatActivity
 
     public override void OnBackPressed()
     {
-        if (manager.IsJobRunning
-                || (manager.FileManagerMode == SalmonVaultManager.Mode.Browse &&
-                adapter.SelectedFiles.Count > 0))
+        if (!manager.IsJobRunning && adapter.SelectedFiles.Count > 0)
         {
-            StopOperations();
+            adapter.SetMultiSelect(false);
+            adapter.SelectAll(false);
         }
         else
         {
