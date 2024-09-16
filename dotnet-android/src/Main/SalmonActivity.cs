@@ -699,7 +699,7 @@ public class SalmonActivity : AppCompatActivity
         }
     }
 
-    private void ShowDiskUsage(SalmonFile[] toArray)
+    private void ShowDiskUsage(SalmonFile[] files)
     {
 
         Action<string> updateBody = SalmonDialog.promptUpdatableDialog("Disk Usage", "");
@@ -712,7 +712,7 @@ public class SalmonActivity : AppCompatActivity
             fItems.Set(items);
             fSize.Set(size);
         };
-        manager.GetDiskUsage(adapter.SelectedFiles.ToArray(), updateDiskUsage);
+        manager.GetDiskUsage(files, updateDiskUsage);
         updateBody(SalmonDialogs.GetFormattedDiskUsage(fItems.Get(), fSize.Get()));
     }
 
