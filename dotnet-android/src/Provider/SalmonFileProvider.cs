@@ -44,7 +44,7 @@ namespace Salmon.Vault.Provider;
 
 public class SalmonFileProvider : DocumentsProvider
 {
-    public static readonly long MAX_FILE_SIZE_TO_SHARE = 50 * 1024 * 1024;
+    public static readonly long MAX_FILE_SIZE_TO_SHARE = 128 * 1024 * 1024;
     public static readonly long MEDIUM_FILE_SIZE_TO_SHARE = 10 * 1024 * 1024;
     private static string rootPath = "/";
 

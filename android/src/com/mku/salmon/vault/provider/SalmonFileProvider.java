@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class SalmonFileProvider extends DocumentsProvider {
-    public static final long MAX_FILE_SIZE_TO_SHARE = 50 * 1024 * 1024;
+    public static final long MAX_FILE_SIZE_TO_SHARE = 128 * 1024 * 1024;
     public static final long MEDIUM_FILE_SIZE_TO_SHARE = 10 * 1024 * 1024;
     private static String rootPath = "/";
 
