@@ -39,6 +39,7 @@
 	<string name="NewPassword">New Password</string>
 	<string name="File">File</string>
 	<string name="View">View</string>
+	<string name="Open">Open</string>
 	<string name="ViewAsText">View As Text</string>
 	<string name="ViewExternal">View External</string>
 	<string name="OpenExternalInstructions">There are no internal viewers available. To view this file using an external app click Ok. To edit this file open it from within an external app that uses the Android File Picker or re-import it manually.</string>

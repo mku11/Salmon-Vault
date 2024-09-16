@@ -378,13 +378,21 @@ public class SalmonActivity : AppCompatActivity
                             .SetIcon(Resource.Drawable.export_and_delete_file_small);
                 }
 
-                // view
-                menu.Add(3, ActionType.VIEW.Ordinal(), 0, GetString(Resource.String.View))
+                if (adapter.GetLastSelected().IsFile)
+                {
+                    // view
+                    menu.Add(3, ActionType.VIEW.Ordinal(), 0, GetString(Resource.String.View))
                         .SetIcon(Resource.Drawable.file_small);
-                menu.Add(3, ActionType.VIEW_AS_TEXT.Ordinal(), 0, GetString(Resource.String.ViewAsText))
-                        .SetIcon(Resource.Drawable.text_file_small);
-                menu.Add(3, ActionType.VIEW_EXTERNAL.Ordinal(), 0, GetString(Resource.String.ViewExternal))
-                        .SetIcon(Resource.Drawable.view_external_small);
+                    menu.Add(3, ActionType.VIEW_AS_TEXT.Ordinal(), 0, GetString(Resource.String.ViewAsText))
+                            .SetIcon(Resource.Drawable.text_file_small);
+                    menu.Add(3, ActionType.VIEW_EXTERNAL.Ordinal(), 0, GetString(Resource.String.ViewExternal))
+                            .SetIcon(Resource.Drawable.view_external_small);
+                }
+                else
+                {
+                    menu.Add(3, ActionType.VIEW.Ordinal(), 0, GetString(Resource.String.Open))
+                        .SetIcon(Resource.Drawable.folder_menu_small);
+                }
                 menu.Add(3, ActionType.PROPERTIES.Ordinal(), 0, GetString(Resource.String.Properties))
                         .SetIcon(Resource.Drawable.file_properties_small);
                 menu.Add(3, ActionType.DISK_USAGE.Ordinal(), 0, GetString(Resource.String.DiskUsage))
@@ -633,7 +641,7 @@ public class SalmonActivity : AppCompatActivity
 
             intent.AddFlags(ActivityFlags.GrantReadUriPermission);
             Intent finalIntent1 = intent;
-            RunOnUiThread(()=>
+            RunOnUiThread(() =>
             {
                 try
                 {
@@ -659,7 +667,8 @@ public class SalmonActivity : AppCompatActivity
         Action<string> updateBody = SalmonDialog.promptUpdatableDialog("Disk Usage", "");
         AtomicInteger fItems = new AtomicInteger();
         AtomicLong fSize = new AtomicLong();
-        Action<int, long> updateDiskUsage = (items, size)=> {
+        Action<int, long> updateDiskUsage = (items, size) =>
+        {
             if (items > fItems.Get())
                 updateBody(SalmonDialogs.GetFormattedDiskUsage(items, size));
             fItems.Set(items);
@@ -868,9 +877,10 @@ public class SalmonActivity : AppCompatActivity
             else
             {
                 SalmonDialog.PromptDialog("Open External", this.GetString(Resource.String.OpenExternalInstructions),
-                        "Ok", ()=> {
-                    OpenWith(file);
-                }, "Cancel", null);
+                        "Ok", () =>
+                        {
+                            OpenWith(file);
+                        }, "Cancel", null);
             }
         }
         catch (Exception ex)
@@ -1047,7 +1057,7 @@ public class SalmonActivity : AppCompatActivity
             PromptAuthorizeApp(packageName);
         }
     }
-	
+
     private void PromptAuthorizeApp(string packageName)
     {
         SalmonDialog.PromptDialog("External app authorization",
