@@ -47,6 +47,7 @@ public class SalmonTextEditor
             ins = new MemoryStream(contents);
             SalmonFile dir = file.Parent;
             targetFile = dir.CreateFile(file.BaseName);
+            targetFile.SetApplyIntegrity(true, null, null);
             stream = targetFile.GetOutputStream();
             ins.CopyTo(stream);
             stream.Flush();
