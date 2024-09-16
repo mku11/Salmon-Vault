@@ -1,5 +1,5 @@
 Salmon Vault - WPF
-version: 2.1.0
+version: 2.1.1
 project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 
