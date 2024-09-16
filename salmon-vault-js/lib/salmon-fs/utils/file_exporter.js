@@ -114,6 +114,7 @@ export class FileExporter {
             __classPrivateFieldSet(this, _FileExporter_lastException, null, "f");
             let totalBytesWritten = [0];
             __classPrivateFieldSet(this, _FileExporter_failed, false, "f");
+            __classPrivateFieldSet(this, _FileExporter_lastException, null, "f");
             if (!await exportDir.exists())
                 await exportDir.mkdir();
             exportFile = await exportDir.createFile(filename);

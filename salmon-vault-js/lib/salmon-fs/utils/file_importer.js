@@ -135,6 +135,7 @@ export class FileImporter {
             __classPrivateFieldGet(this, _FileImporter_stopped, "f")[0] = false;
             __classPrivateFieldSet(this, _FileImporter_lastException, null, "f");
             __classPrivateFieldSet(this, _FileImporter_failed, false, "f");
+            __classPrivateFieldSet(this, _FileImporter_lastException, null, "f");
             importedFile = await dir.createFile(filename);
             await this.onPrepare(importedFile, integrity);
             let fileSize = await fileToImport.length();
