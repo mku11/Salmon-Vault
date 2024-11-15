@@ -9,7 +9,7 @@ Powered by [Salmon](https://github.com/mku11/Salmon-AES-CTR) encryption library.
 [![Version](https://img.shields.io/badge/version-2.1.1-blue)](https://mku11.github.io/Salmon-Vault/downloads.html)
 [![GitHub Releases](https://img.shields.io/github/downloads/mku11/Salmon-Vault/latest/total?logo=github)](https://github.com/mku11/Salmon-Vault/releases)
 
-![alt text](https://github.com/mku11/Salmon-Vault/blob/main/screenshots.png)  
+![alt text](https://github.com/mku11/Salmon-Vault/blob/main/screenshots/Screenshot.png)  
 [**Live Web Demo**](https://mku11.github.io/Salmon-Vault/demo.html)    
 Demo Vault contents are licensed under [Content License](https://mku11.github.io/Salmon-Vault/vault/content_license.txt) Copyright by Blender Foundation | www.bigbuckbunny.org  
 
