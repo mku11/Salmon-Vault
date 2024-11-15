@@ -13,6 +13,17 @@ Powered by [Salmon](https://github.com/mku11/Salmon-AES-CTR) encryption library.
 [**Live Web Demo**](https://mku11.github.io/Salmon-Vault/demo.html)    
 Demo Vault contents are licensed under [Content License](https://mku11.github.io/Salmon-Vault/vault/content_license.txt) Copyright by Blender Foundation | www.bigbuckbunny.org  
 
+## Platforms
+Salmon Vault app is offered on several different platforms:  
+* JavaFx for Windows x86_64, MacOS x86_64, and Linux x86_64/ARM64
+* .NET WPF (Windows Only)
+* Android 23+
+* .NET Android 23+
+* .NET MAUI (Android/Windows 10+ experimental)
+* Javascript Web App (Chrome, Firefox, Safari support remote read-only drives, Chrome supports also local read-write drives)
+
+[**Downloads**](https://mku11.github.io/Salmon-Vault/downloads.html)
+
 ## Features
 * Create portable virtual drives encrypted with a text password.
 * Files can be decrypted by any devices running Salmon Vault.
@@ -33,17 +44,6 @@ Demo Vault contents are licensed under [Content License](https://mku11.github.io
 * Protected nonce sequencer (Android only).
 * Protected nonce sequencer with SHA256 checksum anti-tampering (Windows only).
 * Protected account sequencer service (Optional / Windows only).
-
-## Platforms
-Salmon Vault app is offered on several different platforms:  
-* JavaFx for Windows x86_64, MacOS x86_64, and Linux x86_64/ARM64
-* .NET WPF (Windows Only)
-* Android 23+
-* .NET Android 23+
-* .NET MAUI (Android/Windows 10+ experimental)
-* Javascript Web App (Chrome, Firefox, Safari support remote read-only drives, Chrome supports also local read-write drives)
-
-[**Downloads**](https://mku11.github.io/Salmon-Vault/downloads.html)
 
 ---
 
