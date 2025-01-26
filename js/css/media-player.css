@@ -8,3 +8,7 @@
   height: 4pt;
   display: block;
 }
+
+.modal:has(.media-player) {
+	resize: both; 
+}
