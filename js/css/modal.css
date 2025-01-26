@@ -13,8 +13,8 @@
 }
 
 .modal-title-bar {
-  margin: 2pt;
   background-color: #41485d;
+  cursor: move;
 }
 
 .modal-icon {
