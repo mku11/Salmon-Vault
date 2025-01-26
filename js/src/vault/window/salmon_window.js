@@ -32,11 +32,12 @@ export class SalmonWindow {
     icon;
     modal;
     closeButton;
+	titleBar;
     title;
     content;
     onClose;
     onShow;
-
+	
     getRoot() {
         return this.root;
     }
@@ -72,6 +73,7 @@ export class SalmonWindow {
     setupControls() {
         this.modal = this.root.getElementsByClassName("modal")[0];
         this.icon = this.root.getElementsByClassName("modal-icon")[0];
+		this.titleBar = this.root.getElementsByClassName("modal-title-bar")[0];
         this.title = this.root.getElementsByClassName("modal-title")[0];
         this.closeButton = this.root.getElementsByClassName("modal-close")[0];
         this.content = this.root.getElementsByClassName("modal-window-content")[0];
@@ -82,6 +84,33 @@ export class SalmonWindow {
         this.closeButton.onclick = function () {
             dialog.hide();
         }
+		this.setDraggable(this.titleBar);
+	}
+
+	setDraggable(el) {
+		let down;
+		let nx,ny;
+		let modalWindow = this;
+	
+		el.addEventListener('mousedown', function(e) {
+			down = true;
+			nx = modalWindow.modal.offsetLeft - e.clientX;
+			ny = modalWindow.modal.offsetTop - e.clientY;
+			event.preventDefault();
+		}, true);
+
+		el.addEventListener('mousemove', function(event) {
+			if (down) {
+				modalWindow.modal.style.left = (event.clientX + nx) + 'px';
+				modalWindow.modal.style.top  = (event.clientY + ny) + 'px';
+			}
+			event.preventDefault();
+		}, true);
+		
+		el.addEventListener('mouseup', function() {
+			down = false;
+			event.preventDefault();
+		}, true);
     }
 
     #setContent(content) {
