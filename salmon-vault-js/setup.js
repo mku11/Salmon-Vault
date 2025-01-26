@@ -3,6 +3,9 @@ import { Handler } from "./lib/salmon-fs/service/handler.js";
 import { SalmonDialog } from "./vault/dialog/salmon_dialog.js";
 import { WindowUtils } from "./vault/utils/window_utils.js";
 import { SalmonConfig } from "./vault/config/salmon_config.js";
+import { ServiceLocator } from "./common/services/service_locator.js";
+import { SalmonVaultManager } from "./common/model/salmon_vault_manager.js";
+import { IFileRemoteService } from "./common/services/ifile_remote_service.js";
 
 const DEBUG = false;
 function setupDebug() {
