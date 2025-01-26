@@ -89,28 +89,34 @@ export class SalmonWindow {
 
 	setDraggable(el) {
 		let down;
-		let nx,ny;
+		let dx,dy;
 		let modalWindow = this;
 	
 		el.addEventListener('mousedown', function(e) {
-			down = true;
-			nx = modalWindow.modal.offsetLeft - e.clientX;
-			ny = modalWindow.modal.offsetTop - e.clientY;
 			event.preventDefault();
+			down = true;
+			dx = modalWindow.modal.offsetLeft - e.clientX;
+			dy = modalWindow.modal.offsetTop - e.clientY;
+			// set the global listener to prevent interruptions
+			document.onmouseup = stopMoveElement;
+			document.onmousemove = moveElement;
 		}, true);
 
-		el.addEventListener('mousemove', function(event) {
+		function moveElement(event) {
 			if (down) {
-				modalWindow.modal.style.left = (event.clientX + nx) + 'px';
-				modalWindow.modal.style.top  = (event.clientY + ny) + 'px';
+				modalWindow.modal.style.left = (event.clientX + dx) + 'px';
+				modalWindow.modal.style.top  = (event.clientY + dy) + 'px';
 			}
 			event.preventDefault();
-		}, true);
+		}
 		
-		el.addEventListener('mouseup', function() {
-			down = false;
+		function stopMoveElement(event) {
 			event.preventDefault();
-		}, true);
+			down = false;
+			// reset the global listener
+			document.onmouseup = null;
+			document.onmousemove = null;			
+		}
     }
 
     #setContent(content) {
