@@ -24,6 +24,12 @@ async function registerServiceWorker() {
 
 document.salmonStartUp = async function() {
 	// any initializing code you want goes here
+	// live demo
+	let urlRemote = "https://mku11.github.io/Salmon-Vault/vault";	
+	let url = urlRemote;
+	let dir = ServiceLocator.getInstance().resolve(IFileRemoteService).getFile(url);
+	let password = "test";
+	await SalmonVaultManager.getInstance().openVault(dir, password);
 }
 
 WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
