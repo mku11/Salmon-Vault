@@ -22,6 +22,10 @@ async function registerServiceWorker() {
     }
 }
 
+document.salmonStartUp = async function() {
+	// any initializing code you want goes here
+}
+
 WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
 setupDebug();
 registerServiceWorker();

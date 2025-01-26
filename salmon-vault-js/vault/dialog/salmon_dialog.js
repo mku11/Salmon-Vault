@@ -58,7 +58,7 @@ export class SalmonDialog extends SalmonWindow {
                 dialog.setTitle(title);
                 dialog.setValue(value, isFileName, readOnly, isPassword);
                 dialog.setOption(option);
-                dialog.setFirstButton("ok", () => {
+                dialog.setFirstButton("Ok", () => {
                     if (OnEdit != null)
                         OnEdit(dialog.input.value, dialog.option.checked);
                 });
@@ -68,7 +68,7 @@ export class SalmonDialog extends SalmonWindow {
     }
 
     static promptDialog(title, body,
-        buttonLabel1 = "ok", buttonListener1 = null,
+        buttonLabel1 = "Ok", buttonListener1 = null,
         buttonLabel2 = null, buttonListener2 = null) {
         setTimeout(() => {
             fetch(SalmonDialog.dialogURL).then(async (response) => {

@@ -32,11 +32,12 @@ export class SalmonWindow {
     icon;
     modal;
     closeButton;
+	titleBar;
     title;
     content;
     onClose;
     onShow;
-
+	
     getRoot() {
         return this.root;
     }
@@ -72,6 +73,7 @@ export class SalmonWindow {
     setupControls() {
         this.modal = this.root.getElementsByClassName("modal")[0];
         this.icon = this.root.getElementsByClassName("modal-icon")[0];
+		this.titleBar = this.root.getElementsByClassName("modal-title-bar")[0];
         this.title = this.root.getElementsByClassName("modal-title")[0];
         this.closeButton = this.root.getElementsByClassName("modal-close")[0];
         this.content = this.root.getElementsByClassName("modal-window-content")[0];
@@ -82,6 +84,39 @@ export class SalmonWindow {
         this.closeButton.onclick = function () {
             dialog.hide();
         }
+		this.setDraggable(this.titleBar);
+	}
+
+	setDraggable(el) {
+		let down;
+		let dx,dy;
+		let modalWindow = this;
+	
+		el.addEventListener('mousedown', function(e) {
+			event.preventDefault();
+			down = true;
+			dx = modalWindow.modal.offsetLeft - e.clientX;
+			dy = modalWindow.modal.offsetTop - e.clientY;
+			// set the global listener to prevent interruptions
+			document.onmouseup = stopMoveElement;
+			document.onmousemove = moveElement;
+		}, true);
+
+		function moveElement(event) {
+			if (down) {
+				modalWindow.modal.style.left = (event.clientX + dx) + 'px';
+				modalWindow.modal.style.top  = (event.clientY + dy) + 'px';
+			}
+			event.preventDefault();
+		}
+		
+		function stopMoveElement(event) {
+			event.preventDefault();
+			down = false;
+			// reset the global listener
+			document.onmouseup = null;
+			document.onmousemove = null;			
+		}
     }
 
     #setContent(content) {
