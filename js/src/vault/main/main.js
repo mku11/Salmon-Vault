@@ -32,5 +32,9 @@ addEventListener("load", (e) => {
     window.mainController = new MainController();
     window.mainController.initialize();
     window.mainController.setWindow();
+	if(document.salmonStartUp) {
+		console.log("found startup");
+		document.salmonStartUp();
+	}
 });
 
