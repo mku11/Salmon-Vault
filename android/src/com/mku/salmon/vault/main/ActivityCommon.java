@@ -28,7 +28,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.DocumentsContract;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -131,7 +130,6 @@ public class ActivityCommon {
                 for (int i = 0; i < data.getClipData().getItemCount(); i++) {
                     android.net.Uri uri = data.getClipData().getItemAt(i).getUri();
                     String filename = uri.toString();
-                    Log.d(TAG, "File: " + filename);
                     files[i] = uri.toString();
                 }
             } else {
