@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.file.IRealFile;
-import com.mku.file.JavaFile;
+import com.mku.fs.file.File;
+import com.mku.fs.file.IFile;
 
 public class JavaFxFileService implements IFileService
 {
@@ -32,8 +32,8 @@ public class JavaFxFileService implements IFileService
     {
     }
 
-    public IRealFile getFile(String filepath, boolean isDirectory)
+    public IFile getFile(String filepath, boolean isDirectory)
     {
-        return new JavaFile(filepath);
+        return new File(filepath);
     }
 }

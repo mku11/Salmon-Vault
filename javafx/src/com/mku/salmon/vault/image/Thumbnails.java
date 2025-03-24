@@ -24,12 +24,13 @@ SOFTWARE.
 */
 
 import com.mku.convert.BitConverter;
+import com.mku.fs.drive.utils.FileUtils;
+import com.mku.salmon.streams.AesStream;
+import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.InputStreamWrapper;
 import com.mku.streams.MemoryStream;
 import com.mku.streams.RandomAccessStream;
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.streams.SalmonStream;
-import com.mku.utils.FileUtils;
+
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -57,7 +58,7 @@ public class Thumbnails {
     private static final int THUMBNAIL_SIZE = 128;
 
     private static final int MAX_CACHE_SIZE = 20 * 1024 * 1024;
-    private static final HashMap<SalmonFile, Image> cache = new HashMap<>();
+    private static final HashMap<AesFile, Image> cache = new HashMap<>();
     private static int TINT_COLOR_ALPHA = 60;
     private static int cacheSize;
 
@@ -65,10 +66,10 @@ public class Thumbnails {
     private static final LinkedBlockingDeque<ThumbnailTask> tasks = new LinkedBlockingDeque<>();
 
     private static class ThumbnailTask {
-        SalmonFile file;
+        AesFile file;
         ImageView view;
 
-        public ThumbnailTask(SalmonFile salmonFile, ImageView imageView) {
+        public ThumbnailTask(AesFile salmonFile, ImageView imageView) {
             this.file = salmonFile;
             this.view = imageView;
         }
@@ -79,11 +80,11 @@ public class Thumbnails {
     /// </summary>
     /// <param name="salmonFile">The encrypted media file which will be used to get the thumbnail</param>
     /// <returns></returns>
-    public static ImageView getVideoThumbnail(SalmonFile salmonFile) {
+    public static ImageView getVideoThumbnail(AesFile salmonFile) {
         return getVideoThumbnail(salmonFile, 0);
     }
 
-    public static ImageView getVideoThumbnail(SalmonFile salmonFile, long ms) {
+    public static ImageView getVideoThumbnail(AesFile salmonFile, long ms) {
         throw new UnsupportedOperationException();
     }
 
@@ -96,7 +97,7 @@ public class Thumbnails {
     /// </summary>
     /// <param name="salmonFile">The encrypted file that will be used to get the temp file</param>
     /// <returns></returns>
-    private static File getVideoTmpFile(SalmonFile salmonFile) {
+    private static File getVideoTmpFile(AesFile salmonFile) {
         throw new UnsupportedOperationException();
     }
 
@@ -107,9 +108,9 @@ public class Thumbnails {
     /// <param name="salmonFile">The encrypted file to be used</param>
     /// <param name="maxSize">The max content length that will be decrypted from the beginning of the file</param>
     /// <returns></returns>
-    private static RandomAccessStream getTempStream(SalmonFile salmonFile, long maxSize) throws Exception {
+    private static RandomAccessStream getTempStream(AesFile salmonFile, long maxSize) throws Exception {
         MemoryStream ms = new MemoryStream();
-        SalmonStream ins = salmonFile.getInputStream();
+        AesStream ins = salmonFile.getInputStream();
         byte[] buffer = new byte[BUFFER_SIZE];
         int bytesRead;
         long totalBytesRead = 0;
@@ -131,7 +132,7 @@ public class Thumbnails {
     /// </summary>
     /// <param name="salmonFile"></param>
     /// <returns></returns>
-    public static Image generateThumbnail(SalmonFile salmonFile, ImageView imageView) {
+    public static Image generateThumbnail(AesFile salmonFile, ImageView imageView) {
 
         if (cache.containsKey(salmonFile)) {
             return cache.get(salmonFile);
@@ -162,12 +163,12 @@ public class Thumbnails {
         return null;
     }
 
-    private static Image getIcon(SalmonFile salmonFile) {
+    private static Image getIcon(AesFile salmonFile) {
         String icon = salmonFile.isFile() ? "/icons/file_item.png" : "/icons/folder.png";
         Image image = null;
         if (salmonFile.isFile()) {
             try {
-                String ext = FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
+                String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
                 BufferedImage bufferedImage = ImageIO.read(Thumbnails.class.getResourceAsStream(icon));
                 BufferedImage nimage = new BufferedImage(
                         bufferedImage.getWidth(),
@@ -207,7 +208,7 @@ public class Thumbnails {
     private static void generateThumbnail(ThumbnailTask task) {
         Image image = null;
         try {
-            if (task.file.isFile() && FileUtils.isImage(task.file.getBaseName())) {
+            if (task.file.isFile() && FileUtils.isImage(task.file.getName())) {
                 image = Thumbnails.fromFile(task.file);
             }
             if (image == null)
@@ -219,7 +220,7 @@ public class Thumbnails {
         }
     }
 
-    private static void addCache(SalmonFile file, Image image) {
+    private static void addCache(AesFile file, Image image) {
         if (cacheSize > MAX_CACHE_SIZE)
             resetCache();
         cache.put(file, image);
@@ -231,7 +232,7 @@ public class Thumbnails {
         cache.clear();
     }
 
-    public static void resetCache(SalmonFile file) {
+    public static void resetCache(AesFile file) {
         if (cache.containsKey(file)) {
             Image image = cache.get(file);
             cacheSize -= image.getWidth() * image.getHeight() * 4;
@@ -239,12 +240,12 @@ public class Thumbnails {
         }
     }
 
-    private static Image fromFile(SalmonFile file) {
+    private static Image fromFile(AesFile file) {
         BufferedInputStream stream = null;
         Image image = null;
         try {
-            String ext = FileUtils.getExtensionFromFileName(file.getBaseName()).toLowerCase();
-            if (ext.equals("gif") && file.getSize() > TMP_GIF_THUMB_MAX_SIZE)
+            String ext = FileUtils.getExtensionFromFileName(file.getName()).toLowerCase();
+            if (ext.equals("gif") && file.getLength() > TMP_GIF_THUMB_MAX_SIZE)
                 stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(file, TMP_GIF_THUMB_MAX_SIZE)), BUFFER_SIZE);
             else
                 stream = new BufferedInputStream(new InputStreamWrapper(file.getInputStream()), BUFFER_SIZE);

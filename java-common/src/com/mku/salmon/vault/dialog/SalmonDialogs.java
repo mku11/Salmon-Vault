@@ -23,12 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.file.IRealFile;
+import com.mku.fs.drive.utils.FileUtils;
+import com.mku.fs.file.IFile;
 import com.mku.func.Consumer;
-import com.mku.salmon.SalmonAuthConfig;
-import com.mku.salmon.SalmonAuthException;
-import com.mku.salmon.SalmonDrive;
-import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonVaultManager;
@@ -36,12 +33,11 @@ import com.mku.salmon.vault.services.IFileDialogService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.URLUtils;
-import com.mku.utils.FileUtils;
+import com.mku.salmonfs.auth.AuthConfig;
+import com.mku.salmonfs.drive.AesDrive;
+import com.mku.salmonfs.file.AesFile;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
-import java.util.Locale;
 
 public class SalmonDialogs {
     public static void promptPassword(Consumer<String> onSubmit) {
@@ -85,7 +81,7 @@ public class SalmonDialogs {
     public static void promptImportAuth() {
         if (!SalmonDialogs.isDriveLoaded())
             return;
-        String filename = SalmonDrive.getDefaultAuthConfigFilename();
+        String filename = AesDrive.getDefaultAuthConfigFilename();
         String ext = FileUtils.getExtensionFromFileName(filename);
         HashMap<String, String> filter = new HashMap<>();
         filter.put("Salmon Auth Files", ext);
@@ -93,8 +89,8 @@ public class SalmonDialogs {
                 filename, filter, SalmonSettings.getInstance().getVaultLocation(), (file) ->
                 {
                     try {
-                        SalmonAuthConfig.importAuthFile(SalmonVaultManager.getInstance().getDrive(),
-                                (IRealFile) file);
+                        AuthConfig.importAuthFile(SalmonVaultManager.getInstance().getDrive(),
+                                (IFile) file);
                         SalmonDialog.promptDialog("Auth", "Device is now Authorized");
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -110,7 +106,7 @@ public class SalmonDialogs {
                 "Enter the Auth ID for the device you want to authorize",
                 (targetAuthID, option) ->
                 {
-                    String filename = SalmonDrive.getDefaultAuthConfigFilename();
+                    String filename = AesDrive.getDefaultAuthConfigFilename();
                     String ext = FileUtils.getExtensionFromFileName(filename);
                     HashMap<String, String> filter = new HashMap<>();
                     filter.put("Salmon Auth Files", ext);
@@ -118,8 +114,8 @@ public class SalmonDialogs {
                             filename, filter, SalmonSettings.getInstance().getVaultLocation(), (fileResult) ->
                             {
                                 try {
-                                    SalmonAuthConfig.exportAuthFile(SalmonVaultManager.getInstance().getDrive(),
-                                            targetAuthID, (IRealFile) fileResult);
+                                    AuthConfig.exportAuthFile(SalmonVaultManager.getInstance().getDrive(),
+                                            targetAuthID, (IFile) fileResult);
                                     SalmonDialog.promptDialog("Auth", "Auth File Exported");
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
@@ -160,7 +156,7 @@ public class SalmonDialogs {
         }
     }
 
-    public static void showProperties(SalmonFile item) {
+    public static void showProperties(AesFile item) {
         try {
             SalmonDialog.promptDialog("Properties", SalmonVaultManager.getInstance().getFileProperties(item));
         } catch (Exception exception) {
@@ -194,7 +190,7 @@ public class SalmonDialogs {
         if (!SalmonDialogs.isDriveLoaded())
             return;
         String itemsString = "item(s)?";
-        for (SalmonFile file : SalmonVaultManager.getInstance().getSelectedFiles()) {
+        for (AesFile file : SalmonVaultManager.getInstance().getSelectedFiles()) {
             if (file.isDirectory()) {
                 itemsString = "item(s) and subfolders?";
                 break;
@@ -257,7 +253,7 @@ public class SalmonDialogs {
                     SalmonDialogs.promptSetPassword((String pass) ->
                     {
                         try {
-                            SalmonVaultManager.getInstance().createVault((IRealFile) file, pass);
+                            SalmonVaultManager.getInstance().createVault((IFile) file, pass);
                             SalmonDialog.promptDialog("Action", "Vault created, you can start importing your files");
                         } catch (Exception e) {
                             SalmonDialog.promptDialog("Error", "Could not create vault: " + e.getMessage());
@@ -273,7 +269,7 @@ public class SalmonDialogs {
                 (dir) -> {
                     SalmonDialogs.promptPassword((String password) -> {
                         try {
-                            SalmonVaultManager.getInstance().openVault((IRealFile) dir, password);
+                            SalmonVaultManager.getInstance().openVault((IFile) dir, password);
                         } catch (Exception ex) {
                             SalmonDialog.promptDialog("Error", "Could not create vault: "
                                     + ex.getMessage());
@@ -290,15 +286,15 @@ public class SalmonDialogs {
                 null, SalmonSettings.getInstance().getLastImportDir(), (obj) ->
                 {
                     try {
-                        IRealFile[] filesToImport = (IRealFile[]) obj;
+                        IFile[] filesToImport = (IFile[]) obj;
                         if (filesToImport.length == 0)
                             return;
 
-                        IRealFile parent = filesToImport[0].getParent();
+                        IFile parent = filesToImport[0].getParent();
                         if (parent != null && parent.getPath() != null)
                             SalmonSettings.getInstance().setLastImportDir(parent.getPath());
                         SalmonVaultManager.getInstance().importFiles(filesToImport,
-                                SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
+                                SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (AesFile[] importedFiles) ->
                                 {
                                     SalmonVaultManager.getInstance().refresh();
                                 });
@@ -316,18 +312,18 @@ public class SalmonDialogs {
                 SalmonSettings.getInstance().getLastImportDir(), (obj) ->
                 {
                     try {
-                        IRealFile folder = (IRealFile) obj;
+                        IFile folder = (IFile) obj;
                         if (folder == null)
                             return;
                         if (SalmonSettings.getInstance().isDeleteAfterImport()) {
-                            IRealFile parent = folder.getParent();
+                            IFile parent = folder.getParent();
                             if (parent != null && parent.getPath() != null)
                                 SalmonSettings.getInstance().setLastImportDir(parent.getPath());
                         } else {
                             SalmonSettings.getInstance().setLastImportDir(folder.getPath());
                         }
-                        SalmonVaultManager.getInstance().importFiles(new IRealFile[]{folder},
-                                SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (SalmonFile[] importedFiles) ->
+                        SalmonVaultManager.getInstance().importFiles(new IFile[]{folder},
+                                SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (AesFile[] importedFiles) ->
                                 {
                                     SalmonVaultManager.getInstance().refresh();
                                 });
@@ -356,10 +352,10 @@ public class SalmonDialogs {
                 }, "New Folder", true, false, false, null);
     }
 
-    public static void promptRenameFile(SalmonFile ifile) {
+    public static void promptRenameFile(AesFile ifile) {
         String currentFilename = "";
         try {
-            currentFilename = ifile.getBaseName();
+            currentFilename = ifile.getName();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -398,7 +394,7 @@ public class SalmonDialogs {
         if (!SalmonDialogs.isDriveLoaded())
             return;
         String itemsString = "item(s)?";
-        for (SalmonFile file : SalmonVaultManager.getInstance().getSelectedFiles()) {
+        for (AesFile file : SalmonVaultManager.getInstance().getSelectedFiles()) {
             if (file.isDirectory()) {
                 itemsString = "item(s) and subfolders?";
                 break;

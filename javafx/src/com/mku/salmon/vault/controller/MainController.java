@@ -23,10 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.fs.drive.utils.FileUtils;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
-import com.mku.salmon.SalmonAuthException;
-import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
 import com.mku.salmon.vault.image.Thumbnails;
@@ -35,7 +34,7 @@ import com.mku.salmon.vault.model.win.SalmonWinVaultManager;
 import com.mku.salmon.vault.services.*;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
-import com.mku.utils.FileUtils;
+import com.mku.salmonfs.file.AesFile;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -176,14 +175,14 @@ public class MainController {
 
     }
 
-    private void fileItemAdded(Integer position, SalmonFile file) {
+    private void fileItemAdded(Integer position, AesFile file) {
         WindowUtils.runOnMainThread(() ->
         {
             fileItemList.add(position, new SalmonFileViewModel(file));
         });
     }
 
-    private void updateListItem(SalmonFile file) {
+    private void updateListItem(AesFile file) {
         SalmonFileViewModel vm = getViewModel(file);
         vm.update();
     }
@@ -239,7 +238,7 @@ public class MainController {
     synchronized void onSelectedItems(java.util.List<SalmonFileViewModel> selectedItems) {
         manager.getSelectedFiles().clear();
         for (SalmonFileViewModel item : selectedItems) {
-            manager.getSelectedFiles().add(item.getSalmonFile());
+            manager.getSelectedFiles().add(item.getAesFile());
         }
     }
 
@@ -379,7 +378,7 @@ public class MainController {
         SalmonDialogs.promptSearch();
     }
 
-    private void showDiskUsage(SalmonFile[] files) {
+    private void showDiskUsage(AesFile[] files) {
 
         Consumer<String> updateBody = SalmonDialog.promptUpdatableDialog("Disk Usage", "");
         AtomicInteger fItems = new AtomicInteger();
@@ -439,7 +438,7 @@ public class MainController {
         manager.goBack();
     }
 
-    private void selectItem(SalmonFile file) {
+    private void selectItem(AesFile file) {
         SalmonFileViewModel vm = getViewModel(file);
         if (vm == null) {
             WindowUtils.runOnMainThread(() -> {
@@ -505,7 +504,7 @@ public class MainController {
 
         MenuItem item;
 
-        if (fileItem.getSalmonFile().isFile()) {
+        if (fileItem.getAesFile().isFile()) {
             item = new MenuItem("View");
             item.setGraphic(getImageIcon("/icons/file_small.png"));
             item.setOnAction((event) -> onOpenItem(fileItemList.indexOf(fileItem)));
@@ -518,7 +517,7 @@ public class MainController {
 
             item = new MenuItem("View External");
             item.setGraphic(getImageIcon("/icons/view_external_small.png"));
-            item.setOnAction((event) -> promptOpenExternalApp(fileItem.getSalmonFile(), null));
+            item.setOnAction((event) -> promptOpenExternalApp(fileItem.getAesFile(), null));
             contextMenu.getItems().add(item);
         } else {
             item = new MenuItem("Open");
@@ -544,7 +543,7 @@ public class MainController {
 
         item = new MenuItem("Rename");
         item.setGraphic(getImageIcon("/icons/rename_small.png"));
-        item.setOnAction((event) -> SalmonDialogs.promptRenameFile(fileItem.getSalmonFile()));
+        item.setOnAction((event) -> SalmonDialogs.promptRenameFile(fileItem.getAesFile()));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Export (Ctrl+E)");
@@ -559,14 +558,14 @@ public class MainController {
 
         item = new MenuItem("Properties");
         item.setGraphic(getImageIcon("/icons/info_small.png"));
-        item.setOnAction((event) -> SalmonDialogs.showProperties(fileItem.getSalmonFile()));
+        item.setOnAction((event) -> SalmonDialogs.showProperties(fileItem.getAesFile()));
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Disk Usage");
         item.setGraphic(getImageIcon("/icons/disk_small.png"));
         item.setOnAction((event) -> {
             ObservableList<SalmonFileViewModel> files = table.getSelectionModel().getSelectedItems();
-            showDiskUsage(files.stream().map(x -> x.getSalmonFile()).collect(Collectors.toList()).toArray(new SalmonFile[0]));
+            showDiskUsage(files.stream().map(x -> x.getAesFile()).collect(Collectors.toList()).toArray(new AesFile[0]));
         });
         contextMenu.getItems().add(item);
 
@@ -582,30 +581,30 @@ public class MainController {
 
     protected void openItem(int position) throws Exception {
         SalmonFileViewModel selectedFile = fileItemList.get(position);
-        manager.openItem(selectedFile.getSalmonFile());
+        manager.openItem(selectedFile.getAesFile());
     }
 
-    private SalmonFileViewModel getViewModel(SalmonFile item) {
+    private SalmonFileViewModel getViewModel(AesFile item) {
         for (SalmonFileViewModel vm : fileItemList) {
-            if (vm.getSalmonFile() == item)
+            if (vm.getAesFile() == item)
                 return vm;
         }
         return null;
     }
 
-    private boolean OpenListItem(SalmonFile file) {
+    private boolean OpenListItem(AesFile file) {
         SalmonFileViewModel vm = getViewModel(file);
         try {
-            if (FileUtils.isVideo(file.getBaseName())) {
+            if (FileUtils.isVideo(file.getName())) {
                 startMediaPlayer(vm);
                 return true;
-            } else if (FileUtils.isAudio(file.getBaseName())) {
+            } else if (FileUtils.isAudio(file.getName())) {
                 startMediaPlayer(vm);
                 return true;
-            } else if (FileUtils.isImage(file.getBaseName())) {
+            } else if (FileUtils.isImage(file.getName())) {
                 startImageViewer(vm);
                 return true;
-            } else if (FileUtils.isText(file.getBaseName())) {
+            } else if (FileUtils.isText(file.getName())) {
                 startTextEditor(vm);
                 return true;
             } else {
@@ -618,7 +617,7 @@ public class MainController {
         return false;
     }
 
-    private void promptOpenExternalApp(SalmonFile file, String msg) {
+    private void promptOpenExternalApp(AesFile file, String msg) {
         SalmonDialog.promptDialog("Open External", (msg != null ? msg + " " : "") + "Press Ok to export the file and " +
                         "open it with an external app. This file will be placed in the export folder and will also be " +
                         "visible to all other apps in this device. If you edit this file externally you will have to " +
@@ -632,10 +631,10 @@ public class MainController {
                 }, "Cancel", null);
     }
 
-    private void openWith(SalmonFile salmonFile) {
+    private void openWith(AesFile salmonFile) {
         if (manager.isJobRunning())
             throw new RuntimeException("Another job is running");
-        manager.exportFiles(new SalmonFile[]{salmonFile}, (files) ->
+        manager.exportFiles(new AesFile[]{salmonFile}, (files) ->
         {
             WindowUtils.runOnMainThread(() -> {
                 try {
@@ -658,13 +657,13 @@ public class MainController {
 
     private void startTextEditor(SalmonFileViewModel item) {
         try {
-            if (item.getSalmonFile().getSize() > MAX_TEXT_FILE) {
+            if (item.getAesFile().getLength() > MAX_TEXT_FILE) {
                 new SalmonDialog(Alert.AlertType.WARNING, "File too large").show();
                 return;
             }
             TextEditorController.openTextEditor(item, stage);
             selectItem(null);
-            selectItem(item.getSalmonFile());
+            selectItem(item.getAesFile());
         } catch (Exception e) {
             e.printStackTrace();
         }

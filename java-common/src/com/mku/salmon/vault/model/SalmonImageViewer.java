@@ -24,9 +24,9 @@ SOFTWARE.
 */
 
 import com.mku.func.BiConsumer;
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.streams.SalmonFileInputStream;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
+import com.mku.salmonfs.file.AesFile;
+import com.mku.salmonfs.streams.AesFileInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,9 +47,9 @@ public class SalmonImageViewer implements IPropertyNotifier {
         }
     }
 
-    public void load(SalmonFile salmonFile) {
+    public void load(AesFile salmonFile) {
         try {
-            imageStream = new SalmonFileInputStream(salmonFile, 4, 4 * 1024 * 1024, 1, 256 * 1024);
+            imageStream = new AesFileInputStream(salmonFile, 4, 4 * 1024 * 1024, 1, 256 * 1024);
         } catch (Exception e) {
             e.printStackTrace();
         }

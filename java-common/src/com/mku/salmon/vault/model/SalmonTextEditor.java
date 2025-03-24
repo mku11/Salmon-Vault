@@ -23,9 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.streams.SalmonStream;
+import com.mku.salmon.streams.AesStream;
 import com.mku.salmon.vault.dialog.SalmonDialog;
+import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.MemoryStream;
 import com.mku.streams.RandomAccessStream;
 
@@ -34,17 +34,17 @@ import java.nio.charset.StandardCharsets;
 
 public class SalmonTextEditor {
     synchronized
-    public SalmonFile OnSave(SalmonFile file, String text) {
-        SalmonFile targetFile = null;
+    public AesFile OnSave(AesFile file, String text) {
+        AesFile targetFile = null;
         RandomAccessStream stream = null;
         MemoryStream ins = null;
         boolean success = false;
         try {
             byte[] contents = text.getBytes(StandardCharsets.UTF_8);
             ins = new MemoryStream(contents);
-            SalmonFile dir = file.getParent();
-            targetFile = dir.createFile(file.getBaseName());
-            targetFile.setApplyIntegrity(true, null, null);
+            AesFile dir = file.getParent();
+            targetFile = dir.createFile(file.getName());
+            targetFile.setApplyIntegrity(true);
             stream = targetFile.getOutputStream();
             ins.copyTo(stream);
             stream.flush();
@@ -76,8 +76,8 @@ public class SalmonTextEditor {
     }
 
     synchronized
-    public String getTextContent(SalmonFile file) throws IOException {
-        SalmonStream stream = file.getInputStream();
+    public String getTextContent(AesFile file) throws IOException {
+        AesStream stream = file.getInputStream();
         MemoryStream ms = new MemoryStream();
         stream.copyTo(ms);
         stream.close();

@@ -117,7 +117,7 @@ public class ImageViewerController {
         if(viewer == null)
             viewer = new SalmonImageViewer();
         try {
-            viewer.load(file.getSalmonFile());
+            viewer.load(file.getAesFile());
             BufferedInputStream stream = new BufferedInputStream(viewer.getImageStream(), ENC_BUFFER_SIZE);
             Image image = new Image(stream);
             imageView.setPreserveRatio(true);

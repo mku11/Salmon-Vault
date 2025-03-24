@@ -23,8 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmon.SalmonFile;
+
+import com.mku.salmonfs.file.AesFile;
 
 public interface IMediaPlayerService {
-    void startMediaPlayer(SalmonFile file);
+    void startMediaPlayer(AesFile file);
 }

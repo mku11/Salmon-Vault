@@ -23,10 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.fs.drive.utils.FileUtils;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.utils.FileUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;

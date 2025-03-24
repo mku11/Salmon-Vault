@@ -23,17 +23,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.file.JavaFile;
+import com.mku.fs.file.File;
 import com.mku.func.Consumer;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /*
 MIT License
@@ -83,14 +81,14 @@ public class JavaFxFileDialogService implements IFileDialogService {
         if (title != null)
             fileChooser.setTitle(title);
         if (initialDirectory != null) {
-            File lastDir = new File(initialDirectory);
+            java.io.File lastDir = new java.io.File(initialDirectory);
             if (lastDir.exists() && lastDir.isDirectory())
                 fileChooser.setInitialDirectory(lastDir);
         }
-        File file = fileChooser.showOpenDialog(stage);
+        java.io.File file = fileChooser.showOpenDialog(stage);
         if (file == null)
             return;
-        JavaFile javaFile = new JavaFile(file.getPath());
+        File javaFile = new File(file.getPath());
         onFilePicked.accept(javaFile);
 
     }
@@ -108,18 +106,18 @@ public class JavaFxFileDialogService implements IFileDialogService {
         if (title != null)
             fileChooser.setTitle(title);
         if (initialDirectory != null) {
-            File lastDir = new File(initialDirectory);
+            java.io.File lastDir = new java.io.File(initialDirectory);
             if (lastDir.exists() && lastDir.isDirectory())
                 fileChooser.setInitialDirectory(lastDir);
         }
-        List<File> files = fileChooser.showOpenMultipleDialog(stage);
+        List<java.io.File> files = fileChooser.showOpenMultipleDialog(stage);
         if (files == null)
             return;
-        List<JavaFile> javaFiles = new ArrayList<>();
-        for (File file : files) {
-            javaFiles.add(new JavaFile(file.getPath()));
+        List<File> javaFiles = new ArrayList<>();
+        for (java.io.File file : files) {
+            javaFiles.add(new File(file.getPath()));
         }
-        onFilesPicked.accept(javaFiles.toArray(new JavaFile[0]));
+        onFilesPicked.accept(javaFiles.toArray(new File[0]));
     }
 
     public void openFolder(String title, String initialDirectory, Consumer<Object> onFolderPicked, int requestCode) {
@@ -130,13 +128,13 @@ public class JavaFxFileDialogService implements IFileDialogService {
         if (initialDirectory != null) {
             File initDir = new File(initialDirectory);
             if (initDir.exists() && initDir.isDirectory()) {
-                directoryChooser.setInitialDirectory(new File(initialDirectory));
+                directoryChooser.setInitialDirectory(new java.io.File(initialDirectory));
             }
         }
-        File selectedDirectory = directoryChooser.showDialog(stage);
+        java.io.File selectedDirectory = directoryChooser.showDialog(stage);
         if (selectedDirectory == null)
             return;
-        JavaFile javaFile = new JavaFile(selectedDirectory.getPath());
+        File javaFile = new File(selectedDirectory.getPath());
         onFolderPicked.accept(javaFile);
     }
 
@@ -151,7 +149,7 @@ public class JavaFxFileDialogService implements IFileDialogService {
         if (initialDirectory != null) {
             File initDir = new File(initialDirectory);
             if (initDir.exists() && initDir.isDirectory()) {
-                fileChooser.setInitialDirectory(new File(initialDirectory));
+                fileChooser.setInitialDirectory(new java.io.File(initialDirectory));
             }
         }
         if (filter != null) {
@@ -160,10 +158,10 @@ public class JavaFxFileDialogService implements IFileDialogService {
                         new FileChooser.ExtensionFilter(key, "*." + filter.get(key)));
             }
         }
-        File file = fileChooser.showSaveDialog(stage);
+        java.io.File file = fileChooser.showSaveDialog(stage);
         if (file == null)
             return;
-        JavaFile javaFile = new JavaFile(file.getPath());
+        File javaFile = new File(file.getPath());
         onFilePicked.accept(javaFile);
     }
 }

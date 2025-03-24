@@ -23,27 +23,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.file.IRealFile;
-import com.mku.file.IVirtualFile;
-import com.mku.file.JavaFile;
+import com.mku.fs.drive.utils.FileCommander;
+import com.mku.fs.drive.utils.FileCommander.BatchDeleteOptions;
+import com.mku.fs.drive.utils.FileSearcher;
+import com.mku.fs.file.File;
+import com.mku.fs.file.IFile;
+import com.mku.fs.file.IVirtualFile;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
 import com.mku.func.Function;
-import com.mku.salmon.SalmonDrive;
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.drive.JavaDrive;
-import com.mku.salmon.sequence.SalmonFileSequencer;
-import com.mku.salmon.sequence.SalmonSequenceSerializer;
-import com.mku.salmon.utils.SalmonFileCommander;
+import com.mku.salmon.sequence.INonceSequenceSerializer;
+import com.mku.salmon.sequence.INonceSequencer;
+import com.mku.salmon.sequence.SequenceSerializer;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
-import com.mku.sequence.INonceSequenceSerializer;
-import com.mku.sequence.INonceSequencer;
+import com.mku.salmonfs.drive.AesDrive;
+import com.mku.salmonfs.drive.Drive;
+import com.mku.salmonfs.drive.utils.AesFileCommander;
+import com.mku.salmonfs.file.AesFile;
+import com.mku.salmonfs.sequence.FileSequencer;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -74,9 +76,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
     private HashSet<BiConsumer<Object, String>> observers = new HashSet<>();
 
     private boolean promptExitOnBack;
-    private SalmonDrive drive;
+    private AesDrive drive;
 
-    public SalmonDrive getDrive() {
+    public AesDrive getDrive() {
         return this.drive;
     }
 
@@ -93,9 +95,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 + SalmonConfig.FILE_SEQ_FILENAME;
     }
 
-    public Function<SalmonFile, Boolean> openListItem;
-    public Consumer<SalmonFile> updateListItem;
-    public BiConsumer<Integer, SalmonFile> onFileItemAdded;
+    public Function<AesFile, Boolean> openListItem;
+    public Consumer<AesFile> updateListItem;
+    public BiConsumer<Integer, AesFile> onFileItemAdded;
 
     protected static SalmonVaultManager instance;
     private INonceSequencer sequencer = null;
@@ -124,39 +126,39 @@ public class SalmonVaultManager implements IPropertyNotifier {
         SalmonVaultManager.threads = threads;
     }
 
-    private List<SalmonFile> fileItemList;
+    private List<AesFile> fileItemList;
 
-    public List<SalmonFile> getFileItemList() {
+    public List<AesFile> getFileItemList() {
         return fileItemList;
     }
 
-    public void setFileItemList(List<SalmonFile> value) {
+    public void setFileItemList(List<AesFile> value) {
         if (fileItemList != value) {
             fileItemList = value;
             propertyChanged(this, "FileItemList");
         }
     }
 
-    private HashSet<SalmonFile> selectedFiles = new HashSet<>();
+    private HashSet<AesFile> selectedFiles = new HashSet<>();
 
-    public HashSet<SalmonFile> getSelectedFiles() {
+    public HashSet<AesFile> getSelectedFiles() {
         return selectedFiles;
     }
 
-    public void setSelectedFiles(HashSet<SalmonFile> value) {
+    public void setSelectedFiles(HashSet<AesFile> value) {
         if (value != selectedFiles) {
             selectedFiles = value;
             propertyChanged(this, "SelectedFiles");
         }
     }
 
-    private SalmonFile _currentItem;
+    private AesFile _currentItem;
 
-    public SalmonFile getCurrentItem() {
+    public AesFile getCurrentItem() {
         return _currentItem;
     }
 
-    public void setCurrentItem(SalmonFile value) {
+    public void setCurrentItem(AesFile value) {
         if (value != _currentItem) {
             _currentItem = value;
             propertyChanged(this, "CurrentItem");
@@ -228,15 +230,15 @@ public class SalmonVaultManager implements IPropertyNotifier {
         }
     }
 
-    private SalmonFile currDir;
+    private AesFile currDir;
 
-    public SalmonFile getCurrDir() {
+    public AesFile getCurrDir() {
         return currDir;
     }
 
-    private SalmonFileCommander fileCommander;
-    private SalmonFile[] copyFiles;
-    private SalmonFile[] salmonFiles;
+    private AesFileCommander fileCommander;
+    private AesFile[] copyFiles;
+    private AesFile[] salmonFiles;
     private String searchTerm;
     private Mode fileManagerMode = Mode.Browse;
 
@@ -256,7 +258,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public boolean onOpenItem(int selectedItem) {
         try {
-            SalmonFile selectedFile = fileItemList.get(selectedItem);
+            AesFile selectedFile = fileItemList.get(selectedItem);
             return openItem(selectedFile);
         } catch (Exception e) {
             e.printStackTrace();
@@ -287,25 +289,25 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void copySelectedFiles() {
-        if(isJobRunning())
+        if (isJobRunning())
             throw new RuntimeException("Another Job is Running");
         fileManagerMode = Mode.Copy;
-        copyFiles = selectedFiles.toArray(new SalmonFile[0]);
+        copyFiles = selectedFiles.toArray(new AesFile[0]);
         setTaskRunning(true, false);
         setTaskMessage(copyFiles.length + " Items selected for copy");
     }
 
     public void cutSelectedFiles() {
-        if(isJobRunning())
+        if (isJobRunning())
             throw new RuntimeException("Another Job is Running");
         fileManagerMode = Mode.Move;
-        copyFiles = selectedFiles.toArray(new SalmonFile[0]);
+        copyFiles = selectedFiles.toArray(new AesFile[0]);
         setTaskRunning(true, false);
         setTaskMessage(copyFiles.length + " Items selected for move");
     }
 
     private void setupFileCommander() {
-        fileCommander = new SalmonFileCommander(bufferSize, bufferSize, threads);
+        fileCommander = new AesFileCommander(bufferSize, bufferSize, threads);
     }
 
     public void refresh() {
@@ -317,7 +319,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         {
             if (fileManagerMode != Mode.Search)
                 salmonFiles = currDir.listFiles();
-            SalmonFile selectedFile = selectedFiles.size() > 1 ? selectedFiles.iterator().next() : null;
+            AesFile selectedFile = selectedFiles.size() > 1 ? selectedFiles.iterator().next() : null;
             populateFileList(selectedFile);
         });
 
@@ -331,7 +333,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         return false;
     }
 
-    private void populateFileList(SalmonFile currentFile) {
+    private void populateFileList(AesFile currentFile) {
         executor.execute(() ->
         {
             selectedFiles.clear();
@@ -345,8 +347,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 SalmonDialog.promptDialog("Error", exception.getMessage());
             }
 
-            List<SalmonFile> list = new ArrayList<>();
-            for (SalmonFile file : salmonFiles) {
+            List<AesFile> list = new ArrayList<>();
+            for (AesFile file : salmonFiles) {
                 try {
                     list.add(file);
                 } catch (Exception e) {
@@ -354,7 +356,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 }
             }
             setFileItemList(list);
-            SalmonFile currFile = findCurrentItem(currentFile);
+            AesFile currFile = findCurrentItem(currentFile);
             setCurrentItem(currFile);
         });
     }
@@ -370,19 +372,19 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     private void setupFileSequencer() throws IOException {
-        IRealFile dirFile = new JavaFile(getSequencerDefaultDirPath());
+        IFile dirFile = new File(getSequencerDefaultDirPath());
         if (!dirFile.exists())
             dirFile.mkdir();
-        IRealFile seqFile = new JavaFile(getSequencerFilepath());
-        this.sequencer = new SalmonFileSequencer(seqFile, createSerializer());
+        IFile seqFile = new File(getSequencerFilepath());
+        this.sequencer = new FileSequencer(seqFile, createSerializer());
     }
 
     protected INonceSequenceSerializer createSerializer() {
-        return new SalmonSequenceSerializer();
+        return new SequenceSerializer();
     }
 
     public void pasteSelected() {
-        if(isJobRunning())
+        if (isJobRunning())
             throw new RuntimeException("Another Job is Running");
         copySelectedFiles(fileManagerMode == Mode.Move);
     }
@@ -400,30 +402,30 @@ public class SalmonVaultManager implements IPropertyNotifier {
         setStatus(msg != null ? msg : "");
     }
 
-    public void openVault(IRealFile dir, String password) {
+    public void openVault(IFile dir, String password) {
         if (dir == null)
             return;
 
         try {
             closeVault();
-            this.drive = SalmonDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
+            this.drive = AesDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
             this.currDir = this.drive.getRoot();
             SalmonSettings.getInstance().setVaultLocation(dir.getPath());
             refresh();
         } catch (Error e) {
             SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". "
-                    + "Make sure your vault folder contains a file named " + SalmonDrive.getConfigFilename());
+                    + "Make sure your vault folder contains a file named " + AesDrive.getConfigFilename());
         } catch (Exception e) {
             SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". ");
         }
     }
 
     protected Class<?> getDriveClassType() {
-        return JavaDrive.class;
+        return Drive.class;
     }
 
     public void deleteSelectedFiles() {
-        deleteFiles(selectedFiles.toArray(new SalmonFile[0]));
+        deleteFiles(selectedFiles.toArray(new AesFile[0]));
         clearSelectedFiles();
     }
 
@@ -432,10 +434,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
         clearSelectedFiles();
     }
 
-    public void deleteFiles(SalmonFile[] files) {
+    public void deleteFiles(AesFile[] files) {
         if (files == null)
             return;
-        if(isJobRunning())
+        if (isJobRunning())
             throw new RuntimeException("Another job is running");
         executor.execute(() ->
         {
@@ -446,29 +448,31 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
             Exception[] exception = new Exception[]{null};
             int[] processedFiles = new int[]{-1};
-            List<SalmonFile> failedFiles = new ArrayList<>();
+            List<AesFile> failedFiles = new ArrayList<>();
             try {
-                fileCommander.deleteFiles(files,
-                        (taskProgress) ->
-                        {
-                            if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                                try {
-                                    if (taskProgress.getProcessedBytes() != taskProgress.getTotalBytes()) {
-                                        setTaskMessage("Deleting: " + taskProgress.getFile().getBaseName()
-                                                + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                processedFiles[0] = taskProgress.getProcessedFiles();
+                FileCommander.BatchDeleteOptions deleteOptions = new FileCommander.BatchDeleteOptions();
+                deleteOptions.onProgressChanged = (taskProgress) ->
+                {
+                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+                        try {
+                            if (taskProgress.getProcessedBytes() != taskProgress.getTotalBytes()) {
+                                setTaskMessage("Deleting: " + taskProgress.getFile().getName()
+                                        + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
                             }
-                            setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
-                            setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
-                        }, (file, ex) ->
-                        {
-                            failedFiles.add((SalmonFile) file);
-                            exception[0] = ex;
-                        });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        processedFiles[0] = taskProgress.getProcessedFiles();
+                    }
+                    setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
+                    setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
+                };
+                deleteOptions.onFailed = (file, ex) ->
+                {
+                    failedFiles.add((AesFile) file);
+                    exception[0] = ex;
+                };
+                fileCommander.deleteFiles(files, deleteOptions);
             } catch (Exception e) {
                 if (!fileCommander.areJobsStopped()) {
                     e.printStackTrace();
@@ -490,10 +494,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
         });
     }
 
-    private void copyFiles(SalmonFile[] files, SalmonFile dir, boolean move) {
+    private void copyFiles(AesFile[] files, AesFile dir, boolean move) {
         if (files == null)
             return;
-		if(isJobRunning())
+        if (isJobRunning())
             throw new RuntimeException("Another job is running");
         executor.execute(() ->
         {
@@ -504,28 +508,34 @@ public class SalmonVaultManager implements IPropertyNotifier {
             String action = move ? "Moving" : "Copying";
             Exception[] exception = new Exception[]{null};
             int[] processedFiles = new int[]{-1};
-            List<SalmonFile> failedFiles = new ArrayList<>();
+            List<AesFile> failedFiles = new ArrayList<>();
+            FileCommander.BatchCopyOptions copyOptions = new FileCommander.BatchCopyOptions();
+            copyOptions.autoRename = AesFile.autoRename;
+            copyOptions.autoRenameFolders = true;
+            copyOptions.move = move;
+            copyOptions.onProgressChanged = (taskProgress) ->
+            {
+                if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+                    try {
+                        setTaskMessage(action + ": " + taskProgress.getFile().getName()
+                                + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    processedFiles[0] = taskProgress.getProcessedFiles();
+                }
+                setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
+                setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
+            };
+            copyOptions.onFailed = (file, ex) ->
+            {
+                handleThrowException(ex);
+                failedFiles.add((AesFile) file);
+                exception[0] = ex;
+            };
+
             try {
-                fileCommander.copyFiles(files, dir, move,
-                        (taskProgress) ->
-                        {
-                            if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                                try {
-                                    setTaskMessage(action + ": " + taskProgress.getFile().getBaseName()
-                                            + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                processedFiles[0] = taskProgress.getProcessedFiles();
-                            }
-                            setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
-                            setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
-                        }, SalmonFile.autoRename, true, (file, ex) ->
-                        {
-                            handleThrowException(ex);
-                            failedFiles.add((SalmonFile) file);
-                            exception[0] = ex;
-                        });
+                fileCommander.copyFiles(files, dir, copyOptions);
             } catch (Exception e) {
                 if (!fileCommander.areJobsStopped()) {
                     e.printStackTrace();
@@ -550,7 +560,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void exportSelectedFiles(boolean deleteSource) {
         if (this.drive == null)
             return;
-        exportFiles(selectedFiles.toArray(new SalmonFile[0]), (files) ->
+        exportFiles(selectedFiles.toArray(new AesFile[0]), (files) ->
         {
             refresh();
         }, deleteSource);
@@ -578,7 +588,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         }
     }
 
-    public boolean openItem(SalmonFile selectedFile) {
+    public boolean openItem(AesFile selectedFile) {
         int position = fileItemList.indexOf(selectedFile);
         if (position < 0)
             return true;
@@ -593,7 +603,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             });
             return true;
         }
-        SalmonFile item = fileItemList.get(position);
+        AesFile item = fileItemList.get(position);
         return openListItem.apply(item);
     }
 
@@ -608,12 +618,12 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 populateFileList(null);
             });
         } else if (canGoBack()) {
-            SalmonFile finalParent = currDir.getParent();
+            AesFile finalParent = currDir.getParent();
             executor.execute(() ->
             {
                 if (checkFileSearcher())
                     return;
-                SalmonFile parentDir = currDir;
+                AesFile parentDir = currDir;
                 currDir = finalParent;
                 salmonFiles = currDir.listFiles();
                 populateFileList(parentDir);
@@ -623,10 +633,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
         }
     }
 
-    private SalmonFile findCurrentItem(SalmonFile currentFile) {
+    private AesFile findCurrentItem(AesFile currentFile) {
         if (currentFile == null)
             return null;
-        for (SalmonFile file : fileItemList) {
+        for (AesFile file : fileItemList) {
             if (file.getRealFile().getPath().equals(currentFile.getRealFile().getPath())) {
                 selectedFiles.clear();
                 selectedFiles.add(file);
@@ -641,7 +651,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         return observers;
     }
 
-    public void renameFile(SalmonFile file, String newFilename)
+    public void renameFile(AesFile file, String newFilename)
             throws IOException {
         fileCommander.renameFile(file, newFilename);
     }
@@ -660,8 +670,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
         Browse, Search, Copy, Move
     }
 
-    public void exportFiles(SalmonFile[] items, Consumer<IRealFile[]> onFinished, boolean deleteSource) {
-        if(isJobRunning())
+    public void exportFiles(AesFile[] items, Consumer<IFile[]> onFinished, boolean deleteSource) {
+        if (isJobRunning())
             throw new RuntimeException("Another job is running");
         executor.execute(() ->
         {
@@ -671,32 +681,35 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
             Exception[] exception = new Exception[]{null};
             int[] processedFiles = new int[]{-1};
-            IRealFile[] files = null;
-            List<SalmonFile> failedFiles = new ArrayList<>();
-            IRealFile exportDir = this.drive.getExportDir();
+            IFile[] files = null;
+            List<AesFile> failedFiles = new ArrayList<>();
+            IFile exportDir = this.drive.getExportDir();
             try {
-                files = fileCommander.exportFiles(items,
-                        exportDir,
-                        deleteSource, true,
-                        (taskProgress) ->
-                        {
-                            if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                                try {
-                                    setTaskMessage("Exporting: " + taskProgress.getFile().getBaseName()
-                                            + " " + (taskProgress.getProcessedFiles() + 1)
-                                            + "/" + taskProgress.getTotalFiles());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                processedFiles[0] = taskProgress.getProcessedFiles();
-                            }
-                            setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
-                            setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
-                        }, IRealFile.autoRename, (file, ex) ->
-                        {
-                            failedFiles.add((SalmonFile) file);
-                            exception[0] = ex;
-                        });
+                FileCommander.BatchExportOptions exportOptions = new FileCommander.BatchExportOptions();
+                exportOptions.deleteSource = deleteSource;
+                exportOptions.integrity = true;
+                exportOptions.autoRename = IFile.autoRename;
+                exportOptions.onProgressChanged = (taskProgress) ->
+                {
+                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+                        try {
+                            setTaskMessage("Exporting: " + taskProgress.getFile().getName()
+                                    + " " + (taskProgress.getProcessedFiles() + 1)
+                                    + "/" + taskProgress.getTotalFiles());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        processedFiles[0] = taskProgress.getProcessedFiles();
+                    }
+                    setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
+                    setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
+                };
+                exportOptions.onFailed = (file, ex) ->
+                {
+                    failedFiles.add((AesFile) file);
+                    exception[0] = ex;
+                };
+                files = fileCommander.exportFiles(items, exportDir, exportOptions);
                 if (onFinished != null)
                     onFinished.accept(files);
             } catch (Exception e) {
@@ -710,7 +723,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             else if (files != null) {
                 setTaskMessage("Export Complete");
                 SalmonDialog.promptDialog("Export", "Files Exported To: "
-                        + drive.getExportDir().getAbsolutePath());
+                        + drive.getExportDir().getDisplayPath());
             }
             setFileProgress(1);
             setFilesProgress(1);
@@ -719,9 +732,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
         });
     }
 
-    public void importFiles(IRealFile[] fileNames, SalmonFile importDir, boolean deleteSource,
-                            Consumer<SalmonFile[]> onFinished) {
-        if(isJobRunning())
+    public void importFiles(IFile[] fileNames, AesFile importDir, boolean deleteSource,
+                            Consumer<AesFile[]> onFinished) {
+        if (isJobRunning())
             throw new RuntimeException("Another job is running");
         executor.execute(() ->
         {
@@ -732,30 +745,34 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
             final Exception[] exception = {null};
             int[] processedFiles = new int[]{-1};
-            SalmonFile[] files = null;
-            List<IRealFile> failedFiles = new ArrayList<>();
+            AesFile[] files = null;
+            List<IFile> failedFiles = new ArrayList<>();
             try {
-                files = fileCommander.importFiles(fileNames, importDir,
-                        deleteSource, true,
-                        (taskProgress) ->
-                        {
-                            if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                                try {
-                                    setTaskMessage("Importing: " + taskProgress.getFile().getBaseName()
-                                            + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                processedFiles[0] = taskProgress.getProcessedFiles();
-                            }
-                            setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
-                            setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
-                        }, IRealFile.autoRename, (file, ex) ->
-                        {
-                            handleThrowException(ex);
-                            failedFiles.add(file);
-                            exception[0] = ex;
-                        });
+                FileCommander.BatchImportOptions importOptions = new FileCommander.BatchImportOptions();
+                importOptions.autoRename = IFile.autoRename;
+                importOptions.deleteSource = deleteSource;
+                importOptions.integrity = true;
+                importOptions.onProgressChanged = (taskProgress) ->
+                {
+                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+                        try {
+                            setTaskMessage("Importing: " + taskProgress.getFile().getName()
+                                    + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        processedFiles[0] = taskProgress.getProcessedFiles();
+                    }
+                    setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
+                    setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
+                };
+                importOptions.onFailed = (file, ex) ->
+                {
+                    handleThrowException(ex);
+                    failedFiles.add(file);
+                    exception[0] = ex;
+                };
+                files = fileCommander.importFiles(fileNames, importDir, importOptions);
                 if (onFinished != null)
                     onFinished.accept(files);
             } catch (Exception e) {
@@ -795,29 +812,32 @@ public class SalmonVaultManager implements IPropertyNotifier {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            salmonFiles = new SalmonFile[]{};
+            salmonFiles = new AesFile[]{};
             populateFileList(null);
             setTaskRunning(true);
             setStatus("Searching");
-            IVirtualFile[] files = fileCommander.search(currDir, value, any, (IVirtualFile salmonFile) ->
+            FileSearcher.SearchOptions searchOptions = new FileSearcher.SearchOptions();
+            searchOptions.anyTerm = any;
+            searchOptions.onResultFound = (IVirtualFile salmonFile) ->
             {
                 int position = 0;
-                for (SalmonFile file : fileItemList) {
-                    if (((SalmonFile) salmonFile).getTag() != null &&
-                            (file.getTag() == null || (int) ((SalmonFile) salmonFile).getTag() > (int) file.getTag()))
+                for (AesFile file : fileItemList) {
+                    if (((AesFile) salmonFile).getTag() != null &&
+                            (file.getTag() == null || (int) ((AesFile) salmonFile).getTag() > (int) file.getTag()))
                         break;
                     position++;
                 }
                 try {
-                    fileItemList.add(position, (SalmonFile) salmonFile);
-                    onFileItemAdded.accept(position, (SalmonFile) salmonFile);
+                    fileItemList.add(position, (AesFile) salmonFile);
+                    onFileItemAdded.accept(position, (AesFile) salmonFile);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }, null);
-            this.salmonFiles = new SalmonFile[files.length];
+            };
+            IVirtualFile[] files = fileCommander.search(currDir, value, searchOptions);
+            this.salmonFiles = new AesFile[files.length];
             for (int i = 0; i < files.length; i++)
-                this.salmonFiles[i] = (SalmonFile) files[i];
+                this.salmonFiles[i] = (AesFile) files[i];
             if (!fileCommander.isFileSearcherStopped())
                 setStatus("Search Complete");
             else
@@ -826,8 +846,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
         });
     }
 
-    public void createVault(IRealFile dir, String password) throws IOException {
-        this.drive = SalmonDrive.createDrive(dir, getDriveClassType(), password, this.sequencer);
+    public void createVault(IFile dir, String password) throws IOException {
+        this.drive = AesDrive.createDrive(dir, getDriveClassType(), password, this.sequencer);
         this.currDir = this.drive.getRoot();
         SalmonSettings.getInstance().setVaultLocation(dir.getPath());
         this.refresh();
@@ -840,16 +860,16 @@ public class SalmonVaultManager implements IPropertyNotifier {
         setTaskMessage("");
     }
 
-    public String getFileProperties(SalmonFile item)
+    public String getFileProperties(AesFile item)
             throws IOException {
-        return "Name: " + item.getBaseName() + "\n" +
+        return "Name: " + item.getName() + "\n" +
                 "Path: " + item.getPath() + "\n" +
-                (!item.isDirectory() ? ("Size: " + ByteUtils.getBytes(item.getSize(), 2)
-                        + " (" + item.getSize() + " bytes)") : "Items: " + item.listFiles().length) + "\n" +
-                "Encrypted Name: " + item.getRealFile().getBaseName() + "\n" +
-                "Encrypted Path: " + item.getRealFile().getAbsolutePath() + "\n" +
-                (!item.isDirectory() ? "Encrypted Size: " + ByteUtils.getBytes(item.getRealFile().length(), 2)
-                        + " (" + item.getRealFile().length() + " bytes)" : "") + "\n";
+                (!item.isDirectory() ? ("Size: " + ByteUtils.getBytes(item.getLength(), 2)
+                        + " (" + item.getLength() + " bytes)") : "Items: " + item.listFiles().length) + "\n" +
+                "Encrypted Name: " + item.getRealFile().getName() + "\n" +
+                "Encrypted Path: " + item.getRealFile().getDisplayPath() + "\n" +
+                (!item.isDirectory() ? "Encrypted Size: " + ByteUtils.getBytes(item.getRealFile().getLength(), 2)
+                        + " (" + item.getRealFile().getLength() + " bytes)" : "") + "\n";
     }
 
     public boolean canGoBack() {
@@ -860,18 +880,18 @@ public class SalmonVaultManager implements IPropertyNotifier {
         this.promptExitOnBack = promptExitOnBack;
     }
 
-    public void getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<AtomicInteger, AtomicLong> updateUsage) {
+    public void getDiskUsage(AesFile[] selectedFiles, BiConsumer<AtomicInteger, AtomicLong> updateUsage) {
         executor.submit(() -> {
             getDiskUsage(selectedFiles, updateUsage, new AtomicInteger(0), new AtomicLong(0));
         });
     }
 
-    private long getDiskUsage(SalmonFile[] selectedFiles, BiConsumer<AtomicInteger, AtomicLong> updateUsage,
+    private long getDiskUsage(AesFile[] selectedFiles, BiConsumer<AtomicInteger, AtomicLong> updateUsage,
                               AtomicInteger totalItems, AtomicLong totalSize) {
-        for (SalmonFile file : selectedFiles) {
+        for (AesFile file : selectedFiles) {
             totalItems.incrementAndGet();
             if (file.isFile()) {
-                totalSize.addAndGet(file.getRealFile().length());
+                totalSize.addAndGet(file.getRealFile().getLength());
             } else {
                 getDiskUsage(file.listFiles(), updateUsage, totalItems, totalSize);
             }

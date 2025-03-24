@@ -4,16 +4,16 @@ plugins {
 }
 
 group 'com.mku.salmon'
-version '2.1.1'
+version '3.0.0'
 
 repositories {
     maven {
         // uncomment for local repo
-//        allowInsecureProtocol true
-//        url 'http://localhost/repository/maven/releases'
+        allowInsecureProtocol true
+        url 'http://localhost/repository/maven/releases'
 
         // official salmon repo
-         url 'https://github.com/mku11/Repo/raw/main/maven/releases'
+//         url 'https://github.com/mku11/Repo/raw/main/maven/releases'
     }
     mavenCentral()
 }
@@ -64,12 +64,11 @@ build.dependsOn unzipNative
 dependencies {
 
     // salmon libs:
-    implementation 'com.mku.salmon:salmon-core:2.1.0'
-    implementation 'com.mku.salmon:salmon-fs:2.1.0'
-    implementation 'com.mku.salmon:salmon-win:2.1.0'
-    // optional fast AES intrinsics and Tiny AES:
-    implementation 'com.mku.salmon:salmon-native:2.1.0:win-x86_64'
-    nativeImplementation 'com.mku.salmon:salmon-native:2.1.0:win-x86_64'
+    implementation 'com.mku.salmon:salmon-core:3.0.0'
+    implementation 'com.mku.salmon:salmon-fs:3.0.0'
+    implementation 'com.mku.salmon:salmon-win:3.0.0'
+    implementation 'com.mku.salmon:salmon-native:3.0.0:win-x86_64'
+    nativeImplementation 'com.mku.salmon:salmon-native:3.0.0:win-x86_64'
 
     implementation 'net.java.dev.jna:jna:5.13.0'
     implementation 'net.java.dev.jna:jna-platform:5.13.0'

@@ -23,19 +23,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-import com.mku.file.IRealFile;
-import com.mku.file.JavaFile;
-import com.mku.sequence.SequenceException;
-import com.mku.salmon.sequence.SalmonSequenceSerializer;
+import com.mku.fs.file.File;
+import com.mku.fs.file.IFile;
+import com.mku.salmon.sequence.SequenceException;
+import com.mku.salmon.sequence.SequenceSerializer;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.model.SalmonSettings;
-import com.mku.salmon.win.sequencer.WinClientSequencer;
-import com.mku.salmon.win.sequencer.WinFileSequencer;
-import com.mku.salmon.win.sequencer.WinSequenceTamperedException;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
+import com.mku.win.salmon.sequencer.WinClientSequencer;
+import com.mku.win.salmon.sequencer.WinFileSequencer;
+import com.mku.win.salmon.sequencer.WinSequenceTamperedException;
 
 
 import java.io.IOException;
@@ -50,11 +49,11 @@ public class SalmonWinVaultManager extends SalmonVaultManager {
     }
 
     protected void setupWinFileSequencer() throws IOException {
-        IRealFile dirFile = new JavaFile(getSequencerDefaultDirPath());
+        IFile dirFile = new File(getSequencerDefaultDirPath());
         if (!dirFile.exists())
             dirFile.mkdir();
-        IRealFile seqFile = new JavaFile(getSequencerFilepath());
-        WinFileSequencer sequencer = new WinFileSequencer(seqFile, new SalmonSequenceSerializer(), SalmonConfig.REGISTRY_CHKSUM_KEY);
+        IFile seqFile = new File(getSequencerFilepath());
+        WinFileSequencer sequencer = new WinFileSequencer(seqFile, new SequenceSerializer(), SalmonConfig.REGISTRY_CHKSUM_KEY);
         setSequencer(sequencer);
     }
 

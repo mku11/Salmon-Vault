@@ -23,23 +23,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.service.SalmonStreamHandler;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
+import com.mku.salmonfs.file.AesFile;
+import com.mku.salmonfs.handler.AesStreamHandler;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Bounds;
-import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -198,13 +194,13 @@ public class MediaPlayerController {
     }
 
     private void load(SalmonFileViewModel fileItem) {
-        SalmonFile file = fileItem.getSalmonFile();
+        AesFile file = fileItem.getAesFile();
         String filePath;
         try {
             filePath = file.getRealPath();
             this.url = null;
             this.url = "http://localhost/?path=" + URLEncoder.encode(filePath, StandardCharsets.UTF_8);
-            SalmonStreamHandler.getInstance().register(this.url, file);
+            AesStreamHandler.getInstance().register(this.url, file);
             Media m = new Media(url);
             mp = new MediaPlayer(m);
             mp.setOnPaused(() -> setImage(playImage));
@@ -248,7 +244,7 @@ public class MediaPlayerController {
         mp.stop();
         mp.dispose();
         stage.close();
-        SalmonStreamHandler.getInstance().unregister(this.url);
+        AesStreamHandler.getInstance().unregister(this.url);
     }
 
     public void togglePlay() {

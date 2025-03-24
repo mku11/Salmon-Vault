@@ -23,9 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.file.IRealFile;
+
+import com.mku.fs.file.IFile;
 
 public interface IFileService
 {
-    public IRealFile getFile(String filepath, boolean isDirectory);
+    public IFile getFile(String filepath, boolean isDirectory);
 }

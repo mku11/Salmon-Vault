@@ -23,9 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.MemoryStream;
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.streams.SalmonStream;
+import com.mku.salmon.streams.AesStream;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
@@ -95,7 +95,7 @@ public class TextEditorController {
         this.item = item;
         String content;
         try {
-            content = getTextContent(item.getSalmonFile());
+            content = getTextContent(item.getAesFile());
             contentArea.setText(content);
             ShowTaskMessage("File loaded");
             WindowUtils.runOnMainThread(() ->
@@ -108,8 +108,8 @@ public class TextEditorController {
         }
     }
 
-    private String getTextContent(SalmonFile file) throws Exception {
-        SalmonStream stream = file.getInputStream();
+    private String getTextContent(AesFile file) throws Exception {
+        AesStream stream = file.getInputStream();
         MemoryStream ms = new MemoryStream();
         stream.copyTo(ms);
         stream.close();
@@ -123,15 +123,15 @@ public class TextEditorController {
     }
 
     public synchronized void onSave() {
-        SalmonFile oldFile = item.getSalmonFile();
-        SalmonFile targetFile = editor.OnSave(item.getSalmonFile(), contentArea.getText());
+        AesFile oldFile = item.getAesFile();
+        AesFile targetFile = editor.OnSave(item.getAesFile(), contentArea.getText());
         int index = SalmonVaultManager.getInstance().getFileItemList().indexOf(oldFile);
         if (index >= 0) {
             SalmonVaultManager.getInstance().getFileItemList().remove(oldFile);
             SalmonVaultManager.getInstance().getFileItemList().add(index, targetFile);
         }
         try {
-            item.setSalmonFile(targetFile);
+            item.setAesFile(targetFile);
             ShowTaskMessage("File saved");
             WindowUtils.runOnMainThread(() ->
             {

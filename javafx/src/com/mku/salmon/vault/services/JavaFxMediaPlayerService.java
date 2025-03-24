@@ -23,14 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmon.SalmonFile;
+import com.mku.salmonfs.file.AesFile;
 
 public class JavaFxMediaPlayerService implements IMediaPlayerService {
     public JavaFxMediaPlayerService() {
     }
 
     @Override
-    public void startMediaPlayer(SalmonFile file) {
+    public void startMediaPlayer(AesFile file) {
 
     }
 }

@@ -23,10 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmon.SalmonFile;
+
+import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.utils.ByteUtils;
-import com.mku.utils.FileUtils;
+
+import com.mku.salmonfs.file.AesFile;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -52,9 +54,9 @@ public class SalmonFileViewModel {
     private final SimpleStringProperty size = new SimpleStringProperty();
     private final SimpleStringProperty path = new SimpleStringProperty();
 
-    private SalmonFile salmonFile;
+    private AesFile salmonFile;
 
-    public SalmonFileViewModel(SalmonFile salmonFile) {
+    public SalmonFileViewModel(AesFile salmonFile) {
         this.salmonFile = salmonFile;
     }
 
@@ -75,7 +77,7 @@ public class SalmonFileViewModel {
     @FXML
     public SimpleStringProperty nameProperty() {
         if(name.get() == null)
-            updateProperty(() -> salmonFile.getBaseName(), this.name);
+            updateProperty(() -> salmonFile.getName(), this.name);
         return name;
     }
 
@@ -119,14 +121,14 @@ public class SalmonFileViewModel {
         });
     }
 
-    public void setSalmonFile(SalmonFile file) throws Exception {
+    public void setAesFile(AesFile file) throws Exception {
         salmonFile = file;
         update();
     }
 
     public void update() {
         try {
-            name.setValue(salmonFile.getBaseName());
+            name.setValue(salmonFile.getName());
             date.setValue(getDateText());
             size.setValue(getSizeText());
             type.setValue(getExtText());
@@ -139,28 +141,28 @@ public class SalmonFileViewModel {
     }
 
     private String getExtText() throws IOException {
-        return FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
+        return FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
     }
 
     private String getDateText() {
-        return formatter.format(new Date(salmonFile.getLastDateTimeModified()));
+        return formatter.format(new Date(salmonFile.getLastDateModified()));
     }
 
     private String getSizeText() {
         if (!salmonFile.isDirectory())
-            return ByteUtils.getBytes(salmonFile.getRealFile().length(), 2);
+            return ByteUtils.getBytes(salmonFile.getRealFile().getLength(), 2);
         else {
             int items = salmonFile.getChildrenCount();
             return items + " item" + (items == 1 ? "" : "s");
         }
     }
 
-    public SalmonFile getSalmonFile() {
+    public AesFile getAesFile() {
         return salmonFile;
     }
 
     public void rename(String newValue) throws Exception {
         salmonFile.rename(newValue);
-        name.setValue(salmonFile.getBaseName());
+        name.setValue(salmonFile.getName());
     }
 }

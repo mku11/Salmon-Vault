@@ -24,11 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.salmon.password.Password;
 import com.mku.salmon.streams.ProviderType;
-import com.mku.salmon.streams.SalmonStream;
+import com.mku.salmon.streams.AesStream;
 import com.mku.salmon.password.PbkdfAlgo;
 import com.mku.salmon.password.PbkdfType;
-import com.mku.salmon.password.SalmonPassword;
 import com.mku.salmon.vault.services.ISettingsService;
 import com.mku.salmon.vault.services.ServiceLocator;
 
@@ -68,7 +68,7 @@ public class SalmonSettings {
     public void setAesType(AESType aesType) {
         this.aesType = aesType;
         settingsService.setAesType(aesType.name());
-        SalmonStream.setAesProviderType(ProviderType.valueOf(aesType.name()));
+        AesStream.setAesProviderType(ProviderType.valueOf(aesType.name()));
     }
 
     public enum PbkdfImplType {
@@ -86,7 +86,7 @@ public class SalmonSettings {
     public void setPbkdfImpl(PbkdfImplType pbkdfImpl) {
         this.pbkdfImpl = pbkdfImpl;
         settingsService.setPbkdfImplType(pbkdfImpl.name());
-        SalmonPassword.setPbkdfType(PbkdfType.valueOf(this.pbkdfImpl.name()));
+        Password.setPbkdfType(PbkdfType.valueOf(this.pbkdfImpl.name()));
     }
 
     public enum PbkdfAlgoType {
@@ -105,7 +105,7 @@ public class SalmonSettings {
     public void setPbkdfAlgo(PbkdfAlgoType pbkdfAlgo) {
         this.pbkdfAlgo = pbkdfAlgo;
         settingsService.setPbkdfAlgoType(pbkdfAlgo.toString());
-        SalmonPassword.setPbkdfAlgo(PbkdfAlgo.valueOf(pbkdfAlgo.name()));
+        Password.setPbkdfAlgo(PbkdfAlgo.valueOf(pbkdfAlgo.name()));
     }
 
     public enum AuthType {
@@ -167,11 +167,11 @@ public class SalmonSettings {
     public void load() {
         vaultLocation = settingsService.getVaultLocation();
         aesType = AESType.valueOf(settingsService.getAesType());
-        SalmonStream.setAesProviderType(ProviderType.valueOf(aesType.name()));
+        AesStream.setAesProviderType(ProviderType.valueOf(aesType.name()));
         pbkdfImpl = PbkdfImplType.valueOf(settingsService.getPbkdfImplType());
-        SalmonPassword.setPbkdfType(PbkdfType.valueOf(this.pbkdfImpl.name()));
+        Password.setPbkdfType(PbkdfType.valueOf(this.pbkdfImpl.name()));
         pbkdfAlgo = PbkdfAlgoType.valueOf(settingsService.getPbkdfAlgoType());
-        SalmonPassword.setPbkdfAlgo(PbkdfAlgo.valueOf(pbkdfAlgo.name()));
+        Password.setPbkdfAlgo(PbkdfAlgo.valueOf(pbkdfAlgo.name()));
         sequencerAuthType = AuthType.valueOf(settingsService.getSequenceAuthType());
         deleteAfterImport = settingsService.getDeleteAfterImport();
         lastImportDir = settingsService.getLastImportDir();

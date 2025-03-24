@@ -23,14 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.fs.drive.utils.FileUtils;
 import com.mku.func.BiConsumer;
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.streams.SalmonFileInputStream;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.services.IWebBrowserService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
-import com.mku.utils.FileUtils;
+import com.mku.salmonfs.file.AesFile;
+import com.mku.salmonfs.streams.AesFileInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,24 +74,24 @@ public class SalmonContentViewer implements IPropertyNotifier {
         unobservePropertyChanges();
     }
 
-    void load(SalmonFile file) throws IOException {
+    void load(AesFile file) throws IOException {
         String filePath = null;
         try {
             filePath = file.getRealPath();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String filename = file.getBaseName();
+        String filename = file.getName();
         String mimeType = null; //= MimeTypesMap.GetMimeType(filename);
         // webview2 buffering with partial content works only with video and audio
         boolean buffered = FileUtils.isVideo(filename) || FileUtils.isAudio(filename);
         String contentPath = "content.dat";
-        webBrowserService.setResponse(URL + contentPath, mimeType, file.getSize(), BUFFER_SIZE, buffered, (pos) ->
+        webBrowserService.setResponse(URL + contentPath, mimeType, file.getLength(), BUFFER_SIZE, buffered, (pos) ->
         {
             try {
                 if (stream != null)
                     stream.close();
-                SalmonFileInputStream fileStream = new SalmonFileInputStream(file, BUFFERS, BUFFER_SIZE, THREADS, BACK_OFFSET);
+                AesFileInputStream fileStream = new AesFileInputStream(file, BUFFERS, BUFFER_SIZE, THREADS, BACK_OFFSET);
                 // we need to offset the start of the stream so the webview can see it as partial content
                 if (buffered) {
                     fileStream.setPositionStart(pos);
