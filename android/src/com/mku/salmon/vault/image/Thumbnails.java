@@ -30,13 +30,13 @@ import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.provider.MediaStore;
 
+import com.mku.fs.drive.utils.FileUtils;
+import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.InputStreamWrapper;
 import com.mku.streams.MemoryStream;
 import com.mku.streams.RandomAccessStream;
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.streams.SalmonStream;
+import com.mku.salmon.streams.AesStream;
 import com.mku.salmon.vault.main.SalmonApplication;
-import com.mku.utils.FileUtils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -58,7 +58,7 @@ public class Thumbnails {
      *
      * @param salmonFile The encrypted media file which will be used to get the thumbnail
      */
-    public static Bitmap getVideoThumbnail(SalmonFile salmonFile) throws Exception {
+    public static Bitmap getVideoThumbnail(AesFile salmonFile) throws Exception {
         java.io.File tmpFile = Thumbnails.getVideoTmpFile(salmonFile);
         return getVideoThumbnail(tmpFile, 0, true);
     }
@@ -108,17 +108,17 @@ public class Thumbnails {
      *
      * @param salmonFile The encrypted file that will be used to get the temp file
      */
-    public static java.io.File getVideoTmpFile(SalmonFile salmonFile) throws Exception {
+    public static java.io.File getVideoTmpFile(AesFile salmonFile) throws Exception {
         java.io.File tmpDir = new java.io.File(SalmonApplication.getInstance().getApplicationContext().getCacheDir(), TMP_THUMB_DIR);
         if (!tmpDir.exists())
             tmpDir.mkdir();
 
-        java.io.File tmpFile = new java.io.File(tmpDir, random.nextInt() + "." + FileUtils.getExtensionFromFileName(salmonFile.getBaseName()));
+        java.io.File tmpFile = new java.io.File(tmpDir, random.nextInt() + "." + FileUtils.getExtensionFromFileName(salmonFile.getName()));
         if (tmpFile.exists())
             tmpFile.delete();
         tmpFile.createNewFile();
         java.io.FileOutputStream fileStream = new java.io.FileOutputStream(tmpFile);
-        SalmonStream ins = salmonFile.getInputStream();
+        AesStream ins = salmonFile.getInputStream();
         byte[] buffer = new byte[BUFFER_SIZE];
         int bytesRead;
         long totalBytesRead = 0;
@@ -140,9 +140,9 @@ public class Thumbnails {
      * @param salmonFile The encrypted file to be used
      * @param maxSize    The max content length that will be decrypted from the beginning of the file
      */
-    private static RandomAccessStream getTempStream(SalmonFile salmonFile, long maxSize) throws Exception {
+    private static RandomAccessStream getTempStream(AesFile salmonFile, long maxSize) throws Exception {
         MemoryStream ms = new MemoryStream();
-        SalmonStream ins = salmonFile.getInputStream();
+        AesStream ins = salmonFile.getInputStream();
         byte[] buffer = new byte[BUFFER_SIZE];
         int bytesRead;
         long totalBytesRead = 0;
@@ -164,12 +164,12 @@ public class Thumbnails {
      *
      * @param salmonFile
      */
-    public static Bitmap getImageThumbnail(SalmonFile salmonFile) throws IOException {
+    public static Bitmap getImageThumbnail(AesFile salmonFile) throws IOException {
         BufferedInputStream stream = null;
         Bitmap bitmap = null;
         try {
-            String ext = FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
-            if (ext.equals("gif") && salmonFile.getSize() > TMP_GIF_THUMB_MAX_SIZE)
+            String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
+            if (ext.equals("gif") && salmonFile.getLength() > TMP_GIF_THUMB_MAX_SIZE)
                 stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(salmonFile, TMP_GIF_THUMB_MAX_SIZE)), BUFFER_SIZE);
             else
                 stream = new BufferedInputStream(new InputStreamWrapper(salmonFile.getInputStream()), BUFFER_SIZE);

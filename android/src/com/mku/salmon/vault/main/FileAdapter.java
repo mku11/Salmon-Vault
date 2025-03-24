@@ -43,14 +43,14 @@ import androidx.annotation.NonNull;
 import androidx.arch.core.util.Function;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.mku.fs.drive.utils.FileUtils;
 import com.mku.func.BiConsumer;
-import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.android.R;
 import com.mku.convert.BitConverter;
 import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
-import com.mku.utils.FileUtils;
+import com.mku.salmonfs.file.AesFile;
 
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -74,16 +74,16 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     private static final int TASK_THREADS = 4;
 
     private final boolean displayItems = true;
-    private final List<SalmonFile> items;
+    private final List<AesFile> items;
     private final LayoutInflater inflater;
     private final Function<Integer, Boolean> itemClicked;
     private final Activity activity;
-    private final LinkedHashMap<SalmonFile, Bitmap> bitmapCache = new LinkedHashMap<>();
+    private final LinkedHashMap<AesFile, Bitmap> bitmapCache = new LinkedHashMap<>();
     // we use a deque and add jobs to the front for better user experience
     private final LinkedBlockingDeque<ViewHolder> tasks = new LinkedBlockingDeque<>();
-    private SalmonFile lastSelected;
+    private AesFile lastSelected;
     private int cacheSize = 0;
-    private LinkedHashSet<SalmonFile> selectedFiles = new LinkedHashSet<>();
+    private LinkedHashSet<AesFile> selectedFiles = new LinkedHashSet<>();
     private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     private Mode mode = Mode.SINGLE_SELECT;
     private ExecutorService executor;
@@ -96,7 +96,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         this.onCacheCleared = onCacheCleared;
     }
 
-    public FileAdapter(Activity activity, List<SalmonFile> items, Function<Integer, Boolean> itemClicked) {
+    public FileAdapter(Activity activity, List<AesFile> items, Function<Integer, Boolean> itemClicked) {
         this.items = items;
         this.inflater = LayoutInflater.from(activity);
         this.itemClicked = itemClicked;
@@ -104,7 +104,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         createThread();
     }
 
-    public LinkedHashSet<SalmonFile> getSelectedFiles() {
+    public LinkedHashSet<AesFile> getSelectedFiles() {
         return selectedFiles;
     }
 
@@ -180,7 +180,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         });
     }
 
-    private void updateSelected(ViewHolder viewHolder, SalmonFile salmonFile) {
+    private void updateSelected(ViewHolder viewHolder, AesFile salmonFile) {
         viewHolder.selected.setChecked(selectedFiles.contains(salmonFile));
     }
 
@@ -188,17 +188,17 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         long size = 0;
         long date = 0;
         String items = "";
-        SalmonFile file = viewHolder.salmonFile;
+        AesFile file = viewHolder.salmonFile;
         try {
-            String filename = viewHolder.salmonFile.getBaseName();
+            String filename = viewHolder.salmonFile.getName();
             activity.runOnUiThread(() -> {
                 viewHolder.filename.setText(filename);
             });
             if (viewHolder.salmonFile.isDirectory() && displayItems)
                 items = viewHolder.salmonFile.getChildrenCount() + " " + activity.getString(R.string.Items);
             else
-                size = viewHolder.salmonFile.getRealFile().length();
-            date = viewHolder.salmonFile.getLastDateTimeModified();
+                size = viewHolder.salmonFile.getRealFile().getLength();
+            date = viewHolder.salmonFile.getLastDateModified();
 
             String finalItems = items;
             long finalSize = size;
@@ -303,7 +303,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     }
 
     private void updateFileInfo(ViewHolder viewHolder, String filename,
-                                String items, SalmonFile salmonFile,
+                                String items, AesFile salmonFile,
                                 long size, long date) {
         viewHolder.filename.setText(filename);
         viewHolder.filedate.setText(formatter.format(new Date(date)));
@@ -319,7 +319,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         }
     }
 
-    private boolean updateIconFromCache(ViewHolder viewHolder, SalmonFile file, String ext) {
+    private boolean updateIconFromCache(ViewHolder viewHolder, AesFile file, String ext) {
         if (bitmapCache.containsKey(file)) {
             Bitmap bitmap = bitmapCache.get(file);
             if (bitmap == null)
@@ -363,8 +363,8 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
     public void resetCache() {
         int reduceSize = 0;
-        List<SalmonFile> keysToRemove = new LinkedList<>();
-        for (SalmonFile key : bitmapCache.keySet()) {
+        List<AesFile> keysToRemove = new LinkedList<>();
+        for (AesFile key : bitmapCache.keySet()) {
             Bitmap bitmap = bitmapCache.get(key);
             if (bitmap != null)
                 reduceSize += bitmap.getAllocationByteCount();
@@ -372,7 +372,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                 break;
             keysToRemove.add(key);
         }
-        for (SalmonFile key : keysToRemove) {
+        for (AesFile key : keysToRemove) {
             Bitmap bitmap = bitmapCache.remove(key);
             if (bitmap != null)
                 cacheSize -= bitmap.getAllocationByteCount();
@@ -380,10 +380,10 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         onCacheCleared.run();
     }
 
-    private Bitmap getFileThumbnail(SalmonFile salmonFile, int step, java.io.File tmpFile,
+    private Bitmap getFileThumbnail(AesFile salmonFile, int step, java.io.File tmpFile,
                                     boolean delete) throws Exception {
         Bitmap bitmap = null;
-        String ext = FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
+        String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
         if (ext.equals("mp4")) {
             bitmap = Thumbnails.getVideoThumbnail(tmpFile, VIDEO_THUMBNAIL_MSECS * (step + 1), delete);
         } else if (ext.equals("png") || ext.equals("jpg") || ext.equals("bmp") || ext.equals("webp") || ext.equals("gif")) {
@@ -394,7 +394,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         return bitmap;
     }
 
-    private void addBitmapToCache(SalmonFile file, Bitmap bitmap) {
+    private void addBitmapToCache(AesFile file, Bitmap bitmap) {
         bitmapCache.put(file, bitmap);
         if (bitmap != null)
             cacheSize += bitmap.getAllocationByteCount();
@@ -412,7 +412,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         return new ViewHolder(view, itemClicked, this);
     }
 
-    public SalmonFile getLastSelected() {
+    public AesFile getLastSelected() {
         return lastSelected;
     }
 
@@ -439,7 +439,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         public TextView filedate;
         public TextView extension;
         public CheckBox selected;
-        public SalmonFile salmonFile;
+        public AesFile salmonFile;
         public boolean animate;
 
         public ViewHolder(View itemView, Function<Integer, Boolean> itemClicked, FileAdapter adapter) {
@@ -453,7 +453,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
             itemView.setOnClickListener((View view) ->
             {
-                SalmonFile salmonFile = items.get(super.getLayoutPosition());
+                AesFile salmonFile = items.get(super.getLayoutPosition());
                 if (mode == Mode.MULTI_SELECT) {
                     selected.setChecked(!selected.isChecked());
                     if (selected.isChecked())
@@ -471,7 +471,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             });
 
             itemView.setOnLongClickListener((View view) -> {
-                SalmonFile salmonFile = items.get(super.getLayoutPosition());
+                AesFile salmonFile = items.get(super.getLayoutPosition());
                 if (mode == Mode.SINGLE_SELECT) {
                     setMultiSelect(true);
                 }

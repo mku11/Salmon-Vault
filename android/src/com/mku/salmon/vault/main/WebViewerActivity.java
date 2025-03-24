@@ -41,13 +41,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.mku.fs.drive.utils.FileUtils;
+import com.mku.salmon.integrity.IntegrityException;
+import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.InputStreamWrapper;
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.streams.SalmonStream;
+import com.mku.salmon.streams.AesStream;
 import com.mku.salmon.vault.android.R;
-import com.mku.integrity.IntegrityException;
 import com.mku.salmon.vault.dialog.SalmonDialog;
-import com.mku.utils.FileUtils;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -60,7 +60,7 @@ public class WebViewerActivity extends AppCompatActivity {
     private static final int SWIPE_VELOCITY_THRESHOLD = 1200;
     private static final int ENC_BUFFER_SIZE = 512 * 1024;
 
-    private static SalmonFile[] fileList = null;
+    private static AesFile[] fileList = null;
     private static int pos;
 
     private WebView webView;
@@ -69,7 +69,7 @@ public class WebViewerActivity extends AppCompatActivity {
     private TextView mTitle;
     private final Object swipeObj = new Object();
 
-    public static void setContentFiles(int position, SalmonFile[] salmonFiles) {
+    public static void setContentFiles(int position, AesFile[] salmonFiles) {
         pos = position;
         fileList = salmonFiles;
     }
@@ -90,8 +90,8 @@ public class WebViewerActivity extends AppCompatActivity {
 
     }
 
-    protected void loadContent(SalmonFile file) throws Exception {
-        String filename = file.getBaseName();
+    protected void loadContent(AesFile file) throws Exception {
+        String filename = file.getName();
         String ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
         String mimeType = null;
         try {
@@ -104,13 +104,13 @@ public class WebViewerActivity extends AppCompatActivity {
         }
 
         try {
-            SalmonStream encStream = file.getInputStream();
+            AesStream encStream = file.getInputStream();
 
             // in order for the webview not to crash we suppress Exceptions
             encStream.setFailSilently(true);
             InputStreamWrapper inputStream = new InputStreamWrapper(encStream);
 
-            // we inject our SalmonStream into the webview client
+            // we inject our AesStream into the webview client
             stream = new BufferedInputStream(inputStream, ENC_BUFFER_SIZE);
             webViewClient.setStream(mimeType, stream);
             runOnUiThread(() -> {
@@ -194,7 +194,7 @@ public class WebViewerActivity extends AppCompatActivity {
 
     private void setupActionBar() {
         try {
-            if (fileList.length > 0 && !FileUtils.isText(fileList[0].getBaseName())) {
+            if (fileList.length > 0 && !FileUtils.isText(fileList[0].getName())) {
                 if (getSupportActionBar() != null)
                     getSupportActionBar().hide();
             }

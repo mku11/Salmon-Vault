@@ -20,13 +20,12 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.mku.fs.drive.utils.FileUtils;
 import com.mku.func.Consumer;
-import com.mku.salmon.SalmonFile;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.utils.WindowUtils;
 
 import com.mku.func.BiConsumer;
-import com.mku.utils.FileUtils;
 
 import java.util.TreeMap;
 

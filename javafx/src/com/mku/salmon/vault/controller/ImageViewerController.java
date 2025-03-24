@@ -27,7 +27,7 @@ import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonImageViewer;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
+import com.mku.salmon.vault.viewmodel.AesFileViewModel;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
@@ -81,7 +81,7 @@ public class ImageViewerController {
 
     private static double imageViewMargin = 64;
 
-    public static void openImageViewer(SalmonFileViewModel file, Stage owner) throws IOException {
+    public static void openImageViewer(AesFileViewModel file, Stage owner) throws IOException {
         FXMLLoader loader = new FXMLLoader(SalmonSettings.getInstance().getClass().getResource("/view/image-viewer.fxml"));
         Parent root = loader.load();
         ImageViewerController controller = loader.getController();
@@ -113,7 +113,7 @@ public class ImageViewerController {
         stage.show();
     }
 
-    private void load(SalmonFileViewModel file) {
+    private void load(AesFileViewModel file) {
         if(viewer == null)
             viewer = new SalmonImageViewer();
         try {

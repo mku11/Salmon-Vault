@@ -40,10 +40,10 @@ import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.mku.android.salmon.media.SalmonMediaDataSource;
-import com.mku.salmon.SalmonFile;
+import com.mku.android.salmonfs.media.AesMediaDataSource;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.utils.WindowUtils;
+import com.mku.salmonfs.file.AesFile;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -64,7 +64,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
 
     private static final int THRESHOLD_SEEK = 30;
 
-    private static SalmonFile[] videos;
+    private static AesFile[] videos;
     private static int pos;
 
     private final Object swipeObj = new Object();
@@ -77,7 +77,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     private TextView mTime;
     private TextView mTotalTime;
     private MediaPlayer mediaPlayer;
-    private SalmonMediaDataSource source;
+    private AesMediaDataSource source;
     private RelativeLayout mSeekBarLayout;
     private RelativeLayout mTitleLayout;
     private TextView mTitle;
@@ -90,7 +90,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     private float speed = 1.0f;
     private int old_x = 0;
 
-    public static void setMediaFiles(int position, SalmonFile[] mediaFiles) {
+    public static void setMediaFiles(int position, AesFile[] mediaFiles) {
         pos = position;
         videos = mediaFiles;
     }
@@ -184,9 +184,9 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         }, 500);
     }
 
-    protected void loadContent(SalmonFile file) throws Exception {
-        mTitle.setText(file.getBaseName());
-        source = new SalmonMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
+    protected void loadContent(AesFile file) throws Exception {
+        mTitle.setText(file.getName());
+        source = new AesMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
         mediaPlayer.setDataSource(source);
         mediaPlayer.prepareAsync();
     }

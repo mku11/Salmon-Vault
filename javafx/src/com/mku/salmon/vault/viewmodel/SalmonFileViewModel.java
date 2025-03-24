@@ -43,7 +43,7 @@ import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
-public class SalmonFileViewModel {
+public class AesFileViewModel {
     private static final int BACKGROUND_THREADS = 4;
     private static final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
 
@@ -56,7 +56,7 @@ public class SalmonFileViewModel {
 
     private AesFile salmonFile;
 
-    public SalmonFileViewModel(AesFile salmonFile) {
+    public AesFileViewModel(AesFile salmonFile) {
         this.salmonFile = salmonFile;
     }
 

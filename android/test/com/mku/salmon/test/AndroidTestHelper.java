@@ -43,13 +43,13 @@ import com.mku.android.file.AndroidDrive;
 import com.mku.salmon.SalmonDecryptor;
 import com.mku.salmon.SalmonDefaultOptions;
 import com.mku.salmon.SalmonEncryptor;
-import com.mku.salmon.io.SalmonStream;
+import com.mku.salmon.io.AesStream;
 import com.mku.salmon.transform.ISalmonCTRTransformer;
 import com.mku.salmon.transform.SalmonTransformerFactory;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.model.SalmonVaultManager;
-import com.mku.salmonfs.SalmonDriveManager;
-import com.mku.salmonfs.SalmonFile;
+import com.mku.salmonfs.AesDriveManager;
+import com.mku.salmonfs.AesFile;
 
 import org.hamcrest.Matcher;
 import org.junit.Assert;
@@ -100,20 +100,20 @@ public class AndroidTestHelper {
         };
     }
 
-    public static SalmonFile login(Activity activity, String vaultDir, String pass) throws Exception {
+    public static AesFile login(Activity activity, String vaultDir, String pass) throws Exception {
         AndroidDrive.initialize(activity);
-        SalmonDriveManager.setVirtualDriveClass(AndroidDrive.class);
-        SalmonDriveManager.openDrive(AndroidTestHelper.generateFolder(vaultDir));
+        AesDriveManager.setVirtualDriveClass(AndroidDrive.class);
+        AesDriveManager.openDrive(AndroidTestHelper.generateFolder(vaultDir));
 
-        if (!SalmonDriveManager.getDrive().hasConfig()) {
-            SalmonDriveManager.getDrive().setPassword(pass);
-            SalmonFile rootDir = SalmonDriveManager.getDrive().getVirtualRoot();
+        if (!AesDriveManager.getDrive().hasConfig()) {
+            AesDriveManager.getDrive().setPassword(pass);
+            AesFile rootDir = AesDriveManager.getDrive().getVirtualRoot();
             rootDir.listFiles();
         } else {
-            SalmonDriveManager.getDrive().authenticate(pass);
+            AesDriveManager.getDrive().authenticate(pass);
         }
 
-        SalmonFile salmonRootDir = SalmonDriveManager.getDrive().getVirtualRoot();
+        AesFile salmonRootDir = AesDriveManager.getDrive().getVirtualRoot();
         return salmonRootDir;
     }
 
@@ -121,7 +121,7 @@ public class AndroidTestHelper {
         throw new UnsupportedOperationException();
     }
 
-    public static void testCopy(Activity activity, SalmonFile currDir, String testDir, String testImportFile1,
+    public static void testCopy(Activity activity, AesFile currDir, String testDir, String testImportFile1,
                                 String testSubdir, String testImportFile2, String testNewDir, boolean move) throws Exception {
         AndroidTestHelper.createDir(activity, currDir, testDir);
         AndroidTestHelper.importFile(activity, currDir, testImportFile1);
@@ -134,17 +134,17 @@ public class AndroidTestHelper {
         AndroidTestHelper.deleteFile(currDir, testNewDir);
     }
 
-    private static void deleteFile(SalmonFile currDir, String filename) {
-        SalmonFile file = getChild(currDir, filename);
+    private static void deleteFile(AesFile currDir, String filename) {
+        AesFile file = getChild(currDir, filename);
         file.delete();
         Assert.assertFalse(file.exists());
     }
 
-    private static void copyFile(Activity activity, SalmonFile currDir, String srcFile, String destDir, boolean delete) throws Exception {
-        SalmonFile srcSalmonFile = getFileFromAdapter(activity, srcFile);
-        int children = getFile(new SalmonFile[]{srcSalmonFile});
-        Assert.assertNotNull(srcSalmonFile);
-        int index = getIndexFromAdapter(activity, srcSalmonFile);
+    private static void copyFile(Activity activity, AesFile currDir, String srcFile, String destDir, boolean delete) throws Exception {
+        AesFile srcAesFile = getFileFromAdapter(activity, srcFile);
+        int children = getFile(new AesFile[]{srcAesFile});
+        Assert.assertNotNull(srcAesFile);
+        int index = getIndexFromAdapter(activity, srcAesFile);
         onView(isRoot()).perform(sleep(1000));
         activity.openOptionsMenu();
         onView(ViewMatchers.withText("Multi Select")).perform(click());
@@ -154,7 +154,7 @@ public class AndroidTestHelper {
         onView(isRoot()).perform(sleep(3000));
         onView(ViewMatchers.withText("Move")).perform(click());
 
-        SalmonFile destSalmonDir = getFileFromAdapter(activity, destDir);
+        AesFile destSalmonDir = getFileFromAdapter(activity, destDir);
         Assert.assertNotNull(destSalmonDir);
         int indexDest = getIndexFromAdapter(activity, destSalmonDir);
         onView(isRoot()).perform(sleep(1000));
@@ -162,19 +162,19 @@ public class AndroidTestHelper {
                 .perform(RecyclerViewActions.actionOnItemAtPosition(indexDest, click()));
         activity.openOptionsMenu();
         onView(ViewMatchers.withText("Paste")).perform(click());
-        SalmonFile child = getChild(currDir, srcFile);
+        AesFile child = getChild(currDir, srcFile);
         Assert.assertNotNull(child);
-        Assert.assertEquals(children, getFile(new SalmonFile[]{child}));
+        Assert.assertEquals(children, getFile(new AesFile[]{child}));
         if (delete)
-            srcSalmonFile.delete();
+            srcAesFile.delete();
     }
 
-    private static SalmonFile getChild(SalmonFile currDir, String srcFile) {
-        SalmonFile[] files = currDir.listFiles();
-        SalmonFile f = null;
-        for (SalmonFile file : files) {
+    private static AesFile getChild(AesFile currDir, String srcFile) {
+        AesFile[] files = currDir.listFiles();
+        AesFile f = null;
+        for (AesFile file : files) {
             try {
-                if (file.getBaseName().equals(srcFile)) {
+                if (file.getName().equals(srcFile)) {
                     f = file;
                 }
             } catch (Exception e) {
@@ -184,14 +184,14 @@ public class AndroidTestHelper {
         return f;
     }
 
-    private static int getIndexFromAdapter(Activity activity, SalmonFile testFile) {
-        List<SalmonFile> files = SalmonVaultManager.getInstance().getFileItemList();
+    private static int getIndexFromAdapter(Activity activity, AesFile testFile) {
+        List<AesFile> files = SalmonVaultManager.getInstance().getFileItemList();
         return Arrays.asList(files).indexOf(testFile);
     }
 
-    private static int getFile(SalmonFile[] files) {
+    private static int getFile(AesFile[] files) {
         int total = 0;
-        for (SalmonFile file : files) {
+        for (AesFile file : files) {
             total++;
             if (file.isDirectory()) {
                 total += getFile(file.listFiles());
@@ -200,21 +200,21 @@ public class AndroidTestHelper {
         return total;
     }
 
-    private static SalmonFile getFileFromAdapter(Activity activity, String filename) throws Exception {
-        List<SalmonFile> files = SalmonVaultManager.getInstance().getFileItemList();
-        for (SalmonFile file : files) {
-            if (file.getBaseName().equals(filename)) {
+    private static AesFile getFileFromAdapter(Activity activity, String filename) throws Exception {
+        List<AesFile> files = SalmonVaultManager.getInstance().getFileItemList();
+        for (AesFile file : files) {
+            if (file.getName().equals(filename)) {
                 return file;
             }
         }
         return null;
     }
 
-    private static void importFile(Activity activity, SalmonFile currDir, String testImportFile1) {
+    private static void importFile(Activity activity, AesFile currDir, String testImportFile1) {
         throw new UnsupportedOperationException();
     }
 
-    private static void createDir(Activity activity, SalmonFile currDir, String testDir) {
+    private static void createDir(Activity activity, AesFile currDir, String testDir) {
         onView(isRoot()).perform(sleep(1000));
         activity.openOptionsMenu();
         onView(isRoot()).perform(sleep(3000));
@@ -222,11 +222,11 @@ public class AndroidTestHelper {
         onView(ViewMatchers.withHint("Folder name")).perform(typeText(testDir));
         onView(ViewMatchers.withText("OK")).perform(click());
         onView(isRoot()).perform(sleep(3000));
-        SalmonFile[] files = currDir.listFiles();
+        AesFile[] files = currDir.listFiles();
         boolean found = false;
-        for (SalmonFile file : files) {
+        for (AesFile file : files) {
             try {
-                if (file.getBaseName().equals(testDir))
+                if (file.getName().equals(testDir))
                     found = true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -318,11 +318,11 @@ public class AndroidTestHelper {
         long t1 = System.currentTimeMillis();
         byte[] encData = AndroidTestHelper.nativeCTRTransform(data, AndroidTestHelper.TEST_KEY_BYTES,
                 AndroidTestHelper.TEST_NONCE_BYTES, true,
-                SalmonStream.getAesProviderType());
+                AesStream.getAesProviderType());
         long t2 = System.currentTimeMillis();
         byte[] decData = AndroidTestHelper.nativeCTRTransform(encData, AndroidTestHelper.TEST_KEY_BYTES,
                 AndroidTestHelper.TEST_NONCE_BYTES, false,
-                SalmonStream.getAesProviderType());
+                AesStream.getAesProviderType());
         long t3 = System.currentTimeMillis();
 
         assertArrayEquals(data, decData);
@@ -334,7 +334,7 @@ public class AndroidTestHelper {
     }
 
     public static byte[] nativeCTRTransform(byte[] input, byte[] testKeyBytes, byte[] testNonceBytes,
-                                            boolean encrypt, SalmonStream.ProviderType providerType)
+                                            boolean encrypt, AesStream.ProviderType providerType)
             throws Exception {
         if (testNonceBytes.length < 16) {
             byte[] tmp = new byte[16];

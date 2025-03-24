@@ -27,7 +27,7 @@ import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
+import com.mku.salmon.vault.viewmodel.AesFileViewModel;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.salmonfs.handler.AesStreamHandler;
 import javafx.application.Platform;
@@ -155,7 +155,7 @@ public class MediaPlayerController {
         });
     }
 
-    public static void openMediaPlayer(SalmonFileViewModel file, Stage owner) throws IOException {
+    public static void openMediaPlayer(AesFileViewModel file, Stage owner) throws IOException {
         FXMLLoader loader = new FXMLLoader(SalmonSettings.getInstance().getClass().getResource("/view/media-player.fxml"));
         Parent root = loader.load();
         MediaPlayerController controller = loader.getController();
@@ -193,7 +193,7 @@ public class MediaPlayerController {
         mp.play();
     }
 
-    private void load(SalmonFileViewModel fileItem) {
+    private void load(AesFileViewModel fileItem) {
         AesFile file = fileItem.getAesFile();
         String filePath;
         try {

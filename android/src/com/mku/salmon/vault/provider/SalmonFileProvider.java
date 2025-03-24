@@ -14,22 +14,21 @@ import android.webkit.MimeTypeMap;
 
 import androidx.annotation.Nullable;
 
-import com.mku.android.salmon.drive.AndroidDrive;
+import com.mku.android.salmonfs.drive.AndroidDrive;
 import com.mku.convert.BitConverter;
-import com.mku.file.IRealFile;
-import com.mku.file.JavaFile;
-import com.mku.salmon.SalmonDrive;
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.SalmonGenerator;
+import com.mku.fs.drive.utils.FileUtils;
+import com.mku.fs.file.File;
+import com.mku.fs.file.IFile;
+import com.mku.salmon.Generator;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.main.SalmonApplication;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.services.AndroidSettingsService;
 import com.mku.salmon.vault.services.ISettingsService;
 import com.mku.salmon.vault.services.ServiceLocator;
-import com.mku.utils.FileUtils;
+import com.mku.salmonfs.drive.AesDrive;
+import com.mku.salmonfs.file.AesFile;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,14 +64,14 @@ public class SalmonFileProvider extends DocumentsProvider {
             authorizedApps.put(packageName, true);
     }
 
-    public static File createSharedFile(SalmonFile salmonFile) throws Exception {
-        File sharedFile = ((AndroidDrive) SalmonVaultManager.getInstance().getDrive())
+    public static java.io.File createSharedFile(AesFile salmonFile) throws Exception {
+        java.io.File sharedFile = ((AndroidDrive) SalmonVaultManager.getInstance().getDrive())
                 .copyToSharedFolder(salmonFile);
-        byte[] rand = SalmonGenerator.getSecureRandomBytes(32);
-        File dir = new File(sharedFile.getParentFile(), BitConverter.toHex(rand));
+        byte[] rand = Generator.getSecureRandomBytes(32);
+        java.io.File dir = new java.io.File(sharedFile.getParentFile(), BitConverter.toHex(rand));
         if(!dir.mkdir())
             throw new RuntimeException("Could not create dir");
-        File nFile = new File(dir, sharedFile.getName());
+        java.io.File nFile = new java.io.File(dir, sharedFile.getName());
         if(!sharedFile.renameTo(nFile))
             throw new RuntimeException("Could not rename file");
         return nFile;
@@ -101,7 +100,7 @@ public class SalmonFileProvider extends DocumentsProvider {
     }
 
     private void getRootDocument(MatrixCursor.RowBuilder row) {
-        SalmonDrive drive = SalmonVaultManager.getInstance().getDrive();
+        AesDrive drive = SalmonVaultManager.getInstance().getDrive();
         row.add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, rootPath);
         row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, rootPath);
         row.add(DocumentsContract.Document.COLUMN_MIME_TYPE,
@@ -121,13 +120,13 @@ public class SalmonFileProvider extends DocumentsProvider {
         row.add(DocumentsContract.Document.COLUMN_ICON, R.drawable.info_small);
     }
 
-    private void getDocument(MatrixCursor.RowBuilder row, SalmonFile file) throws IOException {
+    private void getDocument(MatrixCursor.RowBuilder row, AesFile file) throws IOException {
         row.add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, file.getPath());
-        row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, file.getBaseName());
+        row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, file.getName());
         if (file.isDirectory())
             row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.MIME_TYPE_DIR);
         else {
-            String ext = FileUtils.getExtensionFromFileName(file.getBaseName()).toLowerCase();
+            String ext = FileUtils.getExtensionFromFileName(file.getName()).toLowerCase();
             String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
             if (mimeType == null)
                 mimeType = "application/octetstream";
@@ -137,8 +136,8 @@ public class SalmonFileProvider extends DocumentsProvider {
         if (file.isFile())
             flags |= DocumentsContract.Document.FLAG_SUPPORTS_WRITE;
         row.add(DocumentsContract.Document.COLUMN_FLAGS, flags);
-        row.add(DocumentsContract.Document.COLUMN_SIZE, file.getRealFile().length());
-        row.add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, file.getLastDateTimeModified());
+        row.add(DocumentsContract.Document.COLUMN_SIZE, file.getRealFile().getLength());
+        row.add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, file.getLastDateModified());
         if (file.isDirectory())
             row.add(DocumentsContract.Document.COLUMN_ICON, R.drawable.folder);
         else
@@ -149,7 +148,7 @@ public class SalmonFileProvider extends DocumentsProvider {
     public Cursor queryDocument(String documentId, String[] projection) {
         setupServices();
         final MatrixCursor result = new MatrixCursor(documentProjection);
-        SalmonDrive drive = getManager().getDrive();
+        AesDrive drive = getManager().getDrive();
         final MatrixCursor.RowBuilder row = result.newRow();
 		if (drive == null) {
             getErrorDocument(row, "No opened vaults");
@@ -163,7 +162,7 @@ public class SalmonFileProvider extends DocumentsProvider {
                 return result;
             }
             try {
-                SalmonFile file = parsePath(documentId);
+                AesFile file = parsePath(documentId);
                 getDocument(row, file);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -186,9 +185,9 @@ public class SalmonFileProvider extends DocumentsProvider {
             return result;
         }
         try {
-            SalmonFile dir = parsePath(parentDocumentId);
-            SalmonFile[] files = dir.listFiles();
-            for (SalmonFile file : files) {
+            AesFile dir = parsePath(parentDocumentId);
+            AesFile[] files = dir.listFiles();
+            for (AesFile file : files) {
                 MatrixCursor.RowBuilder row = result.newRow();
                 getDocument(row, file);
             }
@@ -198,9 +197,9 @@ public class SalmonFileProvider extends DocumentsProvider {
         return result;
     }
 
-    private SalmonFile parsePath(String documentId) throws IOException {
+    private AesFile parsePath(String documentId) throws IOException {
         String[] parts = documentId.split("/");
-        SalmonFile file = getManager().getDrive().getRoot();
+        AesFile file = getManager().getDrive().getRoot();
         for (int i = 1; i < parts.length; i++) {
             file = file.getChild(parts[i]);
         }
@@ -215,16 +214,16 @@ public class SalmonFileProvider extends DocumentsProvider {
             throw new FileNotFoundException("App not authorized, use Salmon Vault app to allow access");
         }
         // TODO: check the CancellationSignal periodically
-        SalmonFile salmonFile;
-        File sharedFile;
+        AesFile salmonFile;
+        java.io.File sharedFile;
         String filename;
         final int accessMode = ParcelFileDescriptor.parseMode(mode);
         try {
             salmonFile = parsePath(documentId);
-            if (salmonFile.getSize() > MAX_FILE_SIZE_TO_SHARE) {
+            if (salmonFile.getLength() > MAX_FILE_SIZE_TO_SHARE) {
                 throw new RuntimeException(SalmonApplication.getInstance().getString(R.string.FileSizeTooLarge));
             }
-            filename = salmonFile.getBaseName();
+            filename = salmonFile.getName();
             sharedFile = createSharedFile(salmonFile);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -235,19 +234,19 @@ public class SalmonFileProvider extends DocumentsProvider {
         if (isWrite) {
             try {
                 Handler handler = new Handler(getContext().getMainLooper());
-                SalmonFile file = salmonFile;
-                IRealFile importFile = new JavaFile(sharedFile.getPath());
+                AesFile file = salmonFile;
+                IFile importFile = new File(sharedFile.getPath());
                 String finalFilename = filename;
                 descriptor = ParcelFileDescriptor.open(sharedFile, accessMode, handler,
                         e -> {
-                            SalmonFile parentDir = file.getParent();
-                            getManager().importFiles(new IRealFile[]{importFile}, parentDir, false,
-                                    (SalmonFile[] importedSalmonFiles) ->
+                            AesFile parentDir = file.getParent();
+                            getManager().importFiles(new IFile[]{importFile}, parentDir, false,
+                                    (AesFile[] importedAesFiles) ->
                                     {
                                         try {
-                                            if (!importedSalmonFiles[0].exists())
+                                            if (!importedAesFiles[0].exists())
                                                 return;
-                                            importedSalmonFiles[0].rename(finalFilename);
+                                            importedAesFiles[0].rename(finalFilename);
                                             file.delete();
                                             if (getManager().getDrive() != null)
                                                 getManager().refresh();

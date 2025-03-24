@@ -36,10 +36,10 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.mku.salmon.io.SalmonStream;
+import com.mku.salmon.io.AesStream;
 import com.mku.salmon.SalmonEncryptor;
 import com.mku.salmon.vault.main.SalmonActivity;
-import com.mku.salmonfs.SalmonFile;
+import com.mku.salmonfs.AesFile;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -83,7 +83,7 @@ public class SalmonAndroidInstrumentedTestRunner {
         });
         onView(isRoot()).perform(sleep(1000));
         AndroidTestHelper.changeVault(TEST_VAULT);
-        SalmonFile rootDir = AndroidTestHelper.login(activity[0], TEST_VAULT, TEST_PASSWORD);
+        AesFile rootDir = AndroidTestHelper.login(activity[0], TEST_VAULT, TEST_PASSWORD);
         AndroidTestHelper.testCopy(activity[0], rootDir, TEST_DIR, TEST_IMPORT_FILE1, TEST_SUBDIR, TEST_IMPORT_FILE2, TEST_NEW_DIR, false);
         activity[0].finish();
     }
@@ -98,7 +98,7 @@ public class SalmonAndroidInstrumentedTestRunner {
         String plainText = AndroidTestHelper.TEST_TEXT;
         for (int i = 0; i < 8; i++)
             plainText += plainText;
-        SalmonStream.setAesProviderType(SalmonStream.ProviderType.AesIntrinsics);
+        AesStream.setAesProviderType(AesStream.ProviderType.AesIntrinsics);
         byte[] bytes = plainText.getBytes(Charset.defaultCharset());
         byte[] encBytesDef = AndroidTestHelper.defaultAESCTRTransform(bytes,
                 AndroidTestHelper.TEST_KEY_BYTES, AndroidTestHelper.TEST_NONCE_BYTES, true);
@@ -130,7 +130,7 @@ public class SalmonAndroidInstrumentedTestRunner {
             activity[0] = act;
         });
         onView(isRoot()).perform(sleep(5000));
-        SalmonStream.setAesProviderType(SalmonStream.ProviderType.AesIntrinsics);
+        AesStream.setAesProviderType(AesStream.ProviderType.AesIntrinsics);
         AndroidTestHelper.EncryptAndDecryptTextCompatible();
         Thread.sleep(3000);
         activity[0].finish();

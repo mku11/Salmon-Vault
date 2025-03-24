@@ -48,15 +48,12 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.mku.android.file.AndroidFile;
-import com.mku.android.salmon.drive.AndroidDrive;
-import com.mku.file.IRealFile;
+import com.mku.android.fs.file.AndroidFile;
+import com.mku.android.salmonfs.drive.AndroidDrive;
+import com.mku.fs.drive.utils.FileUtils;
+import com.mku.fs.file.IFile;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
-import com.mku.salmon.SalmonAuthException;
-import com.mku.salmon.SalmonDrive;
-import com.mku.salmon.SalmonFile;
-import com.mku.salmon.utils.SalmonFileComparators;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
@@ -77,7 +74,10 @@ import com.mku.salmon.vault.services.IWebBrowserService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.utils.FileUtils;
+import com.mku.salmonfs.auth.AuthException;
+import com.mku.salmonfs.drive.AesDrive;
+import com.mku.salmonfs.drive.utils.AesFileComparators;
+import com.mku.salmonfs.file.AesFile;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -94,7 +94,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class SalmonActivity extends AppCompatActivity {
     private static final String TAG = SalmonApplication.class.getSimpleName();
 
-    private List<SalmonFile> fileItemList = new ArrayList<>();
+    private List<AesFile> fileItemList = new ArrayList<>();
 
     private Semaphore done = new Semaphore(1);
 
@@ -195,7 +195,7 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    private void updateListItem(SalmonFile file) {
+    private void updateListItem(AesFile file) {
         int index = fileItemList.indexOf(file);
         if (index >= 0)
             adapter.notifyItemChanged(index);
@@ -235,10 +235,10 @@ public class SalmonActivity extends AppCompatActivity {
         });
     }
 
-    private void selectItem(SalmonFile file) {
+    private void selectItem(AesFile file) {
         try {
             int index = 0;
-            for (SalmonFile viewFile : fileItemList) {
+            for (AesFile viewFile : fileItemList) {
                 if (viewFile == file) {
                     int finalIndex = index;
                     WindowUtils.runOnMainThread(() -> {
@@ -260,7 +260,7 @@ public class SalmonActivity extends AppCompatActivity {
     private void Adapter_PropertyChanged(Object owner, String propertyName) {
         if (propertyName == "SelectedFiles") {
             manager.getSelectedFiles().clear();
-            for (SalmonFile file : adapter.getSelectedFiles())
+            for (AesFile file : adapter.getSelectedFiles())
                 manager.getSelectedFiles().add(file);
             invalidateOptionsMenu();
         }
@@ -278,7 +278,7 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    private void fileItemAdded(int position, SalmonFile file) {
+    private void fileItemAdded(int position, AesFile file) {
         WindowUtils.runOnMainThread(() ->
         {
             fileItemList.add(position, file);
@@ -356,8 +356,8 @@ public class SalmonActivity extends AppCompatActivity {
                 } else {
                     menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.Open))
                             .setIcon(R.drawable.folder_menu_small);
-				}
-					
+                }
+
                 menu.add(3, ActionType.PROPERTIES.ordinal(), 0, getString(R.string.Properties))
                         .setIcon(R.drawable.file_properties_small);
                 menu.add(3, ActionType.DISK_USAGE.ordinal(), 0, getString(R.string.DiskUsage))
@@ -509,7 +509,7 @@ public class SalmonActivity extends AppCompatActivity {
                 SalmonDialogs.showProperties(adapter.getLastSelected());
                 break;
             case DISK_USAGE:
-                showDiskUsage(adapter.getSelectedFiles().toArray(new SalmonFile[0]));
+                showDiskUsage(adapter.getSelectedFiles().toArray(new AesFile[0]));
                 break;
 
             case PASTE:
@@ -586,10 +586,10 @@ public class SalmonActivity extends AppCompatActivity {
     }
 
 
-    private void openWith(SalmonFile salmonFile) {
+    private void openWith(AesFile salmonFile) {
         java.io.File sharedFile = null;
         try {
-            long size = salmonFile.getRealFile().length();
+            long size = salmonFile.getRealFile().getLength();
             if (size > SalmonFileProvider.MAX_FILE_SIZE_TO_SHARE) {
                 Toast toast = Toast.makeText(this, getString(R.string.FileSizeTooLarge), Toast.LENGTH_LONG);
                 toast.show();
@@ -601,12 +601,12 @@ public class SalmonActivity extends AppCompatActivity {
                 toast.show();
             }
             sharedFile = SalmonFileProvider.createSharedFile(salmonFile);
-            if (salmonFile.getSize() > SalmonFileProvider.MAX_FILE_SIZE_TO_SHARE) {
+            if (salmonFile.getLength() > SalmonFileProvider.MAX_FILE_SIZE_TO_SHARE) {
                 Toast.makeText(this, getString(R.string.FileSizeTooLarge), Toast.LENGTH_LONG).show();
                 return;
             }
             sharedFile.deleteOnExit();
-            String ext = FileUtils.getExtensionFromFileName(salmonFile.getBaseName()).toLowerCase();
+            String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
             String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
             android.net.Uri uri = FileProvider.getUriForFile(this, SalmonConfig.FILE_PROVIDER, sharedFile);
             ShareCompat.IntentBuilder builder = ShareCompat.IntentBuilder.from(this).setType(mimeType);
@@ -633,7 +633,7 @@ public class SalmonActivity extends AppCompatActivity {
     }
 
 
-    private void showDiskUsage(SalmonFile[] files) {
+    private void showDiskUsage(AesFile[] files) {
 
         Consumer<String> updateBody = SalmonDialog.promptUpdatableDialog("Disk Usage", "");
         AtomicInteger fItems = new AtomicInteger();
@@ -664,12 +664,12 @@ public class SalmonActivity extends AppCompatActivity {
         try {
             manager.setSelectedFiles(adapter.getSelectedFiles());
             manager.exportSelectedFiles(deleteSource);
-        } catch (SalmonAuthException e) {
+        } catch (AuthException e) {
             SalmonDialog.promptDialog("Could not export file(s): " + e.getMessage());
         }
     }
 
-    protected boolean openItem(SalmonFile salmonFile) {
+    protected boolean openItem(AesFile salmonFile) {
         try {
             return manager.openItem(salmonFile);
         } catch (Exception e) {
@@ -692,28 +692,28 @@ public class SalmonActivity extends AppCompatActivity {
                 manager.refresh();
                 break;
             case Name:
-                Collections.sort(fileItemList, SalmonFileComparators.getFilenameAscComparator());
+                Collections.sort(fileItemList, AesFileComparators.getFilenameAscComparator());
                 break;
             case NameDesc:
-                Collections.sort(fileItemList, SalmonFileComparators.getFilenameDescComparator());
+                Collections.sort(fileItemList, AesFileComparators.getFilenameDescComparator());
                 break;
             case Size:
-                Collections.sort(fileItemList, SalmonFileComparators.getSizeAscComparator());
+                Collections.sort(fileItemList, AesFileComparators.getSizeAscComparator());
                 break;
             case SizeDesc:
-                Collections.sort(fileItemList, SalmonFileComparators.getSizeDescComparator());
+                Collections.sort(fileItemList, AesFileComparators.getSizeDescComparator());
                 break;
             case Type:
-                Collections.sort(fileItemList, SalmonFileComparators.getTypeAscComparator());
+                Collections.sort(fileItemList, AesFileComparators.getTypeAscComparator());
                 break;
             case TypeDesc:
-                Collections.sort(fileItemList, SalmonFileComparators.getTypeDescComparator());
+                Collections.sort(fileItemList, AesFileComparators.getTypeDescComparator());
                 break;
             case Date:
-                Collections.sort(fileItemList, SalmonFileComparators.getDateAscComparator());
+                Collections.sort(fileItemList, AesFileComparators.getDateAscComparator());
                 break;
             case DateDesc:
-                Collections.sort(fileItemList, SalmonFileComparators.getDateDescComparator());
+                Collections.sort(fileItemList, AesFileComparators.getDateDescComparator());
                 break;
         }
     }
@@ -756,18 +756,18 @@ public class SalmonActivity extends AppCompatActivity {
         android.net.Uri uri = data.getData();
         if (requestCode == SalmonVaultManager.REQUEST_OPEN_VAULT_DIR) {
             ActivityCommon.setUriPermissions(data, uri);
-            IRealFile file = ServiceLocator.getInstance().resolve(IFileService.class).getFile(uri.toString(), true);
+            IFile file = ServiceLocator.getInstance().resolve(IFileService.class).getFile(uri.toString(), true);
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
             callback.accept(file);
         } else if (requestCode == SalmonVaultManager.REQUEST_CREATE_VAULT_DIR) {
             ActivityCommon.setUriPermissions(data, uri);
-            IRealFile file = ServiceLocator.getInstance().resolve(IFileService.class).getFile(uri.toString(), true);
+            IFile file = ServiceLocator.getInstance().resolve(IFileService.class).getFile(uri.toString(), true);
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
             callback.accept(file);
         } else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES
                 || requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER) {
             String[] filesToImport = ActivityCommon.getFilesFromIntent(this, data);
-            IRealFile[] files = new AndroidFile[filesToImport.length];
+            IFile[] files = new AndroidFile[filesToImport.length];
             for (int i = 0; i < files.length; i++) {
                 files[i] = ServiceLocator.getInstance().resolve(IFileService.class).getFile(filesToImport[i],
                         requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER);
@@ -782,7 +782,7 @@ public class SalmonActivity extends AppCompatActivity {
             String importFile = files != null ? files[0] : null;
             if (importFile == null)
                 return;
-            IRealFile file = ServiceLocator.getInstance().resolve(IFileService.class).getFile(importFile, false);
+            IFile file = ServiceLocator.getInstance().resolve(IFileService.class).getFile(importFile, false);
             Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
             callback.accept(file);
         } else if (requestCode == SalmonVaultManager.REQUEST_EXPORT_AUTH_FILE) {
@@ -790,10 +790,10 @@ public class SalmonActivity extends AppCompatActivity {
             String exportAuthDir = dirs != null ? dirs[0] : null;
             if (exportAuthDir == null)
                 return;
-            IRealFile dir = ServiceLocator.getInstance().resolve(IFileService.class).getFile(exportAuthDir, true);
-            IRealFile exportAuthFile = null;
+            IFile dir = ServiceLocator.getInstance().resolve(IFileService.class).getFile(exportAuthDir, true);
+            IFile exportAuthFile = null;
             try {
-                exportAuthFile = dir.createFile(SalmonDrive.getAuthConfigFilename());
+                exportAuthFile = dir.createFile(AesDrive.getAuthConfigFilename());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -802,15 +802,15 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    public boolean openListItem(SalmonFile file) {
+    public boolean openListItem(AesFile file) {
         try {
-            if (FileUtils.isVideo(file.getBaseName()) || FileUtils.isAudio(file.getBaseName())) {
+            if (FileUtils.isVideo(file.getName()) || FileUtils.isAudio(file.getName())) {
                 startMediaPlayer(fileItemList.indexOf(file));
                 return true;
-            } else if (FileUtils.isImage(file.getBaseName())) {
+            } else if (FileUtils.isImage(file.getName())) {
                 startWebViewer(fileItemList.indexOf(file));
                 return true;
-            } else if (FileUtils.isText(file.getBaseName())) {
+            } else if (FileUtils.isText(file.getName())) {
                 startWebViewer(fileItemList.indexOf(file));
                 return true;
             } else {
@@ -835,13 +835,13 @@ public class SalmonActivity extends AppCompatActivity {
     }
 
     public void startMediaPlayer(int position) {
-        List<SalmonFile> salmonFiles = new ArrayList<>();
+        List<AesFile> salmonFiles = new ArrayList<>();
         int pos = 0;
         int i = 0;
-        for (SalmonFile file : fileItemList) {
+        for (AesFile file : fileItemList) {
             String filename;
             try {
-                filename = file.getBaseName();
+                filename = file.getName();
                 if (FileUtils.isVideo(filename) || FileUtils.isAudio(filename)) {
                     salmonFiles.add(file);
                 }
@@ -854,7 +854,7 @@ public class SalmonActivity extends AppCompatActivity {
         }
 
         Intent intent = getMediaPlayerIntent();
-        MediaPlayerActivity.setMediaFiles(pos, salmonFiles.toArray(new SalmonFile[0]));
+        MediaPlayerActivity.setMediaFiles(pos, salmonFiles.toArray(new AesFile[0]));
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
@@ -863,9 +863,9 @@ public class SalmonActivity extends AppCompatActivity {
         return new Intent(this, MediaPlayerActivity.class);
     }
 
-    private void startTextViewer(SalmonFile salmonFile) {
+    private void startTextViewer(AesFile salmonFile) {
         try {
-            if (salmonFile.getSize() > 1 * 1024 * 1024) {
+            if (salmonFile.getLength() > 1 * 1024 * 1024) {
                 Toast.makeText(this, "File too large", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -877,15 +877,15 @@ public class SalmonActivity extends AppCompatActivity {
 
     private void startWebViewer(int position) {
         try {
-            List<SalmonFile> salmonFiles = new ArrayList<>();
-            SalmonFile file = fileItemList.get(position);
-            String filename = file.getBaseName();
+            List<AesFile> salmonFiles = new ArrayList<>();
+            AesFile file = fileItemList.get(position);
+            String filename = file.getName();
 
             int pos = 0;
             int i = 0;
-            for (SalmonFile listFile : fileItemList) {
+            for (AesFile listFile : fileItemList) {
                 try {
-                    String listFilename = listFile.getBaseName();
+                    String listFilename = listFile.getName();
                     if (i != position &&
                             ((FileUtils.isImage(filename) && FileUtils.isImage(listFilename))
                                     || (FileUtils.isText(filename) && FileUtils.isText(listFilename)))) {
@@ -901,8 +901,8 @@ public class SalmonActivity extends AppCompatActivity {
                 i++;
             }
             Intent intent = getWebViewerIntent();
-            SalmonFile selectedFile = fileItemList.get(position);
-            WebViewerActivity.setContentFiles(pos, salmonFiles.toArray(new SalmonFile[0]));
+            AesFile selectedFile = fileItemList.get(position);
+            WebViewerActivity.setContentFiles(pos, salmonFiles.toArray(new AesFile[0]));
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         } catch (Exception e) {
@@ -924,9 +924,9 @@ public class SalmonActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (!manager.isJobRunning() && adapter.getSelectedFiles().size() > 0){
-			adapter.setMultiSelect(false);
-			adapter.selectAll(false);
+        if (!manager.isJobRunning() && adapter.getSelectedFiles().size() > 0) {
+            adapter.setMultiSelect(false);
+            adapter.selectAll(false);
         } else {
             manager.goBack();
         }
@@ -941,7 +941,7 @@ public class SalmonActivity extends AppCompatActivity {
         return SalmonAndroidVaultManager.getInstance();
     }
 
-    protected List<SalmonFile> getFileItemList() {
+    protected List<AesFile> getFileItemList() {
         return fileItemList;
     }
 

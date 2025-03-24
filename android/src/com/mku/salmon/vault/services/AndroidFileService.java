@@ -27,9 +27,9 @@ import android.app.Activity;
 
 import androidx.documentfile.provider.DocumentFile;
 
-import com.mku.android.file.AndroidFile;
-import com.mku.file.IRealFile;
-import com.mku.file.JavaFile;
+import com.mku.android.fs.file.AndroidFile;
+import com.mku.fs.file.File;
+import com.mku.fs.file.IFile;
 import com.mku.salmon.vault.services.IFileService;
 
 public class AndroidFileService implements IFileService {
@@ -40,8 +40,8 @@ public class AndroidFileService implements IFileService {
         this.activity = activity;
     }
 
-    public IRealFile getFile(String filepath, boolean isDirectory) {
-        IRealFile file;
+    public IFile getFile(String filepath, boolean isDirectory) {
+        IFile file;
         if (filepath.startsWith("content:")) {
             DocumentFile docFile;
             if (isDirectory)
@@ -50,7 +50,7 @@ public class AndroidFileService implements IFileService {
                 docFile = DocumentFile.fromSingleUri(activity, android.net.Uri.parse(filepath));
             file = new AndroidFile(docFile, activity);
         } else {
-            file = new JavaFile(filepath);
+            file = new File(filepath);
         }
         return file;
     }
