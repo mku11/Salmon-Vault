@@ -165,7 +165,7 @@ namespace Salmon.Vault.View
         }
         private void MenuItem_ViewExternal(object sender, RoutedEventArgs e)
         {
-            ViewModel.PromptOpenExternalApp(((SalmonFileViewModel)DataGrid.SelectedItems[DataGrid.SelectedItems.Count - 1]).GetSalmonFile(), null);
+            ViewModel.PromptOpenExternalApp(((SalmonFileViewModel)DataGrid.SelectedItems[DataGrid.SelectedItems.Count - 1]).GetAesFile(), null);
         }
 
 

@@ -22,12 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.File;
-using Mku.Salmon;
-using Mku.Salmon.Drive;
+using Mku.FS.Drive.Utils;
+using Mku.FS.File;
 using Mku.Salmon.Sequence;
-using Mku.Salmon.Utils;
-using Mku.Sequence;
+using Mku.SalmonFS.Drive;
+using Mku.SalmonFS.Drive.Utils;
+using Mku.SalmonFS.File;
+using Mku.SalmonFS.Sequence;
 using Salmon.Vault.Config;
 using Salmon.Vault.Dialog;
 using Salmon.Vault.Settings;
@@ -65,15 +66,15 @@ public class SalmonVaultManager : INotifyPropertyChanged
     protected string SequencerFilepath => SequencerDefaultDirPath + System.IO.Path.DirectorySeparatorChar
         + SalmonConfig.FILE_SEQ_FILENAME;
 
-    public SalmonDrive Drive { get; private set; }
+    public AesDrive Drive { get; private set; }
 
-    public delegate bool OpenListViewItem(SalmonFile item);
+    public delegate bool OpenListViewItem(AesFile item);
     public OpenListViewItem OpenListItem;
 
-    public delegate void UpdateItem(SalmonFile file);
+    public delegate void UpdateItem(AesFile file);
     public UpdateItem UpdateListItem;
 
-    public delegate void OnFileItemAddedToList(int position, SalmonFile file);
+    public delegate void OnFileItemAddedToList(int position, AesFile file);
     public OnFileItemAddedToList OnFileItemAdded;
 
     protected static SalmonVaultManager _instance;
@@ -123,8 +124,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
     }
 
 
-    private List<SalmonFile> _fileItemList;
-    public List<SalmonFile> FileItemList
+    private List<AesFile> _fileItemList;
+    public List<AesFile> FileItemList
     {
         get => _fileItemList;
         private set
@@ -137,8 +138,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
         }
     }
 
-    private HashSet<SalmonFile> _SelectedFiles = new HashSet<SalmonFile>();
-    public HashSet<SalmonFile> SelectedFiles
+    private HashSet<AesFile> _SelectedFiles = new HashSet<AesFile>();
+    public HashSet<AesFile> SelectedFiles
     {
         get => _SelectedFiles;
         set
@@ -151,8 +152,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
         }
     }
 
-    private SalmonFile _currentItem;
-    public SalmonFile CurrentItem
+    private AesFile _currentItem;
+    public AesFile CurrentItem
     {
         get => _currentItem;
         private set
@@ -235,10 +236,10 @@ public class SalmonVaultManager : INotifyPropertyChanged
         }
     }
 
-    public SalmonFile CurrDir;
-    private SalmonFileCommander fileCommander;
-    private SalmonFile[] copyFiles;
-    private SalmonFile[] salmonFiles;
+    public AesFile CurrDir;
+    private AesFileCommander fileCommander;
+    private AesFile[] copyFiles;
+    private AesFile[] salmonFiles;
     private string searchTerm;
     public Mode FileManagerMode { get; private set; } = Mode.Browse;
 
@@ -260,7 +261,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         try
         {
-            SalmonFile selectedFile = FileItemList[selectedItem];
+            AesFile selectedFile = FileItemList[selectedItem];
             return OpenItem(selectedFile);
         }
         catch (Exception e)
@@ -317,7 +318,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     private void SetupFileCommander()
     {
-        fileCommander = new SalmonFileCommander(bufferSize, bufferSize, threads);
+        fileCommander = new AesFileCommander(bufferSize, bufferSize, threads);
     }
 
     public void Refresh()
@@ -330,7 +331,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         {
             if (FileManagerMode != Mode.Search)
                 salmonFiles = CurrDir.ListFiles();
-            PopulateFileList(SelectedFiles.FirstOrDefault((SalmonFile)null));
+            PopulateFileList(SelectedFiles.FirstOrDefault((AesFile)null));
         });
     }
 
@@ -344,7 +345,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         return false;
     }
 
-    private void PopulateFileList(SalmonFile currentFile)
+    private void PopulateFileList(AesFile currentFile)
     {
         Task.Run(() =>
         {
@@ -362,8 +363,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 SalmonDialog.PromptDialog("Error", exception.Message);
             }
 
-            List<SalmonFile> list = new List<SalmonFile>();
-            foreach (SalmonFile file in salmonFiles)
+            List<AesFile> list = new List<AesFile>();
+            foreach (AesFile file in salmonFiles)
             {
                 try
                 {
@@ -375,7 +376,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 }
             }
             FileItemList = list;
-            SalmonFile currFile = FindCurrentItem(currentFile);
+            AesFile currFile = FindCurrentItem(currentFile);
             CurrentItem = currFile;
         });
     }
@@ -396,18 +397,18 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     private void SetupFileSequencer()
     {
-        IRealFile dirFile = new DotNetFile(SequencerDefaultDirPath);
+        IFile dirFile = new File(SequencerDefaultDirPath);
         if (!dirFile.Exists)
             dirFile.Mkdir();
-        IRealFile seqFile = new DotNetFile(SequencerFilepath);
-        SalmonFileSequencer sequencer = new SalmonFileSequencer(seqFile, CreateSerializer());
+        IFile seqFile = new File(SequencerFilepath);
+        FileSequencer sequencer = new FileSequencer(seqFile, CreateSerializer());
         this.Sequencer = sequencer;
     }
 
     virtual
     protected INonceSequenceSerializer CreateSerializer()
     {
-        return new SalmonSequenceSerializer();
+        return new SequenceSerializer();
     }
 
     public void PasteSelected()
@@ -428,7 +429,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         Status = msg ?? "";
     }
 
-    public void OpenVault(IRealFile dir, string password)
+    public void OpenVault(IFile dir, string password)
     {
         if (dir == null)
             return;
@@ -436,7 +437,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         try
         {
             CloseVault();
-            this.Drive = SalmonDrive.OpenDrive(dir, GetDriveClassType(), password, this.Sequencer);
+            this.Drive = AesDrive.OpenDrive(dir, GetDriveClassType(), password, this.Sequencer);
             this.CurrDir = this.Drive.Root;
             SalmonSettings.GetInstance().VaultLocation = dir.Path;
             Refresh();
@@ -444,7 +445,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         catch (ArgumentException e)
         {
             SalmonDialog.PromptDialog("Error", "Could not open vault: " + e.Message + ". "
-            + "Make sure your vault folder contains a file named " + SalmonDrive.ConfigFilename);
+            + "Make sure your vault folder contains a file named " + AesDrive.ConfigFilename);
         }
         catch (Exception e)
         {
@@ -455,7 +456,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     virtual
     protected Type GetDriveClassType()
     {
-        return typeof(DotNetDrive);
+        return typeof(Drive);
     }
 
     public void DeleteSelectedFiles()
@@ -470,7 +471,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         ClearSelectedFiles();
     }
 
-    public void DeleteFiles(SalmonFile[] files)
+    public void DeleteFiles(AesFile[] files)
     {
         if (files == null)
             return;
@@ -485,34 +486,36 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
             Exception exception = null;
             int[] processedFiles = new int[] { -1 };
-            List<SalmonFile> failedFiles = new List<SalmonFile>();
+            List<AesFile> failedFiles = new List<AesFile>();
             try
             {
-                fileCommander.DeleteFiles(files,
-                    (taskProgress) =>
+                FileCommander.BatchDeleteOptions deleteOptions = new FileCommander.BatchDeleteOptions();
+                deleteOptions.onProgressChanged = (taskProgress) =>
+                {
+                    if (processedFiles[0] < taskProgress.ProcessedFiles)
                     {
-                        if (processedFiles[0] < taskProgress.ProcessedFiles)
+                        try
                         {
-                            try
+                            if (taskProgress.ProcessedBytes != taskProgress.TotalBytes)
                             {
-                                if (taskProgress.ProcessedBytes != taskProgress.TotalBytes)
-                                {
-                                    SetTaskMessage("Deleting: " + taskProgress.File.BaseName
-                                        + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
-                                }
+                                SetTaskMessage("Deleting: " + taskProgress.File.Name
+                                    + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
                             }
-                            catch (Exception e)
-                            {
-                            }
-                            processedFiles[0] = taskProgress.ProcessedFiles;
                         }
-                        FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
-                        FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
-                    }, (file, ex) =>
-                    {
-                        failedFiles.Add((SalmonFile)file);
-                        exception = ex;
-                    });
+                        catch (Exception e)
+                        {
+                        }
+                        processedFiles[0] = taskProgress.ProcessedFiles;
+                    }
+                    FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
+                    FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
+                };
+                deleteOptions.onFailed = (file, ex) =>
+                {
+                    failedFiles.Add((AesFile)file);
+                    exception = ex;
+                };
+                fileCommander.DeleteFiles(files, deleteOptions);
             }
             catch (Exception e)
             {
@@ -537,7 +540,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         });
     }
 
-    private void CopyFiles(SalmonFile[] files, SalmonFile dir, bool move)
+    private void CopyFiles(AesFile[] files, AesFile dir, bool move)
     {
         if (files == null)
             return;
@@ -552,17 +555,19 @@ public class SalmonVaultManager : INotifyPropertyChanged
             string action = move ? "Moving" : "Copying";
             Exception exception = null;
             int[] processedFiles = new int[] { -1 };
-            List<SalmonFile> failedFiles = new List<SalmonFile>();
+            List<AesFile> failedFiles = new List<AesFile>();
             try
             {
-                fileCommander.CopyFiles(files, dir, move,
+                FileCommander.BatchCopyOptions copyOptions = new FileCommander.BatchCopyOptions();
+                copyOptions.move = move;
+                copyOptions.onProgressChanged =
                     (taskProgress) =>
                     {
                         if (processedFiles[0] < taskProgress.ProcessedFiles)
                         {
                             try
                             {
-                                SetTaskMessage(action + ": " + taskProgress.File.BaseName
+                                SetTaskMessage(action + ": " + taskProgress.File.Name
                                     + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
                             }
                             catch (Exception e)
@@ -572,12 +577,16 @@ public class SalmonVaultManager : INotifyPropertyChanged
                         }
                         FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
                         FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
-                    }, SalmonFile.AutoRename, true, (file, ex) =>
-                    {
-                        HandleThrowException(ex);
-                        failedFiles.Add((SalmonFile)file);
-                        exception = ex;
-                    });
+                    };
+                copyOptions.autoRename = AesFile.AutoRename;
+                copyOptions.autoRenameFolders = true;
+                copyOptions.onFailed = (file, ex) =>
+                {
+                    HandleThrowException(ex);
+                    failedFiles.Add((AesFile)file);
+                    exception = ex;
+                };
+                fileCommander.CopyFiles(files, dir, copyOptions);
             }
             catch (Exception e)
             {
@@ -615,7 +624,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     private void ClearSelectedFiles()
     {
-        SelectedFiles = new HashSet<SalmonFile>();
+        SelectedFiles = new HashSet<AesFile>();
     }
 
     public virtual bool HandleException(Exception exception)
@@ -640,7 +649,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         }
     }
 
-    public bool OpenItem(SalmonFile selectedFile)
+    public bool OpenItem(AesFile selectedFile)
     {
         int position = FileItemList.IndexOf(selectedFile);
         if (position < 0)
@@ -657,8 +666,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
             });
             return true;
         }
-        string filename = selectedFile.BaseName;
-        SalmonFile item = FileItemList[position];
+        string filename = selectedFile.Name;
+        AesFile item = FileItemList[position];
         return OpenListItem(item);
     }
 
@@ -679,12 +688,12 @@ public class SalmonVaultManager : INotifyPropertyChanged
         }
         else if (CanGoBack())
         {
-            SalmonFile finalParent = CurrDir.Parent;
+            AesFile finalParent = CurrDir.Parent;
             Task.Run(() =>
             {
                 if (CheckFileSearcher())
                     return;
-                SalmonFile parentDir = CurrDir;
+                AesFile parentDir = CurrDir;
                 CurrDir = finalParent;
                 salmonFiles = CurrDir.ListFiles();
                 PopulateFileList(parentDir);
@@ -696,11 +705,11 @@ public class SalmonVaultManager : INotifyPropertyChanged
         }
     }
 
-    private SalmonFile FindCurrentItem(SalmonFile currentFile)
+    private AesFile FindCurrentItem(AesFile currentFile)
     {
         if (currentFile == null)
             return null;
-        foreach (SalmonFile file in FileItemList)
+        foreach (AesFile file in FileItemList)
         {
             if (file.RealFile.Path.Equals(currentFile.RealFile.Path))
             {
@@ -712,7 +721,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         return null;
     }
 
-    public void RenameFile(SalmonFile file, string newFilename)
+    public void RenameFile(AesFile file, string newFilename)
     {
         fileCommander.RenameFile(file, newFilename);
     }
@@ -722,7 +731,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         Browse, Search, Copy, Move
     }
 
-    public void ExportFiles(SalmonFile[] items, Action<IRealFile[]> OnFinished, bool deleteSource)
+    public void ExportFiles(AesFile[] items, Action<IFile[]> OnFinished, bool deleteSource)
     {
         if (IsJobRunning)
             throw new Exception("Another Job is Running");
@@ -734,35 +743,38 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
             Exception exception = null;
             int[] processedFiles = new int[] { -1 };
-            IRealFile[] files = null;
-            List<SalmonFile> failedFiles = new List<SalmonFile>();
-            IRealFile exportDir = this.Drive.ExportDir;
+            IFile[] files = null;
+            List<AesFile> failedFiles = new List<AesFile>();
+            IFile exportDir = this.Drive.ExportDir;
             try
             {
-                files = fileCommander.ExportFiles(items,
-                    exportDir,
-                    deleteSource, true,
-                    (taskProgress) =>
+                FileCommander.BatchExportOptions exportOptions = new FileCommander.BatchExportOptions();
+                exportOptions.integrity = true;
+                exportOptions.deleteSource = deleteSource;
+                exportOptions.autoRename = IFile.AutoRename;
+                exportOptions.onProgressChanged = (taskProgress) =>
+                {
+                    if (processedFiles[0] < taskProgress.ProcessedFiles)
                     {
-                        if (processedFiles[0] < taskProgress.ProcessedFiles)
+                        try
                         {
-                            try
-                            {
-                                SetTaskMessage("Exporting: " + taskProgress.File.BaseName
-                                    + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
-                            }
-                            catch (Exception e)
-                            {
-                            }
-                            processedFiles[0] = taskProgress.ProcessedFiles;
+                            SetTaskMessage("Exporting: " + taskProgress.File.Name
+                                + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
                         }
-                        FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
-                        FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
-                    }, IRealFile.AutoRename, (file, ex) =>
-                    {
-                        failedFiles.Add((SalmonFile)file);
-                        exception = ex;
-                    });
+                        catch (Exception e)
+                        {
+                        }
+                        processedFiles[0] = taskProgress.ProcessedFiles;
+                    }
+                    FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
+                    FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
+                };
+                exportOptions.onFailed = (file, ex) =>
+                {
+                    failedFiles.Add((AesFile)file);
+                    exception = ex;
+                };
+                files = fileCommander.ExportFiles(items, exportDir, exportOptions);
                 if (OnFinished != null)
                     OnFinished(files);
             }
@@ -788,8 +800,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
         });
     }
 
-    public void ImportFiles(IRealFile[] fileNames, SalmonFile importDir, bool deleteSource,
-                            Action<SalmonFile[]> OnFinished)
+    public void ImportFiles(IFile[] fileNames, AesFile importDir, bool deleteSource,
+                            Action<AesFile[]> OnFinished)
     {
         if (IsJobRunning)
             throw new Exception("Another Job is Running");
@@ -802,34 +814,38 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
             Exception exception = null;
             int[] processedFiles = new int[] { -1 };
-            SalmonFile[] files = null;
-            List<IRealFile> failedFiles = new List<IRealFile>();
+            AesFile[] files = null;
+            List<IFile> failedFiles = new List<IFile>();
             try
             {
-                files = fileCommander.ImportFiles(fileNames, importDir,
-                    deleteSource, true,
-                    (taskProgress) =>
+                FileCommander.BatchImportOptions importOptions = new FileCommander.BatchImportOptions();
+                importOptions.integrity = true;
+                importOptions.deleteSource = deleteSource;
+                importOptions.autoRename = IFile.AutoRename;
+                importOptions.onProgressChanged = (taskProgress) =>
+                {
+                    if (processedFiles[0] < taskProgress.ProcessedFiles)
                     {
-                        if (processedFiles[0] < taskProgress.ProcessedFiles)
+                        try
                         {
-                            try
-                            {
-                                SetTaskMessage("Importing: " + taskProgress.File.BaseName
-                                    + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
-                            }
-                            catch (Exception e)
-                            {
-                            }
-                            processedFiles[0] = taskProgress.ProcessedFiles;
+                            SetTaskMessage("Importing: " + taskProgress.File.Name
+                                + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
                         }
-                        FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
-                        FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
-                    }, IRealFile.AutoRename, (file, ex) =>
-                    {
-                        HandleThrowException(ex);
-                        failedFiles.Add(file);
-                        exception = ex;
-                    });
+                        catch (Exception e)
+                        {
+                        }
+                        processedFiles[0] = taskProgress.ProcessedFiles;
+                    }
+                    FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
+                    FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
+                };
+                importOptions.onFailed = (file, ex) =>
+                {
+                    HandleThrowException(ex);
+                    failedFiles.Add(file);
+                    exception = ex;
+                };
+                files = fileCommander.ImportFiles(fileNames, importDir, importOptions);
                 OnFinished(files);
             }
             catch (Exception e)
@@ -866,33 +882,36 @@ public class SalmonVaultManager : INotifyPropertyChanged
             FilesProgress = 0;
             if (CurrDir.Path != null)
                 SetPathText(CurrDir.Path + "?search=" + value);
-            salmonFiles = new SalmonFile[] { };
+            salmonFiles = new AesFile[] { };
             PopulateFileList(null);
             SetTaskRunning(true);
             Status = "Searching";
-            IVirtualFile[] files = fileCommander.Search(CurrDir, value, any, (IVirtualFile salmonFile) =>
+            FileSearcher.SearchOptions searchOptions = new FileSearcher.SearchOptions();
+            searchOptions.anyTerm = any;
+            searchOptions.onResultFound = (IVirtualFile salmonFile) =>
             {
                 int position = 0;
-                foreach (SalmonFile file in FileItemList)
+                foreach (AesFile file in FileItemList)
                 {
-                    if (((SalmonFile)salmonFile).Tag != null &&
-                        (file.Tag == null || (int)((SalmonFile)salmonFile).Tag > (int)file.Tag))
+                    if (((AesFile)salmonFile).Tag != null &&
+                        (file.Tag == null || (int)((AesFile)salmonFile).Tag > (int)file.Tag))
                         break;
                     position++;
                 }
                 try
                 {
-                    FileItemList.Insert(position, (SalmonFile)salmonFile);
-                    OnFileItemAdded(position, (SalmonFile)salmonFile);
+                    FileItemList.Insert(position, (AesFile)salmonFile);
+                    OnFileItemAdded(position, (AesFile)salmonFile);
                 }
                 catch (Exception e)
                 {
                     Console.Error.WriteLine(e);
                 }
-            }, null);
-            this.salmonFiles = new SalmonFile[files.Length];
+            };
+            IVirtualFile[] files = fileCommander.Search(CurrDir, value, searchOptions);
+            this.salmonFiles = new AesFile[files.Length];
             for (int i = 0; i < files.Length; i++)
-                this.salmonFiles[i] = (SalmonFile)files[i];
+                this.salmonFiles[i] = (AesFile)files[i];
             if (!fileCommander.IsFileSearcherStopped())
                 Status = "Search Complete";
             else
@@ -901,9 +920,9 @@ public class SalmonVaultManager : INotifyPropertyChanged
         });
     }
 
-    public void CreateVault(IRealFile dir, string password)
+    public void CreateVault(IFile dir, string password)
     {
-        this.Drive = SalmonDrive.CreateDrive(dir, GetDriveClassType(), password, Sequencer);
+        this.Drive = AesDrive.CreateDrive(dir, GetDriveClassType(), password, Sequencer);
         this.CurrDir = this.Drive.Root;
         SalmonSettings.GetInstance().VaultLocation = dir.Path;
         Refresh();
@@ -917,13 +936,13 @@ public class SalmonVaultManager : INotifyPropertyChanged
         SetTaskMessage("");
     }
 
-    public string GetFileProperties(SalmonFile item)
+    public string GetFileProperties(AesFile item)
     {
-        return "Name: " + item.BaseName + "\n" +
+        return "Name: " + item.Name + "\n" +
                 "Path: " + item.Path + "\n" +
-                (!item.IsDirectory ? ("Size: " + ByteUtils.GetBytes(item.Size, 2)
-                        + " (" + item.Size + " bytes)") : "Items: " + item.ListFiles().Length) + "\n" +
-                "Encrypted Name: " + item.RealFile.BaseName + "\n" +
+                (!item.IsDirectory ? ("Size: " + ByteUtils.GetBytes(item.Length, 2)
+                        + " (" + item.Length + " bytes)") : "Items: " + item.ListFiles().Length) + "\n" +
+                "Encrypted Name: " + item.RealFile.Name + "\n" +
                 "Encrypted Path: " + item.RealFile.AbsolutePath + "\n" +
                 (!item.IsDirectory ? "Encrypted Size: " + ByteUtils.GetBytes(item.RealFile.Length, 2)
                         + " (" + item.RealFile.Length + " bytes)" : "") + "\n";
@@ -935,7 +954,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     }
 
 
-    public void GetDiskUsage(SalmonFile[] selectedFiles, Action<int, long> updateUsage)
+    public void GetDiskUsage(AesFile[] selectedFiles, Action<int, long> updateUsage)
     {
         Task.Run(() =>
         {
@@ -945,10 +964,10 @@ public class SalmonVaultManager : INotifyPropertyChanged
         });
     }
 
-    private long GetDiskUsage(SalmonFile[] selectedFiles, Action<int, long> updateUsage,
+    private long GetDiskUsage(AesFile[] selectedFiles, Action<int, long> updateUsage,
                                      ref int totalItems, ref long totalSize)
     {
-        foreach (SalmonFile file in selectedFiles)
+        foreach (AesFile file in selectedFiles)
         {
             totalItems++;
             if (file.IsFile)

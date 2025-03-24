@@ -21,11 +21,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-using Mku.File;
+
+using Mku.FS.File;
 
 namespace Salmon.Vault.Services;
 
 public interface IFileService
 {
-    public IRealFile GetFile(string filepath, bool isDirectory);
+    public IFile GetFile(string filepath, bool isDirectory);
 }

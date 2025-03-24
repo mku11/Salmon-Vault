@@ -22,13 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.File;
+using Mku.FS.File;
 using Mku.Salmon.Sequence;
-using Mku.Sequence;
+using Mku.Win.Salmon.Sequencer;
 using Salmon.Vault.Config;
 using Salmon.Vault.Dialog;
 using Salmon.Vault.Settings;
-using Salmon.Win.Sequencer;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -52,11 +51,11 @@ public class SalmonWinVaultManager : SalmonVaultManager
 
     protected void SetupWinFileSequencer()
     {
-        IRealFile dirFile = new DotNetFile(SequencerDefaultDirPath);
+        IFile dirFile = new File(SequencerDefaultDirPath);
         if (!dirFile.Exists)
             dirFile.Mkdir();
-        IRealFile seqFile = new DotNetFile(SequencerFilepath);
-        WinFileSequencer sequencer = new WinFileSequencer(seqFile, new SalmonSequenceSerializer(), SalmonConfig.REGISTRY_CHKSUM_KEY);
+        IFile seqFile = new File(SequencerFilepath);
+        WinFileSequencer sequencer = new WinFileSequencer(seqFile, new SequenceSerializer(), SalmonConfig.REGISTRY_CHKSUM_KEY);
         this.Sequencer = sequencer;
     }
 

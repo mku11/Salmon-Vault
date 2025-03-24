@@ -22,11 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.Salmon;
+
+using Mku.SalmonFS.File;
 
 namespace Salmon.Vault.Services;
 
 public interface IMediaPlayerService
 {
-    void StartMediaPlayer(SalmonFile file);
+    void StartMediaPlayer(AesFile file);
 }

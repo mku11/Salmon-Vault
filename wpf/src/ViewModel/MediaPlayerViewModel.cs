@@ -21,8 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-using Mku.Salmon;
+
 using Mku.Salmon.Streams;
+using Mku.SalmonFS.File;
+using Mku.SalmonFS.Streams;
 using Salmon.Vault.Config;
 using Salmon.Vault.Dialog;
 using Salmon.Vault.Media;
@@ -248,7 +250,7 @@ public class MediaPlayerViewModel : INotifyPropertyChanged
     public void Load(SalmonFileViewModel viewModel)
     {
         item = viewModel;
-        SalmonFile file = ((SalmonFileViewModel)item).GetSalmonFile();
+        AesFile file = ((SalmonFileViewModel)item).GetAesFile();
         string filePath = null;
         try
         {
@@ -259,7 +261,7 @@ public class MediaPlayerViewModel : INotifyPropertyChanged
             Console.Error.WriteLine(e);
         }
 
-        stream = new SalmonFileInputStream(file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, MEDIA_THREADS, MEDIA_BACK_OFFSET);
+        stream = new AesFileInputStream(file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, MEDIA_THREADS, MEDIA_BACK_OFFSET);
         OpenMedia(stream, MEDIA_BUFFER_SIZE);
         StartTimer();
         Play();

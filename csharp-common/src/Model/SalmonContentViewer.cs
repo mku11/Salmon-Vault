@@ -23,9 +23,9 @@ SOFTWARE.
 */
 
 using HeyRed.Mime;
-using Mku.Salmon;
-using Mku.Salmon.Streams;
-using Mku.Utils;
+using Mku.FS.Drive.Utils;
+using Mku.SalmonFS.File;
+using Mku.SalmonFS.Streams;
 using Salmon.Vault.Services;
 using System;
 using System.ComponentModel;
@@ -71,7 +71,7 @@ public class SalmonContentViewer : INotifyPropertyChanged
             stream.Close();
     }
 
-    internal void Load(SalmonFile file)
+    internal void Load(AesFile file)
     {
         string filePath = null;
         try
@@ -82,16 +82,16 @@ public class SalmonContentViewer : INotifyPropertyChanged
         {
             Console.Error.WriteLine(e);
         }
-        string filename = file.BaseName;
+        string filename = file.Name;
         string mimeType = MimeTypesMap.GetMimeType(filename);
         // webview2 buffering with partial content works only with video and audio
         bool buffered = FileUtils.IsVideo(filename) || FileUtils.IsAudio(filename);
         string contentPath = "content.dat";
-        webBrowserService.SetResponse(URL + contentPath, mimeType, file.Size, BUFFER_SIZE, buffered, (pos) =>
+        webBrowserService.SetResponse(URL + contentPath, mimeType, file.Length, BUFFER_SIZE, buffered, (pos) =>
         {
             if (stream != null)
                 stream.Close();
-            SalmonFileInputStream fileStream = new SalmonFileInputStream(file, BUFFERS, BUFFER_SIZE, THREADS, BACK_OFFSET);
+            AesFileInputStream fileStream = new AesFileInputStream(file, BUFFERS, BUFFER_SIZE, THREADS, BACK_OFFSET);
             // we need to offset the start of the stream so the webview can see it as partial content
             if (buffered)
             {

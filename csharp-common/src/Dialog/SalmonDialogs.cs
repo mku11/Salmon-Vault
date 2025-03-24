@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.File;
-using Mku.Salmon;
-using Mku.Utils;
+using Mku.FS.Drive.Utils;
+using Mku.FS.File;
+using Mku.SalmonFS.Auth;
+using Mku.SalmonFS.File;
 using Salmon.Vault.Config;
 using Salmon.Vault.Extensions;
 using Salmon.Vault.Model;
@@ -104,7 +105,7 @@ public class SalmonDialogs
         {
             try
             {
-                SalmonAuthConfig.ImportAuthFile(SalmonVaultManager.Instance.Drive, (IRealFile)filePath);
+                AuthConfig.ImportAuthFile(SalmonVaultManager.Instance.Drive, (IFile)filePath);
                 SalmonDialog.PromptDialog("Auth", "Device is now Authorized");
             }
             catch (Exception ex)
@@ -132,7 +133,7 @@ public class SalmonDialogs
                     {
                         try
                         {
-                            SalmonAuthConfig.ExportAuthFile(SalmonVaultManager.Instance.Drive, targetAuthID, (IRealFile)fileResult);
+                            AuthConfig.ExportAuthFile(SalmonVaultManager.Instance.Drive, targetAuthID, (IFile)fileResult);
                             SalmonDialog.PromptDialog("Auth", "Auth File Exported");
                         }
                         catch (Exception ex)
@@ -187,7 +188,7 @@ public class SalmonDialogs
         }
     }
 
-    public static void ShowProperties(SalmonFile item)
+    public static void ShowProperties(AesFile item)
     {
         try
         {
@@ -227,7 +228,7 @@ public class SalmonDialogs
         if (!SalmonDialogs.IsDriveLoaded())
             return;
         string itemsString = "item(s)?";
-        foreach (SalmonFile file in SalmonVaultManager.Instance.SelectedFiles)
+        foreach (AesFile file in SalmonVaultManager.Instance.SelectedFiles)
         {
             if (file.IsDirectory)
             {
@@ -309,7 +310,7 @@ public class SalmonDialogs
                                 {
                                     try
                                     {
-                                        SalmonVaultManager.Instance.CreateVault((IRealFile)file, pass);
+                                        SalmonVaultManager.Instance.CreateVault((IFile)file, pass);
                                         SalmonDialog.PromptDialog("Action", "Vault created, you can start importing your files");
                                     }
                                     catch (Exception e)
@@ -330,7 +331,7 @@ public class SalmonDialogs
                     {
                         try
                         {
-                            SalmonVaultManager.Instance.OpenVault((IRealFile)dir, password);
+                            SalmonVaultManager.Instance.OpenVault((IFile)dir, password);
                         }
                         catch (Exception ex)
                         {
@@ -351,14 +352,14 @@ public class SalmonDialogs
                     {
                         try
                         {
-                            IRealFile[] filesToImport = (IRealFile[])obj;
+                            IFile[] filesToImport = (IFile[])obj;
                             if (filesToImport.Length == 0)
                                 return;
-                            IRealFile parent = filesToImport[0].Parent;
+                            IFile parent = filesToImport[0].Parent;
                             if (parent != null && parent.Path != null)
                                 SalmonSettings.GetInstance().LastImportDir = parent.Path;
                             SalmonVaultManager.Instance.ImportFiles(filesToImport,
-                                SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (SalmonFile[] importedFiles) =>
+                                SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (AesFile[] importedFiles) =>
                                 {
                                     SalmonVaultManager.Instance.Refresh();
                                 });
@@ -379,12 +380,12 @@ public class SalmonDialogs
                     {
                         try
                         {
-                            IRealFile folder = (IRealFile)obj;
+                            IFile folder = (IFile)obj;
                             if (folder == null)
                                 return;
                             if (SalmonSettings.GetInstance().DeleteAfterImport)
                             {
-                                IRealFile parent = folder.Parent;
+                                IFile parent = folder.Parent;
                                 if (parent != null && parent.Path != null)
                                     SalmonSettings.GetInstance().LastImportDir = parent.Path;
                             }
@@ -392,8 +393,8 @@ public class SalmonDialogs
                             {
                                 SalmonSettings.GetInstance().LastImportDir = folder.Path;
                             }
-                            SalmonVaultManager.Instance.ImportFiles(new IRealFile[] { folder },
-                                SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (SalmonFile[] importedFiles) =>
+                            SalmonVaultManager.Instance.ImportFiles(new IFile[] { folder },
+                                SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (AesFile[] importedFiles) =>
                                 {
                                     SalmonVaultManager.Instance.Refresh();
                                 });
@@ -429,12 +430,12 @@ public class SalmonDialogs
                 }, "New Folder", true, false, false, null);
     }
 
-    public static void PromptRenameFile(SalmonFile ifile)
+    public static void PromptRenameFile(AesFile ifile)
     {
         string currentFilename = "";
         try
         {
-            currentFilename = ifile.BaseName;
+            currentFilename = ifile.Name;
         }
         catch (Exception ex)
         {
@@ -486,7 +487,7 @@ public class SalmonDialogs
         if (!SalmonDialogs.IsDriveLoaded())
             return;
         string itemsString = "item(s)?";
-        foreach (SalmonFile file in SalmonVaultManager.Instance.SelectedFiles)
+        foreach (AesFile file in SalmonVaultManager.Instance.SelectedFiles)
         {
             if (file.IsDirectory)
             {

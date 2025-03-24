@@ -22,14 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.File;
+using Mku.FS.File;
 
 namespace Salmon.Vault.Services;
 
 public class WPFFileService : IFileService
 {
-    public IRealFile GetFile(string filepath, bool isDirectory)
+    public IFile GetFile(string filepath, bool isDirectory)
     {
-        return new DotNetFile(filepath);
+        return new File(filepath);
     }
 }

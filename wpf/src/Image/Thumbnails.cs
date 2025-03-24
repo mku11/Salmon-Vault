@@ -22,10 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.File;
-using Mku.Salmon;
 using Mku.Salmon.Streams;
-using Mku.Utils;
 using Salmon.Vault.ViewModel;
 using Salmon.Vault.Utils;
 using System;
@@ -39,6 +36,9 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using BitConverter = Mku.Convert.BitConverter;
+using Mku.SalmonFS.File;
+using Mku.FS.Drive.Utils;
+using Mku.FS.File;
 
 namespace Salmon.Vault.Image;
 
@@ -53,7 +53,7 @@ public class Thumbnails
     private static readonly int THUMBNAIL_SIZE = 128;
     private static readonly int MAX_CACHE_SIZE = 20 * 1024 * 1024;
 
-    private static readonly ConcurrentDictionary<SalmonFile, BitmapImage> cache = new ConcurrentDictionary<SalmonFile, BitmapImage>();
+    private static readonly ConcurrentDictionary<AesFile, BitmapImage> cache = new ConcurrentDictionary<AesFile, BitmapImage>();
     private static int cacheSize;
 
     /// <summary>
@@ -61,17 +61,17 @@ public class Thumbnails
     /// </summary>
     /// <param name="salmonFile">The encrypted media file which will be used to get the thumbnail</param>
     /// <returns></returns>
-    public static BitmapImage GetVideoThumbnail(SalmonFile salmonFile)
+    public static BitmapImage GetVideoThumbnail(AesFile salmonFile)
     {
         return GetVideoThumbnail(salmonFile, 0);
     }
 
-    public static BitmapImage GetVideoThumbnail(SalmonFile salmonFile, long ms)
+    public static BitmapImage GetVideoThumbnail(AesFile salmonFile, long ms)
     {
         throw new NotSupportedException();
     }
 
-    public static BitmapImage GetVideoThumbnailMedia(IRealFile file, long ms)
+    public static BitmapImage GetVideoThumbnailMedia(IFile file, long ms)
     {
         throw new NotSupportedException();
     }
@@ -81,7 +81,7 @@ public class Thumbnails
     /// </summary>
     /// <param name="salmonFile">The encrypted file that will be used to get the temp file</param>
     /// <returns></returns>
-    private static IRealFile GetVideoTmpFile(SalmonFile salmonFile)
+    private static IFile GetVideoTmpFile(AesFile salmonFile)
     {
         throw new NotSupportedException();
     }
@@ -93,10 +93,10 @@ public class Thumbnails
     /// <param name="salmonFile">The encrypted file to be used</param>
     /// <param name="maxSize">The max content length that will be decrypted from the beginning of the file</param>
     /// <returns></returns>
-    private static Stream GetTempStream(SalmonFile salmonFile, long maxSize)
+    private static Stream GetTempStream(AesFile salmonFile, long maxSize)
     {
         MemoryStream ms = new MemoryStream();
-        SalmonStream ins = salmonFile.GetInputStream();
+        AesStream ins = salmonFile.GetInputStream();
         byte[] buffer = new byte[BUFFER_SIZE];
         int bytesRead;
         long totalBytesRead = 0;
@@ -123,31 +123,31 @@ public class Thumbnails
     {
 
         BitmapImage bitmapImage;
-        if (cache.ContainsKey(item.GetSalmonFile()))
+        if (cache.ContainsKey(item.GetAesFile()))
         {
-            bitmapImage = cache[item.GetSalmonFile()];
+            bitmapImage = cache[item.GetAesFile()];
             WindowUtils.RunOnMainThread(() =>
             {
                 item.Image = bitmapImage;
             });
         }
-        else if (item.GetSalmonFile().IsDirectory || !FileUtils.IsImage(item.GetSalmonFile().BaseName))
+        else if (item.GetAesFile().IsDirectory || !FileUtils.IsImage(item.GetAesFile().Name))
         {
             WindowUtils.RunOnMainThread(() =>
             {
-                bitmapImage = GetIcon(item.GetSalmonFile());
-                AddCache(item.GetSalmonFile(), bitmapImage);
+                bitmapImage = GetIcon(item.GetAesFile());
+                AddCache(item.GetAesFile(), bitmapImage);
                 item.Image = bitmapImage;
             });
         }
         else
         {
             // we might have multiple requests so we make sure we process only once
-            AddCache(item.GetSalmonFile(), null);
+            AddCache(item.GetAesFile(), null);
 
             Task.Run(() =>
             {
-                Stream nStream = GenerateThumbnail(item.GetSalmonFile());
+                Stream nStream = GenerateThumbnail(item.GetAesFile());
                 WindowUtils.RunOnMainThread(() =>
                 {
                     try
@@ -159,7 +159,7 @@ public class Thumbnails
                         bitmapImage.EndInit();
                         bitmapImage.Freeze();
                         item.Image = bitmapImage;
-                        AddCache(item.GetSalmonFile(), bitmapImage);
+                        AddCache(item.GetAesFile(), bitmapImage);
                     }
                     catch (Exception ex)
                     {
@@ -170,7 +170,7 @@ public class Thumbnails
         }
     }
 
-    private static BitmapImage GetIcon(SalmonFile salmonFile)
+    private static BitmapImage GetIcon(AesFile salmonFile)
     {
         string icon = salmonFile.IsFile ? "Icons/file_item_small.png" : "Icons/folder_small.png";
         Uri uri = new Uri("pack://application:,,,/"
@@ -180,7 +180,7 @@ public class Thumbnails
         return bitmapImage;
     }
 
-    private static Stream GenerateThumbnail(SalmonFile file)
+    private static Stream GenerateThumbnail(AesFile file)
     {
         Stream stream = FromFile(file);
         System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(stream);
@@ -205,7 +205,7 @@ public class Thumbnails
         return new System.Drawing.Bitmap(bitmap, new System.Drawing.Size(nWidth, nHeight));
     }
 
-    private static void AddCache(SalmonFile file, BitmapImage image)
+    private static void AddCache(AesFile file, BitmapImage image)
     {
         if (cacheSize > MAX_CACHE_SIZE)
             ResetCache();
@@ -224,8 +224,8 @@ public class Thumbnails
     public static void ResetCache()
     {
         int reduceSize = 0;
-        List<SalmonFile> keysToRemove = new List<SalmonFile>();
-        foreach (SalmonFile key in cache.Keys)
+        List<AesFile> keysToRemove = new List<AesFile>();
+        foreach (AesFile key in cache.Keys)
         {
             BitmapImage bitmap = cache[key];
             if (bitmap != null)
@@ -234,7 +234,7 @@ public class Thumbnails
                 break;
             keysToRemove.Add(key);
         }
-        foreach (SalmonFile key in keysToRemove)
+        foreach (AesFile key in keysToRemove)
         {
             cache.Remove(key, out BitmapImage bitmap);
             if (bitmap != null)
@@ -242,7 +242,7 @@ public class Thumbnails
         }
     }
 
-    public static void ResetCache(SalmonFile file)
+    public static void ResetCache(AesFile file)
     {
         if (cache.ContainsKey(file))
         {
@@ -252,13 +252,13 @@ public class Thumbnails
         }
     }
 
-    private static Stream FromFile(SalmonFile file)
+    private static Stream FromFile(AesFile file)
     {
         Stream stream = null;
         try
         {
-            string ext = FileUtils.GetExtensionFromFileName(file.BaseName).ToLower();
-            if (ext.Equals("gif") && file.Size > TMP_GIF_THUMB_MAX_SIZE)
+            string ext = FileUtils.GetExtensionFromFileName(file.Name).ToLower();
+            if (ext.Equals("gif") && file.Length > TMP_GIF_THUMB_MAX_SIZE)
                 stream = GetTempStream(file, TMP_GIF_THUMB_MAX_SIZE);
             else
                 stream = new BufferedStream(file.GetInputStream(), BUFFER_SIZE);
@@ -271,9 +271,9 @@ public class Thumbnails
         return stream;
     }
 
-    public static Color GetTintColor(SalmonFile salmonFile)
+    public static Color GetTintColor(AesFile salmonFile)
     {
-        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.BaseName))
+        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.Name))
             return Colors.Transparent;
 
         SHA256 sha256 = SHA256.Create();
@@ -284,10 +284,10 @@ public class Thumbnails
         return color;
     }
 
-    public static string GetExt(SalmonFile salmonFile)
+    public static string GetExt(AesFile salmonFile)
     {
-        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.BaseName))
+        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.Name))
             return "";
-        return FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+        return FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
     }
 }

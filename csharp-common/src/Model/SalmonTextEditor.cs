@@ -23,31 +23,31 @@ SOFTWARE.
 */
 
 using Mku.Salmon.Streams;
-using Mku.Salmon;
 using Salmon.Vault.Dialog;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Mku.SalmonFS.File;
 
 namespace Salmon.Vault.Model;
 
 public class SalmonTextEditor
 {
     [MethodImpl(MethodImplOptions.Synchronized)]
-    public SalmonFile OnSave(SalmonFile file, string text)
+    public AesFile OnSave(AesFile file, string text)
     {
-        SalmonFile targetFile = null;
-        SalmonStream stream = null;
+        AesFile targetFile = null;
+        AesStream stream = null;
         MemoryStream ins = null;
         bool success = false;
         try
         {
             byte[] contents = UTF8Encoding.UTF8.GetBytes(text);
             ins = new MemoryStream(contents);
-            SalmonFile dir = file.Parent;
-            targetFile = dir.CreateFile(file.BaseName);
-            targetFile.SetApplyIntegrity(true, null, null);
+            AesFile dir = file.Parent;
+            targetFile = dir.CreateFile(file.Name);
+            targetFile.SetApplyIntegrity(true);
             stream = targetFile.GetOutputStream();
             ins.CopyTo(stream);
             stream.Flush();
@@ -97,9 +97,9 @@ public class SalmonTextEditor
     }
 
     [MethodImpl(MethodImplOptions.Synchronized)]
-    public string GetTextContent(SalmonFile file)
+    public string GetTextContent(AesFile file)
     {
-        SalmonStream stream = file.GetInputStream();
+        AesStream stream = file.GetInputStream();
         MemoryStream ms = new MemoryStream();
         stream.CopyTo(ms);
         stream.Close();

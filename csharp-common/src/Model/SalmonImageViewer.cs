@@ -22,8 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.Salmon;
+
 using Mku.Salmon.Streams;
+using Mku.SalmonFS.File;
+using Mku.SalmonFS.Streams;
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -41,11 +43,11 @@ public class SalmonImageViewer : INotifyPropertyChanged
     public event PropertyChangedEventHandler PropertyChanged;
     public Stream ImageStream { get; private set; }
 
-    public void Load(SalmonFile salmonFile)
+    public void Load(AesFile salmonFile)
     {
         try
         {
-            ImageStream = new SalmonFileInputStream(salmonFile, 
+            ImageStream = new AesFileInputStream(salmonFile, 
 				MEDIA_BUFFERS, MEDIA_BUFFER_SIZE,
                 MEDIA_THREADS, MEDIA_BACKOFFSET);
         }

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.File;
+using Mku.FS.File;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -42,7 +42,7 @@ public class WPFFileDialogService : IFileDialogService
         directoryChooser.Description = title;
         directoryChooser.InitialDirectory = initialDirectory;
         if (directoryChooser.ShowDialog() == DialogResult.OK)
-            OnFolderPicked(new DotNetFile(directoryChooser.SelectedPath));
+            OnFolderPicked(new File(directoryChooser.SelectedPath));
     }
 
     public void OpenFiles(string title, Dictionary<string, string> filter, string initialDirectory, Action<object> OnFilesPicked, int requestCode)
@@ -58,10 +58,10 @@ public class WPFFileDialogService : IFileDialogService
         }
         if (fileChooser.ShowDialog() == DialogResult.Cancel)
             return;
-        List<IRealFile> files = new List<IRealFile>();
+        List<IFile> files = new List<IFile>();
         foreach (string filePath in fileChooser.FileNames)
         {
-            files.Add(new DotNetFile(filePath));
+            files.Add(new File(filePath));
         }
         OnFilesPicked(files.ToArray());
     }
@@ -80,7 +80,7 @@ public class WPFFileDialogService : IFileDialogService
         }
         if (fileChooser.ShowDialog() == DialogResult.Cancel)
             return;
-        OnFilePicked(new DotNetFile(fileChooser.FileName));
+        OnFilePicked(new File(fileChooser.FileName));
     }
 
     public void SaveFile(string title, string filename, Dictionary<string, string> filter, string initialDirectory, 
@@ -97,7 +97,7 @@ public class WPFFileDialogService : IFileDialogService
         fileChooser.InitialDirectory = initialDirectory;
         if (fileChooser.ShowDialog() == DialogResult.Cancel)
             return;
-        DotNetFile file = new DotNetFile(fileChooser.FileName);
+        File file = new File(fileChooser.FileName);
         OnFilePicked(file);
     }
 }

@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.Utils;
 using Salmon.Vault.Utils;
 using System;
 using System.Collections.Generic;
@@ -35,8 +34,9 @@ using Salmon.Vault.Config;
 using System.Windows.Input;
 using System.Runtime.CompilerServices;
 using Salmon.Vault.Model.Win;
-using Mku.Salmon;
 using System.Diagnostics;
+using Mku.FS.Drive.Utils;
+using Mku.SalmonFS.File;
 
 namespace Salmon.Vault.ViewModel;
 
@@ -71,7 +71,7 @@ public class MainViewModel : INotifyPropertyChanged
                 if (manager.FileItemList != null)
                 {
                     manager.FileItemList.Clear();
-                    manager.FileItemList.AddRange(value.Select(x => x.GetSalmonFile()).ToList());
+                    manager.FileItemList.AddRange(value.Select(x => x.GetAesFile()).ToList());
                 }
                 PropertyChanged(this, new PropertyChangedEventArgs("FileItemList"));
             }
@@ -203,7 +203,7 @@ public class MainViewModel : INotifyPropertyChanged
         manager.OnFileItemAdded = FileItemAdded;
     }
 
-    private void FileItemAdded(int position, SalmonFile file)
+    private void FileItemAdded(int position, AesFile file)
     {
         WindowUtils.RunOnMainThread(() =>
         {
@@ -255,11 +255,11 @@ public class MainViewModel : INotifyPropertyChanged
         });
     }
 
-    private SalmonFileViewModel GetViewModel(SalmonFile item)
+    private SalmonFileViewModel GetViewModel(AesFile item)
     {
         foreach (SalmonFileViewModel vm in FileItemList)
         {
-            if (vm.GetSalmonFile() == item)
+            if (vm.GetAesFile() == item)
                 return vm;
         }
         return null;
@@ -308,7 +308,7 @@ public class MainViewModel : INotifyPropertyChanged
         switch (actionType)
         {
             case ActionType.VIEW:
-                manager.OpenItem(SelectedItem.GetSalmonFile());
+                manager.OpenItem(SelectedItem.GetAesFile());
                 break;
             case ActionType.REFRESH:
                 manager.Refresh();
@@ -389,7 +389,7 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (item == null)
             return;
-        if (item.GetSalmonFile().Size > 1 * 1024 * 1024)
+        if (item.GetAesFile().Length > 1 * 1024 * 1024)
         {
             SalmonDialog.PromptDialog("Error", "File too large");
             return;
@@ -419,19 +419,19 @@ public class MainViewModel : INotifyPropertyChanged
         OpenSettingsViewer();
     }
 
-    private void UpdateListItem(SalmonFile file)
+    private void UpdateListItem(AesFile file)
     {
         SalmonFileViewModel vm = GetViewModel(file);
         vm.Update();
     }
 
-    private bool OpenListItem(SalmonFile file)
+    private bool OpenListItem(AesFile file)
     {
         SalmonFileViewModel vm = GetViewModel(file);
 
         try
         {
-            if (FileUtils.IsVideo(file.BaseName) || FileUtils.IsAudio(file.BaseName))
+            if (FileUtils.IsVideo(file.Name) || FileUtils.IsAudio(file.Name))
             {
                 if (!SalmonConfig.USE_CONTENT_VIEWER && MediaPlayerViewModel.HasFFMPEG())
                     StartMediaPlayer(vm);
@@ -439,7 +439,7 @@ public class MainViewModel : INotifyPropertyChanged
                     StartContentViewer(vm);
                 return true;
             }
-            else if (FileUtils.IsImage(file.BaseName))
+            else if (FileUtils.IsImage(file.Name))
             {
                 if (!SalmonConfig.USE_CONTENT_VIEWER)
                     StartImageViewer(vm);
@@ -447,12 +447,12 @@ public class MainViewModel : INotifyPropertyChanged
                     StartContentViewer(vm);
                 return true;
             }
-            else if (FileUtils.IsPdf(file.BaseName))
+            else if (FileUtils.IsPdf(file.Name))
             {
                 StartContentViewer(vm);
                 return true;
             }
-            else if (FileUtils.IsText(file.BaseName))
+            else if (FileUtils.IsText(file.Name))
             {
                 StartTextEditor(vm);
                 return true;
@@ -471,7 +471,7 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
 
-    public void PromptOpenExternalApp(SalmonFile file, string msg)
+    public void PromptOpenExternalApp(AesFile file, string msg)
     {
         SalmonDialog.PromptDialog("Open External", (msg != null ? msg + " " : "") + "Press Ok to export the file and " +
                         "open it with an external app. This file will be placed in the export folder and will also be " +
@@ -490,11 +490,11 @@ public class MainViewModel : INotifyPropertyChanged
                 }, "Cancel", null);
     }
 
-    private void OpenWith(SalmonFile salmonFile)
+    private void OpenWith(AesFile salmonFile)
     {
         if (manager.IsJobRunning)
             throw new Exception("Another job is running");
-        manager.ExportFiles(new SalmonFile[] { salmonFile }, (files)=>
+        manager.ExportFiles(new AesFile[] { salmonFile }, (files)=>
         {
             WindowUtils.RunOnMainThread(()=> {
                 try
@@ -528,12 +528,12 @@ public class MainViewModel : INotifyPropertyChanged
     internal void ShowProperties(SalmonFileViewModel viewModel)
     {
         if (viewModel != null)
-            SalmonDialogs.ShowProperties(viewModel.GetSalmonFile());
+            SalmonDialogs.ShowProperties(viewModel.GetAesFile());
     }
 
     internal void ShowDiskUsage(List<SalmonFileViewModel> viewModels)
     {
-        SalmonFile[] files = viewModels.Select(x => x.GetSalmonFile()).ToArray();
+        AesFile[] files = viewModels.Select(x => x.GetAesFile()).ToArray();
         Action<string> updateBody = SalmonDialog.PromptUpdatableDialog("Disk Usage", "");
         int fItems = 0;
         long fSize = 0;
@@ -602,7 +602,7 @@ public class MainViewModel : INotifyPropertyChanged
     internal void RenameFile(SalmonFileViewModel selectedItem)
     {
         if (selectedItem != null)
-            SalmonDialogs.PromptRenameFile(selectedItem.GetSalmonFile());
+            SalmonDialogs.PromptRenameFile(selectedItem.GetAesFile());
     }
 
     internal void OnDelete()
@@ -618,7 +618,7 @@ public class MainViewModel : INotifyPropertyChanged
     public void OpenItem(SalmonFileViewModel viewModel)
     {
         if (viewModel != null)
-            manager.OpenItem(viewModel.GetSalmonFile());
+            manager.OpenItem(viewModel.GetAesFile());
     }
 
     public void Cancel()
@@ -632,7 +632,7 @@ public class MainViewModel : INotifyPropertyChanged
         manager.SelectedFiles.Clear();
         foreach (SalmonFileViewModel item in selectedItems)
         {
-            manager.SelectedFiles.Add(item.GetSalmonFile());
+            manager.SelectedFiles.Add(item.GetAesFile());
         }
         if (manager.IsJobRunning
         || selectedItems.Count > 0

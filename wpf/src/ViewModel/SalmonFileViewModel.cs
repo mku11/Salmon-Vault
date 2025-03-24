@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.Salmon;
-using Mku.Utils;
+using Mku.FS.Drive.Utils;
+using Mku.SalmonFS.File;
 using Salmon.Vault.Image;
 using Salmon.Vault.Utils;
 using System;
@@ -44,7 +44,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_name == null)
             {
-                UpdatePropertyAsync(() => salmonFile.BaseName, (basename) =>
+                UpdatePropertyAsync(() => salmonFile.Name, (basename) =>
                 {
                     this.Name = basename;
                 });
@@ -231,7 +231,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         }
     }
 
-    private SalmonFile salmonFile;
+    private AesFile salmonFile;
 
     private void UpdatePropertyAsync<T>(Func<T> Getter, Action<T> Setter)
     {
@@ -242,12 +242,12 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         });
     }
 
-    public SalmonFileViewModel(SalmonFile salmonFile)
+    public SalmonFileViewModel(AesFile salmonFile)
     {
         this.salmonFile = salmonFile;
     }
 
-    public void SetSalmonFile(SalmonFile file)
+    public void SetAesFile(AesFile file)
     {
         this.salmonFile = file;
         Update();
@@ -263,7 +263,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
 
     public void Update()
     {
-        Name = salmonFile.BaseName;
+        Name = salmonFile.Name;
         Date = GetDateText();
         SizeText = GetSizeText();
         Type = GetExtText();
@@ -276,7 +276,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
 
     private string GetExtText()
     {
-        return FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+        return FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
     }
 
     private string GetSizeText()
@@ -292,20 +292,20 @@ public class SalmonFileViewModel : INotifyPropertyChanged
 
     private string GetDateText()
     {
-        return DateTimeOffset.FromUnixTimeMilliseconds(salmonFile.LastDateTimeModified).LocalDateTime.ToString(dateFormat);
+        return DateTimeOffset.FromUnixTimeMilliseconds(salmonFile.LastDateModified).LocalDateTime.ToString(dateFormat);
     }
 
-    public SalmonFile GetSalmonFile()
+    public AesFile GetAesFile()
     {
         return salmonFile;
     }
 
     public SalmonFileViewModel[] ListFiles()
     {
-        SalmonFile[] files = salmonFile.ListFiles();
+        AesFile[] files = salmonFile.ListFiles();
         SalmonFileViewModel[] nfiles = new SalmonFileViewModel[files.Length];
         int count = 0;
-        foreach (SalmonFile file in files)
+        foreach (AesFile file in files)
             nfiles[count++] = new SalmonFileViewModel(file);
         return nfiles;
     }
@@ -319,7 +319,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         salmonFile.CreateDirectory(folderName, key, dirNameNonce);
     }
 
-    public long LastDateTimeModified => salmonFile.LastDateTimeModified;
+    public long LastDateTimeModified => salmonFile.LastDateModified;
 
     public void Delete()
     {
@@ -329,7 +329,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
     public void Rename(string newValue)
     {
         salmonFile.Rename(newValue);
-        Name = salmonFile.BaseName;
+        Name = salmonFile.Name;
     }
 
     override

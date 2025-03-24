@@ -53,7 +53,7 @@ public class ImageViewerViewModel : INotifyPropertyChanged
 
     public void Load(SalmonFileViewModel file)
     {
-        viewer.Load(file.GetSalmonFile());
+        viewer.Load(file.GetAesFile());
         BitmapImage imageSource = new BitmapImage();
         imageSource.BeginInit();
         imageSource.StreamSource = viewer.ImageStream;

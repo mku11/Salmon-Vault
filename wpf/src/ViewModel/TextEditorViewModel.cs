@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.Salmon;
+using Mku.SalmonFS.File;
 using Salmon.Vault.Model;
 using Salmon.Vault.Utils;
 using System;
@@ -149,15 +149,15 @@ public class TextEditorViewModel : INotifyPropertyChanged
     {
         try
         {
-            SalmonFile oldFile = item.GetSalmonFile();
-            SalmonFile targetFile = editor.OnSave(item.GetSalmonFile(), ContentArea);
+            AesFile oldFile = item.GetAesFile();
+            AesFile targetFile = editor.OnSave(item.GetAesFile(), ContentArea);
             int index = SalmonVaultManager.Instance.FileItemList.IndexOf(oldFile);
             if (index >= 0)
             {
                 SalmonVaultManager.Instance.FileItemList.Remove(oldFile);
                 SalmonVaultManager.Instance.FileItemList.Insert(index, targetFile);
             }
-            item.SetSalmonFile(targetFile);
+            item.SetAesFile(targetFile);
             ShowTaskMessage("File saved");
             WindowUtils.RunOnMainThread(() =>
             {
@@ -175,7 +175,7 @@ public class TextEditorViewModel : INotifyPropertyChanged
         item = fileItem;
         try
         {
-            string content = editor.GetTextContent(fileItem.GetSalmonFile());
+            string content = editor.GetTextContent(fileItem.GetAesFile());
             ContentArea = content;
             ShowTaskMessage("File loaded");
             WindowUtils.RunOnMainThread(() =>
