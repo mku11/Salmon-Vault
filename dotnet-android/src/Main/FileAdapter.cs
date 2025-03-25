@@ -31,8 +31,6 @@ using System.Collections.Concurrent;
 using Android.Views.Animations;
 using Java.Text;
 using Java.Security;
-using Mku.Utils;
-using Mku.Salmon;
 using BitConverter = Mku.Convert.BitConverter;
 using Salmon.Vault.DotNetAndroid;
 using System;
@@ -45,6 +43,8 @@ using System.ComponentModel;
 using Java.Lang;
 using Android.Media;
 using System.Runtime.CompilerServices;
+using Mku.SalmonFS.File;
+using Mku.FS.Drive.Utils;
 
 namespace Salmon.Vault.Main;
 
@@ -57,16 +57,16 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     private static readonly int TASK_THREADS = 4;
 
     private bool displayItems = true;
-    private List<SalmonFile> items;
+    private List<AesFile> items;
     private LayoutInflater inflater;
     private Func<int, bool> itemClicked;
     private Activity activity;
-    private ConcurrentDictionary<SalmonFile, Bitmap> bitmapCache = new ConcurrentDictionary<SalmonFile, Bitmap>();
+    private ConcurrentDictionary<AesFile, Bitmap> bitmapCache = new ConcurrentDictionary<AesFile, Bitmap>();
     // we use a deque and add jobs to the front for better user experience
     private LinkedBlockingDeque tasks = new LinkedBlockingDeque();
-    private SalmonFile lastSelected;
+    private AesFile lastSelected;
     private int cacheSize = 0;
-    public HashSet<SalmonFile> SelectedFiles { get; } = new HashSet<SalmonFile>();
+    public HashSet<AesFile> SelectedFiles { get; } = new HashSet<AesFile>();
     private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/YYYY");
     private Mode mode = Mode.SINGLE_SELECT;
     private IExecutorService executor;
@@ -74,7 +74,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     public event PropertyChangedEventHandler PropertyChanged;
     private ViewHolder animationViewHolder;
 
-    public FileAdapter(Activity activity, List<SalmonFile> items, Func<int, bool> itemClicked)
+    public FileAdapter(Activity activity, List<AesFile> items, Func<int, bool> itemClicked)
     {
         this.items = items;
         this.inflater = LayoutInflater.From(activity);
@@ -83,7 +83,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         CreateThread();
     }
 
-    public HashSet<SalmonFile> GetSelectedFiles()
+    public HashSet<AesFile> GetSelectedFiles()
     {
         return SelectedFiles;
     }
@@ -92,7 +92,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     {
         if (value)
         {
-            foreach (SalmonFile item in items)
+            foreach (AesFile item in items)
             {
                 SelectedFiles.Add(item);
             }
@@ -173,7 +173,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         }));
     }
 
-    private void UpdateSelected(ViewHolder viewHolder, SalmonFile salmonFile)
+    private void UpdateSelected(ViewHolder viewHolder, AesFile salmonFile)
     {
         viewHolder.selected.Checked = SelectedFiles.Contains(salmonFile);
     }
@@ -183,10 +183,10 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         long size = 0;
         long date = 0;
         string items = "";
-        SalmonFile file = viewHolder.salmonFile;
+        AesFile file = viewHolder.salmonFile;
         try
         {
-            string filename = viewHolder.salmonFile.BaseName;
+            string filename = viewHolder.salmonFile.Name;
             activity.RunOnUiThread(() =>
             {
                 viewHolder.filename.Text = filename;
@@ -195,7 +195,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                 items = viewHolder.salmonFile.ChildrenCount + " " + activity.GetString(Resource.String.Items);
             else
                 size = viewHolder.salmonFile.RealFile.Length;
-            date = viewHolder.salmonFile.LastDateTimeModified;
+            date = viewHolder.salmonFile.LastDateModified;
 
             string finalItems = items;
             long finalSize = size;
@@ -333,7 +333,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     }
 
     private void UpdateFileInfo(ViewHolder viewHolder, string filename,
-                                string items, SalmonFile salmonFile,
+                                string items, AesFile salmonFile,
                                 long size, long date)
     {
         viewHolder.filename.Text = filename;
@@ -353,7 +353,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         }
     }
 
-    private bool UpdateIconFromCache(ViewHolder viewHolder, SalmonFile file, string ext)
+    private bool UpdateIconFromCache(ViewHolder viewHolder, AesFile file, string ext)
     {
         if (bitmapCache.ContainsKey(file))
         {
@@ -407,8 +407,8 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     public void ResetCache()
     {
         int reduceSize = 0;
-        List<SalmonFile> keysToRemove = new List<SalmonFile>();
-        foreach (SalmonFile key in bitmapCache.Keys)
+        List<AesFile> keysToRemove = new List<AesFile>();
+        foreach (AesFile key in bitmapCache.Keys)
         {
             Bitmap bitmap = bitmapCache[key];
             if (bitmap != null)
@@ -417,7 +417,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                 break;
             keysToRemove.Add(key);
         }
-        foreach (SalmonFile key in keysToRemove)
+        foreach (AesFile key in keysToRemove)
         {
             bitmapCache.Remove(key, out Bitmap bitmap);
             if (bitmap != null)
@@ -426,11 +426,11 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         OnCacheCleared(this, new EventArgs());
     }
 
-    private Bitmap GetFileThumbnail(SalmonFile salmonFile, int step, Java.IO.File tmpFile,
+    private Bitmap GetFileThumbnail(AesFile salmonFile, int step, Java.IO.File tmpFile,
                                     bool delete)
     {
         Bitmap bitmap = null;
-        string ext = FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+        string ext = FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
         if (ext.Equals("mp4"))
         {
             bitmap = Thumbnails.GetVideoThumbnail(tmpFile, VIDEO_THUMBNAIL_MSECS * (step + 1), delete);
@@ -444,7 +444,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         return bitmap;
     }
 
-    private void AddBitmapToCache(SalmonFile file, Bitmap bitmap)
+    private void AddBitmapToCache(AesFile file, Bitmap bitmap)
     {
         bitmapCache[file] = bitmap;
         if (bitmap != null)
@@ -465,7 +465,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         return new ViewHolder(view, itemClicked, this);
     }
 
-    public SalmonFile GetLastSelected()
+    public AesFile GetLastSelected()
     {
         return lastSelected;
     }
@@ -492,7 +492,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         public TextView filedate;
         public TextView extension;
         public CheckBox selected;
-        public SalmonFile salmonFile;
+        public AesFile salmonFile;
         public bool animate;
 
         public ViewHolder(View itemView, Func<int, bool> itemClicked, FileAdapter adapter) : base(itemView)
@@ -507,7 +507,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
             itemView.Click += (object sender, EventArgs e) =>
             {
-                SalmonFile salmonFile = adapter.items[base.LayoutPosition];
+                AesFile salmonFile = adapter.items[base.LayoutPosition];
                 if (adapter.mode == Mode.MULTI_SELECT)
                 {
                     selected.Checked = !selected.Checked;
@@ -529,7 +529,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
             itemView.LongClick += (object sender, View.LongClickEventArgs e) =>
             {
-                SalmonFile salmonFile = adapter.items[LayoutPosition];
+                AesFile salmonFile = adapter.items[LayoutPosition];
                 if (adapter.mode == Mode.SINGLE_SELECT)
                 {
                     adapter.SetMultiSelect(true);

@@ -34,13 +34,9 @@ using Semaphore = Java.Util.Concurrent.Semaphore;
 using AndroidX.Core.View;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 using Mku.Salmon;
-using Mku.Utils;
-using Mku.File;
 
-using Mku.Android.File;
 using Salmon.Vault.DotNetAndroid;
 using Mku.Salmon.Transform;
-using Salmon.Transform;
 using System.Linq;
 using Android.Widget;
 using Android.App;
@@ -53,8 +49,6 @@ using System;
 using System.ComponentModel;
 using Salmon.Vault.MAUI.ANDROID;
 using System.Threading.Tasks;
-using Mku.Android.Salmon.Drive;
-using Mku.Salmon.Utils;
 using AndroidX.AppCompat.View.Menu;
 using Java.Util.Concurrent.Atomic;
 using Salmon.Vault.Config;
@@ -62,6 +56,15 @@ using Android.Webkit;
 using AndroidX.Core.Content;
 using AndroidX.Core.App;
 using Salmon.Vault.Provider;
+using Mku.SalmonFS.File;
+using Mku.Android.Salmon.Transform;
+using Mku.Android.SalmonFS.Drive;
+using Mku.FS.Drive.Utils;
+using Mku.Android.FS.File;
+using Mku.FS.File;
+using Mku.SalmonFS.Drive;
+using Mku.SalmonFS.Auth;
+using Mku.SalmonFS.Drive.Utils;
 
 namespace Salmon.Vault.Main;
 
@@ -74,7 +77,7 @@ public class SalmonActivity : AppCompatActivity
     private static readonly long MAX_FILE_SIZE_TO_SHARE = 50 * 1024 * 1024;
     private static readonly long MEDIUM_FILE_SIZE_TO_SHARE = 10 * 1024 * 1024;
 
-    private List<SalmonFile> fileItemList = new List<SalmonFile>();
+    private List<AesFile> fileItemList = new List<AesFile>();
 
     private Semaphore done = new Semaphore(1);
 
@@ -169,7 +172,7 @@ public class SalmonActivity : AppCompatActivity
         try
         {
 
-            SalmonNativeTransformer.NativeProxy = new AndroidNativeProxy();
+            NativeTransformer.NativeProxy = new AndroidNativeProxy();
             AndroidDrive.Initialize(this.ApplicationContext);
 
             manager = (SalmonAndroidVaultManager)CreateVaultManager();
@@ -190,7 +193,7 @@ public class SalmonActivity : AppCompatActivity
         }
     }
 
-    private void UpdateListItem(SalmonFile file)
+    private void UpdateListItem(AesFile file)
     {
         int index = fileItemList.IndexOf(file);
         if (index >= 0)
@@ -248,12 +251,12 @@ public class SalmonActivity : AppCompatActivity
         });
     }
 
-    private void SelectItem(SalmonFile file)
+    private void SelectItem(AesFile file)
     {
         try
         {
             int index = 0;
-            foreach (SalmonFile viewFile in fileItemList)
+            foreach (AesFile viewFile in fileItemList)
             {
                 if (viewFile == file)
                 {
@@ -285,7 +288,7 @@ public class SalmonActivity : AppCompatActivity
         if (e.PropertyName == "SelectedFiles")
         {
             manager.SelectedFiles.Clear();
-            foreach (SalmonFile file in adapter.SelectedFiles)
+            foreach (AesFile file in adapter.SelectedFiles)
                 manager.SelectedFiles.Add(file);
         }
         InvalidateOptionsMenu();
@@ -306,7 +309,7 @@ public class SalmonActivity : AppCompatActivity
         }
     }
 
-    private void FileItemAdded(int position, SalmonFile file)
+    private void FileItemAdded(int position, AesFile file)
     {
         WindowUtils.RunOnMainThread(() =>
         {
@@ -643,7 +646,7 @@ public class SalmonActivity : AppCompatActivity
     }
 
 
-    private void OpenWith(SalmonFile salmonFile)
+    private void OpenWith(AesFile salmonFile)
     {
         Java.IO.File sharedFile = null;
         try
@@ -662,13 +665,13 @@ public class SalmonActivity : AppCompatActivity
                 toast.Show();
             }
             sharedFile = SalmonFileProvider.CreateSharedFile(salmonFile);
-            if (salmonFile.Size > SalmonFileProvider.MAX_FILE_SIZE_TO_SHARE)
+            if (salmonFile.Length > SalmonFileProvider.MAX_FILE_SIZE_TO_SHARE)
             {
                 Toast.MakeText(this, GetString(Resource.String.FileSizeTooLarge), ToastLength.Long).Show();
                 return;
             }
             sharedFile.DeleteOnExit();
-            string ext = FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+            string ext = FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
             string mimeType = MimeTypeMap.Singleton.GetMimeTypeFromExtension(ext);
             Android.Net.Uri uri = FileProvider.GetUriForFile(this, SalmonConfig.FILE_PROVIDER, sharedFile);
             ShareCompat.IntentBuilder builder = ShareCompat.IntentBuilder.From(this).SetType(mimeType);
@@ -699,7 +702,7 @@ public class SalmonActivity : AppCompatActivity
         }
     }
 
-    private void ShowDiskUsage(SalmonFile[] files)
+    private void ShowDiskUsage(AesFile[] files)
     {
 
         Action<string> updateBody = SalmonDialog.promptUpdatableDialog("Disk Usage", "");
@@ -736,13 +739,13 @@ public class SalmonActivity : AppCompatActivity
             manager.SelectedFiles = adapter.SelectedFiles;
             manager.ExportSelectedFiles(deleteSource);
         }
-        catch (SalmonAuthException e)
+        catch (AuthException e)
         {
             SalmonDialog.PromptDialog("Could not export file(s): " + e.Message);
         }
     }
 
-    protected bool OpenItem(SalmonFile file)
+    protected bool OpenItem(AesFile file)
     {
         return manager.OpenItem(file);
     }
@@ -766,28 +769,28 @@ public class SalmonActivity : AppCompatActivity
                 manager.Refresh();
                 break;
             case SortType.Name:
-                fileItemList.Sort(SalmonFileComparators.FilenameAscComparator);
+                fileItemList.Sort(AesFileComparators.FilenameAscComparator);
                 break;
             case SortType.NameDesc:
-                fileItemList.Sort(SalmonFileComparators.FilenameDescComparator);
+                fileItemList.Sort(AesFileComparators.FilenameDescComparator);
                 break;
             case SortType.Size:
-                fileItemList.Sort(SalmonFileComparators.SizeAscComparator);
+                fileItemList.Sort(AesFileComparators.SizeAscComparator);
                 break;
             case SortType.SizeDesc:
-                fileItemList.Sort(SalmonFileComparators.SizeDescComparator);
+                fileItemList.Sort(AesFileComparators.SizeDescComparator);
                 break;
             case SortType.Type:
-                fileItemList.Sort(SalmonFileComparators.TypeAscComparator);
+                fileItemList.Sort(AesFileComparators.TypeAscComparator);
                 break;
             case SortType.TypeDesc:
-                fileItemList.Sort(SalmonFileComparators.TypeDescComparator);
+                fileItemList.Sort(AesFileComparators.TypeDescComparator);
                 break;
             case SortType.Date:
-                fileItemList.Sort(SalmonFileComparators.DateAscComparator);
+                fileItemList.Sort(AesFileComparators.DateAscComparator);
                 break;
             case SortType.DateDesc:
-                fileItemList.Sort(SalmonFileComparators.DateDescComparator);
+                fileItemList.Sort(AesFileComparators.DateDescComparator);
                 break;
         }
     }
@@ -835,22 +838,22 @@ public class SalmonActivity : AppCompatActivity
         if (requestCode == SalmonVaultManager.REQUEST_OPEN_VAULT_DIR)
         {
             ActivityCommon.SetUriPermissions(data, uri);
-            IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
-            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            IFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
+            Action<IFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
             callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_CREATE_VAULT_DIR)
         {
             ActivityCommon.SetUriPermissions(data, uri);
-            IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
-            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            IFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
+            Action<IFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
             callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES
             || requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER)
         {
             string[] filesToImport = ActivityCommon.GetFilesFromIntent(this, data);
-            IRealFile[] files = new AndroidFile[filesToImport.Length];
+            IFile[] files = new AndroidFile[filesToImport.Length];
             for (int i = 0; i < files.Length; i++)
             {
                 files[i] = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(filesToImport[i], requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER);
@@ -867,8 +870,8 @@ public class SalmonActivity : AppCompatActivity
             string importFile = files != null ? files[0] : null;
             if (importFile == null)
                 return;
-            IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(importFile, false);
-            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            IFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(importFile, false);
+            Action<IFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
             callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_EXPORT_AUTH_FILE)
@@ -877,37 +880,37 @@ public class SalmonActivity : AppCompatActivity
             string exportAuthDir = dirs != null ? dirs[0] : null;
             if (exportAuthDir == null)
                 return;
-            IRealFile dir = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(exportAuthDir, true);
-            IRealFile exportAuthFile;
+            IFile dir = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(exportAuthDir, true);
+            IFile exportAuthFile;
             try
             {
-                exportAuthFile = dir.CreateFile(SalmonDrive.AuthConfigFilename);
+                exportAuthFile = dir.CreateFile(AesDrive.AuthConfigFilename);
             }
             catch (Java.IO.IOException e)
             {
                 throw new RuntimeException(e);
             }
-            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            Action<IFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
             callback(exportAuthFile);
         }
     }
 
-    public bool OpenListItem(SalmonFile file)
+    public bool OpenListItem(AesFile file)
     {
 
         try
         {
-            if (FileUtils.IsVideo(file.BaseName) || FileUtils.IsAudio(file.BaseName))
+            if (FileUtils.IsVideo(file.Name) || FileUtils.IsAudio(file.Name))
             {
                 StartMediaPlayer(fileItemList.IndexOf(file));
                 return true;
             }
-            else if (FileUtils.IsImage(file.BaseName))
+            else if (FileUtils.IsImage(file.Name))
             {
                 StartWebViewer(fileItemList.IndexOf(file));
                 return true;
             }
-            else if (FileUtils.IsText(file.BaseName))
+            else if (FileUtils.IsText(file.Name))
             {
                 StartWebViewer(fileItemList.IndexOf(file));
                 return true;
@@ -943,15 +946,15 @@ public class SalmonActivity : AppCompatActivity
 
     public void StartMediaPlayer(int position)
     {
-        List<SalmonFile> salmonFiles = new List<SalmonFile>();
+        List<AesFile> salmonFiles = new List<AesFile>();
         int pos = 0;
         int i = 0;
-        foreach (SalmonFile file in fileItemList)
+        foreach (AesFile file in fileItemList)
         {
             string filename;
             try
             {
-                filename = file.BaseName;
+                filename = file.Name;
                 if (FileUtils.IsVideo(filename) || FileUtils.IsAudio(filename))
                 {
                     salmonFiles.Add(file);
@@ -977,11 +980,11 @@ public class SalmonActivity : AppCompatActivity
         return new Intent(this, typeof(MediaPlayerActivity));
     }
 
-    private void StartTextViewer(SalmonFile salmonFile)
+    private void StartTextViewer(AesFile salmonFile)
     {
         try
         {
-            if (salmonFile.Size > 1 * 1024 * 1024)
+            if (salmonFile.Length > 1 * 1024 * 1024)
             {
                 Toast.MakeText(this, "File too large", ToastLength.Long).Show();
                 return;
@@ -998,17 +1001,17 @@ public class SalmonActivity : AppCompatActivity
     {
         try
         {
-            List<SalmonFile> salmonFiles = new List<SalmonFile>();
-            SalmonFile file = fileItemList[position];
-            string filename = file.BaseName;
+            List<AesFile> salmonFiles = new List<AesFile>();
+            AesFile file = fileItemList[position];
+            string filename = file.Name;
 
             int pos = 0;
             int i = 0;
-            foreach (SalmonFile listFile in fileItemList)
+            foreach (AesFile listFile in fileItemList)
             {
                 try
                 {
-                    string listFilename = listFile.BaseName;
+                    string listFilename = listFile.Name;
                     if (i != position &&
                             (FileUtils.IsImage(filename) && FileUtils.IsImage(listFilename))
                             || (FileUtils.IsText(filename) && FileUtils.IsText(listFilename)))
@@ -1028,7 +1031,7 @@ public class SalmonActivity : AppCompatActivity
                 i++;
             }
             Intent intent = GetWebViewerIntent();
-            SalmonFile selectedFile = fileItemList[position];
+            AesFile selectedFile = fileItemList[position];
             WebViewerActivity.SetContentFiles(pos, salmonFiles.ToArray());
             intent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask);
             StartActivity(intent);
@@ -1072,12 +1075,12 @@ public class SalmonActivity : AppCompatActivity
 
     protected SalmonVaultManager CreateVaultManager()
     {
-        SalmonNativeTransformer.NativeProxy = new AndroidNativeProxy();
+        NativeTransformer.NativeProxy = new AndroidNativeProxy();
         AndroidDrive.Initialize(this.ApplicationContext);
         return SalmonAndroidVaultManager.Instance;
     }
 
-    protected List<SalmonFile> GetFileItemList()
+    protected List<AesFile> GetFileItemList()
     {
         return fileItemList;
     }

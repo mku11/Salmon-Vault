@@ -31,8 +31,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using Java.Util;
-using Mku.Android.Salmon.Media;
-using Mku.Salmon;
 using Salmon.Vault.Extensions;
 using System;
 using Button = Android.Widget.Button;
@@ -40,6 +38,8 @@ using ImageButton = Android.Widget.ImageButton;
 using Timer = Java.Util.Timer;
 using View = Android.Views.View;
 using Salmon.Vault.DotNetAndroid;
+using Mku.SalmonFS.File;
+using Mku.Android.SalmonFS.Media;
 
 namespace Salmon.Vault.Main;
 
@@ -61,7 +61,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
 
     private static readonly int THRESHOLD_SEEK = 30;
 
-    private static SalmonFile[] videos;
+    private static AesFile[] videos;
     private static int pos;
 
     private readonly object swipeObj = new object();
@@ -74,7 +74,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     private TextView mTime;
     private TextView mTotalTime;
     private MediaPlayer mediaPlayer;
-    private SalmonMediaDataSource source;
+    private AesMediaDataSource source;
     private RelativeLayout mSeekBarLayout;
     private RelativeLayout mTitleLayout;
     private TextView mTitle;
@@ -87,7 +87,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     private float speed = 1.0f;
     private int old_x = 0;
 
-    public static void SetMediaFiles(int position, SalmonFile[] mediaFiles)
+    public static void SetMediaFiles(int position, AesFile[] mediaFiles)
     {
         pos = position;
         videos = mediaFiles;
@@ -201,10 +201,10 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         }, 500);
     }
 
-    private void LoadContent(SalmonFile file)
+    private void LoadContent(AesFile file)
     {
-        mTitle.Text = file.BaseName;
-        source = new SalmonMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
+        mTitle.Text = file.Name;
+        source = new AesMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
         mediaPlayer.SetDataSource(source);
         mediaPlayer.PrepareAsync();
     }

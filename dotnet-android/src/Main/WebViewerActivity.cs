@@ -28,7 +28,6 @@ using Android.Views;
 using Android.Webkit;
 using AndroidX.AppCompat.App;
 using Exception = System.Exception;
-using Mku.Utils;
 using Mku.Salmon.Integrity;
 using Mku.Salmon;
 using Mku.Salmon.Streams;
@@ -44,6 +43,8 @@ using System.Linq;
 using Salmon.Vault.Dialog;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Mku.SalmonFS.File;
+using Mku.FS.Drive.Utils;
 
 namespace Salmon.Vault.Main;
 
@@ -56,7 +57,7 @@ public class WebViewerActivity : AppCompatActivity
     private static readonly int SWIPE_VELOCITY_THRESHOLD = 1200;
     private static readonly int ENC_BUFFER_SIZE = 512 * 1024;
 
-    private static SalmonFile[] fileList = null;
+    private static AesFile[] fileList = null;
     private static int pos;
 
     private WebView webView;
@@ -65,7 +66,7 @@ public class WebViewerActivity : AppCompatActivity
     private TextView mTitle;
     private readonly object swipeObj = new object();
 
-    public static void SetContentFiles(int position, SalmonFile[] salmonFiles)
+    public static void SetContentFiles(int position, AesFile[] salmonFiles)
     {
         pos = position;
         fileList = salmonFiles;
@@ -92,9 +93,9 @@ public class WebViewerActivity : AppCompatActivity
         webView.SetWebViewClient(webViewClient);
     }
 
-    protected void LoadContent(SalmonFile file)
+    protected void LoadContent(AesFile file)
     {
-        string filename = file.BaseName;
+        string filename = file.Name;
         string ext = FileUtils.GetExtensionFromFileName(filename).ToLower();
         string mimeType = null;
         try
@@ -112,12 +113,12 @@ public class WebViewerActivity : AppCompatActivity
 
         try
         {
-            SalmonStream encStream = file.GetInputStream();
+            AesStream encStream = file.GetInputStream();
 
             // in order for the webview not to crash we suppress Exceptions
             encStream.FailSilently = true;
 
-            // we inject our SalmonStream into the webview client
+            // we inject our AesStream into the webview client
             BufferedStream stream = new BufferedStream(encStream, ENC_BUFFER_SIZE);
             webViewClient.SetStream(mimeType, stream);
             RunOnUiThread(() =>
@@ -233,7 +234,7 @@ public class WebViewerActivity : AppCompatActivity
     {
         try
         {
-            if (fileList.Length > 0 && !FileUtils.IsText(fileList[0].BaseName))
+            if (fileList.Length > 0 && !FileUtils.IsText(fileList[0].Name))
             {
                 if (SupportActionBar != null)
                     SupportActionBar.Hide();

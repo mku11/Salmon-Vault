@@ -30,7 +30,7 @@ using System.Threading;
 
 namespace Salmon.Vault.Model;
 
-public static class SalmonFileAttrQueue
+public static class AesFileAttrQueue
 {
 
     public class AttrTask

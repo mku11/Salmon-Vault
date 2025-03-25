@@ -24,8 +24,8 @@ SOFTWARE.
 
 using Android.App;
 using AndroidX.DocumentFile.Provider;
-using Mku.Android.File;
-using Mku.File;
+using Mku.Android.FS.File;
+using Mku.FS.File;
 using Salmon.Vault.Services;
 
 namespace Salmon.Vault.MAUI.ANDROID;
@@ -40,9 +40,9 @@ public class AndroidFileService : IFileService
         this.activity = activity;
     }
 
-    public IRealFile GetFile(string filepath, bool isDirectory)
+    public IFile GetFile(string filepath, bool isDirectory)
     {
-        IRealFile file;
+        IFile file;
         if (filepath.StartsWith("content:"))
         {
             DocumentFile docFile;
@@ -53,7 +53,7 @@ public class AndroidFileService : IFileService
             file = new AndroidFile(docFile, activity);
         } else
         {
-            file = new DotNetFile(filepath);
+            file = new File(filepath);
         }
         return file;
     }

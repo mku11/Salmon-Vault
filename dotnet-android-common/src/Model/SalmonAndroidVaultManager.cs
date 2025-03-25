@@ -22,9 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.Android.Salmon.Drive;
+using Mku.Android.SalmonFS.Drive;
 using Mku.Salmon.Sequence;
-using Mku.Sequence;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -47,7 +46,7 @@ public class SalmonAndroidVaultManager : SalmonVaultManager {
 
     override
     protected INonceSequenceSerializer CreateSerializer() {
-        return new SalmonSequenceSerializer();
+        return new SequenceSerializer();
     }
 	
     override

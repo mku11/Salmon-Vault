@@ -26,11 +26,10 @@ using Android.Media;
 using Android.Provider;
 using Java.IO;
 using Mku.Salmon.Streams;
-using Mku.Salmon;
-using Mku.Time;
 using Salmon.Vault.Main;
-using Mku.Utils;
 using System;
+using Mku.SalmonFS.File;
+using Mku.FS.Drive.Utils;
 
 namespace Salmon.Vault.Image;
 
@@ -50,7 +49,7 @@ public class Thumbnails
      *
      * @param salmonFile The encrypted media file which will be used to get the thumbnail
      */
-    public static Bitmap GetVideoThumbnail(SalmonFile salmonFile)
+    public static Bitmap GetVideoThumbnail(AesFile salmonFile)
     {
         File tmpFile = Thumbnails.GetVideoTmpFile(salmonFile);
         return GetVideoThumbnail(tmpFile, 0, true);
@@ -117,18 +116,18 @@ public class Thumbnails
      *
      * @param salmonFile The encrypted file that will be used to get the temp file
      */
-    public static File GetVideoTmpFile(SalmonFile salmonFile)
+    public static File GetVideoTmpFile(AesFile salmonFile)
     {
         Java.IO.File tmpDir = new Java.IO.File(SalmonApplication.GetInstance().ApplicationContext.CacheDir, TMP_THUMB_DIR);
         if (!tmpDir.Exists())
             tmpDir.Mkdir();
 
-        Java.IO.File tmpFile = new Java.IO.File(tmpDir, random.Next() + "." + FileUtils.GetExtensionFromFileName(salmonFile.BaseName));
+        Java.IO.File tmpFile = new Java.IO.File(tmpDir, random.Next() + "." + FileUtils.GetExtensionFromFileName(salmonFile.Name));
         if (tmpFile.Exists())
             tmpFile.Delete();
         tmpFile.CreateNewFile();
         FileOutputStream fileStream = new FileOutputStream(tmpFile);
-        SalmonStream ins = salmonFile.GetInputStream();
+        AesStream ins = salmonFile.GetInputStream();
         byte[] buffer = new byte[BUFFER_SIZE];
         int bytesRead;
         long totalBytesRead = 0;
@@ -151,10 +150,10 @@ public class Thumbnails
      * @param salmonFile The encrypted file to be used
      * @param maxSize    The max content length that will be decrypted from the beginning of the file
      */
-    private static System.IO.Stream GetTempStream(SalmonFile salmonFile, long maxSize)
+    private static System.IO.Stream GetTempStream(AesFile salmonFile, long maxSize)
     {
         System.IO.MemoryStream ms = new System.IO.MemoryStream();
-        SalmonStream ins = salmonFile.GetInputStream();
+        AesStream ins = salmonFile.GetInputStream();
         byte[] buffer = new byte[BUFFER_SIZE];
         int bytesRead;
         long totalBytesRead = 0;
@@ -177,14 +176,14 @@ public class Thumbnails
      *
      * @param salmonFile
      */
-    public static Bitmap GetImageThumbnail(SalmonFile salmonFile)
+    public static Bitmap GetImageThumbnail(AesFile salmonFile)
     {
         System.IO.Stream stream = null;
         Bitmap bitmap = null;
         try
         {
-            string ext = FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
-            if (ext.Equals("gif") && salmonFile.Size > TMP_GIF_THUMB_MAX_SIZE)
+            string ext = FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
+            if (ext.Equals("gif") && salmonFile.Length > TMP_GIF_THUMB_MAX_SIZE)
                 stream = new System.IO.BufferedStream(GetTempStream(salmonFile, TMP_GIF_THUMB_MAX_SIZE), BUFFER_SIZE);
             else
                 stream = new System.IO.BufferedStream(salmonFile.GetInputStream(), BUFFER_SIZE);
