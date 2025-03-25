@@ -1,8 +1,8 @@
-set version=2.1.0
+set version=3.0.0
 rmdir packages /S /Q
 mkdir packages
-rmdir lib /S /Q
-mkdir lib
+rmdir ..\src\assets\js\lib /S /Q
+mkdir ..\src\assets\js\lib
 
 set SALMON_CORE=salmon-core
 set SALMON_FS=salmon-fs
@@ -10,7 +10,10 @@ set SALMON_CORE_LIB=%SALMON_CORE%.js.%version%
 set SALMON_FS_LIB=%SALMON_FS%.js.%version%
 set SALMON_CORE_LIB_FILENAME=%SALMON_CORE_LIB%.zip
 set SALMON_FS_LIB_FILENAME=%SALMON_FS_LIB%.zip
-set SALMON_LIBS_URL=https://github.com/mku11/Salmon-AES-CTR/releases/download/v%version%
+:: use local repository:
+set SALMON_LIBS_URL=http://localhost/repository/javascript
+:: or official github salmon repository:
+:: set SALMON_LIBS_URL=https://github.com/mku11/Salmon-AES-CTR/releases/download/v%version%
 set SALMON_CORE_LIB_URL=%SALMON_LIBS_URL%/%SALMON_CORE_LIB_FILENAME%
 set SALMON_FS_LIB_URL=%SALMON_LIBS_URL%/%SALMON_FS_LIB_FILENAME%
 
@@ -22,5 +25,5 @@ powershell -command Expand-Archive -Force '%SALMON_CORE_LIB_FILENAME%'
 powershell -command Expand-Archive -Force '%SALMON_FS_LIB_FILENAME%'
 
 cd ..
-move packages\%SALMON_CORE_LIB%\%SALMON_CORE% lib\
-move packages\%SALMON_FS_LIB%\%SALMON_FS% lib\
+move packages\%SALMON_CORE_LIB%\%SALMON_CORE% ..\src\assets\js\lib\
+move packages\%SALMON_FS_LIB%\%SALMON_FS% ..\src\assets\js\lib\

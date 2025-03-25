@@ -4,19 +4,10 @@
 			"path": "."
 		},
 		{
-			"path": "../src/vault"
-		},
-		{
-			"path": "../../js-common/src/common"
-		},
-		{
-			"path": "../css"
+			"path": "../src"
 		},
 		{
 			"path": "../../common/common-res"
-		},
-		{
-			"path": "./lib"
 		}
 	],
 	"settings": {
