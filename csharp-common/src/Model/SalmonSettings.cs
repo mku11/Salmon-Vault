@@ -27,6 +27,7 @@ using Mku.Salmon.Password;
 using Salmon.Vault.Model;
 using Salmon.Vault.Services;
 using System;
+using Mku.Salmon.Bridge;
 
 namespace Salmon.Vault.Settings;
 
@@ -66,7 +67,7 @@ public class SalmonSettings
     public static readonly string AES_TYPE_KEY = "AES_TYPE_KEY";
     public enum AESType
     {
-        Default, AesIntrinsics, TinyAES
+        Default, Aes, AesIntrinsics, AesGPU
     }
 
     public PbkdfImplType _pbkdfImpl = DEFAULT_IMPL_TYPE;

@@ -31,7 +31,6 @@ public class SalmonConfig
     public static readonly string APP_NAME = "Salmon Vault";
     public static string ABOUT_TEXT = "License: MIT License\n\n" +
             "Open source projects included:\n" +
-            "TinyAES - The Unlicense - https://github.com/kokke/tiny-AES-c\n" +
             "ffmediaelement - Microsoft Public License (Ms-PL) - https://github.com/unosquare/ffmediaelement\n" +
             "MimeTypesMap - MIT License - https://github.com/hey-red/MimeTypesMap/blob/master/LICENSE\n" +
             "webview2 - https://learn.microsoft.com/en-us/microsoft-edge/webview2/\n" +
