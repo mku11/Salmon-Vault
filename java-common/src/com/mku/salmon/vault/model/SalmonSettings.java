@@ -54,7 +54,7 @@ public class SalmonSettings {
     }
 
     public enum AESType {
-        Default, AesIntrinsics, TinyAES
+        Default, Aes, AesIntrinsics, AesGPU
     }
 
     private AESType aesType = DEFAULT_AES_TYPE;

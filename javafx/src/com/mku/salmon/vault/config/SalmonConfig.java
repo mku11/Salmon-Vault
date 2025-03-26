@@ -30,7 +30,6 @@ public class SalmonConfig {
     public static final String APP_NAME = "Salmon Vault";
     public static final String ABOUT_TEXT = "License: MIT License\n\n" +
             "Open source projects included:\n" +
-            "TinyAES - The Unlicense - https://github.com/kokke/tiny-AES-c\n" +
             "Java Native Access - Apache 2.0 - https://github.com/java-native-access/jna\n" +
             "JavaFX - GPLv2.0 - https://github.com/openjdk/jfx\n" +
             "uxwing icons - https://uxwing.com\n\n" +
