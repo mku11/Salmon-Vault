@@ -27,7 +27,7 @@ import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.salmon.vault.viewmodel.AesFileViewModel;
+import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.salmonfs.handler.AesStreamHandler;
 import javafx.application.Platform;
@@ -42,7 +42,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -155,7 +154,7 @@ public class MediaPlayerController {
         });
     }
 
-    public static void openMediaPlayer(AesFileViewModel file, Stage owner) throws IOException {
+    public static void openMediaPlayer(SalmonFileViewModel file, Stage owner) throws IOException {
         FXMLLoader loader = new FXMLLoader(SalmonSettings.getInstance().getClass().getResource("/view/media-player.fxml"));
         Parent root = loader.load();
         MediaPlayerController controller = loader.getController();
@@ -193,7 +192,7 @@ public class MediaPlayerController {
         mp.play();
     }
 
-    private void load(AesFileViewModel fileItem) {
+    private void load(SalmonFileViewModel fileItem) {
         AesFile file = fileItem.getAesFile();
         String filePath;
         try {

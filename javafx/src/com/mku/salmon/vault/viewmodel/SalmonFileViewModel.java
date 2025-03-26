@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.utils.ByteUtils;
@@ -43,7 +42,7 @@ import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
-public class AesFileViewModel {
+public class SalmonFileViewModel {
     private static final int BACKGROUND_THREADS = 4;
     private static final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
 
@@ -56,13 +55,13 @@ public class AesFileViewModel {
 
     private AesFile salmonFile;
 
-    public AesFileViewModel(AesFile salmonFile) {
+    public SalmonFileViewModel(AesFile salmonFile) {
         this.salmonFile = salmonFile;
     }
 
     @FXML
-    public SimpleObjectProperty<ImageView> imageProperty(){
-        if(image.get() != null)
+    public SimpleObjectProperty<ImageView> imageProperty() {
+        if (image.get() != null)
             return image;
         final ImageView imageView = new ImageView();
         imageView.setFitHeight(48);
@@ -76,34 +75,35 @@ public class AesFileViewModel {
 
     @FXML
     public SimpleStringProperty nameProperty() {
-        if(name.get() == null)
+        if (name.get() == null)
             updateProperty(() -> salmonFile.getName(), this.name);
         return name;
     }
 
     @FXML
     public SimpleStringProperty dateProperty() {
-        if(date.get() == null)
+        if (date.get() == null)
             updateProperty(this::getDateText, this.date);
         return date;
     }
 
     @FXML
     public SimpleStringProperty typeProperty() {
-        if(type.get() == null)
+        if (type.get() == null)
             updateProperty(this::getExtText, this.type);
         return type;
     }
 
     @FXML
     public SimpleStringProperty sizeProperty() {
-        if(size.get() == null)
+        if (size.get() == null)
             updateProperty(this::getSizeText, this.size);
         return size;
     }
+
     @FXML
     public SimpleStringProperty pathProperty() {
-        if(path.get() == null)
+        if (path.get() == null)
             updateProperty(() -> salmonFile.getPath(), this.path);
         return path;
     }

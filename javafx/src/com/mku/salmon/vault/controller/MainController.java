@@ -33,7 +33,7 @@ import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.model.win.SalmonWinVaultManager;
 import com.mku.salmon.vault.services.*;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.salmon.vault.viewmodel.AesFileViewModel;
+import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import com.mku.salmonfs.file.AesFile;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -63,10 +63,10 @@ public class MainController {
     private static final long MAX_TEXT_FILE = 1 * 1024 * 1024;
     private static final int THREADS = 1;
     @FXML
-    public final ObservableList<AesFileViewModel> fileItemList = FXCollections.observableArrayList();
+    public final ObservableList<SalmonFileViewModel> fileItemList = FXCollections.observableArrayList();
 
     @FXML
-    public TableView<AesFileViewModel> table;
+    public TableView<SalmonFileViewModel> table;
     private Stage stage;
 
     @FXML
@@ -178,12 +178,12 @@ public class MainController {
     private void fileItemAdded(Integer position, AesFile file) {
         WindowUtils.runOnMainThread(() ->
         {
-            fileItemList.add(position, new AesFileViewModel(file));
+            fileItemList.add(position, new SalmonFileViewModel(file));
         });
     }
 
     private void updateListItem(AesFile file) {
-        AesFileViewModel vm = getViewModel(file);
+        SalmonFileViewModel vm = getViewModel(file);
         vm.update();
     }
 
@@ -229,15 +229,15 @@ public class MainController {
             else {
                 fileItemList.clear();
                 fileItemList.addAll(manager.getFileItemList().stream()
-                        .map(AesFileViewModel::new)
+                        .map(SalmonFileViewModel::new)
                         .collect(Collectors.toList()));
             }
         });
     }
 
-    synchronized void onSelectedItems(java.util.List<AesFileViewModel> selectedItems) {
+    synchronized void onSelectedItems(java.util.List<SalmonFileViewModel> selectedItems) {
         manager.getSelectedFiles().clear();
-        for (AesFileViewModel item : selectedItems) {
+        for (SalmonFileViewModel item : selectedItems) {
             manager.getSelectedFiles().add(item.getAesFile());
         }
     }
@@ -252,7 +252,7 @@ public class MainController {
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         table.setItems(fileItemList);
         table.setRowFactory(tv -> {
-            TableRow<AesFileViewModel> row = new TableRow<>();
+            TableRow<SalmonFileViewModel> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && (!row.isEmpty())) {
                     onOpenItem(fileItemList.indexOf(row.getItem()));
@@ -265,7 +265,7 @@ public class MainController {
         table.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
                 event.consume();
-                TableView.TableViewSelectionModel<AesFileViewModel> rowData = table.getSelectionModel();
+                TableView.TableViewSelectionModel<SalmonFileViewModel> rowData = table.getSelectionModel();
                 onOpenItem(rowData.getSelectedIndex());
             }
         });
@@ -439,7 +439,7 @@ public class MainController {
     }
 
     private void selectItem(AesFile file) {
-        AesFileViewModel vm = getViewModel(file);
+        SalmonFileViewModel vm = getViewModel(file);
         if (vm == null) {
             WindowUtils.runOnMainThread(() -> {
                 try {
@@ -452,7 +452,7 @@ public class MainController {
         }
         try {
             int index = 0;
-            for (AesFileViewModel viewModel : fileItemList) {
+            for (SalmonFileViewModel viewModel : fileItemList) {
                 if (viewModel == vm) {
                     int finalIndex = index;
                     WindowUtils.runOnMainThread(() -> {
@@ -499,7 +499,7 @@ public class MainController {
         }
     }
 
-    private void openContextMenu(AesFileViewModel fileItem) {
+    private void openContextMenu(SalmonFileViewModel fileItem) {
         ContextMenu contextMenu = new ContextMenu();
 
         MenuItem item;
@@ -564,7 +564,7 @@ public class MainController {
         item = new MenuItem("Disk Usage");
         item.setGraphic(getImageIcon("/icons/disk_small.png"));
         item.setOnAction((event) -> {
-            ObservableList<AesFileViewModel> files = table.getSelectionModel().getSelectedItems();
+            ObservableList<SalmonFileViewModel> files = table.getSelectionModel().getSelectedItems();
             showDiskUsage(files.stream().map(x -> x.getAesFile()).collect(Collectors.toList()).toArray(new AesFile[0]));
         });
         contextMenu.getItems().add(item);
@@ -580,12 +580,12 @@ public class MainController {
     }
 
     protected void openItem(int position) throws Exception {
-        AesFileViewModel selectedFile = fileItemList.get(position);
+        SalmonFileViewModel selectedFile = fileItemList.get(position);
         manager.openItem(selectedFile.getAesFile());
     }
 
-    private AesFileViewModel getViewModel(AesFile item) {
-        for (AesFileViewModel vm : fileItemList) {
+    private SalmonFileViewModel getViewModel(AesFile item) {
+        for (SalmonFileViewModel vm : fileItemList) {
             if (vm.getAesFile() == item)
                 return vm;
         }
@@ -593,7 +593,7 @@ public class MainController {
     }
 
     private boolean OpenListItem(AesFile file) {
-        AesFileViewModel vm = getViewModel(file);
+        SalmonFileViewModel vm = getViewModel(file);
         try {
             if (FileUtils.isVideo(file.getName())) {
                 startMediaPlayer(vm);
@@ -655,7 +655,7 @@ public class MainController {
         }, false);
     }
 
-    private void startTextEditor(AesFileViewModel item) {
+    private void startTextEditor(SalmonFileViewModel item) {
         try {
             if (item.getAesFile().getLength() > MAX_TEXT_FILE) {
                 new SalmonDialog(Alert.AlertType.WARNING, "File too large").show();
@@ -669,7 +669,7 @@ public class MainController {
         }
     }
 
-    private void startImageViewer(AesFileViewModel item) {
+    private void startImageViewer(SalmonFileViewModel item) {
         try {
             ImageViewerController.openImageViewer(item, stage);
         } catch (IOException e) {
@@ -677,7 +677,7 @@ public class MainController {
         }
     }
 
-    private void startMediaPlayer(AesFileViewModel item) {
+    private void startMediaPlayer(SalmonFileViewModel item) {
         try {
             MediaPlayerController.openMediaPlayer(item, stage);
         } catch (IOException e) {

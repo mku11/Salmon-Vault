@@ -32,7 +32,7 @@ import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonTextEditor;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.utils.WindowUtils;
-import com.mku.salmon.vault.viewmodel.AesFileViewModel;
+import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -48,7 +48,7 @@ import java.nio.charset.StandardCharsets;
 public class TextEditorController {
 
     private Stage stage;
-    private AesFileViewModel item;
+    private SalmonFileViewModel item;
 
     @FXML
     private TextArea contentArea;
@@ -74,7 +74,7 @@ public class TextEditorController {
         this.stage = stage;
     }
 
-    public static void openTextEditor(AesFileViewModel file, Stage owner) throws IOException {
+    public static void openTextEditor(SalmonFileViewModel file, Stage owner) throws IOException {
         FXMLLoader loader = new FXMLLoader(SalmonSettings.getInstance().getClass().getResource("/view/text-editor.fxml"));
         Parent root = loader.load();
         TextEditorController controller = loader.getController();
@@ -91,7 +91,7 @@ public class TextEditorController {
         stage.showAndWait();
     }
 
-    private void load(AesFileViewModel item) {
+    private void load(SalmonFileViewModel item) {
         this.item = item;
         String content;
         try {
