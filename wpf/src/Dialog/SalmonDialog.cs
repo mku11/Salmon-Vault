@@ -364,9 +364,15 @@ public class SalmonDialog : System.Windows.Window
 
     private static void SetDimensions(SalmonDialog alert)
     {
-        alert.MaxWidth = 600;
-        alert.MaxHeight = 300;
-        alert.Owner = App.Current.MainWindow;
-        alert.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        try
+        {
+            alert.MaxWidth = 600;
+            alert.MaxHeight = 300;
+            alert.Owner = App.Current.MainWindow;
+            alert.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        } catch (Exception ex)
+        {
+            Console.Error.WriteLine("Could not set dimentions: " + ex);
+        }
     }
 }
