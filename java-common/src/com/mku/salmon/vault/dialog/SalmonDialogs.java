@@ -25,11 +25,14 @@ SOFTWARE.
 
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.fs.file.IFile;
+import com.mku.fs.file.WSFile;
 import com.mku.func.Consumer;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.services.IFileDialogService;
+import com.mku.salmon.vault.services.IHttpFileService;
+import com.mku.salmon.vault.services.IWSFileService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.URLUtils;
@@ -264,6 +267,18 @@ public class SalmonDialogs {
     }
 
     public static void promptOpenVault() {
+        SalmonDialog.promptDialog("Open Vault", "Choose Local to open a vault located in your computer.\n"
+                        + "Choose Remote to specify a remote vault in a web host.\n\n",
+                "Local", () -> {
+                    promptOpenLocalVault();
+                }, "HTTP", () -> {
+                    promptOpenHttpVault();
+                }, "Web Service", () -> {
+                    promptOpenWSVault();
+                });
+    }
+
+    public static void promptOpenLocalVault() {
         ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder("Select the vault",
                 SalmonSettings.getInstance().getVaultLocation(),
                 (dir) -> {
@@ -277,6 +292,36 @@ public class SalmonDialogs {
                     });
                 },
                 SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
+    }
+
+    public static void promptOpenHttpVault() {
+        SalmonDialog.promptEdit("Open Http Vault",
+                "Type in the HTTP URL for the remote vault",
+                (url, isChecked) -> {
+                    IFile dir = ServiceLocator.getInstance().resolve(IHttpFileService.class).getFile(url, false);
+                    SalmonDialogs.promptPassword((password) -> {
+                        SalmonVaultManager.getInstance().openVault(dir, password);
+                    });
+                }, "", false, false, false, null);
+    }
+
+    public static void promptOpenWSVault() {
+        SalmonDialog.promptCredentialsEdit("Open Web Service",
+                "Type in the credentials the Web Service",
+                new String[]{"Web Service URL", "User name", "Password"},
+                new boolean[]{false, false, true},
+                (texts) -> {
+                    SalmonDialog.promptEdit("Open Vault",
+                            "Type in the file path for the vault",
+                            (path, isChecked) -> {
+                                IFile dir = ServiceLocator.getInstance().resolve(IWSFileService.class)
+                                        .getFile(path, false, texts[0],
+                                                new WSFile.Credentials(texts[1], texts[2]));
+                                SalmonDialogs.promptPassword((password) -> {
+                                    SalmonVaultManager.getInstance().openVault(dir, password);
+                                });
+                            }, "", false, false, false, null);
+                });
     }
 
     public static void promptImportFiles(String text, int requestCode) {
@@ -401,7 +446,7 @@ public class SalmonDialogs {
             }
         }
         SalmonDialog.promptDialog(
-                "Export", "Export " + (delete?"and delete ":"") + SalmonVaultManager.getInstance().getSelectedFiles().size() + " " + itemsString,
+                "Export", "Export " + (delete ? "and delete " : "") + SalmonVaultManager.getInstance().getSelectedFiles().size() + " " + itemsString,
                 "Ok",
                 () -> {
                     try {

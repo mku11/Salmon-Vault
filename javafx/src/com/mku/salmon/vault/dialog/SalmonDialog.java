@@ -26,9 +26,11 @@ SOFTWARE.
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
+import com.mku.func.TriConsumer;
 import com.mku.salmon.vault.utils.WindowUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -36,6 +38,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public class SalmonDialog extends javafx.scene.control.Alert {
@@ -133,6 +136,60 @@ public class SalmonDialog extends javafx.scene.control.Alert {
         });
     }
 
+    public static void promptCredentialsEdit(String title, String msg,
+                                             String[] hints, boolean[] isPasswords,
+                                             Consumer<String[]> OnEdit) {
+        WindowUtils.runOnMainThread(() -> {
+            SalmonDialog alert = new SalmonDialog(Alert.AlertType.NONE, "", ButtonType.OK, ButtonType.CANCEL);
+            alert.setTitle(title);
+
+            Label msgText = new Label();
+            msgText.setText(msg);
+
+            VBox box = new VBox();
+            box.setSpacing(10);
+            box.getChildren().addAll(msgText);
+
+            TextField[] textFields = new TextField[hints.length];
+            for (int i = 0; i < hints.length; i++) {
+                if (hints[i] != null) {
+                    textFields[i] = createTextField(hints[i], isPasswords[i]);
+                    box.getChildren().add(textFields[i]);
+                }
+            }
+
+            alert.getDialogPane().setContent(box);
+            alert.getDialogPane().setMinSize(340, 150);
+            alert.show();
+            alert.getDialogPane().autosize();
+            final Button btOk = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
+
+            btOk.addEventFilter(ActionEvent.ACTION, event -> {
+                        if (OnEdit != null) {
+                            String[] texts = new String[hints.length];
+                            for (int i = 0; i < textFields.length; i++) {
+                                if (textFields[i] != null)
+                                    texts[i] = textFields[i].getText();
+                            }
+                            OnEdit.accept(texts);
+                        }
+                    }
+            );
+        });
+    }
+
+    private static TextField createTextField(String hint, boolean isPassword) {
+        if (!isPassword) {
+            TextField field = new TextField();
+            field.setPromptText(hint);
+            return field;
+        } else {
+            PasswordField passwordField = new PasswordField();
+            passwordField.setPromptText(hint);
+            return passwordField;
+        }
+    }
+
     public static void promptDialog(String body) {
         promptDialog("Salmon Vault", body, "Ok", null, null, null);
     }
@@ -148,11 +205,22 @@ public class SalmonDialog extends javafx.scene.control.Alert {
     public static void promptDialog(String title, String body,
                                     String buttonLabel1, Runnable buttonListener1,
                                     String buttonLabel2, Runnable buttonListener2) {
+        promptDialog(title, body, buttonLabel1, buttonListener1, buttonLabel2, buttonListener2,
+                null, null);
+    }
+    public static void promptDialog(String title, String body,
+                                    String buttonLabel1, Runnable buttonListener1,
+                                    String buttonLabel2, Runnable buttonListener2,
+                                    String buttonLabel3, Runnable buttonListener3) {
         WindowUtils.runOnMainThread(() -> {
             ButtonType ok = new ButtonType(buttonLabel1, ButtonBar.ButtonData.OK_DONE);
             ButtonType cancel = new ButtonType(buttonLabel2, ButtonBar.ButtonData.CANCEL_CLOSE);
+            ButtonType apply = new ButtonType(buttonLabel3, ButtonBar.ButtonData.APPLY);
             SalmonDialog alert;
-            if (buttonLabel2 != null)
+
+            if (buttonLabel3 != null)
+                alert = new SalmonDialog(javafx.scene.control.Alert.AlertType.NONE, body, ok, cancel, apply);
+            else if (buttonLabel2 != null)
                 alert = new SalmonDialog(javafx.scene.control.Alert.AlertType.NONE, body, ok, cancel);
             else
                 alert = new SalmonDialog(javafx.scene.control.Alert.AlertType.NONE, body, ok);
@@ -161,10 +229,12 @@ public class SalmonDialog extends javafx.scene.control.Alert {
                 alert.setTitle(title);
             alert.setContentText(body);
             Optional<ButtonType> result = alert.showAndWait();
-            if (result.orElse(cancel) == ok && buttonListener1 != null) {
+            if (result.isPresent() && result.get() == ok && buttonListener1 != null) {
                 buttonListener1.run();
-            } else if (buttonListener2 != null) {
+            } else if (result.isPresent() && result.get() == cancel && buttonListener2 != null) {
                 buttonListener2.run();
+            } else if (result.isPresent() && result.get() == apply && buttonListener3 != null) {
+                buttonListener3.run();
             }
         });
     }

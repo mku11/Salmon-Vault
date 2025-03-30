@@ -477,6 +477,8 @@ public class MainController {
         try {
             ServiceLocator.getInstance().register(ISettingsService.class, new JavaFxSettingsService());
             ServiceLocator.getInstance().register(IFileService.class, new JavaFxFileService());
+            ServiceLocator.getInstance().register(IHttpFileService.class, new JavaFxHttpFileService());
+            ServiceLocator.getInstance().register(IWSFileService.class, new JavaFxWebServiceFileService());
             ServiceLocator.getInstance().register(IFileDialogService.class, new JavaFxFileDialogService(stage));
             ServiceLocator.getInstance().register(IWebBrowserService.class, new JavaFxBrowserService());
             ServiceLocator.getInstance().register(IKeyboardService.class, new JavaFxKeyboardService());
