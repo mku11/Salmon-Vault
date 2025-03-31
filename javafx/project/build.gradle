@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.mku.salmon'
-version '3.0.0'
+version '3.0.1'
 
 repositories {
     maven {
@@ -20,6 +20,7 @@ repositories {
 
 ext {
     junitVersion = '5.9.1'
+    salmonLibVersion = '3.0.1'
 }
 
 sourceCompatibility = '11'
@@ -64,11 +65,11 @@ build.dependsOn unzipNative
 dependencies {
 
     // salmon libs:
-    implementation 'com.mku.salmon:salmon-core:3.0.0'
-    implementation 'com.mku.salmon:salmon-fs:3.0.0'
-    implementation 'com.mku.salmon:salmon-win:3.0.0'
-    implementation 'com.mku.salmon:salmon-native:3.0.0:win-x86_64'
-    nativeImplementation 'com.mku.salmon:salmon-native:3.0.0:win-x86_64'
+    implementation("com.mku.salmon:salmon-core:${salmonLibVersion}")
+    implementation("com.mku.salmon:salmon-fs:${salmonLibVersion}")
+    implementation("com.mku.salmon:salmon-win:${salmonLibVersion}")
+    implementation("com.mku.salmon:salmon-native:${salmonLibVersion}:win-x86_64")
+    nativeImplementation("com.mku.salmon:salmon-native:${salmonLibVersion}:win-x86_64")
 
     implementation 'net.java.dev.jna:jna:5.13.0'
     implementation 'net.java.dev.jna:jna-platform:5.13.0'

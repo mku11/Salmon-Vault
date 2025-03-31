@@ -307,7 +307,7 @@ public class SalmonDialogs {
 
     public static void promptOpenWSVault() {
         SalmonDialog.promptCredentialsEdit("Open Web Service",
-                "Type in the credentials the Web Service",
+                "Type in the credentials for the Web Service",
                 new String[]{"Web Service URL", "User name", "Password"},
                 new boolean[]{false, false, true},
                 (texts) -> {
