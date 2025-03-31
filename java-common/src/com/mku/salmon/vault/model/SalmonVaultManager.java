@@ -869,7 +869,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 "Encrypted Name: " + item.getRealFile().getName() + "\n" +
                 "Encrypted Path: " + item.getRealFile().getDisplayPath() + "\n" +
                 (!item.isDirectory() ? "Encrypted Size: " + ByteUtils.getBytes(item.getRealFile().getLength(), 2)
-                        + " (" + item.getRealFile().getLength() + " bytes)" : "") + "\n";
+                        + " (" + item.getRealFile().getLength() + " bytes)" : "") + "\n" +
+                "Integrity enabled: " + (item.getFileChunkSize() > 0 ? "Yes" : "No") + "\n" +
+                (item.getFileChunkSize() > 0 ? "Integrity chunk size: " + item.getFileChunkSize() + " bytes": "");
     }
 
     public boolean canGoBack() {
