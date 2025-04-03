@@ -104,6 +104,17 @@ public class AndroidSettingsService implements ISettingsService {
         editor.apply();
     }
 
+    public String getLastExportDir() {
+        return prefs.getString("lastImportDir",
+                SalmonSettings.DEFAULT_LAST_IMPORT_DIR);
+    }
+
+    public void setLastExportDir(String value) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("lastImportDir", value);
+        editor.apply();
+    }
+
     public boolean getDeleteAfterImport() {
         return prefs.getBoolean("deleteAfterImport",
                 SalmonSettings.DEFAULT_DELETE_AFTER_IMPORT);

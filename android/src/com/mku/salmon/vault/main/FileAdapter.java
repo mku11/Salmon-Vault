@@ -52,6 +52,7 @@ import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
 import com.mku.salmonfs.file.AesFile;
 
+import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -158,12 +159,8 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             viewHolder.extension.setText("");
             viewHolder.filesize.setText("");
             viewHolder.filedate.setText("");
-            if (viewHolder.salmonFile.isDirectory()) {
-                viewHolder.thumbnail.setColorFilter(null);
-                viewHolder.thumbnail.setImageResource(R.drawable.folder);
-            } else {
-                viewHolder.thumbnail.setImageBitmap(null);
-            }
+            viewHolder.thumbnail.setColorFilter(null);
+            viewHolder.thumbnail.setImageBitmap(null);
             viewHolder.animate = false;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -191,6 +188,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         AesFile file = viewHolder.salmonFile;
         try {
             String filename = viewHolder.salmonFile.getName();
+            HttpURLConnection conn;
             activity.runOnUiThread(() -> {
                 viewHolder.filename.setText(filename);
             });
@@ -203,14 +201,20 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             String finalItems = items;
             long finalSize = size;
             long finalDate = date;
+            boolean isDir = viewHolder.salmonFile.isDirectory();
             if (file != viewHolder.salmonFile)
                 return;
             activity.runOnUiThread(() -> {
-                updateFileInfo(viewHolder, filename, finalItems, viewHolder.salmonFile, finalSize, finalDate);
+                updateFileInfo(viewHolder, filename, finalItems,
+                        finalSize, finalDate, isDir);
             });
 
             String ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
-            if (bitmapCache.containsKey(file)) {
+            if (viewHolder.salmonFile.isDirectory()) {
+                activity.runOnUiThread(() -> {
+                    viewHolder.thumbnail.setImageResource(R.drawable.folder);
+                });
+            } else if (bitmapCache.containsKey(file)) {
                 activity.runOnUiThread(() -> {
                     updateIconFromCache(viewHolder, file, ext);
                 });
@@ -303,11 +307,10 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     }
 
     private void updateFileInfo(ViewHolder viewHolder, String filename,
-                                String items, AesFile salmonFile,
-                                long size, long date) {
+                                String items, long size, long date, boolean isDir) {
         viewHolder.filename.setText(filename);
         viewHolder.filedate.setText(formatter.format(new Date(date)));
-        if (salmonFile.isDirectory()) {
+        if (isDir) {
             viewHolder.filesize.setText(items);
             viewHolder.extension.setText("");
             viewHolder.thumbnail.setColorFilter(null);

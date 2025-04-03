@@ -152,6 +152,19 @@ public class SalmonSettings {
         settingsService.setLastImportDir(value);
     }
 
+    public static final String DEFAULT_LAST_EXPORT_DIR = null;
+    public static final String LAST_EXPORT_DIR_KEY = "LAST_EXPORT_DIR_KEY";
+    private String lastExportDir = DEFAULT_LAST_EXPORT_DIR;
+
+    public String getLastExportDir() {
+        return lastExportDir;
+    }
+
+    public void setLastExportDir(String value) {
+        this.lastExportDir = value;
+        settingsService.setLastExportDir(value);
+    }
+
     protected static SalmonSettings instance;
 
     public static SalmonSettings getInstance() {
@@ -175,5 +188,6 @@ public class SalmonSettings {
         sequencerAuthType = AuthType.valueOf(settingsService.getSequenceAuthType());
         deleteAfterImport = settingsService.getDeleteAfterImport();
         lastImportDir = settingsService.getLastImportDir();
+        lastExportDir = settingsService.getLastExportDir();
     }
 }

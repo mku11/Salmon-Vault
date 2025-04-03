@@ -48,7 +48,7 @@ public class AndroidFileService implements IFileService {
                 docFile = DocumentFile.fromTreeUri(activity, android.net.Uri.parse(filepath));
             else
                 docFile = DocumentFile.fromSingleUri(activity, android.net.Uri.parse(filepath));
-            file = new AndroidFile(docFile, activity);
+            file = new AndroidFile(docFile);
         } else {
             file = new File(filepath);
         }

@@ -23,29 +23,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-public interface ISettingsService {
-    public String getVaultLocation();
+import android.app.Activity;
 
-    public void setVaultLocation(String value);
+import androidx.documentfile.provider.DocumentFile;
 
-    public void setAesType(String value);
-    public String getAesType();
+import com.mku.android.fs.file.AndroidFile;
+import com.mku.fs.file.File;
+import com.mku.fs.file.HttpFile;
+import com.mku.fs.file.IFile;
 
-    public void setPbkdfImplType(String value);
-    public String getPbkdfImplType();
+public class AndroidHttpFileService implements IHttpFileService {
+    public final int REQUEST_DIR = 1000;
+    private Activity activity;
 
-    public String getPbkdfAlgoType();
-    public void setPbkdfAlgoType(String value);
+    public AndroidHttpFileService(Activity activity) {
+        this.activity = activity;
+    }
 
-    public String getSequenceAuthType();
-    public void setSequenceAuthType(String value);
-
-    public String getLastImportDir();
-    public void setLastImportDir(String value);
-
-    public String getLastExportDir();
-    public void setLastExportDir(String value);
-
-    public boolean getDeleteAfterImport();
-    public void setDeleteAfterImport(boolean value);
+    public IFile getFile(String filepath, boolean isDirectory) {
+        return new HttpFile(filepath);
+    }
 }

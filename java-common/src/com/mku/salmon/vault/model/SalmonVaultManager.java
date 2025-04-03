@@ -40,6 +40,7 @@ import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
+import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.drive.AesDrive;
 import com.mku.salmonfs.drive.Drive;
 import com.mku.salmonfs.drive.utils.AesFileCommander;
@@ -406,18 +407,23 @@ public class SalmonVaultManager implements IPropertyNotifier {
         if (dir == null)
             return;
 
-        try {
-            closeVault();
-            this.drive = AesDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
-            this.currDir = this.drive.getRoot();
-            SalmonSettings.getInstance().setVaultLocation(dir.getPath());
-            refresh();
-        } catch (Error e) {
-            SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". "
-                    + "Make sure your vault folder contains a file named " + AesDrive.getConfigFilename());
-        } catch (Exception e) {
-            SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". ");
-        }
+        executor.submit(() -> {
+            try {
+                closeVault();
+                this.drive = AesDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
+                this.currDir = this.drive.getRoot();
+                SalmonSettings.getInstance().setVaultLocation(dir.getPath());
+                refresh();
+            } catch (Error e) {
+                e.printStackTrace();
+                SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". "
+                        + "Make sure your vault folder contains a file named " + AesDrive.getConfigFilename());
+            } catch (Exception e) {
+                e.printStackTrace();
+                SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". " +
+                        (e.getCause() != null ? e.getCause().getMessage() : ""));
+            }
+        });
     }
 
     protected Class<?> getDriveClassType() {
@@ -557,13 +563,14 @@ public class SalmonVaultManager implements IPropertyNotifier {
         });
     }
 
-    public void exportSelectedFiles(boolean deleteSource) {
+    public void exportSelectedFiles(IFile exportDir, boolean deleteSource) {
         if (this.drive == null)
             return;
-        exportFiles(selectedFiles.toArray(new AesFile[0]), (files) ->
-        {
-            refresh();
-        }, deleteSource);
+        exportFiles(selectedFiles.toArray(new AesFile[0]), exportDir,
+                (files) ->
+                {
+                    refresh();
+                }, deleteSource);
         clearSelectedFiles();
     }
 
@@ -589,22 +596,23 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public boolean openItem(AesFile selectedFile) {
-        int position = fileItemList.indexOf(selectedFile);
-        if (position < 0)
-            return true;
-        if (selectedFile.isDirectory()) {
-            executor.execute(() ->
-            {
+        executor.execute(() ->
+        {
+            int position = fileItemList.indexOf(selectedFile);
+            if (position < 0)
+                return;
+            if (selectedFile.isDirectory()) {
                 if (checkFileSearcher())
                     return;
                 currDir = (selectedFile);
                 salmonFiles = currDir.listFiles();
                 populateFileList(null);
-            });
-            return true;
-        }
-        AesFile item = fileItemList.get(position);
-        return openListItem.apply(item);
+                return;
+            }
+            AesFile item = fileItemList.get(position);
+            openListItem.apply(item);
+        });
+        return true;
     }
 
     public void goBack() {
@@ -666,11 +674,25 @@ public class SalmonVaultManager implements IPropertyNotifier {
         return this.sequencer;
     }
 
+    public void createDirectory(String folderName) {
+        executor.submit(() -> {
+            try {
+                SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName, null, null);
+                SalmonVaultManager.getInstance().refresh();
+            } catch (Exception exception) {
+                exception.printStackTrace();
+                if (!SalmonVaultManager.getInstance().handleException(exception)) {
+                    SalmonDialog.promptDialog("Error", "Could not create folder: " + exception.getMessage());
+                }
+            }
+        });
+    }
+
     public enum Mode {
         Browse, Search, Copy, Move
     }
 
-    public void exportFiles(AesFile[] items, Consumer<IFile[]> onFinished, boolean deleteSource) {
+    public void exportFiles(AesFile[] items, IFile exportDir, Consumer<IFile[]> onFinished, boolean deleteSource) {
         if (isJobRunning())
             throw new RuntimeException("Another job is running");
         executor.execute(() ->
@@ -683,7 +705,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
             int[] processedFiles = new int[]{-1};
             IFile[] files = null;
             List<AesFile> failedFiles = new ArrayList<>();
-            IFile exportDir = this.drive.getExportDir();
             try {
                 FileCommander.BatchExportOptions exportOptions = new FileCommander.BatchExportOptions();
                 exportOptions.deleteSource = deleteSource;
@@ -723,7 +744,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             else if (files != null) {
                 setTaskMessage("Export Complete");
                 SalmonDialog.promptDialog("Export", "Files Exported To: "
-                        + drive.getExportDir().getDisplayPath());
+                        + exportDir.getDisplayPath());
             }
             setFileProgress(1);
             setFilesProgress(1);
@@ -846,11 +867,20 @@ public class SalmonVaultManager implements IPropertyNotifier {
         });
     }
 
-    public void createVault(IFile dir, String password) throws IOException {
-        this.drive = AesDrive.createDrive(dir, getDriveClassType(), password, this.sequencer);
-        this.currDir = this.drive.getRoot();
-        SalmonSettings.getInstance().setVaultLocation(dir.getPath());
-        this.refresh();
+    public void createVault(IFile dir, String password) {
+        executor.submit(() -> {
+            try {
+                this.drive = AesDrive.createDrive(dir, getDriveClassType(), password, this.sequencer);
+                this.currDir = this.drive.getRoot();
+                SalmonSettings.getInstance().setVaultLocation(dir.getPath());
+                this.refresh();
+                SalmonDialog.promptDialog("Action", "Vault created, you can start importing your files");
+            } catch (Exception e) {
+                e.printStackTrace();
+                SalmonDialog.promptDialog("Error", "Could not create vault: " + e.getMessage() + ". " +
+                        (e.getCause() != null ? e.getCause().getMessage() : ""));
+            }
+        });
     }
 
     public void clearCopiedFiles() {
@@ -871,7 +901,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 (!item.isDirectory() ? "Encrypted Size: " + ByteUtils.getBytes(item.getRealFile().getLength(), 2)
                         + " (" + item.getRealFile().getLength() + " bytes)" : "") + "\n" +
                 "Integrity enabled: " + (item.getFileChunkSize() > 0 ? "Yes" : "No") + "\n" +
-                (item.getFileChunkSize() > 0 ? "Integrity chunk size: " + item.getFileChunkSize() + " bytes": "");
+                (item.getFileChunkSize() > 0 ? "Integrity chunk size: " + item.getFileChunkSize() + " bytes" : "");
     }
 
     public boolean canGoBack() {

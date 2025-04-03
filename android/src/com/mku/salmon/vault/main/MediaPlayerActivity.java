@@ -48,6 +48,8 @@ import com.mku.salmonfs.file.AesFile;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHolder.Callback {
     private static final String TAG = MediaPlayerActivity.class.getName();
@@ -60,7 +62,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     private static final int MEDIA_BACKOFFSET = 256 * 1024;
 
     // increase the threads if you have more cpus available for parallel processing
-    private int mediaThreads = 2;
+    private int mediaThreads = 1;
 
     private static final int THRESHOLD_SEEK = 30;
 
@@ -89,6 +91,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     private boolean looping;
     private float speed = 1.0f;
     private int old_x = 0;
+    private ExecutorService executor = Executors.newFixedThreadPool(2);
 
     public static void setMediaFiles(int position, AesFile[] mediaFiles) {
         pos = position;
@@ -186,9 +189,16 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
 
     protected void loadContent(AesFile file) throws Exception {
         mTitle.setText(file.getName());
-        source = new AesMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
-        mediaPlayer.setDataSource(source);
-        mediaPlayer.prepareAsync();
+        executor.submit(() -> {
+            try {
+                source = new AesMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
+                mediaPlayer.setDataSource(source);
+                mediaPlayer.prepareAsync();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private class MediaPlayerTimerTask extends TimerTask {
@@ -210,13 +220,13 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
 
     private String getTime(int time) {
         String secs = ((int) (time / 1000) % 60) + "";
-        if(secs.length() == 1)
+        if (secs.length() == 1)
             secs = "0" + secs;
         String mins = ((int) (time / 1000) / 60) + "";
-        if(mins.length() == 1)
+        if (mins.length() == 1)
             mins = "0" + mins;
         String hours = ((int) (time / 1000) / 3600) + "";
-        if(hours.length() == 1)
+        if (hours.length() == 1)
             hours = "0" + hours;
         return hours + ":" + mins + ":" + secs;
     }
@@ -247,14 +257,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
-        if (source != null) {
-            try {
-                source.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        source = null;
+        closeSource();
         if (mediaPlayer != null) {
             mediaPlayer.setDisplay(null);
             mediaPlayer.setSurface(null);
@@ -262,6 +265,19 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         }
         mediaPlayer = null;
         super.onDestroy();
+    }
+
+    private void closeSource() {
+        executor.submit(() -> {
+            if (source != null) {
+                try {
+                    source.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        source = null;
     }
 
     @Override

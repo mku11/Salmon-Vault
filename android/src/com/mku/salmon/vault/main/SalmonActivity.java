@@ -49,6 +49,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mku.android.fs.file.AndroidFile;
+import com.mku.android.fs.file.AndroidFileSystem;
 import com.mku.android.salmonfs.drive.AndroidDrive;
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.fs.file.IFile;
@@ -64,12 +65,16 @@ import com.mku.salmon.vault.provider.SalmonFileProvider;
 import com.mku.salmon.vault.services.AndroidBrowserService;
 import com.mku.salmon.vault.services.AndroidFileDialogService;
 import com.mku.salmon.vault.services.AndroidFileService;
+import com.mku.salmon.vault.services.AndroidHttpFileService;
 import com.mku.salmon.vault.services.AndroidKeyboardService;
 import com.mku.salmon.vault.services.AndroidSettingsService;
+import com.mku.salmon.vault.services.AndroidWebServiceFileService;
 import com.mku.salmon.vault.services.IFileDialogService;
 import com.mku.salmon.vault.services.IFileService;
+import com.mku.salmon.vault.services.IHttpFileService;
 import com.mku.salmon.vault.services.IKeyboardService;
 import com.mku.salmon.vault.services.ISettingsService;
+import com.mku.salmon.vault.services.IWSFileService;
 import com.mku.salmon.vault.services.IWebBrowserService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.ByteUtils;
@@ -124,6 +129,8 @@ public class SalmonActivity extends AppCompatActivity {
     protected void setupServices() {
         ServiceLocator.getInstance().register(ISettingsService.class, new AndroidSettingsService());
         ServiceLocator.getInstance().register(IFileService.class, new AndroidFileService(this));
+        ServiceLocator.getInstance().register(IHttpFileService.class, new AndroidHttpFileService(this));
+        ServiceLocator.getInstance().register(IWSFileService.class, new AndroidWebServiceFileService(this));
         ServiceLocator.getInstance().register(IFileDialogService.class, new AndroidFileDialogService(this));
         ServiceLocator.getInstance().register(IWebBrowserService.class, new AndroidBrowserService());
         ServiceLocator.getInstance().register(IKeyboardService.class, new AndroidKeyboardService(this));
@@ -345,18 +352,12 @@ public class SalmonActivity extends AppCompatActivity {
                             .setIcon(R.drawable.export_and_delete_file_small);
                 }
 
-                if (adapter.getLastSelected().isFile()) {
-                    // view
-                    menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.View))
-                            .setIcon(R.drawable.file_small);
-                    menu.add(3, ActionType.VIEW_AS_TEXT.ordinal(), 0, getString(R.string.ViewAsText))
-                            .setIcon(R.drawable.text_file_small);
-                    menu.add(3, ActionType.VIEW_EXTERNAL.ordinal(), 0, getString(R.string.ViewExternal))
-                            .setIcon(R.drawable.view_external_small);
-                } else {
-                    menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.Open))
-                            .setIcon(R.drawable.folder_menu_small);
-                }
+                menu.add(3, ActionType.VIEW.ordinal(), 0, getString(R.string.View))
+                        .setIcon(R.drawable.file_small);
+                menu.add(3, ActionType.VIEW_AS_TEXT.ordinal(), 0, getString(R.string.ViewAsText))
+                        .setIcon(R.drawable.text_file_small);
+                menu.add(3, ActionType.VIEW_EXTERNAL.ordinal(), 0, getString(R.string.ViewExternal))
+                        .setIcon(R.drawable.view_external_small);
 
                 menu.add(3, ActionType.PROPERTIES.ordinal(), 0, getString(R.string.Properties))
                         .setIcon(R.drawable.file_properties_small);
@@ -481,12 +482,15 @@ public class SalmonActivity extends AppCompatActivity {
 
             case VIEW:
                 openItem(adapter.getLastSelected());
+                adapter.setMultiSelect(false);
                 break;
             case VIEW_AS_TEXT:
                 startTextViewer(adapter.getLastSelected());
+                adapter.setMultiSelect(false);
                 break;
             case VIEW_EXTERNAL:
                 openWith(adapter.getLastSelected());
+                adapter.setMultiSelect(false);
                 break;
 
 
@@ -504,6 +508,7 @@ public class SalmonActivity extends AppCompatActivity {
                 return true;
             case RENAME:
                 SalmonDialogs.promptRenameFile(adapter.getLastSelected());
+                adapter.setMultiSelect(false);
                 break;
             case PROPERTIES:
                 SalmonDialogs.showProperties(adapter.getLastSelected());
@@ -663,7 +668,8 @@ public class SalmonActivity extends AppCompatActivity {
     private void exportSelectedFiles(boolean deleteSource) {
         try {
             manager.setSelectedFiles(adapter.getSelectedFiles());
-            manager.exportSelectedFiles(deleteSource);
+            SalmonDialogs.promptExportFolder("Select folder to export to",
+                    SalmonVaultManager.REQUEST_EXPORT_DIR, deleteSource);
         } catch (AuthException e) {
             SalmonDialog.promptDialog("Could not export file(s): " + e.getMessage());
         }
@@ -673,6 +679,7 @@ public class SalmonActivity extends AppCompatActivity {
         try {
             return manager.openItem(salmonFile);
         } catch (Exception e) {
+            e.printStackTrace();
             SalmonDialog.promptDialog("Could not open item: " + e.getMessage());
         }
         return true;
@@ -777,6 +784,12 @@ public class SalmonActivity extends AppCompatActivity {
                 callback.accept(files);
             else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER)
                 callback.accept(files[0]);
+        } else if (requestCode == SalmonVaultManager.REQUEST_EXPORT_DIR) {
+            String[] filesToImport = ActivityCommon.getFilesFromIntent(this, data);
+            IFile folder = ServiceLocator.getInstance().resolve(IFileService.class)
+                    .getFile(filesToImport[0], true);
+            Consumer<Object> callback = ServiceLocator.getInstance().resolve(IFileDialogService.class).getCallback(requestCode);
+            callback.accept(folder);
         } else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE) {
             String[] files = ActivityCommon.getFilesFromIntent(this, data);
             String importFile = files != null ? files[0] : null;
@@ -937,7 +950,7 @@ public class SalmonActivity extends AppCompatActivity {
     }
 
     protected SalmonVaultManager createVaultManager() {
-        AndroidDrive.initialize(this.getApplicationContext());
+        AndroidFileSystem.initialize(this);
         return SalmonAndroidVaultManager.getInstance();
     }
 

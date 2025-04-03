@@ -155,9 +155,103 @@ public class SalmonDialog {
         });
     }
 
+
+    public static void promptCredentialsEdit(String title, String msg,
+                                             String[] hints, boolean[] isPasswords,
+                                             Consumer<String[]> OnEdit) {
+        Activity activity = WindowUtils.getUiActivity();
+        WindowUtils.runOnMainThread(() -> {
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
+
+            LinearLayout layout = new LinearLayout(activity);
+            layout.setPadding(20, 20, 20, 20);
+            layout.setOrientation(LinearLayout.VERTICAL);
+
+            LinearLayout.LayoutParams parameters = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+
+            TextView msgText = new TextView(activity);
+            msgText.setPadding(20, 20, 20, 20);
+            msgText.setText(msg);
+            layout.addView(msgText, parameters);
+
+            View[] textFields = new View[hints.length];
+            for (int i = 0; i < hints.length; i++) {
+                if (hints[i] != null) {
+                    textFields[i] = createTextField(activity, hints[i], isPasswords[i]);
+                    layout.addView(textFields[i], parameters);
+                }
+            }
+
+            builder.setPositiveButton(activity.getString(android.R.string.ok), (sender, e) ->
+            {
+                if (OnEdit != null) {
+                    String[] texts = new String[hints.length];
+                    for (int i = 0; i < textFields.length; i++) {
+                        if (textFields[i] != null) {
+                            EditText editText;
+                            if(textFields[i] instanceof TextInputLayout)
+                                editText = ((TextInputLayout) textFields[i]).getEditText();
+                            else
+                                editText = (EditText) textFields[i];
+                            texts[i] = editText.getText().toString();
+                        }
+                    }
+                    OnEdit.accept(texts);
+                }
+            });
+            builder.setNegativeButton(activity.getString(android.R.string.cancel), (sender, e) ->
+            {
+                sender.dismiss();
+            });
+
+            AlertDialog alertDialog = builder.create();
+            alertDialog.setTitle(title);
+            alertDialog.setCancelable(true);
+            alertDialog.setCanceledOnTouchOutside(false);
+            alertDialog.setView(layout);
+
+            alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            if (!activity.isFinishing())
+                alertDialog.show();
+        });
+    }
+
+    private static View createTextField(Activity activity, String hint, boolean isPassword) {
+
+        View valueText;
+        if(!isPassword) {
+            TextInputEditText text = new TextInputEditText(activity);
+            text.setInputType(InputType.TYPE_CLASS_TEXT);
+            text.setHint(hint);
+            valueText = text;
+        } else {
+            TextInputLayout typePasswdText = new TextInputLayout(activity, null,
+                    R.style.Widget_MaterialComponents_TextInputLayout_OutlinedBox);
+            typePasswdText.setPasswordVisibilityToggleEnabled(true);
+            typePasswdText.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE);
+            typePasswdText.setBoxCornerRadii(5, 5, 5, 5);
+            typePasswdText.setHint(hint);
+
+            TextInputEditText typePasswd = new TextInputEditText(typePasswdText.getContext());
+            typePasswd.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD |
+                    InputType.TYPE_CLASS_TEXT);
+            typePasswdText.addView(typePasswd);
+            valueText = typePasswdText;
+        }
+        return valueText;
+    }
+
     public static void promptDialog(String title, String body,
                                     String buttonLabel1, Runnable buttonListener1,
                                     String buttonLabel2, Runnable buttonListener2) {
+        promptDialog(title, body, buttonLabel1, buttonListener1, buttonLabel2, buttonListener2,
+        null, null);
+    }
+    public static void promptDialog(String title, String body,
+                                    String buttonLabel1, Runnable buttonListener1,
+                                    String buttonLabel2, Runnable buttonListener2,
+                                    String buttonLabel3, Runnable buttonListener3) {
         if (buttonLabel1 == null)
             buttonLabel1 = "Ok";
         Activity activity = WindowUtils.getUiActivity();
@@ -179,6 +273,12 @@ public class SalmonDialog {
                 {
                     if (buttonListener2 != null)
                         buttonListener2.run();
+                });
+            if (buttonLabel3 != null)
+                builder.setNeutralButton(buttonLabel3, (s, e) ->
+                {
+                    if (buttonListener3 != null)
+                        buttonListener3.run();
                 });
 
             AlertDialog alertDialog = builder.create();

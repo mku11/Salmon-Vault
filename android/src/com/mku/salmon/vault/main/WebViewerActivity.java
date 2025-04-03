@@ -53,6 +53,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class WebViewerActivity extends AppCompatActivity {
     private static final String TAG = WebViewerActivity.class.getName();
@@ -68,6 +70,8 @@ public class WebViewerActivity extends AppCompatActivity {
     private BufferedInputStream stream;
     private TextView mTitle;
     private final Object swipeObj = new Object();
+
+    private ExecutorService executor = Executors.newFixedThreadPool(2);
 
     public static void setContentFiles(int position, AesFile[] salmonFiles) {
         pos = position;
@@ -151,14 +155,16 @@ public class WebViewerActivity extends AppCompatActivity {
     }
 
     protected void onDestroy() {
-        if (stream != null) {
-            try {
-                stream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+        executor.submit(()-> {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                stream = null;
             }
-        }
-        stream = null;
+        });
         super.onDestroy();
     }
 

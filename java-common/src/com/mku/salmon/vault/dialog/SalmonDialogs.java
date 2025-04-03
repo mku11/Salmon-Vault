@@ -251,23 +251,48 @@ public class SalmonDialogs {
     }
 
     public static void promptCreateVault() {
+        SalmonDialog.promptDialog("Open Vault", "Choose Local to open a vault located in your local device.\n"
+                        + "Choose Remote to specify a remote vault in a web host.\n\n",
+                "Local", () -> {
+                    promptCreateLocalVault();
+                }, "Web Service", () -> {
+                    promptCreateWSVault();
+                });
+    }
+
+    public static void promptCreateLocalVault() {
         ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder("Select the vault",
                 SalmonSettings.getInstance().getVaultLocation(), (file) -> {
                     SalmonDialogs.promptSetPassword((String pass) ->
                     {
-                        try {
-                            SalmonVaultManager.getInstance().createVault((IFile) file, pass);
-                            SalmonDialog.promptDialog("Action", "Vault created, you can start importing your files");
-                        } catch (Exception e) {
-                            SalmonDialog.promptDialog("Error", "Could not create vault: " + e.getMessage());
-                        }
+                        SalmonVaultManager.getInstance().createVault((IFile) file, pass);
                     });
                 },
                 SalmonVaultManager.REQUEST_CREATE_VAULT_DIR);
     }
 
+    public static void promptCreateWSVault() {
+        SalmonDialog.promptCredentialsEdit("Open Web Service",
+                "Type in the credentials for the Web Service",
+                new String[]{"Web Service URL", "User name", "Password"},
+                new boolean[]{false, false, true},
+                (texts) -> {
+                    SalmonDialog.promptEdit("Create Vault",
+                            "Type in the file path for the vault",
+                            (path, isChecked) -> {
+                                IFile dir = ServiceLocator.getInstance().resolve(IWSFileService.class)
+                                        .getFile(path, false, texts[0],
+                                                new WSFile.Credentials(texts[1], texts[2]));
+                                SalmonDialogs.promptSetPassword((String pass) ->
+                                {
+                                    SalmonVaultManager.getInstance().createVault(dir, pass);
+                                });
+                            }, "", false, false, false, null);
+                });
+    }
+
     public static void promptOpenVault() {
-        SalmonDialog.promptDialog("Open Vault", "Choose Local to open a vault located in your computer.\n"
+        SalmonDialog.promptDialog("Open Vault", "Choose Local to open a vault located in local device.\n"
                         + "Choose Remote to specify a remote vault in a web host.\n\n",
                 "Local", () -> {
                     promptOpenLocalVault();
@@ -349,7 +374,6 @@ public class SalmonDialogs {
                 }, requestCode);
     }
 
-
     public static void promptImportFolder(String text, int requestCode) {
         if (!SalmonDialogs.isDriveLoaded())
             return;
@@ -385,15 +409,7 @@ public class SalmonDialogs {
                 "Folder Name",
                 (folderName, isChecked) ->
                 {
-                    try {
-                        SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName, null, null);
-                        SalmonVaultManager.getInstance().refresh();
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                        if (!SalmonVaultManager.getInstance().handleException(exception)) {
-                            SalmonDialog.promptDialog("Error", "Could Not Create Folder: " + exception.getMessage());
-                        }
-                    }
+                    SalmonVaultManager.getInstance().createDirectory(folderName);
                 }, "New Folder", true, false, false, null);
     }
 
@@ -435,7 +451,12 @@ public class SalmonDialogs {
         return true;
     }
 
-    public static void promptExport(boolean delete) {
+    public static void promptExportFolder(String text, int requestCode, boolean delete) {
+        if (!delete) {
+            promptExport(text, requestCode, delete);
+            return;
+        }
+
         if (!SalmonDialogs.isDriveLoaded())
             return;
         String itemsString = "item(s)?";
@@ -449,12 +470,26 @@ public class SalmonDialogs {
                 "Export", "Export " + (delete ? "and delete " : "") + SalmonVaultManager.getInstance().getSelectedFiles().size() + " " + itemsString,
                 "Ok",
                 () -> {
-                    try {
-                        SalmonVaultManager.getInstance().exportSelectedFiles(delete);
-                    } catch (Exception e) {
-                        SalmonDialog.promptDialog("Error", "Could not export files: " + e);
-                    }
+                    promptExport(text, requestCode, delete);
                 },
                 "Cancel", null);
+    }
+
+    private static void promptExport(String text, int requestCode, boolean delete) {
+        if (!SalmonDialogs.isDriveLoaded())
+            return;
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder(text,
+                SalmonSettings.getInstance().getLastExportDir(), (obj) ->
+                {
+                    try {
+                        IFile folder = (IFile) obj;
+                        if (folder == null)
+                            return;
+                        SalmonSettings.getInstance().setLastImportDir(folder.getPath());
+                        SalmonVaultManager.getInstance().exportSelectedFiles(folder, delete);
+                    } catch (Exception e) {
+                        SalmonDialog.promptDialog("Error", "Could not export folder: " + e);
+                    }
+                }, requestCode);
     }
 }
