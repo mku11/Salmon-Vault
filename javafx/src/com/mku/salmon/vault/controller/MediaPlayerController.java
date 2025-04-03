@@ -52,8 +52,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -130,12 +128,12 @@ public class MediaPlayerController {
         return totaltime;
     }
 
-    private Image playImage = new Image(this.getClass().getResourceAsStream("/icons/play.png"));
-    private Image pauseImage = new Image(this.getClass().getResourceAsStream("/icons/pause.png"));
+    private final Image playImage = new Image(this.getClass().getResourceAsStream("/icons/play.png"));
+    private final Image pauseImage = new Image(this.getClass().getResourceAsStream("/icons/pause.png"));
 
-    private SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+    private final SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
 
-    private static double mediaViewMargin = 64;
+    private static final double mediaViewMargin = 64;
 
     @FXML
     private void initialize() {
@@ -197,9 +195,7 @@ public class MediaPlayerController {
         String filePath;
         try {
             filePath = file.getRealPath();
-            this.url = null;
-            this.url = "http://localhost/?path=" + URLEncoder.encode(filePath, StandardCharsets.UTF_8);
-            AesStreamHandler.getInstance().register(this.url, file);
+            this.url = AesStreamHandler.getInstance().register(filePath, file);
             Media m = new Media(url);
             mp = new MediaPlayer(m);
             mp.setOnPaused(() -> setImage(playImage));
