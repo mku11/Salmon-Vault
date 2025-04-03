@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.mku.salmon.vault.android"
-    android:versionCode="300"
-    android:versionName="300">
+    android:versionCode="301"
+    android:versionName="301">
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name="com.mku.salmon.vault.main.SalmonApplication"
