@@ -24,6 +24,7 @@ SOFTWARE.
 */
 
 import com.mku.fs.drive.utils.FileUtils;
+import com.mku.fs.file.IFile;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
 import com.mku.salmon.vault.dialog.SalmonDialog;
@@ -327,11 +328,11 @@ public class MainController {
     }
 
     public void onExport() {
-        SalmonDialogs.promptExport(false);
+        SalmonDialogs.promptExportFolder("Export Files", SalmonVaultManager.REQUEST_EXPORT_DIR, false);
     }
 
     public void onExportAndDelete() {
-        SalmonDialogs.promptExport(true);
+        SalmonDialogs.promptExportFolder("Export Files", SalmonVaultManager.REQUEST_EXPORT_DIR, true);
     }
 
     public void onNewFolder() {
@@ -636,7 +637,8 @@ public class MainController {
     private void openWith(AesFile salmonFile) {
         if (manager.isJobRunning())
             throw new RuntimeException("Another job is running");
-        manager.exportFiles(new AesFile[]{salmonFile}, (files) ->
+        IFile exportDir = SalmonVaultManager.getInstance().getDrive().getExportDir();
+        manager.exportFiles(new AesFile[]{salmonFile}, exportDir, (files) ->
         {
             WindowUtils.runOnMainThread(() -> {
                 try {
@@ -672,18 +674,22 @@ public class MainController {
     }
 
     private void startImageViewer(SalmonFileViewModel item) {
-        try {
-            ImageViewerController.openImageViewer(item, stage);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        WindowUtils.runOnMainThread(() -> {
+            try {
+                ImageViewerController.openImageViewer(item, stage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private void startMediaPlayer(SalmonFileViewModel item) {
-        try {
-            MediaPlayerController.openMediaPlayer(item, stage);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        WindowUtils.runOnMainThread(() -> {
+            try {
+                MediaPlayerController.openMediaPlayer(item, stage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
