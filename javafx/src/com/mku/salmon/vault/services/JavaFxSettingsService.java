@@ -98,4 +98,13 @@ public class JavaFxSettingsService implements ISettingsService {
     public void setLastImportDir(String value) {
         prefs.put(SalmonSettings.LAST_IMPORT_DIR_KEY, value);
     }
+
+    public String getLastExportDir() {
+        return prefs.get(SalmonSettings.LAST_EXPORT_DIR_KEY,
+                SalmonSettings.DEFAULT_LAST_EXPORT_DIR);
+    }
+
+    public void setLastExportDir(String value) {
+        prefs.put(SalmonSettings.LAST_EXPORT_DIR_KEY, value);
+    }
 }
