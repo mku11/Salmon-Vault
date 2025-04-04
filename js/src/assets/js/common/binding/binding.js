@@ -163,26 +163,7 @@ export class Binding {
             let tbody = el.getElementsByTagName('tbody')[0];
             let row = tbody.insertRow(index);
             row.id = el.id + "-row-" + index;
-            // $(function () {
-            //     $.contextMenu({
-            //         selector: "#" + row.id,
-            //         build: function ($trigger, e) {
-            //             for (let i = 0; i < tbody.childNodes.length; i++) {
-            //                 let r = tbody.childNodes[i];
-            //                 r.classList.remove("tr-row-selected");
-            //             }
-            //             let trow = tbody.childNodes[index];
-            //             obj.clearSelectedItems();
-            //             trow.classList.add("tr-row-selected");
-            //             obj.onSetSelected(index, true);
-            //             return {
-            //                 items: obj.getContextMenu()
-            //             };
-            //         }
-            //     });
-            // });
             row.oncontextmenu = (event) => {
-                console.log("ctx: " + event.clientX + "," + event.clientY);
                 for (let i = 0; i < tbody.childNodes.length; i++) {
                     let r = tbody.childNodes[i];
                     r.classList.remove("tr-row-selected");
