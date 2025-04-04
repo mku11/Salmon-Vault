@@ -1,4 +1,4 @@
-set version=3.0.0
+set version=3.0.1
 rmdir packages /S /Q
 mkdir packages
 rmdir ..\src\assets\js\lib /S /Q
