@@ -49,5 +49,5 @@ xcuserdata
 *.exe
 node_modules
 
-js/project/lib
+js/src/assets/js
 js/project/app_package
