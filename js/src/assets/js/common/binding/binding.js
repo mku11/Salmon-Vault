@@ -27,6 +27,7 @@ import { StringProperty } from "./string_property.js";
 import { DoubleProperty } from "./double_property.js";
 import { BooleanProperty } from "./boolean_property.js";
 import { ObjectProperty } from "./object_property.js";
+import { ContextMenu } from "../utils/context_menu.js";
 
 export class Binding {
     static #bindings = {};
@@ -96,13 +97,13 @@ export class Binding {
                 obj.key = key;
             } else
                 throw new Error("Can only bind ObservableList to select options");
-        }  else if (el.tagName.toLowerCase() === 'video' && elementField === 'src') {
+        } else if (el.tagName.toLowerCase() === 'video' && elementField === 'src') {
             if (obj instanceof StringProperty) {
                 Binding.#bindings[key] = objBinding;
                 obj.key = key;
             } else
                 throw new Error("Can only bind ObservableList to select options");
-        }else {
+        } else {
             throw new Error("Could not bind element: " + name);
         }
         return obj;
@@ -162,24 +163,38 @@ export class Binding {
             let tbody = el.getElementsByTagName('tbody')[0];
             let row = tbody.insertRow(index);
             row.id = el.id + "-row-" + index;
-            $(function () {
-                $.contextMenu({
-                    selector: "#" + row.id,
-                    build: function ($trigger, e) {
-                        for (let i = 0; i < tbody.childNodes.length; i++) {
-                            let r = tbody.childNodes[i];
-                            r.classList.remove("tr-row-selected");
-                        }
-                        let trow = tbody.childNodes[index];
-                        obj.clearSelectedItems();
-                        trow.classList.add("tr-row-selected");
-                        obj.onSetSelected(index, true);
-                        return {
-                            items: obj.getContextMenu()
-                        };
-                    }
-                });
-            });
+            // $(function () {
+            //     $.contextMenu({
+            //         selector: "#" + row.id,
+            //         build: function ($trigger, e) {
+            //             for (let i = 0; i < tbody.childNodes.length; i++) {
+            //                 let r = tbody.childNodes[i];
+            //                 r.classList.remove("tr-row-selected");
+            //             }
+            //             let trow = tbody.childNodes[index];
+            //             obj.clearSelectedItems();
+            //             trow.classList.add("tr-row-selected");
+            //             obj.onSetSelected(index, true);
+            //             return {
+            //                 items: obj.getContextMenu()
+            //             };
+            //         }
+            //     });
+            // });
+            row.oncontextmenu = (event) => {
+                console.log("ctx: " + event.clientX + "," + event.clientY);
+                for (let i = 0; i < tbody.childNodes.length; i++) {
+                    let r = tbody.childNodes[i];
+                    r.classList.remove("tr-row-selected");
+                }
+                let trow = tbody.childNodes[index];
+                obj.clearSelectedItems();
+                trow.classList.add("tr-row-selected");
+                obj.onSetSelected(index, true);
+                ContextMenu.showContextMenu(obj.get(index), obj.getContextMenu(), event.clientX, event.clientY, obj);
+                event.stopPropagation();
+                event.preventDefault();
+            };
             row.classList.add("tr-row");
             row.onclick = (event) => {
                 if (!event.ctrlKey && !event.shiftKey) {

@@ -1,6 +1,5 @@
 .menu-container {
   overflow: hidden;
-  background-color: #333;
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -29,30 +28,20 @@
   font-family: inherit;
 }
 
-.menu-container a:hover, .dropdown:hover .dropbtn, .dropbtn:focus {
-  background-color: grey;
-}
-
 .dropdown-content {
   display: none;
   position: absolute;
   background-color: #f9f9f9;
   min-width: 160pt;
-  box-shadow: 0pt 8pt 16pt 0pt rgba(0,0,0,0.2);
   z-index: 3;
 }
 
 .dropdown-content a {
   float: none;
-  color: black;
   padding: 6pt;
   text-decoration: none;
   display: block;
   text-align: left;
-}
-
-.dropdown-content a:hover {
-  background-color: #ddd;
 }
 
 .show {

@@ -29,7 +29,6 @@ body {
 .dropdown-content {
     border-end-start-radius: 2pt;
     border-end-end-radius: 2pt;
-    box-shadow: #2d3343;
 }
 
 .dropdown-content a {

@@ -24,6 +24,8 @@ SOFTWARE.
 
 import { WindowUtils } from "../utils/window_utils.js";
 
+let visibleWindows = new Set();
+
 export class SalmonWindow {
     static modalUrl = "modal.html";
     static zIndex = 0;
@@ -37,9 +39,17 @@ export class SalmonWindow {
     content;
     onClose;
     onShow;
+    isDraggable;
+    isDismissable;
+    isDismissableOutside;
+
 	
     getRoot() {
         return this.root;
+    }
+
+    getModal() {
+        return this.modal;
     }
     
     setupIcon() {
@@ -53,6 +63,9 @@ export class SalmonWindow {
         this.setupIcon();
         this.setupEventListeners();
         this.#setContent(content);
+        this.enableDraggable(true);
+        this.enableDismissable(true);
+        this.enableDismissableOutside(false);
     }
 
     static async createModal(title, content) {
@@ -93,6 +106,8 @@ export class SalmonWindow {
 		let modalWindow = this;
 	
 		el.addEventListener('mousedown', function(e) {
+            if(!modalWindow.isDraggable)
+                return;
 			event.preventDefault();
 			down = true;
 			dx = modalWindow.modal.offsetLeft - e.clientX;
@@ -103,6 +118,8 @@ export class SalmonWindow {
 		}, true);
 
 		function moveElement(event) {
+            if(!modalWindow.isDraggable)
+                return;
 			if (down) {
 				modalWindow.modal.style.left = (event.clientX + dx) + 'px';
 				modalWindow.modal.style.top  = (event.clientY + dy) + 'px';
@@ -111,12 +128,34 @@ export class SalmonWindow {
 		}
 		
 		function stopMoveElement(event) {
+            if(!modalWindow.isDraggable)
+                return;
 			event.preventDefault();
 			down = false;
 			// reset the global listener
 			document.onmouseup = null;
 			document.onmousemove = null;			
 		}
+    }
+
+    enableDraggable(value) {
+        this.isDraggable = value;
+        if(value === true)
+            this.titleBar.style.cursor = "move";
+        else
+            this.titleBar.style.cursor = "auto";
+    }
+
+    enableDismissable(value) {
+        this.isDismissable = value;
+        if(value === true)
+            this.closeButton.style.display = "block";
+        else
+            this.closeButton.style.display = "none";
+    }
+
+    enableDismissableOutside(value) {
+        this.isDismissableOutside = value;
     }
 
     #setContent(content) {
@@ -136,6 +175,7 @@ export class SalmonWindow {
         SalmonWindow.zIndex += 2;
         this.modal.style.zIndex = SalmonWindow.zIndex;
         this.disableSiblings(true);
+        visibleWindows.add(this);
         if(this.onShow != null)
             this.onShow();
     }
@@ -145,6 +185,7 @@ export class SalmonWindow {
         this.disableSiblings(false);
         this.modal.parentElement.parentElement.removeChild(this.modal.parentElement);
         SalmonWindow.zIndex -= 2;
+        visibleWindows.delete(this);
         if(this.onClose != null)
             this.onClose();
     }
@@ -163,4 +204,23 @@ export class SalmonWindow {
             }
         }
     }
+}
+
+window.addEventListener("click", function(event) {
+    for(let modalWindow of visibleWindows) {
+		if(!modalWindow.isDismissableOutside)
+			continue;
+        if(!contains(modalWindow.getRoot(), event.target)) {
+            modalWindow.hide.call(modalWindow);
+        }
+    }
+});
+
+function contains(parent, el) {
+    while(el) {
+        if(parent == el)
+            return true;
+        el = el.parentElement;
+    }
+    return false;
 }

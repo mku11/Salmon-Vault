@@ -34,6 +34,7 @@ export class ObservableList {
     onItemClicked = null;
     onItemDoubleClicked = null;
     contextMenu = {};
+    getContextItemTitle = null;
 
     constructor() {
 
@@ -62,6 +63,10 @@ export class ObservableList {
 
     getContextMenu() {
         return this.contextMenu;
+    }
+
+    setContextMenuTitle(contextItemTitleCallable) {
+        this.getContextItemTitle = contextItemTitleCallable;
     }
 
     async onClicked(event, index) {

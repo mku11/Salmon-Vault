@@ -420,17 +420,38 @@ export class MainController {
     }
 
     setContextMenu() {
+        this.fileItemList.setContextMenuTitle((item) => {
+            return item.name;
+        });
         let contextMenu = this.fileItemList.getContextMenu();
 
-        contextMenu["View"] = { name: "View", icon: "edit", callback: async () => this.onOpenItem(this.fileItemList.getSelectedIndex()) };
-        contextMenu["ViewAsText"] = { name: "View as Text", icon: "edit", callback: async () => this.startTextEditor(this.fileItemList.getSelectedItems()[0]) };
-        contextMenu["Copy"] = { name: "Copy (Ctrl-C)", icon: "copy", callback: async () => this.onCopy() };
-        contextMenu["Cut"] = { name: "Cut (Ctrl-X)", icon: "cut", callback: async () => this.onCut() };
-        contextMenu["Delete"] = { name: "Delete (Del)", icon: "delete", callback: async () => this.onDelete() };
-        contextMenu["Rename"] = { name: "Rename", icon: "rename", callback: async () => SalmonDialogs.promptRenameFile(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
-        contextMenu["Export"] = { name: "Export (Ctrl-E)", icon: "export", callback: async () => this.onExport() };
-        contextMenu["ExportAndDelete"] = { name: "Export And Delete (Ctrl-Shift-E)", icon: "export", callback: async () => this.onExportAndDelete() };
-        contextMenu["Properties"] = { name: "Properties", icon: "export", callback: async () => await SalmonDialogs.showProperties(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
+        contextMenu["View"] = { name: "View", 
+            icon: "assets/images/common-res/icons/file_small.png", 
+            callback: async () => this.onOpenItem(this.fileItemList.getSelectedIndex()) };
+        contextMenu["ViewAsText"] = { name: "View as Text", 
+            icon: "assets/images/common-res/icons/text_file_small.png", 
+            callback: async () => this.startTextEditor(this.fileItemList.getSelectedItems()[0]) };
+        contextMenu["Copy"] = { name: "Copy (Ctrl-C)", 
+            icon: "assets/images/common-res/icons/copy_file_small.png", 
+            callback: async () => this.onCopy() };
+        contextMenu["Cut"] = { name: "Cut (Ctrl-X)", 
+            icon: "assets/images/common-res/icons/move_file_small.png", 
+            callback: async () => this.onCut() };
+        contextMenu["Delete"] = { name: "Delete (Del)", 
+            icon: "assets/images/common-res/icons/delete_small.png", 
+            callback: async () => this.onDelete() };
+        contextMenu["Rename"] = { name: "Rename", 
+            icon: "assets/images/common-res/icons/rename_small.png", 
+            callback: async () => SalmonDialogs.promptRenameFile(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
+        contextMenu["Export"] = { name: "Export (Ctrl-E)", 
+            icon: "assets/images/common-res/icons/export_file_small.png", 
+            callback: async () => this.onExport() };
+        contextMenu["ExportAndDelete"] = { name: "Export And Delete (Ctrl-Shift-E)", 
+            icon: "assets/images/common-res/icons/export_and_delete_file_small.png", 
+            callback: async () => this.onExportAndDelete() };
+        contextMenu["Properties"] = { name: "Properties", 
+            icon: "assets/images/common-res/icons/info_small.png", 
+            callback: async () => await SalmonDialogs.showProperties(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
     }
 
     async openItem(position) {
