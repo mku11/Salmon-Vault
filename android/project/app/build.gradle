@@ -48,7 +48,6 @@ android {
             java {
                 srcDirs += '../../src'
                 srcDirs += '../../../java-common/src'
-                srcDirs += '../../../android-common/src'
             }
         }
         main.res.srcDirs += '../../res'
