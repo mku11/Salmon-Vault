@@ -90,8 +90,8 @@
     <string name="AESEncryptionImplementation">AES Encryption Implementation</string>
     <string name="AESImplementation">AES Implementation</string>
     <string name="Default">Default</string>
-    <string name="TinyAes">Tiny AES</string>
     <string name="AesIntrinsics">AES Intrinsics</string>
+	<string name="Aes">AES</string>
     <string name="PBKDFHashImplementation">PBKDF Hash Implementation</string>
     <string name="PBKDFImplementation">PBKDF Implementation</string>
     <string name="Lambdaworks">Lambdaworks</string>

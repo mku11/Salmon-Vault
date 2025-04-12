@@ -10,7 +10,7 @@
     <string-array name="AESImplValues">
         <item>Default</item>
         <item>AesIntrinsics</item>
-        <item>TinyAES</item>
+        <item>Aes</item>
     </string-array>
 
     <string-array name="PBKDFImplEntries">
