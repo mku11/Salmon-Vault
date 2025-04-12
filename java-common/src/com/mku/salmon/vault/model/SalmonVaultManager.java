@@ -870,6 +870,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void createVault(IFile dir, String password) {
         executor.submit(() -> {
             try {
+                if(!dir.exists()) {
+                    dir.mkdir();
+                }
                 this.drive = AesDrive.createDrive(dir, getDriveClassType(), password, this.sequencer);
                 this.currDir = this.drive.getRoot();
                 SalmonSettings.getInstance().setVaultLocation(dir.getPath());
