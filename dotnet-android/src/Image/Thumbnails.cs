@@ -186,7 +186,7 @@ public class Thumbnails
             if (ext.Equals("gif") && salmonFile.Length > TMP_GIF_THUMB_MAX_SIZE)
                 stream = new System.IO.BufferedStream(GetTempStream(salmonFile, TMP_GIF_THUMB_MAX_SIZE), BUFFER_SIZE);
             else
-                stream = new System.IO.BufferedStream(salmonFile.GetInputStream(), BUFFER_SIZE);
+                stream = salmonFile.GetInputStream().AsReadStream();
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.InSampleSize = 4;
             bitmap = BitmapFactory.DecodeStream(stream, null, options);
