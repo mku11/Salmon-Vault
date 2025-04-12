@@ -261,7 +261,7 @@ public class Thumbnails
             if (ext.Equals("gif") && file.Length > TMP_GIF_THUMB_MAX_SIZE)
                 stream = GetTempStream(file, TMP_GIF_THUMB_MAX_SIZE);
             else
-                stream = new BufferedStream(file.GetInputStream(), BUFFER_SIZE);
+                stream = file.GetInputStream().AsReadStream();
             stream.Position = 0;
         }
         catch (Exception ex)
