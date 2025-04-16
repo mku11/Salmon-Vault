@@ -659,9 +659,15 @@ public class SalmonVaultManager implements IPropertyNotifier {
         return observers;
     }
 
-    public void renameFile(AesFile file, String newFilename)
-            throws IOException {
-        fileCommander.renameFile(file, newFilename);
+    public void renameFile(AesFile file, String newFilename) {
+        executor.execute(()->{
+            try {
+                fileCommander.renameFile(file, newFilename);
+            } catch (IOException e) {
+                e.printStackTrace();
+                SalmonDialog.promptDialog("Error", "Could not rename file: " + e.getMessage());
+            }
+        });
     }
 
     protected void setSequencer(INonceSequencer sequencer) {
