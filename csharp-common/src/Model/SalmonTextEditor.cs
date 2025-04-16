@@ -39,12 +39,12 @@ public class SalmonTextEditor
     {
         AesFile targetFile = null;
         AesStream stream = null;
-        MemoryStream ins = null;
+        Mku.Streams.MemoryStream ins = null;
         bool success = false;
         try
         {
             byte[] contents = UTF8Encoding.UTF8.GetBytes(text);
-            ins = new MemoryStream(contents);
+            ins = new Mku.Streams.MemoryStream(contents);
             AesFile dir = file.Parent;
             targetFile = dir.CreateFile(file.Name);
             targetFile.SetApplyIntegrity(true);
@@ -100,7 +100,7 @@ public class SalmonTextEditor
     public string GetTextContent(AesFile file)
     {
         AesStream stream = file.GetInputStream();
-        MemoryStream ms = new MemoryStream();
+        Mku.Streams.MemoryStream ms = new Mku.Streams.MemoryStream();
         stream.CopyTo(ms);
         stream.Close();
         byte[] bytes = ms.ToArray();
