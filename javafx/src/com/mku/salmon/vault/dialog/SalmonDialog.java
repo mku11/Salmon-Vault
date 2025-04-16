@@ -214,6 +214,7 @@ public class SalmonDialog extends javafx.scene.control.Alert {
                                     String buttonLabel3, Runnable buttonListener3) {
         WindowUtils.runOnMainThread(() -> {
             ButtonType ok = new ButtonType(buttonLabel1, ButtonBar.ButtonData.OK_DONE);
+            // FIXME: use a radio button group instead.
             ButtonType cancel = new ButtonType(buttonLabel2, ButtonBar.ButtonData.CANCEL_CLOSE);
             ButtonType apply = new ButtonType(buttonLabel3, ButtonBar.ButtonData.APPLY);
             SalmonDialog alert;
