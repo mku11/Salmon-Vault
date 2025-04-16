@@ -21,23 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { AesServiceWorker } from "./assets/js/lib/salmon-fs/salmonfs/service/aes_service_worker.js";
-
-var worker = self;
-var salmonServiceWorker = new AesServiceWorker();
-self.addEventListener('message', (event) => {
-	salmonServiceWorker.onMessage(event);
-	event.ports[0].postMessage({ status: 'ok' });
-});
-
-self.addEventListener('install', (event) => {
-	worker.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-	return worker.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-	return salmonServiceWorker.onFetch(event);
-});
+/**
+ * Pbkdf algorithm implementation type.
+ */
+export var PbkdfAlgo;
+(function (PbkdfAlgo) {
+    /**
+     * SHA256 hashing.
+     */
+    PbkdfAlgo[PbkdfAlgo["SHA256"] = 0] = "SHA256";
+})(PbkdfAlgo || (PbkdfAlgo = {}));

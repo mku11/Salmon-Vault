@@ -21,23 +21,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { AesServiceWorker } from "./assets/js/lib/salmon-fs/salmonfs/service/aes_service_worker.js";
-
-var worker = self;
-var salmonServiceWorker = new AesServiceWorker();
-self.addEventListener('message', (event) => {
-	salmonServiceWorker.onMessage(event);
-	event.ports[0].postMessage({ status: 'ok' });
-});
-
-self.addEventListener('install', (event) => {
-	worker.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-	return worker.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-	return salmonServiceWorker.onFetch(event);
-});
+/**
+ * Base64 encoder/decoder.
+ */
+export class Base64 {
+    /**
+     * Decode a Base64 encoded string into a byte array.
+     * @param {string} text String to be decoded
+     * @returns {Uint8Array} Byte array of decoded data.
+     */
+    decode(text) {
+        return Uint8Array.from(atob(text), x => x.charCodeAt(0));
+    }
+    /**
+     * Encode a byte array into a Base64 encoded string.
+     * @param {Uint8Array} data Byte array to be encoded
+     * @returns {string} String of encoded data.
+     */
+    encode(data) {
+        return btoa(String.fromCodePoint(...data));
+    }
+}

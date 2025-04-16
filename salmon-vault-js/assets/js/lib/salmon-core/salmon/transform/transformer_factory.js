@@ -21,23 +21,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { AesServiceWorker } from "./assets/js/lib/salmon-fs/salmonfs/service/aes_service_worker.js";
-
-var worker = self;
-var salmonServiceWorker = new AesServiceWorker();
-self.addEventListener('message', (event) => {
-	salmonServiceWorker.onMessage(event);
-	event.ports[0].postMessage({ status: 'ok' });
-});
-
-self.addEventListener('install', (event) => {
-	worker.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-	return worker.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-	return salmonServiceWorker.onFetch(event);
-});
+import { ProviderType } from "../streams/provider_type.js";
+import { SecurityException } from "../security_exception.js";
+import { AesDefaultTransformer } from "./aes_default_transformer.js";
+import { AesNativeTransformer } from "./aes_native_transformer.js";
+/**
+ * Creates an AES transformer object.
+ */
+export class TransformerFactory {
+    /**
+     * Create an encryption transformer implementation.
+     * @param {ProviderType} type The supported provider type.
+     * @returns {ISalmonCTRTransformer} The transformer.
+     * @throws SalmonSecurityException Thrown when error with security
+     */
+    static create(type) {
+        switch (type) {
+            case ProviderType.Default:
+                return new AesDefaultTransformer();
+            case ProviderType.AesIntrinsics:
+            case ProviderType.Aes:
+            case ProviderType.AesGPU:
+                return new AesNativeTransformer(type);
+            default:
+                throw new SecurityException("Unknown Transformer type");
+        }
+    }
+}

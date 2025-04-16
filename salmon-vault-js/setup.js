@@ -1,11 +1,11 @@
-import { setDebugConsole } from "./common/utils/debug_utils.js";
-import { Handler } from "./lib/salmon-fs/service/handler.js";
-import { SalmonDialog } from "./vault/dialog/salmon_dialog.js";
-import { WindowUtils } from "./vault/utils/window_utils.js";
-import { SalmonConfig } from "./vault/config/salmon_config.js";
-import { ServiceLocator } from "./common/services/service_locator.js";
-import { SalmonVaultManager } from "./common/model/salmon_vault_manager.js";
-import { IFileRemoteService } from "./common/services/ifile_remote_service.js";
+import { setDebugConsole } from "./assets/js/common/utils/debug_utils.js";
+import { Handler } from "./assets/js/lib/salmon-fs/service/handler.js";
+import { SalmonDialog } from "./assets/js/vault/dialog/salmon_dialog.js";
+import { WindowUtils } from "./assets/js/vault/utils/window_utils.js";
+import { SalmonConfig } from "./assets/js/vault/config/salmon_config.js";
+import { ServiceLocator } from "./assets/js/common/services/service_locator.js";
+import { IFileRemoteService } from "./assets/js/common/services/ifile_remote_service.js";
+import { SalmonVaultManager } from "./assets/js/common/model/salmon_vault_manager.js";
 
 const DEBUG = false;
 function setupDebug() {
@@ -27,7 +27,6 @@ async function registerServiceWorker() {
 
 document.salmonStartUp = async function() {
 	// any initializing code you want goes here
-	// live demo
 	let urlRemote = "https://mku11.github.io/Salmon-Vault/vault";	
 	let url = urlRemote;
 	let dir = ServiceLocator.getInstance().resolve(IFileRemoteService).getFile(url);

@@ -21,23 +21,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { AesServiceWorker } from "./assets/js/lib/salmon-fs/salmonfs/service/aes_service_worker.js";
-
-var worker = self;
-var salmonServiceWorker = new AesServiceWorker();
-self.addEventListener('message', (event) => {
-	salmonServiceWorker.onMessage(event);
-	event.ports[0].postMessage({ status: 'ok' });
-});
-
-self.addEventListener('install', (event) => {
-	worker.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-	return worker.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-	return salmonServiceWorker.onFetch(event);
-});
+import { SecurityException } from "../security_exception.js";
+import { PbkdfAlgo } from "./pbkdf_algo.js";
+/**
+ * Java Cipher key for SHA256. See javax.crypto.SecretKeyFactory.
+ */
+export const PBKDF_SHA256 = "SHA-256";
+/**
+ * Get the PBKDF java cipher algorigthm string.
+ *
+ * @param {PbkdfAlgo.SHA256} pbkdfAlgo The PBKDF algorithm to be used
+ * @returns {string} The java cipher algorithm string. See javax.crypto.SecretKeyFactory.
+ */
+export function getPbkdfAlgoString(pbkdfAlgo) {
+    switch (pbkdfAlgo) {
+        case PbkdfAlgo.SHA256:
+            return PBKDF_SHA256;
+        default:
+            throw new SecurityException("Unknown pbkdf algorithm");
+    }
+}

@@ -21,23 +21,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { AesServiceWorker } from "./assets/js/lib/salmon-fs/salmonfs/service/aes_service_worker.js";
 
-var worker = self;
-var salmonServiceWorker = new AesServiceWorker();
-self.addEventListener('message', (event) => {
-	salmonServiceWorker.onMessage(event);
-	event.ports[0].postMessage({ status: 'ok' });
-});
+import { IFileRemoteService } from "../../common/services/ifile_remote_service.js";
+import { HttpFile } from "../../lib/salmon-fs/fs/file/http_file.js";
 
-self.addEventListener('install', (event) => {
-	worker.skipWaiting();
-});
+export class JsFileRemoteService extends IFileRemoteService {
+    constructor() {
+        super();
+    }
 
-self.addEventListener('activate', (event) => {
-	return worker.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-	return salmonServiceWorker.onFetch(event);
-});
+    getFile(filepath, isDirectory = false) {
+        return new HttpFile(filepath);
+    }
+}

@@ -1,5 +1,5 @@
 Salmon Vault - Javascript
-version: 2.1.1
+version: 3.0.1
 project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 
@@ -10,6 +10,8 @@ Web Browser Support:
 For http-file based vaults Chrome, Firefox, Safari or any browser that supports modules ES2022
 For local file based vaults only Chrome is supported.
 For use with http-files without hosting on a server you can open the html file locally with your browser.
+
+For testing:
 For use with local vaults drives without an http server you need to start chrome with these options:
 --allow-file-access-from-files --disable-web-security
 

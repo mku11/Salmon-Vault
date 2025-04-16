@@ -21,23 +21,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { AesServiceWorker } from "./assets/js/lib/salmon-fs/salmonfs/service/aes_service_worker.js";
 
-var worker = self;
-var salmonServiceWorker = new AesServiceWorker();
-self.addEventListener('message', (event) => {
-	salmonServiceWorker.onMessage(event);
-	event.ports[0].postMessage({ status: 'ok' });
-});
+export class SalmonConfig {
+    static APP_NAME = "Salmon Vault";
+    static VERSION = "3.0.1";
+    static ABOUT_TEXT = "License: MIT License\n\n" +
+            "Salmon-AES-CTR - MIT License - https://github.com/mku11/Salmon-AES-CTR\n" +
+            "uxwing icons - https://uxwing.com\n\n" +
+            "For more information visit the project website";
+    static SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
+    static FILE_SEQ_FILENAME = "config.json";
+    static APP_ICON = "assets/images/common-res/icons/logo_48x48.png";
+    
+    static getVersion() {
+        return SalmonConfig.VERSION;
+    }
 
-self.addEventListener('install', (event) => {
-	worker.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-	return worker.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-	return salmonServiceWorker.onFetch(event);
-});
+    static getPrivateDir() {
+        return ".";
+    }
+}

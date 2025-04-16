@@ -21,23 +21,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { AesServiceWorker } from "./assets/js/lib/salmon-fs/salmonfs/service/aes_service_worker.js";
-
-var worker = self;
-var salmonServiceWorker = new AesServiceWorker();
-self.addEventListener('message', (event) => {
-	salmonServiceWorker.onMessage(event);
-	event.ports[0].postMessage({ status: 'ok' });
-});
-
-self.addEventListener('install', (event) => {
-	worker.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-	return worker.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-	return salmonServiceWorker.onFetch(event);
-});
+import { FileImporterWorker } from "../../../fs/drive/utils/file_importer_worker.js";
+import { FileUtils } from "../../../fs/drive/utils/file_utils.js";
+import { AesFile } from "../../file/aes_file.js";
+/**
+ * Web worker for parallel encrypted file import.
+ */
+export class AesFileImporterWorker extends FileImporterWorker {
+    async getTargetFile(params) {
+        let realFile = await FileUtils.getInstance(params.importedFileClassType, params.importedFileHandle);
+        let targetFile = new AesFile(realFile);
+        targetFile.setAllowOverwrite(true);
+        targetFile.setEncryptionKey(params.key);
+        await targetFile.setApplyIntegrity(params.integrity, params.hash_key, params.chunk_size);
+        return targetFile;
+    }
+}
+let worker = new AesFileImporterWorker();
+if (typeof process === 'object') {
+    const { parentPort } = await import("worker_threads");
+    if (parentPort)
+        parentPort.addListener('message', (event) => worker.receive(worker, event));
+}
+else {
+    addEventListener('message', (event) => worker.receive(worker, event));
+}

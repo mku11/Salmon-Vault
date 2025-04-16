@@ -21,23 +21,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { AesServiceWorker } from "./assets/js/lib/salmon-fs/salmonfs/service/aes_service_worker.js";
-
-var worker = self;
-var salmonServiceWorker = new AesServiceWorker();
-self.addEventListener('message', (event) => {
-	salmonServiceWorker.onMessage(event);
-	event.ports[0].postMessage({ status: 'ok' });
-});
-
-self.addEventListener('install', (event) => {
-	worker.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-	return worker.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-	return salmonServiceWorker.onFetch(event);
-});
+/**
+ * Thrown when there is a failure in the nonce sequencer.
+ */
+export class SequenceException extends Error {
+    /**
+     * Construct an exception with a specific message and inner exception
+     * @param {string | null} msg The provided message
+     * @param {Error | unknown | null} ex The inner exception
+     */
+    constructor(msg = null, ex = null) {
+        super(msg !== null && msg !== void 0 ? msg : "");
+        this.cause = null;
+        if (ex) {
+            this.cause = ex;
+        }
+    }
+    getCause() {
+        return this.cause;
+    }
+}
