@@ -42,19 +42,6 @@ public class AndroidFileService : IFileService
 
     public IFile GetFile(string filepath, bool isDirectory)
     {
-        IFile file;
-        if (filepath.StartsWith("content:"))
-        {
-            DocumentFile docFile;
-            if (isDirectory)
-                docFile = DocumentFile.FromTreeUri(activity, Android.Net.Uri.Parse(filepath));
-            else
-                docFile = DocumentFile.FromSingleUri(activity, Android.Net.Uri.Parse(filepath));
-            file = new AndroidFile(docFile, activity);
-        } else
-        {
-            file = new File(filepath);
-        }
-        return file;
+        return AndroidFileSystem.GetRealFile(filepath, isDirectory);
     }
 }
