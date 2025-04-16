@@ -119,7 +119,7 @@ public class WebViewerActivity : AppCompatActivity
             encStream.FailSilently = true;
 
             // we inject our AesStream into the webview client
-            BufferedStream stream = new BufferedStream(encStream, ENC_BUFFER_SIZE);
+            Stream stream = encStream.AsReadStream();
             webViewClient.SetStream(mimeType, stream);
             RunOnUiThread(() =>
             {
@@ -398,10 +398,10 @@ public class WebViewerActivity : AppCompatActivity
 
     private class SalmonWebViewClient : WebViewClient
     {
-        private BufferedStream stream;
+        private Stream stream;
         private string mimeType;
 
-        public void SetStream(string mimeType, BufferedStream stream)
+        public void SetStream(string mimeType, Stream stream)
         {
             this.stream = stream;
             this.mimeType = mimeType;
