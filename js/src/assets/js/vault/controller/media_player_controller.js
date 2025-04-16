@@ -79,7 +79,7 @@ export class MediaPlayerController {
             let workerPath = './assets/js/lib/salmon-fs/salmonfs/streams/aes_file_readable_stream_worker.js';
 			// if file is relative small just decrypt and load via a blob
 			if (size < MediaPlayerController.MIN_FILE_STREAMING) {
-				let stream = AesFileReadableStream.create(file,
+				let stream = AesFileReadableStream.createFileReadableStream(file,
 					1, MediaPlayerController.MIN_FILE_STREAMING, 2, 0);
                 stream.setWorkerPath(workerPath);
 				let ms = new MemoryStream();
