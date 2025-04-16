@@ -434,23 +434,27 @@ public class SalmonVaultManager : INotifyPropertyChanged
         if (dir == null)
             return;
 
-        try
-        {
-            CloseVault();
-            this.Drive = AesDrive.OpenDrive(dir, GetDriveClassType(), password, this.Sequencer);
-            this.CurrDir = this.Drive.Root;
-            SalmonSettings.GetInstance().VaultLocation = dir.Path;
-            Refresh();
-        }
-        catch (ArgumentException e)
-        {
-            SalmonDialog.PromptDialog("Error", "Could not open vault: " + e.Message + ". "
-            + "Make sure your vault folder contains a file named " + AesDrive.ConfigFilename);
-        }
-        catch (Exception e)
-        {
-            SalmonDialog.PromptDialog("Error", "Could not open vault: " + e.Message);
-        }
+		ThreadPool.QueueUserWorkItem(state => {
+			try
+			{
+				CloseVault();
+				this.Drive = AesDrive.OpenDrive(dir, GetDriveClassType(), password, this.Sequencer);
+				this.CurrDir = this.Drive.Root;
+				SalmonSettings.GetInstance().VaultLocation = dir.Path;
+				Refresh();
+			}
+			catch (ArgumentException e)
+			{
+				SalmonDialog.PromptDialog("Error", "Could not open vault: " + e.Message + ". "
+				+ "Make sure your vault folder contains a file named " + AesDrive.ConfigFilename);
+			}
+			catch (Exception e)
+			{
+				Console.Error.WriteLine(e);
+				SalmonDialog.PromptDialog("Error", "Could not open vault: " + e.Message + ". " +
+                        (e.getCause() != null ? e.getCause().getMessage() : "")););
+			}
+		});
     }
 
     virtual
@@ -791,7 +795,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             {
                 SetTaskMessage("Export Complete");
                 SalmonDialog.PromptDialog("Export", "Files Exported To: "
-                    + exportDir.AbsolutePath);
+                    + exportDir.DisplayPath);
             }
             FileProgress = 1;
             FilesProgress = 1;
@@ -922,10 +926,22 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void CreateVault(IFile dir, string password)
     {
-        this.Drive = AesDrive.CreateDrive(dir, GetDriveClassType(), password, Sequencer);
-        this.CurrDir = this.Drive.Root;
-        SalmonSettings.GetInstance().VaultLocation = dir.Path;
-        Refresh();
+		ThreadPool.QueueUserWorkItem(state =>
+			try {
+				if(!dir.exists()) {
+					dir.mkdir();
+				}
+				this.Drive = AesDrive.CreateDrive(dir, GetDriveClassType(), password, Sequencer);
+				this.CurrDir = this.Drive.Root;
+				SalmonSettings.GetInstance().VaultLocation = dir.Path;
+				Refresh();
+				SalmonDialog.PromptDialog("Action", "Vault created, you can start importing your files");
+			} catch (Exception e) {
+                Console.Error.WriteLine(e);
+                SalmonDialog.PromptDialog("Error", "Could not create vault: " + e.Message + ". " +
+                        (e.getCause() != null ? e.getCause().Message : ""));
+            }
+		});
     }
 
     public void ClearCopiedFiles()
@@ -943,7 +959,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 (!item.IsDirectory ? ("Size: " + ByteUtils.GetBytes(item.Length, 2)
                         + " (" + item.Length + " bytes)") : "Items: " + item.ListFiles().Length) + "\n" +
                 "Encrypted Name: " + item.RealFile.Name + "\n" +
-                "Encrypted Path: " + item.RealFile.AbsolutePath + "\n" +
+                "Encrypted Path: " + item.RealFile.DisplayPath + "\n" +
                 (!item.IsDirectory ? "Encrypted Size: " + ByteUtils.GetBytes(item.RealFile.Length, 2)
                         + " (" + item.RealFile.Length + " bytes)" : "") + "\n";
     }
