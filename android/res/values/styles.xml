@@ -5,5 +5,8 @@
     <style name="AppBaseTheme" parent="Theme.MaterialComponents.NoActionBar">
     </style>
     <color name="salmonItemSelectedBackground">#955151</color>
+    <style name="salmonContentLoadingProgress">
+        <item name="colorAccent">#955151</item>
+    </style>
 </resources>
 

@@ -409,6 +409,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
         executor.submit(() -> {
             try {
+                propertyChanged(this, "taskRunning");
                 closeVault();
                 this.drive = AesDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
                 this.currDir = this.drive.getRoot();
@@ -422,6 +423,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 e.printStackTrace();
                 SalmonDialog.promptDialog("Error", "Could not open vault: " + e.getMessage() + ". " +
                         (e.getCause() != null ? e.getCause().getMessage() : ""));
+            } finally {
+                propertyChanged(this, "taskComplete");
             }
         });
     }
@@ -588,8 +591,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
             currDir = null;
             clearCopiedFiles();
             setPathText(null);
-            if (this.drive != null)
+            if (this.drive != null) {
                 this.drive.close();
+                this.drive = null;
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -660,9 +665,12 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void renameFile(AesFile file, String newFilename) {
-        executor.execute(()->{
+        executor.execute(() -> {
             try {
                 fileCommander.renameFile(file, newFilename);
+                WindowUtils.runOnMainThread(() -> {
+                    SalmonVaultManager.getInstance().updateListItem.accept(file);
+                });
             } catch (IOException e) {
                 e.printStackTrace();
                 SalmonDialog.promptDialog("Error", "Could not rename file: " + e.getMessage());
@@ -683,13 +691,41 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void createDirectory(String folderName) {
         executor.submit(() -> {
             try {
-                SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName, null, null);
+                SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName);
                 SalmonVaultManager.getInstance().refresh();
             } catch (Exception exception) {
                 exception.printStackTrace();
                 if (!SalmonVaultManager.getInstance().handleException(exception)) {
                     SalmonDialog.promptDialog("Error", "Could not create folder: " + exception.getMessage());
                 }
+            }
+        });
+    }
+
+    public void createFile(String fileName) {
+        executor.submit(() -> {
+            try {
+                SalmonVaultManager.getInstance().getCurrDir().createFile(fileName);
+                SalmonVaultManager.getInstance().refresh();
+            } catch (Exception exception) {
+                exception.printStackTrace();
+                if (!SalmonVaultManager.getInstance().handleException(exception)) {
+                    SalmonDialog.promptDialog("Error", "Could not create file: " + exception.getMessage());
+                }
+            }
+        });
+    }
+
+    public void setPassword(String pass) {
+        executor.submit(() -> {
+            try {
+                propertyChanged(this, "taskRunning");
+                SalmonVaultManager.getInstance().getDrive().setPassword(pass);
+                SalmonDialog.promptDialog("Password changed");
+            } catch (Exception e) {
+                SalmonDialog.promptDialog("Could not change password: " + e.getMessage());
+            } finally {
+                propertyChanged(this, "taskComplete");
             }
         });
     }
@@ -876,9 +912,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void createVault(IFile dir, String password) {
         executor.submit(() -> {
             try {
-                if(!dir.exists()) {
+                propertyChanged(this, "taskRunning");
+                if (!dir.exists()) {
                     dir.mkdir();
                 }
+                closeVault();
                 this.drive = AesDrive.createDrive(dir, getDriveClassType(), password, this.sequencer);
                 this.currDir = this.drive.getRoot();
                 SalmonSettings.getInstance().setVaultLocation(dir.getPath());
@@ -888,6 +926,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 e.printStackTrace();
                 SalmonDialog.promptDialog("Error", "Could not create vault: " + e.getMessage() + ". " +
                         (e.getCause() != null ? e.getCause().getMessage() : ""));
+            } finally {
+                propertyChanged(this, "taskComplete");
             }
         });
     }

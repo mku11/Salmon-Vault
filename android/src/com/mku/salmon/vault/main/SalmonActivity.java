@@ -30,6 +30,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
@@ -44,6 +45,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuCompat;
+import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -108,6 +110,7 @@ public class SalmonActivity extends AppCompatActivity {
     private FileAdapter adapter;
     private View progressLayout;
     private TextView statusText;
+    private ContentLoadingProgressBar progressBar;
     private ProgressBar fileProgress;
     private ProgressBar filesProgress;
     private TextView fileProgressText;
@@ -142,6 +145,7 @@ public class SalmonActivity extends AppCompatActivity {
     }
 
     private void setupControls() {
+        progressBar = (ContentLoadingProgressBar) findViewById(R.id.progress_bar);
         fileProgress = (ProgressBar) findViewById(R.id.fileProgress);
         filesProgress = (ProgressBar) findViewById(R.id.filesProgress);
         fileProgressText = (TextView) findViewById(R.id.fileProgressText);
@@ -211,7 +215,11 @@ public class SalmonActivity extends AppCompatActivity {
     private void manager_PropertyChanged(Object owner, String propertyName) {
         WindowUtils.runOnMainThread(() ->
         {
-            if (propertyName == "FileItemList") {
+            if (propertyName.equals("taskRunning")) {
+                progressBar.show();
+            } else if (propertyName.equals("taskComplete")) {
+                progressBar.hide();
+            } else if (propertyName.equals("FileItemList")) {
                 UpdateFileAdapter();
                 adapter.selectAll(false);
                 adapter.setMultiSelect(false);
@@ -408,6 +416,8 @@ public class SalmonActivity extends AppCompatActivity {
                 }
                 menu.add(5, ActionType.NEW_FOLDER.ordinal(), 0, getString(R.string.NewFolder))
                         .setIcon(R.drawable.add_folder_small);
+//                menu.add(5, ActionType.NEW_FILE.ordinal(), 0, getString(R.string.NewFile))
+//                        .setIcon(R.drawable.add_file_small);
             }
 
             menu.add(6, ActionType.SORT.ordinal(), 0, getResources().getString(R.string.Sort))
@@ -496,6 +506,9 @@ public class SalmonActivity extends AppCompatActivity {
 
             case NEW_FOLDER:
                 SalmonDialogs.promptNewFolder();
+                return true;
+            case NEW_FILE:
+                SalmonDialogs.promptNewFile();
                 return true;
             case COPY:
                 onCopy();
@@ -752,7 +765,9 @@ public class SalmonActivity extends AppCompatActivity {
 
     protected void StartSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
+        WindowUtils.runOnMainThread(() -> {
+            startActivity(intent);
+        });
     }
 
     @Override
@@ -869,7 +884,9 @@ public class SalmonActivity extends AppCompatActivity {
         Intent intent = getMediaPlayerIntent();
         MediaPlayerActivity.setMediaFiles(pos, salmonFiles.toArray(new AesFile[0]));
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        WindowUtils.runOnMainThread(() -> {
+            startActivity(intent);
+        });
     }
 
     protected Intent getMediaPlayerIntent() {
@@ -917,10 +934,14 @@ public class SalmonActivity extends AppCompatActivity {
             AesFile selectedFile = fileItemList.get(position);
             WebViewerActivity.setContentFiles(pos, salmonFiles.toArray(new AesFile[0]));
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            WindowUtils.runOnMainThread(() -> {
+                startActivity(intent);
+            });
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Could not open viewer: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            WindowUtils.runOnMainThread(() -> {
+                Toast.makeText(this, "Could not open viewer: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            });
         }
     }
 

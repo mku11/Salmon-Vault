@@ -157,7 +157,7 @@ public class SalmonDialog {
 
 
     public static void promptCredentialsEdit(String title, String msg,
-                                             String[] hints, boolean[] isPasswords,
+                                             String[] hints, String[] values, boolean[] isPasswords,
                                              Consumer<String[]> OnEdit) {
         Activity activity = WindowUtils.getUiActivity();
         WindowUtils.runOnMainThread(() -> {
@@ -178,7 +178,7 @@ public class SalmonDialog {
             View[] textFields = new View[hints.length];
             for (int i = 0; i < hints.length; i++) {
                 if (hints[i] != null) {
-                    textFields[i] = createTextField(activity, hints[i], isPasswords[i]);
+                    textFields[i] = createTextField(activity, hints[i], values[i], isPasswords[i]);
                     layout.addView(textFields[i], parameters);
                 }
             }
@@ -217,13 +217,14 @@ public class SalmonDialog {
         });
     }
 
-    private static View createTextField(Activity activity, String hint, boolean isPassword) {
+    private static View createTextField(Activity activity, String hint, String value, boolean isPassword) {
 
         View valueText;
         if(!isPassword) {
             TextInputEditText text = new TextInputEditText(activity);
             text.setInputType(InputType.TYPE_CLASS_TEXT);
             text.setHint(hint);
+            text.setText(value);
             valueText = text;
         } else {
             TextInputLayout typePasswdText = new TextInputLayout(activity, null,
@@ -236,6 +237,7 @@ public class SalmonDialog {
             TextInputEditText typePasswd = new TextInputEditText(typePasswdText.getContext());
             typePasswd.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD |
                     InputType.TYPE_CLASS_TEXT);
+            typePasswd.setText(value);
             typePasswdText.addView(typePasswd);
             valueText = typePasswdText;
         }
@@ -248,6 +250,7 @@ public class SalmonDialog {
         promptDialog(title, body, buttonLabel1, buttonListener1, buttonLabel2, buttonListener2,
         null, null);
     }
+
     public static void promptDialog(String title, String body,
                                     String buttonLabel1, Runnable buttonListener1,
                                     String buttonLabel2, Runnable buttonListener2,

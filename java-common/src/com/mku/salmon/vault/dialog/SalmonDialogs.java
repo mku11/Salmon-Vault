@@ -23,11 +23,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import android.app.Activity;
+import android.widget.ArrayAdapter;
+
+import androidx.appcompat.app.AlertDialog;
+
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.fs.file.IFile;
 import com.mku.fs.file.WSFile;
 import com.mku.func.Consumer;
+import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.config.SalmonConfig;
+import com.mku.salmon.vault.main.SalmonActivity;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.services.IFileDialogService;
@@ -36,11 +43,14 @@ import com.mku.salmon.vault.services.IWSFileService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.URLUtils;
+import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.auth.AuthConfig;
 import com.mku.salmonfs.drive.AesDrive;
 import com.mku.salmonfs.file.AesFile;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class SalmonDialogs {
     public static void promptPassword(Consumer<String> onSubmit) {
@@ -72,12 +82,7 @@ public class SalmonDialogs {
             return;
         SalmonDialogs.promptSetPassword((pass) ->
         {
-            try {
-                SalmonVaultManager.getInstance().getDrive().setPassword(pass);
-                SalmonDialog.promptDialog("Password changed");
-            } catch (Exception e) {
-                SalmonDialog.promptDialog("Could not change password: " + e.getMessage());
-            }
+            SalmonVaultManager.getInstance().setPassword(pass);
         });
     }
 
@@ -251,13 +256,24 @@ public class SalmonDialogs {
     }
 
     public static void promptCreateVault() {
-        SalmonDialog.promptDialog("Open Vault", "Choose Local to open a vault located in your local device.\n"
-                        + "Choose Remote to specify a remote vault in a web host.\n\n",
-                "Local", () -> {
-                    promptCreateLocalVault();
-                }, "Web Service", () -> {
-                    promptCreateWSVault();
-                });
+        Activity activity = WindowUtils.getUiActivity();
+        List<String> sortTypes = new ArrayList<>(List.of("Local", "Web Service"));
+        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(
+                activity, android.R.layout.simple_list_item_activated_1, sortTypes.toArray(new String[0]));
+        SalmonDialog.promptSingleValue(itemsAdapter, "Vault Type", -1,
+                (AlertDialog dialog, Integer which) ->
+                {
+                    switch(which) {
+                        case 0:
+                            promptCreateLocalVault();
+                            break;
+                        case 1:
+                            promptCreateWSVault();
+                            break;
+                    }
+                    dialog.dismiss();
+                }
+        );
     }
 
     public static void promptCreateLocalVault() {
@@ -275,6 +291,7 @@ public class SalmonDialogs {
         SalmonDialog.promptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 new String[]{"Web Service URL", "User name", "Password"},
+                new String[]{"http://192.168.1.4:8080", "user", "password"},
                 new boolean[]{false, false, true},
                 (texts) -> {
                     SalmonDialog.promptEdit("Create Vault",
@@ -287,20 +304,32 @@ public class SalmonDialogs {
                                 {
                                     SalmonVaultManager.getInstance().createVault(dir, pass);
                                 });
-                            }, "", false, false, false, null);
+                            }, "/tv3", false, false, false, null);
                 });
     }
 
     public static void promptOpenVault() {
-        SalmonDialog.promptDialog("Open Vault", "Choose Local to open a vault located in local device.\n"
-                        + "Choose Remote to specify a remote vault in a web host.\n\n",
-                "Local", () -> {
-                    promptOpenLocalVault();
-                }, "HTTP", () -> {
-                    promptOpenHttpVault();
-                }, "Web Service", () -> {
-                    promptOpenWSVault();
-                });
+        Activity activity = WindowUtils.getUiActivity();
+        List<String> sortTypes = new ArrayList<>(List.of("Local", "HTTP", "Web Service"));
+        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(
+                activity, android.R.layout.simple_list_item_activated_1, sortTypes.toArray(new String[0]));
+        SalmonDialog.promptSingleValue(itemsAdapter, "Vault Type", -1,
+                (AlertDialog dialog, Integer which) ->
+                {
+                    switch(which) {
+                        case 0:
+                            promptOpenLocalVault();
+                            break;
+                        case 1:
+                            promptOpenHttpVault();
+                            break;
+                        case 2:
+                            promptOpenWSVault();
+                            break;
+                    }
+                    dialog.dismiss();
+                }
+        );
     }
 
     public static void promptOpenLocalVault() {
@@ -325,15 +354,17 @@ public class SalmonDialogs {
                 (url, isChecked) -> {
                     IFile dir = ServiceLocator.getInstance().resolve(IHttpFileService.class).getFile(url, false);
                     SalmonDialogs.promptPassword((password) -> {
+                        password = "test";
                         SalmonVaultManager.getInstance().openVault(dir, password);
                     });
-                }, "", false, false, false, null);
+                }, "http://192.168.1.4/testvaultc", false, false, false, null);
     }
 
     public static void promptOpenWSVault() {
         SalmonDialog.promptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 new String[]{"Web Service URL", "User name", "Password"},
+                new String[]{"http://192.168.1.4:8080", "user", "password"},
                 new boolean[]{false, false, true},
                 (texts) -> {
                     SalmonDialog.promptEdit("Open Vault",
@@ -345,7 +376,7 @@ public class SalmonDialogs {
                                 SalmonDialogs.promptPassword((password) -> {
                                     SalmonVaultManager.getInstance().openVault(dir, password);
                                 });
-                            }, "", false, false, false, null);
+                            }, "/tv3", false, false, false, null);
                 });
     }
 
@@ -413,6 +444,17 @@ public class SalmonDialogs {
                 }, "New Folder", true, false, false, null);
     }
 
+    public static void promptNewFile() {
+        if (!SalmonDialogs.isDriveLoaded())
+            return;
+        SalmonDialog.promptEdit("Create File",
+                "File Name",
+                (folderName, isChecked) ->
+                {
+                    SalmonVaultManager.getInstance().createFile(folderName);
+                }, "New Document.txt", true, false, false, null);
+    }
+
     public static void promptRenameFile(AesFile ifile) {
         String currentFilename = "";
         try {
@@ -436,7 +478,7 @@ public class SalmonDialogs {
                                 SalmonDialog.promptDialog("Error: " + exception.getMessage());
                             }
                         }
-                        SalmonVaultManager.getInstance().updateListItem.accept(ifile);
+
                     }, currentFilename, true, false, false, null);
         } catch (Exception exception) {
             exception.printStackTrace();
