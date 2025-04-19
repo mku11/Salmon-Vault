@@ -660,17 +660,19 @@ public class MainController {
     }
 
     private void startTextEditor(SalmonFileViewModel item) {
-        try {
-            if (item.getAesFile().getLength() > MAX_TEXT_FILE) {
-                new SalmonDialog(Alert.AlertType.WARNING, "File too large").show();
-                return;
+        WindowUtils.runOnMainThread(() -> {
+            try {
+                if (item.getAesFile().getLength() > MAX_TEXT_FILE) {
+                    new SalmonDialog(Alert.AlertType.WARNING, "File too large").show();
+                    return;
+                }
+                TextEditorController.openTextEditor(item, stage);
+                selectItem(null);
+                selectItem(item.getAesFile());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            TextEditorController.openTextEditor(item, stage);
-            selectItem(null);
-            selectItem(item.getAesFile());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     private void startImageViewer(SalmonFileViewModel item) {
