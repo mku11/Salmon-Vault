@@ -316,15 +316,20 @@ public class SalmonDialog {
         return (body) -> WindowUtils.runOnMainThread(() -> textView.setText(body));
     }
 
-    public static void promptSingleValue(ArrayAdapter<String> adapter, String title,
-                                         int currSelection, BiConsumer<AlertDialog, Integer> onClickListener) {
+    public static void promptSingleValue(String title, List<String> items,
+                                         int currSelection, Consumer<Integer> onClickListener) {
+											 
+		Activity activity = WindowUtils.getUiActivity();
+        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(
+                activity, android.R.layout.simple_list_item_activated_1, items.toArray(new String[0]));
         Activity activity = WindowUtils.getUiActivity();
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
         if (title != null)
             builder.setTitle(title);
         builder.setSingleChoiceItems(adapter, currSelection, (sender, which) ->
         {
-            onClickListener.accept((AlertDialog) sender, which);
+            onClickListener.accept(which);
+			sender.dismiss();
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.setTitle(title);

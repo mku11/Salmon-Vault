@@ -23,18 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import android.app.Activity;
-import android.widget.ArrayAdapter;
-
-import androidx.appcompat.app.AlertDialog;
-
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.fs.file.IFile;
 import com.mku.fs.file.WSFile;
 import com.mku.func.Consumer;
-import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.config.SalmonConfig;
-import com.mku.salmon.vault.main.SalmonActivity;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.services.IFileDialogService;
@@ -43,7 +36,6 @@ import com.mku.salmon.vault.services.IWSFileService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.URLUtils;
-import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.auth.AuthConfig;
 import com.mku.salmonfs.drive.AesDrive;
 import com.mku.salmonfs.file.AesFile;
@@ -256,12 +248,9 @@ public class SalmonDialogs {
     }
 
     public static void promptCreateVault() {
-        Activity activity = WindowUtils.getUiActivity();
-        List<String> sortTypes = new ArrayList<>(List.of("Local", "Web Service"));
-        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(
-                activity, android.R.layout.simple_list_item_activated_1, sortTypes.toArray(new String[0]));
-        SalmonDialog.promptSingleValue(itemsAdapter, "Vault Type", -1,
-                (AlertDialog dialog, Integer which) ->
+        List<String> vaultTypes = new ArrayList<>(List.of("Local", "Web Service"));
+        SalmonDialog.promptSingleValue("Vault Type", vaultTypes,-1,
+                (Integer which) ->
                 {
                     switch(which) {
                         case 0:
@@ -271,7 +260,6 @@ public class SalmonDialogs {
                             promptCreateWSVault();
                             break;
                     }
-                    dialog.dismiss();
                 }
         );
     }
@@ -309,12 +297,9 @@ public class SalmonDialogs {
     }
 
     public static void promptOpenVault() {
-        Activity activity = WindowUtils.getUiActivity();
-        List<String> sortTypes = new ArrayList<>(List.of("Local", "HTTP", "Web Service"));
-        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(
-                activity, android.R.layout.simple_list_item_activated_1, sortTypes.toArray(new String[0]));
-        SalmonDialog.promptSingleValue(itemsAdapter, "Vault Type", -1,
-                (AlertDialog dialog, Integer which) ->
+        List<String> vaultTypes = new ArrayList<>(List.of("Local", "HTTP", "Web Service"));
+        SalmonDialog.promptSingleValue("Vault Type", vaultTypes, -1,
+                (Integer which) ->
                 {
                     switch(which) {
                         case 0:
@@ -327,7 +312,6 @@ public class SalmonDialogs {
                             promptOpenWSVault();
                             break;
                     }
-                    dialog.dismiss();
                 }
         );
     }

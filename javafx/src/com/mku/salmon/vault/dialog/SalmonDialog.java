@@ -26,11 +26,9 @@ SOFTWARE.
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
-import com.mku.func.TriConsumer;
 import com.mku.salmon.vault.utils.WindowUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -38,7 +36,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class SalmonDialog extends javafx.scene.control.Alert {
@@ -137,7 +136,7 @@ public class SalmonDialog extends javafx.scene.control.Alert {
     }
 
     public static void promptCredentialsEdit(String title, String msg,
-                                             String[] hints, boolean[] isPasswords,
+                                             String[] hints, String[] values, boolean[] isPasswords,
                                              Consumer<String[]> OnEdit) {
         WindowUtils.runOnMainThread(() -> {
             SalmonDialog alert = new SalmonDialog(Alert.AlertType.NONE, "", ButtonType.OK, ButtonType.CANCEL);
@@ -153,7 +152,7 @@ public class SalmonDialog extends javafx.scene.control.Alert {
             TextField[] textFields = new TextField[hints.length];
             for (int i = 0; i < hints.length; i++) {
                 if (hints[i] != null) {
-                    textFields[i] = createTextField(hints[i], isPasswords[i]);
+                    textFields[i] = createTextField(hints[i], values[i], isPasswords[i]);
                     box.getChildren().add(textFields[i]);
                 }
             }
@@ -178,14 +177,16 @@ public class SalmonDialog extends javafx.scene.control.Alert {
         });
     }
 
-    private static TextField createTextField(String hint, boolean isPassword) {
+    private static TextField createTextField(String hint, String value, boolean isPassword) {
         if (!isPassword) {
             TextField field = new TextField();
             field.setPromptText(hint);
+            field.setText(value);
             return field;
         } else {
             PasswordField passwordField = new PasswordField();
             passwordField.setPromptText(hint);
+            passwordField.setText(value);
             return passwordField;
         }
     }
@@ -208,6 +209,7 @@ public class SalmonDialog extends javafx.scene.control.Alert {
         promptDialog(title, body, buttonLabel1, buttonListener1, buttonLabel2, buttonListener2,
                 null, null);
     }
+
     public static void promptDialog(String title, String body,
                                     String buttonLabel1, Runnable buttonListener1,
                                     String buttonLabel2, Runnable buttonListener2,
@@ -254,5 +256,39 @@ public class SalmonDialog extends javafx.scene.control.Alert {
         alert.show();
         alert.getDialogPane().autosize();
         return (body) -> WindowUtils.runOnMainThread(() -> msgText.setText(body));
+    }
+
+
+    public static void promptSingleValue(String title, List<String> items,
+                                         int currSelection, Consumer<Integer> onClickListener) {
+        SalmonDialog alert = new SalmonDialog(Alert.AlertType.NONE, "", ButtonType.OK, ButtonType.CANCEL);
+        alert.setTitle(title);
+
+        ToggleGroup toggleGroup = new ToggleGroup();
+        List<RadioButton> buttons = new ArrayList<>();
+        int index = 0;
+        for(String item : items) {
+            RadioButton radioButton = new RadioButton(item);
+            radioButton.setToggleGroup(toggleGroup);
+            buttons.add(radioButton);
+            if(currSelection == index)
+                radioButton.setSelected(true);
+            index++;
+        }
+
+        VBox box = new VBox();
+        box.setSpacing(10);
+        box.getChildren().addAll(buttons);
+
+        alert.getDialogPane().setContent(box);
+        alert.getDialogPane().setMinSize(340, 150);
+        alert.show();
+        alert.getDialogPane().autosize();
+        final Button btOk = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
+        btOk.addEventFilter(ActionEvent.ACTION, event -> {
+            RadioButton button = (RadioButton) toggleGroup.getSelectedToggle();
+            onClickListener.accept(buttons.indexOf(button));
+            alert.hide();
+        });
     }
 }
