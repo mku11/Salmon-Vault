@@ -330,7 +330,7 @@ public class SalmonDialogs
         SalmonDialog.PromptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 new string[] { "Web Service URL", "User name", "Password" },
-                new string[] { "http://localhost:8080", "user", "password" },
+                new string[] { "http://192.168.1.4:8080", "user", "password" },
                 new bool[] { false, false, true },
                 (texts) =>
                 {
@@ -406,7 +406,7 @@ public class SalmonDialogs
                         password = "test";
                         SalmonVaultManager.Instance.OpenVault(dir, password);
                     });
-                }, "http://localhost/testvault", false, false, false, null);
+                }, "http://192.168.1.4/testvault", false, false, false, null);
     }
 
     public static void PromptOpenWSVault()
@@ -414,7 +414,7 @@ public class SalmonDialogs
         SalmonDialog.PromptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 new string[] { "Web Service URL", "User name", "Password" },
-                new string[] { "http://localhost:8080", "user", "password" },
+                new string[] { "http://192.168.1.4:8080", "user", "password" },
                 new bool[] { false, false, true },
                 (texts) =>
                 {

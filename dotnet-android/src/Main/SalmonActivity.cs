@@ -25,7 +25,6 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Views;
 using AndroidX.AppCompat.App;
-using AndroidX.DocumentFile.Provider;
 using AndroidX.RecyclerView.Widget;
 using Salmon.Vault.Utils;
 using Java.Lang;
@@ -33,7 +32,6 @@ using Exception = System.Exception;
 using Semaphore = Java.Util.Concurrent.Semaphore;
 using AndroidX.Core.View;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Mku.Salmon;
 
 using Salmon.Vault.DotNetAndroid;
 using Mku.Salmon.Transform;
@@ -48,7 +46,6 @@ using Salmon.Vault.Services;
 using System;
 using System.ComponentModel;
 using Salmon.Vault.MAUI.ANDROID;
-using System.Threading.Tasks;
 using AndroidX.AppCompat.View.Menu;
 using Java.Util.Concurrent.Atomic;
 using Salmon.Vault.Config;
@@ -58,13 +55,13 @@ using AndroidX.Core.App;
 using Salmon.Vault.Provider;
 using Mku.SalmonFS.File;
 using Mku.Android.Salmon.Transform;
-using Mku.Android.SalmonFS.Drive;
 using Mku.FS.Drive.Utils;
 using Mku.Android.FS.File;
 using Mku.FS.File;
 using Mku.SalmonFS.Drive;
 using Mku.SalmonFS.Auth;
 using Mku.SalmonFS.Drive.Utils;
+using AndroidX.Core.Widget;
 
 namespace Salmon.Vault.Main;
 
@@ -86,6 +83,7 @@ public class SalmonActivity : AppCompatActivity
     private FileAdapter adapter;
     private View progressLayout;
     private TextView statusText;
+    private ContentLoadingProgressBar progressBar;
     private ProgressBar fileProgress;
     private ProgressBar filesProgress;
     private TextView fileProgressText;
@@ -107,7 +105,9 @@ public class SalmonActivity : AppCompatActivity
     protected void SetupServices()
     {
         ServiceLocator.GetInstance().Register(typeof(ISettingsService), new AndroidSettingsService());
-        ServiceLocator.GetInstance().Register(typeof(IFileService), new AndroidFileService(this));
+        ServiceLocator.GetInstance().Register(typeof(IFileService), new AndroidFileService());
+        ServiceLocator.GetInstance().Register(typeof(IHttpFileService), new AndroidHttpFileService());
+        ServiceLocator.GetInstance().Register(typeof(IWSFileService), new AndroidWSFileService());
         ServiceLocator.GetInstance().Register(typeof(IFileDialogService), new AndroidFileDialogService(this));
         ServiceLocator.GetInstance().Register(typeof(IWebBrowserService), new AndroidBrowserService());
         ServiceLocator.GetInstance().Register(typeof(IKeyboardService), new AndroidKeyboardService(this));
@@ -121,6 +121,7 @@ public class SalmonActivity : AppCompatActivity
 
     private void SetupControls()
     {
+        progressBar = (ContentLoadingProgressBar)FindViewById(Resource.Id.progress_bar);
         fileProgress = (ProgressBar)FindViewById(Resource.Id.fileProgress);
         filesProgress = (ProgressBar)FindViewById(Resource.Id.filesProgress);
         fileProgressText = (TextView)FindViewById(Resource.Id.fileProgressText);
@@ -204,7 +205,15 @@ public class SalmonActivity : AppCompatActivity
     {
         WindowUtils.RunOnMainThread(() =>
         {
-            if (e.PropertyName == "FileItemList")
+            if (e.PropertyName == "taskRunning")
+            {
+                progressBar.Show();
+            }
+            else if (e.PropertyName == "taskComplete")
+            {
+                progressBar.Hide();
+            }
+            else if (e.PropertyName == "FileItemList")
             {
                 UpdateFileAdapter();
 
@@ -381,21 +390,14 @@ public class SalmonActivity : AppCompatActivity
                             .SetIcon(Resource.Drawable.export_and_delete_file_small);
                 }
 
-                if (adapter.GetLastSelected().IsFile)
-                {
-                    // view
-                    menu.Add(3, ActionType.VIEW.Ordinal(), 0, GetString(Resource.String.View))
-                        .SetIcon(Resource.Drawable.file_small);
-                    menu.Add(3, ActionType.VIEW_AS_TEXT.Ordinal(), 0, GetString(Resource.String.ViewAsText))
-                            .SetIcon(Resource.Drawable.text_file_small);
-                    menu.Add(3, ActionType.VIEW_EXTERNAL.Ordinal(), 0, GetString(Resource.String.ViewExternal))
-                            .SetIcon(Resource.Drawable.view_external_small);
-                }
-                else
-                {
-                    menu.Add(3, ActionType.VIEW.Ordinal(), 0, GetString(Resource.String.Open))
-                        .SetIcon(Resource.Drawable.folder_menu_small);
-                }
+                // view
+                menu.Add(3, ActionType.VIEW.Ordinal(), 0, GetString(Resource.String.View))
+                    .SetIcon(Resource.Drawable.file_small);
+                menu.Add(3, ActionType.VIEW_AS_TEXT.Ordinal(), 0, GetString(Resource.String.ViewAsText))
+                        .SetIcon(Resource.Drawable.text_file_small);
+                menu.Add(3, ActionType.VIEW_EXTERNAL.Ordinal(), 0, GetString(Resource.String.ViewExternal))
+                        .SetIcon(Resource.Drawable.view_external_small);
+
                 menu.Add(3, ActionType.PROPERTIES.Ordinal(), 0, GetString(Resource.String.Properties))
                         .SetIcon(Resource.Drawable.file_properties_small);
                 menu.Add(3, ActionType.DISK_USAGE.Ordinal(), 0, GetString(Resource.String.DiskUsage))
@@ -450,6 +452,8 @@ public class SalmonActivity : AppCompatActivity
                 }
                 menu.Add(5, ActionType.NEW_FOLDER.Ordinal(), 0, GetString(Resource.String.NewFolder))
                         .SetIcon(Resource.Drawable.add_folder_small);
+                menu.Add(5, ActionType.NEW_FILE.Ordinal(), 0, GetString(Resource.String.NewFile))
+                        .SetIcon(Resource.Drawable.add_file_small);
             }
 
             menu.Add(6, ActionType.SORT.Ordinal(), 0, Resources.GetString(Resource.String.Sort))
@@ -528,16 +532,22 @@ public class SalmonActivity : AppCompatActivity
 
             case ActionType.VIEW:
                 OpenItem(adapter.GetLastSelected());
+                adapter.SetMultiSelect(false);
                 break;
             case ActionType.VIEW_AS_TEXT:
                 StartTextViewer(adapter.GetLastSelected());
+                adapter.SetMultiSelect(false);
                 break;
             case ActionType.VIEW_EXTERNAL:
                 OpenWith(adapter.GetLastSelected());
+                adapter.SetMultiSelect(false);
                 break;
 
             case ActionType.NEW_FOLDER:
                 SalmonDialogs.PromptNewFolder();
+                return true;
+            case ActionType.NEW_FILE:
+                SalmonDialogs.PromptNewFile();
                 return true;
             case ActionType.COPY:
                 OnCopy();
@@ -551,6 +561,7 @@ public class SalmonActivity : AppCompatActivity
 
             case ActionType.RENAME:
                 SalmonDialogs.PromptRenameFile(adapter.GetLastSelected());
+                adapter.SetMultiSelect(false);
                 break;
             case ActionType.PROPERTIES:
                 SalmonDialogs.ShowProperties(adapter.GetLastSelected());
@@ -737,10 +748,12 @@ public class SalmonActivity : AppCompatActivity
         try
         {
             manager.SelectedFiles = adapter.SelectedFiles;
-            manager.ExportSelectedFiles(deleteSource);
+            SalmonDialogs.PromptExportFolder("Select folder to export to",
+                    SalmonVaultManager.REQUEST_EXPORT_DIR, deleteSource);
         }
         catch (AuthException e)
         {
+            Console.Error.WriteLine(e);
             SalmonDialog.PromptDialog("Could not export file(s): " + e.Message);
         }
     }
@@ -805,15 +818,12 @@ public class SalmonActivity : AppCompatActivity
             sortTypes.Add((i % 2 == 1 ? "↓" : "↑") + " " + values[i - (i + 1) % 2].ToString());
         }
 
-        ArrayAdapter<string> itemsAdapter = new ArrayAdapter<string>(
-                this, Android.Resource.Layout.SimpleListItemActivated1, sortTypes.ToArray());
-        SalmonDialog.PromptSingleValue(itemsAdapter, GetString(Resource.String.Sort), sortType.Ordinal(),
-            (AndroidX.AppCompat.App.AlertDialog dialog, int which) =>
+        SalmonDialog.PromptSingleValue(GetString(Resource.String.Sort), sortTypes, sortType.Ordinal(),
+            (int which) =>
                 {
                     sortType = values[which];
                     SortFiles(sortType);
                     adapter.NotifyDataSetChanged();
-                    dialog.Dismiss();
                 }
         );
     }
@@ -825,8 +835,11 @@ public class SalmonActivity : AppCompatActivity
 
     protected void StartSettings()
     {
-        Intent intent = new Intent(this, typeof(SettingsActivity));
-        StartActivity(intent);
+        WindowUtils.RunOnMainThread(() =>
+        {
+            Intent intent = new Intent(this, typeof(SettingsActivity));
+            StartActivity(intent);
+        });
     }
 
     protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
@@ -863,6 +876,14 @@ public class SalmonActivity : AppCompatActivity
                 callback(files);
             else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FOLDER)
                 callback(files[0]);
+        }
+        else if (requestCode == SalmonVaultManager.REQUEST_EXPORT_DIR)
+        {
+            string[] filesToImport = ActivityCommon.GetFilesFromIntent(this, data);
+            IFile folder = ServiceLocator.GetInstance().Resolve<IFileService>()
+                    .GetFile(filesToImport[0], true);
+            Action<object> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            callback(folder);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE)
         {
@@ -972,7 +993,10 @@ public class SalmonActivity : AppCompatActivity
         Intent intent = GetMediaPlayerIntent();
         MediaPlayerActivity.SetMediaFiles(pos, salmonFiles.ToArray());
         intent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask);
-        StartActivity(intent);
+        WindowUtils.RunOnMainThread(() =>
+        {
+            StartActivity(intent);
+        });
     }
 
     protected Intent GetMediaPlayerIntent()
@@ -1034,12 +1058,18 @@ public class SalmonActivity : AppCompatActivity
             AesFile selectedFile = fileItemList[position];
             WebViewerActivity.SetContentFiles(pos, salmonFiles.ToArray());
             intent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask);
-            StartActivity(intent);
+            WindowUtils.RunOnMainThread(() =>
+            {
+                StartActivity(intent);
+            });
         }
         catch (Exception e)
         {
             e.PrintStackTrace();
-            Toast.MakeText(this, "Could not open viewer: " + e.Message, ToastLength.Long).Show();
+            WindowUtils.RunOnMainThread(() =>
+            {
+                Toast.MakeText(this, "Could not open viewer: " + e.Message, ToastLength.Long).Show();
+            });
         }
     }
 
@@ -1076,7 +1106,7 @@ public class SalmonActivity : AppCompatActivity
     protected SalmonVaultManager CreateVaultManager()
     {
         NativeTransformer.NativeProxy = new AndroidNativeProxy();
-        AndroidFileSystem.Initialize(this.ApplicationContext);
+        AndroidFileSystem.Initialize(this);
         return SalmonAndroidVaultManager.Instance;
     }
 

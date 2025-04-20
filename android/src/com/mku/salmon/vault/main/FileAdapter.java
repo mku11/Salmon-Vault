@@ -188,7 +188,6 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         AesFile file = viewHolder.salmonFile;
         try {
             String filename = viewHolder.salmonFile.getName();
-            HttpURLConnection conn;
             activity.runOnUiThread(() -> {
                 viewHolder.filename.setText(filename);
             });

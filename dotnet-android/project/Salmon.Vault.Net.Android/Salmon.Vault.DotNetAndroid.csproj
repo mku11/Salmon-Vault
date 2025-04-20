@@ -62,6 +62,8 @@
 		<Compile Include="..\..\src\Services\AndroidFileDialogService.cs" Link="Services\AndroidFileDialogService.cs" />
 		<Compile Include="..\..\src\Services\AndroidBrowserService.cs" Link="Services\AndroidBrowserService.cs" />
 		<Compile Include="..\..\src\Services\AndroidFileService.cs" Link="Services\AndroidFileService.cs" />
+		<Compile Include="..\..\src\Services\AndroidHttpFileService.cs" Link="Services\AndroidHttpFileService.cs" />
+		<Compile Include="..\..\src\Services\AndroidWSFileService.cs" Link="Services\AndroidWSFileService.cs" />
 		<Compile Include="..\..\src\Services\AndroidKeyboardService.cs" Link="Services\AndroidKeyboardService.cs" />
 		<Compile Include="..\..\src\Services\AndroidSettingsService.cs" Link="Services\AndroidSettingsService.cs" />
 
@@ -76,6 +78,8 @@
 
 		<Compile Include="..\..\..\csharp-common\src\Services\ServiceLocator.cs" Link="Common\Services\ServiceLocator.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IFileService.cs" Link="Common\Services\IFileService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IHttpFileService.cs" Link="Common\Services\IHttpFileService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IWSFileService.cs" Link="Common\Services\IWSFileService.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IWebBrowserService.cs" Link="Common\Services\IWebBrowserService.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IFileDialogService.cs" Link="Common\Services\IFileDialogService.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IKeyboardService.cs" Link="Common\Services\IKeyboardService.cs" />

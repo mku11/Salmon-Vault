@@ -40,6 +40,8 @@ using View = Android.Views.View;
 using Salmon.Vault.DotNetAndroid;
 using Mku.SalmonFS.File;
 using Mku.Android.SalmonFS.Media;
+using Java.Util.Concurrent;
+using System.Threading.Tasks;
 
 namespace Salmon.Vault.Main;
 
@@ -49,15 +51,15 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
 {
     private static readonly string TAG = nameof(MediaPlayerActivity);
 
-    private static readonly int MEDIA_BUFFERS = 3;
+    private static readonly int MEDIA_BUFFERS = 2;
 
     // make sure we use a large enough buffer for the MediaDataSource since some videos stall
-    private static readonly int MEDIA_BUFFER_SIZE = 8 * 1024 * 1024;
+    private static readonly int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
 
     private static readonly int MEDIA_BACKOFFSET = 256 * 1024;
 
     // increase the threads if you have more cpus available for parallel processing
-    private int mediaThreads = 2;
+    private int mediaThreads = 1;
 
     private static readonly int THRESHOLD_SEEK = 30;
 
@@ -204,9 +206,20 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     private void LoadContent(AesFile file)
     {
         mTitle.Text = file.Name;
-        source = new AesMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
-        mediaPlayer.SetDataSource(source);
-        mediaPlayer.PrepareAsync();
+        Task.Run(() =>
+        {
+            try
+            {
+                source = new AesMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
+                mediaPlayer.SetDataSource(source);
+                mediaPlayer.PrepareAsync();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+                Toast.MakeText(this, "Error: " + e.Message, ToastLength.Long).Show();
+            }
+        });
     }
 
     private class MediaPlayerTimerTask : TimerTask
@@ -221,11 +234,14 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         {
             try
             {
-                 if (activity.mediaPlayer != null && activity.mediaPlayer.IsPlaying) {
-                    activity.mSeekBar.Progress = (int) (activity.mediaPlayer.CurrentPosition / (float)activity.mediaPlayer.Duration * 100);
+                if (activity.mediaPlayer != null && activity.mediaPlayer.IsPlaying)
+                {
+                    activity.mSeekBar.Progress = (int)(activity.mediaPlayer.CurrentPosition / (float)activity.mediaPlayer.Duration * 100);
                     activity.mTime.Text = activity.GetTime(activity.mediaPlayer.CurrentPosition);
                     activity.mTotalTime.Text = activity.GetTime(activity.mediaPlayer.Duration);
-                } else {
+                }
+                else
+                {
                     activity.mTime.Text = "";
                     activity.mTotalTime.Text = "";
                 }
@@ -281,18 +297,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         {
             mediaPlayer.Stop();
         }
-        if (source != null)
-        {
-            try
-            {
-                source.Close();
-            }
-            catch (Exception e)
-            {
-                e.PrintStackTrace();
-            }
-        }
-        source = null;
+        CloseSource();
         if (mediaPlayer != null)
         {
             mediaPlayer.SetDisplay(null);
@@ -301,6 +306,25 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         }
         mediaPlayer = null;
         base.OnDestroy();
+    }
+
+    private void CloseSource()
+    {
+        Task.Run(() =>
+        {
+            if (source != null)
+            {
+                try
+                {
+                    source.Close();
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine(e);
+                }
+            }
+            source = null;
+        });
     }
 
     override

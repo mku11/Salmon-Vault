@@ -22,19 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Android.App;
 using Mku.Android.FS.File;
 using Mku.FS.File;
 using Salmon.Vault.Services;
 
 namespace Salmon.Vault.MAUI.ANDROID;
 
-public class AndroidFileService : IFileService
+public class AndroidHttpFileService : IHttpFileService
 {
     public readonly int REQUEST_DIR = 1000;
 
-    public IFile GetFile(string filepath, bool isDirectory)
+    public IFile GetFile(string url, bool isDirectory)
     {
-        return AndroidFileSystem.GetRealFile(filepath, isDirectory);
+        return new HttpFile(url);
     }
 }

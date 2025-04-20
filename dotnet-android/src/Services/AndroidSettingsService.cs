@@ -113,4 +113,16 @@ public class AndroidSettingsService : ISettingsService
             editor.Apply();
         }
     }
+
+    public string LastExportDir
+    {
+        get => prefs.GetString("lastExportDir",
+                SalmonSettings.DEFAULT_LAST_EXPORT_DIR);
+        set
+        {
+            ISharedPreferencesEditor editor = prefs.Edit();
+            editor.PutString("lastExportDir", value);
+            editor.Apply();
+        }
+    }
 }

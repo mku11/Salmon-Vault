@@ -32,6 +32,10 @@ using Android.Views;
 using Activity = Android.App.Activity;
 using Salmon.Vault.DotNetAndroid;
 using Mku.FS.Drive.Utils;
+using System.Collections.Generic;
+using static Salmon.Vault.Main.SalmonActivity;
+using System.Linq;
+using static Android.Provider.CalendarContract;
 
 namespace Salmon.Vault.Dialog;
 
@@ -147,9 +151,109 @@ public class SalmonDialog
         });
     }
 
+
+    public static void PromptCredentialsEdit(string title, String msg,
+                                             string[] hints, String[] values, bool[] isPasswords,
+                                             Action<string[]> OnEdit)
+    {
+        Activity activity = WindowUtils.UiActivity;
+        WindowUtils.RunOnMainThread(() =>
+        {
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
+
+            LinearLayout layout = new LinearLayout(activity);
+            layout.SetPadding(20, 20, 20, 20);
+            layout.Orientation = Orientation.Vertical;
+
+            LinearLayout.LayoutParams parameters = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.MatchParent);
+
+            TextView msgText = new TextView(activity);
+            msgText.SetPadding(20, 20, 20, 20);
+            msgText.Text = msg;
+            layout.AddView(msgText, parameters);
+
+            View[] textFields = new View[hints.Length];
+            for (int i = 0; i < hints.Length; i++)
+            {
+                if (hints[i] != null)
+                {
+                    textFields[i] = CreateTextField(activity, hints[i], values[i], isPasswords[i]);
+                    layout.AddView(textFields[i], parameters);
+                }
+            }
+
+            builder.SetPositiveButton(activity.GetString(Android.Resource.String.Ok), (sender, e) =>
+            {
+                if (OnEdit != null)
+                {
+                    String[] texts = new String[hints.Length];
+                    for (int i = 0; i < textFields.Length; i++)
+                    {
+                        if (textFields[i] != null)
+                        {
+                            EditText editText;
+                            if (textFields[i] is TextInputLayout)
+                                editText = ((TextInputLayout)textFields[i]).EditText;
+                            else
+                                editText = (EditText)textFields[i];
+                            texts[i] = editText.Text.ToString();
+                        }
+                    }
+                    OnEdit(texts);
+                }
+            });
+            builder.SetNegativeButton(activity.GetString(Android.Resource.String.Cancel), (sender, e) =>
+            {
+                ((AlertDialog)sender).Dismiss();
+            });
+
+            AlertDialog alertDialog = builder.Create();
+            alertDialog.SetTitle(title);
+            alertDialog.SetCancelable(true);
+            alertDialog.SetCanceledOnTouchOutside(false);
+            alertDialog.SetView(layout);
+
+            alertDialog.Window.SetSoftInputMode(SoftInput.AdjustResize);
+            if (!activity.IsFinishing)
+                alertDialog.Show();
+        });
+    }
+
+    private static View CreateTextField(Activity activity, String hint, String value, bool isPassword)
+    {
+
+        View valueText;
+        if (!isPassword)
+        {
+            TextInputEditText text = new TextInputEditText(activity);
+            text.InputType = Android.Text.InputTypes.ClassText;
+            text.Hint = hint;
+            text.Text = value;
+            valueText = text;
+        }
+        else
+        {
+            TextInputLayout typePasswdText = new TextInputLayout(activity, null,
+                    Resource.Style.Widget_MaterialComponents_TextInputLayout_OutlinedBox);
+            typePasswdText.PasswordVisibilityToggleEnabled = true;
+            typePasswdText.BoxBackgroundMode = TextInputLayout.BoxBackgroundOutline;
+            typePasswdText.SetBoxCornerRadii(5, 5, 5, 5);
+            typePasswdText.Hint = hint;
+
+            TextInputEditText typePasswd = new TextInputEditText(typePasswdText.Context);
+            typePasswd.InputType = Android.Text.InputTypes.TextVariationPassword |
+                    Android.Text.InputTypes.ClassText;
+            typePasswd.Text = value;
+            typePasswdText.AddView(typePasswd);
+            valueText = typePasswdText;
+        }
+        return valueText;
+    }
+
     public static void PromptDialog(string title, string body,
-                                    string buttonLabel1 = "Ok", Action buttonListener1 = null,
-                                    string buttonLabel2 = null, Action buttonListener2 = null)
+                                        string buttonLabel1 = "Ok", Action buttonListener1 = null,
+                                        string buttonLabel2 = null, Action buttonListener2 = null)
     {
         Activity activity = WindowUtils.UiActivity;
         WindowUtils.RunOnMainThread(() =>
@@ -204,16 +308,19 @@ public class SalmonDialog
         return (body) => WindowUtils.RunOnMainThread(() => textView.Text = body);
     }
 
-    public static void PromptSingleValue(ArrayAdapter<string> adapter, string title,
-                                         int currSelection, Action<AlertDialog, int> onClickListener)
+    public static void PromptSingleValue(string title, IList<string> items,
+                                         int currSelection, Action<int> onClickListener)
     {
         Activity activity = WindowUtils.UiActivity;
+        ArrayAdapter<string> adapter = new ArrayAdapter<string>(
+                activity, Android.Resource.Layout.SimpleListItemActivated1, items.ToArray());
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
         if (title != null)
             builder.SetTitle(title);
         builder.SetSingleChoiceItems(adapter, currSelection, (object sender, DialogClickEventArgs e) =>
         {
-            onClickListener((AlertDialog)sender, e.Which);
+            ((AlertDialog)sender).Dismiss();
+            onClickListener(e.Which);
         });
         AlertDialog alertDialog = builder.Create();
         alertDialog.SetTitle(title);

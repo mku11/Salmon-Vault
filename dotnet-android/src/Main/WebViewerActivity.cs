@@ -179,18 +179,21 @@ public class WebViewerActivity : AppCompatActivity
     override
     protected void OnDestroy()
     {
-        if (stream != null)
+        Task.Run(() =>
         {
-            try
+            if (stream != null)
             {
-                stream.Close();
+                try
+                {
+                    stream.Close();
+                }
+                catch (System.IO.IOException e)
+                {
+                    e.PrintStackTrace();
+                }
             }
-            catch (System.IO.IOException e)
-            {
-                e.PrintStackTrace();
-            }
-        }
-        stream = null;
+            stream = null;
+        });
         base.OnDestroy();
     }
 

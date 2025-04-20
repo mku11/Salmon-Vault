@@ -22,7 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+using Mku.Android.FS.File;
 using Mku.Android.SalmonFS.Drive;
+using Mku.FS.File;
 using Mku.Salmon.Sequence;
 using System;
 using System.Runtime.CompilerServices;
@@ -50,7 +52,10 @@ public class SalmonAndroidVaultManager : SalmonVaultManager {
     }
 	
     override
-	protected Type GetDriveClassType() {
-		return typeof(AndroidDrive);
+	protected Type GetDriveClassType(IFile dir) {
+        if (dir is AndroidFile)
+            return typeof(AndroidDrive);
+        else
+            return base.GetDriveClassType(dir);
 	}
 }

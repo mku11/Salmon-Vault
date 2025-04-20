@@ -54,7 +54,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     private const int MAX_CACHE_SIZE = 20 * 1024 * 1024;
     private static readonly int THUMBNAIL_MAX_STEPS = 10;
     private const long VIDEO_THUMBNAIL_MSECS = 3000;
-    private static readonly int TASK_THREADS = 4;
+    private static readonly int TASK_THREADS = 1;
 
     private bool displayItems = true;
     private List<AesFile> items;
@@ -141,15 +141,8 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
             viewHolder.extension.Text = "";
             viewHolder.filesize.Text = "";
             viewHolder.filedate.Text = "";
-            if (viewHolder.salmonFile.IsDirectory)
-            {
-                viewHolder.thumbnail.SetColorFilter(null);
-                viewHolder.thumbnail.SetImageResource(Resource.Drawable.folder);
-            }
-            else
-            {
-                viewHolder.thumbnail.SetImageBitmap(null);
-            }
+            viewHolder.thumbnail.SetColorFilter(null);
+            viewHolder.thumbnail.SetImageBitmap(null);
             viewHolder.animate = false;
         }
         catch (System.Exception ex)
@@ -200,20 +193,28 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
             string finalItems = items;
             long finalSize = size;
             long finalDate = date;
+            bool isDir = viewHolder.salmonFile.IsDirectory;
             if (file != viewHolder.salmonFile)
                 return;
             activity.RunOnUiThread(() =>
             {
-                UpdateFileInfo(viewHolder, filename, finalItems, viewHolder.salmonFile, finalSize, finalDate);
+                UpdateFileInfo(viewHolder, filename, finalItems,
+                    viewHolder.salmonFile, finalSize, finalDate, isDir);
             });
 
             string ext = FileUtils.GetExtensionFromFileName(filename).ToLower();
-            if (bitmapCache.ContainsKey(file))
+            if (viewHolder.salmonFile.IsDirectory)
+            {
+                activity.RunOnUiThread(()=> {
+                    viewHolder.thumbnail.SetImageResource(Resource.Drawable.folder);
+                });
+            }
+            else if (bitmapCache.ContainsKey(file))
             {
                 activity.RunOnUiThread(() =>
-                {
-                    UpdateIconFromCache(viewHolder, file, ext);
-                });
+               {
+                   UpdateIconFromCache(viewHolder, file, ext);
+               });
             }
             else if (viewHolder.salmonFile.IsFile)
             {
@@ -333,12 +334,11 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     }
 
     private void UpdateFileInfo(ViewHolder viewHolder, string filename,
-                                string items, AesFile salmonFile,
-                                long size, long date)
+                                string items, AesFile salmonFile, long size, long date, bool isDir)
     {
         viewHolder.filename.Text = filename;
         viewHolder.filedate.Text = formatter.Format(new Java.Util.Date(date));
-        if (salmonFile.IsDirectory)
+        if (isDir)
         {
             viewHolder.filesize.Text = items;
             viewHolder.extension.Text = "";
