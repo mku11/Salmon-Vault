@@ -49,7 +49,7 @@
                         IsTabStop="True" Content="🔎" Click="Search_Click"/>
             </Grid>
         </DockPanel>
-        <TextBox Grid.Row="1" VerticalAlignment="Stretch" x:Name="TextArea" TextWrapping="Wrap" AcceptsReturn="True" 
+        <TextBox Grid.Row="1" VerticalAlignment="Stretch" x:Name="TextArea" TextWrapping="Wrap" AcceptsReturn="True"  AcceptsTab="True"
                  Text="{Binding Path=ContentArea, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  IsInactiveSelectionHighlightEnabled="True">
         </TextBox>

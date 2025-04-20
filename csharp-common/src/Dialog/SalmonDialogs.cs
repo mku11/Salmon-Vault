@@ -24,6 +24,7 @@ SOFTWARE.
 
 using Mku.FS.Drive.Utils;
 using Mku.FS.File;
+using Mku.Salmon.Password;
 using Mku.SalmonFS.Auth;
 using Mku.SalmonFS.File;
 using Salmon.Vault.Config;
@@ -35,7 +36,6 @@ using Salmon.Vault.Utils;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Salmon.Vault.Dialog;
 
@@ -79,15 +79,7 @@ public class SalmonDialogs
 
         SalmonDialogs.PromptSetPassword((pass) =>
         {
-            try
-            {
-                SalmonVaultManager.Instance.Drive.SetPassword(pass);
-                SalmonDialog.PromptDialog("Password changed");
-            }
-            catch (Exception e)
-            {
-                SalmonDialog.PromptDialog("Could not change password: " + e.Message);
-            }
+            SalmonVaultManager.Instance.SetPassword(pass);
         });
     }
 
@@ -303,26 +295,84 @@ public class SalmonDialogs
 
     public static void PromptCreateVault()
     {
+        List<string> vaultTypes = new List<string>(new string[] { "Local", "Web Service" });
+        SalmonDialog.PromptSingleValue("Vault Type", vaultTypes, -1,
+                (int which) =>
+                {
+                    switch (which)
+                    {
+                        case 0:
+                            PromptCreateLocalVault();
+                            break;
+                        case 1:
+                            PromptCreateWSVault();
+                            break;
+                    }
+                }
+        );
+    }
+
+    public static void PromptCreateLocalVault()
+    {
         ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFolder("Select the vault",
                 SalmonSettings.GetInstance().VaultLocation, (file) =>
                 {
                     SalmonDialogs.PromptSetPassword((string pass) =>
                                 {
-                                    try
-                                    {
-                                        SalmonVaultManager.Instance.CreateVault((IFile)file, pass);
-                                        SalmonDialog.PromptDialog("Action", "Vault created, you can start importing your files");
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        SalmonDialog.PromptDialog("Error", "Could not create vault: " + e.Message);
-                                    }
+                                    SalmonVaultManager.Instance.CreateVault((IFile)file, pass);
                                 });
                 },
                 SalmonVaultManager.REQUEST_CREATE_VAULT_DIR);
     }
 
+    public static void PromptCreateWSVault()
+    {
+        SalmonDialog.PromptCredentialsEdit("Open Web Service",
+                "Type in the credentials for the Web Service",
+                new string[] { "Web Service URL", "User name", "Password" },
+                new string[] { "http://localhost:8080", "user", "password" },
+                new bool[] { false, false, true },
+                (texts) =>
+                {
+                    SalmonDialog.PromptEdit("Create Vault",
+                        "Type in the file path for the vault",
+                        (path, isChecked) =>
+                        {
+                            IFile dir = ServiceLocator.GetInstance().Resolve<IWSFileService>()
+                                            .GetFile(path, false, texts[0],
+                                            new WSFile.Credentials(texts[1], texts[2]));
+                            SalmonDialogs.PromptSetPassword((string pass) =>
+                            {
+                                pass = "test";
+                                SalmonVaultManager.Instance.CreateVault(dir, pass);
+                            });
+                        }, "/tv3", false, false, false, null);
+                });
+    }
+
     public static void PromptOpenVault()
+    {
+        List<string> vaultTypes = new List<string>(new string[] { "Local", "HTTP", "Web Service" });
+        SalmonDialog.PromptSingleValue("Vault Type", vaultTypes, -1,
+                (int which) =>
+                {
+                    switch (which)
+                    {
+                        case 0:
+                            PromptOpenLocalVault();
+                            break;
+                        case 1:
+                            PromptOpenHttpVault();
+                            break;
+                        case 2:
+                            PromptOpenWSVault();
+                            break;
+                    }
+                }
+        );
+    }
+
+    public static void PromptOpenLocalVault()
     {
         ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFolder("Select the vault",
                 SalmonSettings.GetInstance().VaultLocation, (dir) =>
@@ -341,6 +391,47 @@ public class SalmonDialogs
                     });
                 },
         SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
+    }
+
+
+    public static void PromptOpenHttpVault()
+    {
+        SalmonDialog.PromptEdit("Open Http Vault",
+                "Type in the HTTP URL for the remote vault",
+                (url, isChecked) =>
+                {
+                    IFile dir = ServiceLocator.GetInstance().Resolve<IHttpFileService>().GetFile(url, false);
+                    SalmonDialogs.PromptPassword((password) =>
+                    {
+                        password = "test";
+                        SalmonVaultManager.Instance.OpenVault(dir, password);
+                    });
+                }, "http://localhost/testvault", false, false, false, null);
+    }
+
+    public static void PromptOpenWSVault()
+    {
+        SalmonDialog.PromptCredentialsEdit("Open Web Service",
+                "Type in the credentials for the Web Service",
+                new string[] { "Web Service URL", "User name", "Password" },
+                new string[] { "http://localhost:8080", "user", "password" },
+                new bool[] { false, false, true },
+                (texts) =>
+                {
+                    SalmonDialog.PromptEdit("Open Vault",
+                        "Type in the file path for the vault",
+                        (path, isChecked) =>
+                    {
+                        IFile dir = ServiceLocator.GetInstance().Resolve<IWSFileService>()
+                                                .GetFile(path, false, texts[0],
+                                                        new WSFile.Credentials(texts[1], texts[2]));
+                        SalmonDialogs.PromptPassword((password) =>
+                        {
+                            password = "test";
+                            SalmonVaultManager.Instance.OpenVault(dir, password);
+                        });
+                    }, "/tv3", false, false, false, null);
+                });
     }
 
     public static void PromptImportFiles(string text, int requestCode)
@@ -414,20 +505,21 @@ public class SalmonDialogs
                 "Folder Name",
                 (folderName, isChecked) =>
                 {
-                    try
-                    {
-                        SalmonVaultManager.Instance.CurrDir.CreateDirectory(folderName, null, null);
-                        SalmonVaultManager.Instance.Refresh();
-                    }
-                    catch (Exception exception)
-                    {
-                        exception.PrintStackTrace();
-                        if (!SalmonVaultManager.Instance.HandleException(exception))
-                        {
-                            SalmonDialog.PromptDialog("Error", "Could Not Create Folder: " + exception.Message);
-                        }
-                    }
+                    SalmonVaultManager.Instance.CreateDirectory(folderName);
                 }, "New Folder", true, false, false, null);
+    }
+
+
+    public static void PromptNewFile()
+    {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
+        SalmonDialog.PromptEdit("Create File",
+                "File Name",
+                (folderName, isChecked) =>
+                {
+                    SalmonVaultManager.Instance.CreateFile(folderName);
+                }, "New Document.txt", true, false, false, null);
     }
 
     public static void PromptRenameFile(AesFile ifile)
@@ -462,7 +554,7 @@ public class SalmonDialogs
                                 SalmonDialog.PromptDialog("Error: " + exception.Message);
                             }
                         }
-                        SalmonVaultManager.Instance.UpdateListItem(ifile);
+
                     }, currentFilename, true, false, false, null);
         }
         catch (Exception exception)
@@ -482,8 +574,14 @@ public class SalmonDialogs
     }
 
 
-    public static void PromptExport(bool delete)
+    public static void PromptExportFolder(string text, int requestCode, bool delete)
     {
+        if (!delete)
+        {
+            PromptExport(text, requestCode, delete);
+            return;
+        }
+
         if (!SalmonDialogs.IsDriveLoaded())
             return;
         string itemsString = "item(s)?";
@@ -500,15 +598,30 @@ public class SalmonDialogs
                 "Ok",
                 () =>
                 {
+                    PromptExport(text, requestCode, delete);
+                },
+                "Cancel", null);
+    }
+
+    private static void PromptExport(string text, int requestCode, bool delete)
+    {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
+        ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFolder(text,
+                SalmonSettings.GetInstance().LastExportDir, (obj) =>
+                {
                     try
                     {
-                        SalmonVaultManager.Instance.ExportSelectedFiles(delete);
+                        IFile folder = (IFile)obj;
+                        if (folder == null)
+                            return;
+                        SalmonSettings.GetInstance().LastImportDir = folder.Path;
+                        SalmonVaultManager.Instance.ExportSelectedFiles(folder, delete);
                     }
                     catch (Exception e)
                     {
-                        SalmonDialog.PromptDialog("Error", "Could not export files: " + e);
+                        SalmonDialog.PromptDialog("Error", "Could not export folder: " + e);
                     }
-                },
-                "Cancel", null);
+                }, requestCode);
     }
 }

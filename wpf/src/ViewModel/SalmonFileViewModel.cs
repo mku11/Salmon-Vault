@@ -25,10 +25,10 @@ SOFTWARE.
 using Mku.FS.Drive.Utils;
 using Mku.SalmonFS.File;
 using Salmon.Vault.Image;
+using Salmon.Vault.Model;
 using Salmon.Vault.Utils;
 using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using System.Windows.Media;
 
 namespace Salmon.Vault.ViewModel;
@@ -37,6 +37,8 @@ public class SalmonFileViewModel : INotifyPropertyChanged
 {
     private static string dateFormat = "dd/MM/yyyy hh:mm tt";
 
+    private static AesFileAttrQueue AesFileAttrQueue { get; set; } = new AesFileAttrQueue();
+
     private string _name;
     public string Name
     {
@@ -44,7 +46,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_name == null)
             {
-                UpdatePropertyAsync(() => salmonFile.Name, (basename) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => salmonFile.Name, (basename) =>
                 {
                     this.Name = basename;
                 });
@@ -69,7 +71,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_date == null)
             {
-                UpdatePropertyAsync(() => GetDateText(), (date) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => GetDateText(), (date) =>
                 {
                     this.Date = date;
                 });
@@ -94,7 +96,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_type == null)
             {
-                UpdatePropertyAsync(() => GetExtText(), (type) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => GetExtText(), (type) =>
                 {
                     this.Type = type;
                 });
@@ -119,7 +121,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_sizeText == null)
             {
-                UpdatePropertyAsync(() => GetSizeText(), (sizeText) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => GetSizeText(), (sizeText) =>
                 {
                     this.SizeText = sizeText;
                 });
@@ -144,7 +146,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_path == null)
             {
-                UpdatePropertyAsync(() => salmonFile.Path, (path) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => salmonFile.Path, (path) =>
                 {
                     this.Path = path;
                 });
@@ -162,14 +164,16 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _imageRequested = false;
     ImageSource _imageSource = null;
     public ImageSource Image
     {
         get
         {
-            if (_imageSource == null)
+            if (_imageSource == null && !_imageRequested)
             {
-                Thumbnails.GenerateThumbnail(this);
+                _imageRequested = true;
+                Thumbnails.GenerateThumbnailAsync(this);
             }
             return _imageSource;
         }
@@ -183,14 +187,14 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         }
     }
 
-    public Color? _tintColor;
-    public Color? TintColor
+    public Color _tintColor = default;
+    public Color TintColor
     {
         get
         {
-            if (_tintColor == null)
+            if (_tintColor == default)
             {
-                UpdatePropertyAsync(() => Thumbnails.GetTintColor(salmonFile), (color) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => Thumbnails.GetTintColor(salmonFile), (color) =>
                 {
                     this.TintColor = color;
                 });
@@ -214,7 +218,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_ext == null)
             {
-                UpdatePropertyAsync(() => Thumbnails.GetExt(salmonFile), (ext) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => Thumbnails.GetExt(salmonFile), (ext) =>
                 {
                     this.Ext = ext;
                 });
@@ -232,15 +236,6 @@ public class SalmonFileViewModel : INotifyPropertyChanged
     }
 
     private AesFile salmonFile;
-
-    private void UpdatePropertyAsync<T>(Func<T> Getter, Action<T> Setter)
-    {
-        Task.Run(() =>
-        {
-            object value = Getter();
-            WindowUtils.RunOnMainThread(() => Setter((T)value));
-        });
-    }
 
     public SalmonFileViewModel(AesFile salmonFile)
     {
@@ -271,7 +266,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         Ext = GetExtText();
         Thumbnails.ResetCache(salmonFile);
         Image = null;
-        TintColor = null;
+        TintColor = default;
     }
 
     private string GetExtText()

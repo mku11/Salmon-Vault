@@ -43,6 +43,8 @@ public partial class App : Application
     {
         ServiceLocator.GetInstance().Register(typeof(ISettingsService), new WPFSettingsService());
         ServiceLocator.GetInstance().Register(typeof(IFileService), new WPFFileService());
+        ServiceLocator.GetInstance().Register(typeof(IHttpFileService), new WPFHttpFileService());
+        ServiceLocator.GetInstance().Register(typeof(IWSFileService), new WPFWSFileService());
         ServiceLocator.GetInstance().Register(typeof(IWebBrowserService), new WPFBrowserService());
         ServiceLocator.GetInstance().Register(typeof(IFileDialogService), new WPFFileDialogService());
         ServiceLocator.GetInstance().Register(typeof(IKeyboardService), new WPFKeyboardService());

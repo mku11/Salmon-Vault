@@ -37,6 +37,8 @@ using Salmon.Vault.Model.Win;
 using System.Diagnostics;
 using Mku.FS.Drive.Utils;
 using Mku.SalmonFS.File;
+using Mku.FS.File;
+using System.Security.Principal;
 
 namespace Salmon.Vault.ViewModel;
 
@@ -360,7 +362,7 @@ public class MainViewModel : INotifyPropertyChanged
                 SalmonDialogs.PromptOpenVault();
                 break;
             case ActionType.CREATE_VAULT:
-                SalmonDialogs.PromptCreateVault();
+                SalmonDialogs.PromptCreateVault(); 
                 break;
             case ActionType.CLOSE_VAULT:
                 manager.CloseVault();
@@ -387,36 +389,51 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void StartTextEditor(SalmonFileViewModel item)
     {
-        if (item == null)
-            return;
-        if (item.GetAesFile().Length > 1 * 1024 * 1024)
+        WindowUtils.RunOnMainThread(() =>
         {
-            SalmonDialog.PromptDialog("Error", "File too large");
-            return;
-        }
-        OpenTextEditor(item);
-        SelectedItem = null;
-        SelectedItem = item;
+            if (item == null)
+                return;
+            if (item.GetAesFile().Length > 1 * 1024 * 1024)
+            {
+                SalmonDialog.PromptDialog("Error", "File too large");
+                return;
+            }
+            OpenTextEditor(item);
+            SelectedItem = null;
+            SelectedItem = item;
+        });
     }
 
     private void StartImageViewer(SalmonFileViewModel item)
     {
-        OpenImageViewer(item);
+        WindowUtils.RunOnMainThread(() =>
+        {
+            OpenImageViewer(item);
+        });
     }
 
     private void StartContentViewer(SalmonFileViewModel item)
     {
-        OpenContentViewer(item);
+        WindowUtils.RunOnMainThread(() =>
+        {
+            OpenContentViewer(item);
+        });
     }
 
     private void StartMediaPlayer(SalmonFileViewModel item)
     {
-        OpenMediaPlayer(item);
+        WindowUtils.RunOnMainThread(() =>
+        {
+            OpenMediaPlayer(item);
+        });
     }
 
     public void OpenSettings()
     {
-        OpenSettingsViewer();
+        WindowUtils.RunOnMainThread(() =>
+        {
+            OpenSettingsViewer();
+        });
     }
 
     private void UpdateListItem(AesFile file)
@@ -494,7 +511,8 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (manager.IsJobRunning)
             throw new Exception("Another job is running");
-        manager.ExportFiles(new AesFile[] { salmonFile }, (files)=>
+        IFile exportDir = SalmonVaultManager.Instance.Drive.ExportDir;
+        manager.ExportFiles(new AesFile[] { salmonFile }, exportDir, (files)=>
         {
             WindowUtils.RunOnMainThread(()=> {
                 try
@@ -518,11 +536,6 @@ public class MainViewModel : INotifyPropertyChanged
         {
             manager.Initialize();
         }, 1000);
-    }
-
-    public void ExportSelectedFiles(bool deleteSource)
-    {
-        manager.ExportSelectedFiles(deleteSource);
     }
 
     internal void ShowProperties(SalmonFileViewModel viewModel)
@@ -550,12 +563,12 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void OnExport()
     {
-        SalmonDialogs.PromptExport(false);
+        SalmonDialogs.PromptExportFolder("Export Files", SalmonVaultManager.REQUEST_EXPORT_DIR, false);
     }
 
     public void OnExportAndDelete()
     {
-        SalmonDialogs.PromptExport(true);
+        SalmonDialogs.PromptExportFolder("Export Files", SalmonVaultManager.REQUEST_EXPORT_DIR, true);
     }
 
     internal void OnCopy()

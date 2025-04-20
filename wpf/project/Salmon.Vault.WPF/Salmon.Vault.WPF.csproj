@@ -48,6 +48,8 @@
 		<Compile Include="..\..\src\Services\WPFFileDialogService.cs" Link="Services\WPFFileDialogService.cs" />
 		<Compile Include="..\..\src\Services\WPFBrowserService.cs" Link="Services\WPFBrowserService.cs" />
 		<Compile Include="..\..\src\Services\WPFFileService.cs" Link="Services\WPFFileService.cs" />
+		<Compile Include="..\..\src\Services\WPFHttpFileService.cs" Link="Services\WPFHttpFileService.cs" />
+		<Compile Include="..\..\src\Services\WPFWSFileService.cs" Link="Services\WPFWSFileService.cs" />
 		<Compile Include="..\..\src\Services\WPFKeyboardService.cs" Link="Services\WPFKeyboardService.cs" />
 		<Compile Include="..\..\src\Services\WPFSettingsService.cs" Link="Services\WPFSettingsService.cs" />
 
@@ -60,6 +62,8 @@
 
 		<Compile Include="..\..\..\csharp-common\src\Services\ServiceLocator.cs" Link="Common\Services\ServiceLocator.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IFileService.cs" Link="Common\Services\IFileService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IHttpFileService.cs" Link="Common\Services\IHttpFileService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IWSFileService.cs" Link="Common\Services\IWSFileService.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IWebBrowserService.cs" Link="Common\Services\IWebBrowserService.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IFileDialogService.cs" Link="Common\Services\IFileDialogService.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IKeyboardService.cs" Link="Common\Services\IKeyboardService.cs" />

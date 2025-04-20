@@ -22,24 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+using Mku.FS.File;
+
 namespace Salmon.Vault.Services;
 
-public interface ISettingsService
+public class WPFHttpFileService : IHttpFileService
 {
-    public string VaultLocation { get; set; }
-
-    public string AesType { get; set; }
-
-    public string PbkdfImplType { get; set; }
-
-    public string PbkdfAlgoType { get; set; }
-
-    public string SequenceAuthType { get; set; }
-
-    public string LastImportDir { get; set; }
-
-    public string LastExportDir { get; set; }
-
-    public bool DeleteAfterImport { get; set; }
-
+    public IFile GetFile(string filepath, bool isDirectory)
+    {
+        return new HttpFile(filepath);
+    }
 }

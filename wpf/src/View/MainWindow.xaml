@@ -84,41 +84,41 @@
                     <MenuItem Header="Import Auth File"
                               Command="{Binding ClickCommand}"
                        CommandParameter="{x:Static viewmodel:ActionType.IMPORT_AUTH}">
-                    <MenuItem.Icon>
-                        <Image Source="/Icons/auth_import_small.png"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Export Auth File"
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/auth_import_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Export Auth File"
                               Command="{Binding ClickCommand}"
                        CommandParameter="{x:Static viewmodel:ActionType.EXPORT_AUTH}">
-                <MenuItem.Icon>
-                    <Image Source="/Icons/auth_export_small.png"/>
-                </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Revoke Auth"
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/auth_export_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Revoke Auth"
                               Command="{Binding ClickCommand}"
                        CommandParameter="{x:Static viewmodel:ActionType.REVOKE_AUTH}">
                         <MenuItem.Icon>
                             <Image Source="/Icons/auth_revoke_small.png"/>
                         </MenuItem.Icon>
                     </MenuItem>
-                <MenuItem Header="Display Auth ID"
+                    <MenuItem Header="Display Auth ID"
                               Command="{Binding ClickCommand}"
                        CommandParameter="{x:Static viewmodel:ActionType.DISPLAY_AUTH_ID}">
                         <MenuItem.Icon>
                             <Image Source="/Icons/auth_small.png"/>
                         </MenuItem.Icon>
                     </MenuItem>
-                <Separator/>
-                <MenuItem Header="Settings" 
+                    <Separator/>
+                    <MenuItem Header="Settings" 
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.SETTINGS}">
                         <MenuItem.Icon>
                             <Image Source="/Icons/settings_small.png"/>
                         </MenuItem.Icon>
                     </MenuItem>
-                <Separator/>
-                <MenuItem Header="Exit" 
+                    <Separator/>
+                    <MenuItem Header="Exit" 
                               Command="{Binding ClickCommand}"
                               CommandParameter="{x:Static viewmodel:ActionType.EXIT}">
                         <MenuItem.Icon>
@@ -253,6 +253,7 @@
                 <Image Source="/Icons/refresh_small.png" Margin="4" Width="16" Height="16"/>
             </Button>
         </Grid>
+        <!-- set ScrollViewer.CanContentScroll to True to enable row virtualization -->
         <Grid Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <DataGrid x:Name="DataGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                   ItemsSource="{Binding FileItemList}" AutoGenerateColumns="False" GridLinesVisibility="None" TabIndex="0"
@@ -261,6 +262,8 @@
                       SelectionChanged="DataGrid_SelectionChanged"
                       MouseDoubleClick="DataGrid_MouseDoubleClick"
                       PreviewKeyDown="DataGrid_PreviewKeyDown"
+                      EnableRowVirtualization="True"
+                      ScrollViewer.CanContentScroll="True"
                       >
                 <DataGrid.InputBindings>
                     <KeyBinding Key="C" Modifiers="Control" Command="ApplicationCommands.NotACommand" />

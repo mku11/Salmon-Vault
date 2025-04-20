@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using System;
 using Properties = Salmon.Vault.WPF.Properties;
 
 namespace Salmon.Vault.Services;
@@ -70,4 +69,9 @@ public class WPFSettingsService : ISettingsService
         set { Properties.Settings.Default.DeleteSource = value; Properties.Settings.Default.Save(); }
     }
 
+    public string LastExportDir
+    {
+        get => Properties.Settings.Default.LastExportDir;
+        set { Properties.Settings.Default.LastExportDir = value; Properties.Settings.Default.Save(); }
+    }
 }

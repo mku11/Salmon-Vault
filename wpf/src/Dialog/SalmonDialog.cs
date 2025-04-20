@@ -254,6 +254,7 @@ public class SalmonDialog : System.Windows.Window
                 if (OnEdit != null)
                 {
                     string value = isPassword ? (valueText as PasswordBox).Password : (valueText as TextBox).Text;
+                    alert.Close();
                     OnEdit.Invoke(value, (bool)optionCheckBox.IsChecked);
                 }
             };
@@ -290,9 +291,82 @@ public class SalmonDialog : System.Windows.Window
         });
     }
 
+
+    public static void PromptCredentialsEdit(string title, String msg,
+                                             string[] hints, String[] values, bool[] isPasswords,
+                                             Action<string[]> OnEdit)
+    {
+        WindowUtils.RunOnMainThread(() =>
+        {
+            SalmonDialog alert = new SalmonDialog("", ButtonType.Ok, ButtonType.Cancel);
+            alert.Title = title;
+
+            Label msgText = new Label();
+            msgText.Content = msg;
+
+            StackPanel panel = new StackPanel();
+            panel.Margin = new Thickness(10);
+            panel.Children.Add(msgText);
+
+            Control[] textFields = new Control[hints.Length];
+            for (int i = 0; i < hints.Length; i++)
+            {
+                if (hints[i] != null)
+                {
+                    textFields[i] = CreateTextField(hints[i], values[i], isPasswords[i]);
+                    panel.Children.Add(textFields[i]);
+                }
+            }
+
+            alert.Content = panel;
+            alert.MinWidth = 280;
+            alert.MinHeight = 150;
+            Button btOk = alert.GetButton(ButtonType.Ok);
+            btOk.Click += (sender, e) =>
+            {
+                if (OnEdit != null)
+                {
+                    string[] texts = new string[hints.Length];
+                    for (int i = 0; i < textFields.Length; i++)
+                    {
+                        if (textFields[i] != null)
+                        {
+                            texts[i] = textFields[i] is PasswordBox ?
+                            (textFields[i] as PasswordBox).Password :
+                            (textFields[i] as TextBox).Text;
+                        }
+                    }
+                    alert.Close();
+                    OnEdit(texts);
+                }
+            };
+            alert.ShowDialog();
+        });
+    }
+
+    private static Control CreateTextField(String hint, String value, bool isPassword)
+    {
+        if (!isPassword)
+        {
+            TextBox field = new TextBox();
+            //TODO:
+            //field.setPromptText(hint);
+            field.Text = value;
+            return field;
+        }
+        else
+        {
+            PasswordBox passwordField = new PasswordBox();
+            //TODO:
+            //passwordField.setPromptText(hint);
+            passwordField.Password = value;
+            return passwordField;
+        }
+    }
+
     public static void PromptDialog(string title, string body,
-                                    string buttonLabel1 = "Ok", Action buttonListener1 = null,
-                                    string buttonLabel2 = null, Action buttonListener2 = null)
+                                        string buttonLabel1 = "Ok", Action buttonListener1 = null,
+                                        string buttonLabel2 = null, Action buttonListener2 = null)
     {
         WindowUtils.RunOnMainThread(() =>
         {
@@ -335,15 +409,15 @@ public class SalmonDialog : System.Windows.Window
             alert.ShowDialog();
         });
     }
-	
-	public static void PromptDialog(string body)
+
+    public static void PromptDialog(string body)
     {
         WindowUtils.RunOnMainThread(() =>
         {
             PromptDialog("", body, "Ok");
         });
     }
-    
+
     public static Action<string> PromptUpdatableDialog(string title, string body)
     {
         SalmonDialog alert = new SalmonDialog(body, ButtonType.Ok);
@@ -359,7 +433,7 @@ public class SalmonDialog : System.Windows.Window
         alert.Content = ContentText;
         SetDimensions(alert);
         alert.ShowAsync();
-        return (body)=>WindowUtils.RunOnMainThread(()=> block.Text = body);
+        return (body) => WindowUtils.RunOnMainThread(() => block.Text = body);
     }
 
     private static void SetDimensions(SalmonDialog alert)
@@ -370,9 +444,61 @@ public class SalmonDialog : System.Windows.Window
             alert.MaxHeight = 300;
             alert.Owner = App.Current.MainWindow;
             alert.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             Console.Error.WriteLine("Could not set dimentions: " + ex);
         }
+    }
+
+
+
+    public static void PromptSingleValue(string title, List<string> items,
+                                         int currSelection, Action<int> onClickListener)
+    {
+        SalmonDialog alert = new SalmonDialog("", ButtonType.Ok, ButtonType.Cancel);
+        alert.Title = title;
+
+        List<RadioButton> buttons = new List<RadioButton>();
+        int index = 0;
+        foreach (string item in items)
+        {
+            RadioButton radioButton = new RadioButton();
+            radioButton.Content = item;
+            radioButton.GroupName = "SingleValue";
+            radioButton.Margin = new Thickness(4);
+            buttons.Add(radioButton);
+            if (currSelection == index)
+                radioButton.IsChecked = true;
+            index++;
+        }
+
+        StackPanel panel = new StackPanel();
+        panel.Margin = new Thickness(10);
+        foreach (RadioButton radioButton in buttons)
+        {
+            panel.Children.Add(radioButton);
+        }
+
+        alert.Content = panel;
+        alert.MinWidth = 280;
+        alert.MinHeight = 150;
+        Button btOk = alert.GetButton(ButtonType.Ok);
+        btOk.Click += (sender, e) =>
+        {
+            int index = 0;
+            foreach (RadioButton radioButton in buttons)
+            {
+                if (radioButton.IsChecked != null && (bool)radioButton.IsChecked)
+                {
+                    break;
+                }
+                index++;
+            }
+            alert.Hide();
+            if(index >= 0)
+                onClickListener(index);
+        };
+        alert.ShowDialog();
     }
 }

@@ -191,12 +191,12 @@ namespace Salmon.Vault.View
 
         private void MenuItem_Export(object sender, RoutedEventArgs e)
         {
-            ViewModel.ExportSelectedFiles(false);
+            ViewModel.OnExport();
         }
 
         private void MenuItem_ExportAndDelete(object sender, RoutedEventArgs e)
         {
-            ViewModel.ExportSelectedFiles(true);
+            ViewModel.OnExportAndDelete();
         }
 
         private void MenuItem_Properties(object sender, RoutedEventArgs e)

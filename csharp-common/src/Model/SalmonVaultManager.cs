@@ -434,33 +434,41 @@ public class SalmonVaultManager : INotifyPropertyChanged
         if (dir == null)
             return;
 
-		ThreadPool.QueueUserWorkItem(state => {
-			try
-			{
-				CloseVault();
-				this.Drive = AesDrive.OpenDrive(dir, GetDriveClassType(), password, this.Sequencer);
-				this.CurrDir = this.Drive.Root;
-				SalmonSettings.GetInstance().VaultLocation = dir.Path;
-				Refresh();
-			}
-			catch (ArgumentException e)
-			{
-				SalmonDialog.PromptDialog("Error", "Could not open vault: " + e.Message + ". "
-				+ "Make sure your vault folder contains a file named " + AesDrive.ConfigFilename);
-			}
-			catch (Exception e)
-			{
-				Console.Error.WriteLine(e);
-				SalmonDialog.PromptDialog("Error", "Could not open vault: " + e.Message + ". " +
-                        (e.getCause() != null ? e.getCause().getMessage() : "")););
-			}
-		});
+        ThreadPool.QueueUserWorkItem(state =>
+        {
+            try
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs("taskRunning"));
+                CloseVault();
+                this.Drive = AesDrive.OpenDrive(dir, GetDriveClassType(dir), password, this.Sequencer);
+                this.CurrDir = this.Drive.Root;
+                SalmonSettings.GetInstance().VaultLocation = dir.Path;
+                Refresh();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+                string msg = "Could not open vault: " + e.Message + ". " +
+                        (e.InnerException != null ? e.InnerException.Message : "");
+                SalmonDialog.PromptDialog("Error", msg);
+            }
+            finally
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs("taskComplete"));
+            }
+        });
     }
 
     virtual
-    protected Type GetDriveClassType()
+    protected Type GetDriveClassType(IFile vaultDir)
     {
-        return typeof(Drive);
+        if(vaultDir is File)
+            return typeof(Drive);
+        else if (vaultDir is HttpFile)
+            return typeof(HttpDrive);
+        else if (vaultDir is WSFile)
+            return typeof(WSDrive);
+        throw new Exception("Unknown drive type");
     }
 
     public void DeleteSelectedFiles()
@@ -615,11 +623,11 @@ public class SalmonVaultManager : INotifyPropertyChanged
         });
     }
 
-    public void ExportSelectedFiles(bool deleteSource)
+    public void ExportSelectedFiles(IFile exportDir, bool deleteSource)
     {
         if (Drive == null)
             return;
-        ExportFiles(SelectedFiles.ToArray(), (files) =>
+        ExportFiles(SelectedFiles.ToArray(), exportDir, (files) =>
         {
             Refresh();
         }, deleteSource);
@@ -645,7 +653,10 @@ public class SalmonVaultManager : INotifyPropertyChanged
             ClearCopiedFiles();
             SetPathText(null);
             if (this.Drive != null)
+            {
                 this.Drive.Close();
+                this.Drive = null;
+            }
         }
         catch (Exception ex)
         {
@@ -655,24 +666,25 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public bool OpenItem(AesFile selectedFile)
     {
-        int position = FileItemList.IndexOf(selectedFile);
-        if (position < 0)
-            return true;
-        if (selectedFile.IsDirectory)
+        ThreadPool.QueueUserWorkItem(state =>
         {
-            ThreadPool.QueueUserWorkItem(state =>
+            int position = FileItemList.IndexOf(selectedFile);
+            if (position < 0)
+                return;
+            if (selectedFile.IsDirectory)
             {
                 if (CheckFileSearcher())
                     return;
                 CurrDir = (selectedFile);
                 salmonFiles = CurrDir.ListFiles();
                 PopulateFileList(null);
-            });
-            return true;
-        }
-        string filename = selectedFile.Name;
-        AesFile item = FileItemList[position];
-        return OpenListItem(item);
+                return;
+            }
+            string filename = selectedFile.Name;
+            AesFile item = FileItemList[position];
+            OpenListItem(item);
+        });
+        return true;
     }
 
     public void GoBack()
@@ -727,7 +739,84 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void RenameFile(AesFile file, string newFilename)
     {
-        fileCommander.RenameFile(file, newFilename);
+        ThreadPool.QueueUserWorkItem(state =>
+        {
+            try
+            {
+                fileCommander.RenameFile(file, newFilename);
+                WindowUtils.RunOnMainThread(() =>
+                {
+                    SalmonVaultManager.Instance.UpdateListItem(file);
+                });
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+                SalmonDialog.PromptDialog("Error", "Could not rename file: " + e.Message);
+            }
+        });
+    }
+
+
+    public void CreateDirectory(string folderName)
+    {
+        ThreadPool.QueueUserWorkItem(state =>
+        {
+            try
+            {
+                SalmonVaultManager.Instance.CurrDir.CreateDirectory(folderName);
+                SalmonVaultManager.Instance.Refresh();
+            }
+            catch (Exception exception)
+            {
+                Console.Error.WriteLine(exception);
+                if (!SalmonVaultManager.Instance.HandleException(exception))
+                {
+                    SalmonDialog.PromptDialog("Error", "Could not create folder: " + exception.Message);
+                }
+            }
+        });
+    }
+
+    public void CreateFile(String fileName)
+    {
+        ThreadPool.QueueUserWorkItem(state =>
+        {
+            try
+            {
+                SalmonVaultManager.Instance.CurrDir.CreateFile(fileName);
+                SalmonVaultManager.Instance.Refresh();
+            }
+            catch (Exception exception)
+            {
+                Console.Error.WriteLine(exception);
+                if (!SalmonVaultManager.Instance.HandleException(exception))
+                {
+                    SalmonDialog.PromptDialog("Error", "Could not create file: " + exception.Message);
+                }
+            }
+        });
+    }
+
+    public void SetPassword(string pass)
+    {
+        ThreadPool.QueueUserWorkItem(state =>
+        {
+            try
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs("taskRunning"));
+                SalmonVaultManager.Instance.Drive.SetPassword(pass);
+                SalmonDialog.PromptDialog("Password changed");
+            }
+            catch (Exception e)
+            {
+                SalmonDialog.PromptDialog("Could not change password: " + e.Message);
+            }
+            finally
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs("taskComplete"));
+            }
+        });
     }
 
     public enum Mode
@@ -735,7 +824,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         Browse, Search, Copy, Move
     }
 
-    public void ExportFiles(AesFile[] items, Action<IFile[]> OnFinished, bool deleteSource)
+    public void ExportFiles(AesFile[] items, IFile exportDir, Action<IFile[]> OnFinished, bool deleteSource)
     {
         if (IsJobRunning)
             throw new Exception("Another Job is Running");
@@ -749,7 +838,6 @@ public class SalmonVaultManager : INotifyPropertyChanged
             int[] processedFiles = new int[] { -1 };
             IFile[] files = null;
             List<AesFile> failedFiles = new List<AesFile>();
-            IFile exportDir = this.Drive.ExportDir;
             try
             {
                 FileCommander.BatchExportOptions exportOptions = new FileCommander.BatchExportOptions();
@@ -926,22 +1014,27 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void CreateVault(IFile dir, string password)
     {
-		ThreadPool.QueueUserWorkItem(state =>
-			try {
-				if(!dir.exists()) {
-					dir.mkdir();
-				}
-				this.Drive = AesDrive.CreateDrive(dir, GetDriveClassType(), password, Sequencer);
-				this.CurrDir = this.Drive.Root;
-				SalmonSettings.GetInstance().VaultLocation = dir.Path;
-				Refresh();
-				SalmonDialog.PromptDialog("Action", "Vault created, you can start importing your files");
-			} catch (Exception e) {
+        ThreadPool.QueueUserWorkItem(state =>
+        {
+            try
+            {
+                if (!dir.Exists)
+                {
+                    dir.Mkdir();
+                }
+                this.Drive = AesDrive.CreateDrive(dir, GetDriveClassType(dir), password, Sequencer);
+                this.CurrDir = this.Drive.Root;
+                SalmonSettings.GetInstance().VaultLocation = dir.Path;
+                Refresh();
+                SalmonDialog.PromptDialog("Action", "Vault created, you can start importing your files");
+            }
+            catch (Exception e)
+            {
                 Console.Error.WriteLine(e);
                 SalmonDialog.PromptDialog("Error", "Could not create vault: " + e.Message + ". " +
-                        (e.getCause() != null ? e.getCause().Message : ""));
+                        (e.InnerException != null ? e.InnerException.Message : ""));
             }
-		});
+        });
     }
 
     public void ClearCopiedFiles()
@@ -961,7 +1054,9 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 "Encrypted Name: " + item.RealFile.Name + "\n" +
                 "Encrypted Path: " + item.RealFile.DisplayPath + "\n" +
                 (!item.IsDirectory ? "Encrypted Size: " + ByteUtils.GetBytes(item.RealFile.Length, 2)
-                        + " (" + item.RealFile.Length + " bytes)" : "") + "\n";
+                        + " (" + item.RealFile.Length + " bytes)" : "") + "\n" +
+                "Integrity enabled: " + (item.FileChunkSize > 0 ? "Yes" : "No") + "\n" +
+                (item.FileChunkSize > 0 ? "Integrity chunk size: " + item.FileChunkSize + " bytes" : "");
     }
 
     public bool CanGoBack()

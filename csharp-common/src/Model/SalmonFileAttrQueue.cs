@@ -27,12 +27,12 @@ using Salmon.Vault.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Salmon.Vault.Model;
 
-public static class AesFileAttrQueue
+public class AesFileAttrQueue
 {
-
     public class AttrTask
     {
         public Func<object> Getter;
@@ -45,28 +45,43 @@ public static class AesFileAttrQueue
         }
     }
 
-    private static BlockingCollection<AttrTask> tasks = new BlockingCollection<AttrTask>();
-    public static void UpdatePropertyAsync<T>(Func<T> Getter, Action<T> Setter)
+    public AesFileAttrQueue()
+    {
+        Setup();
+    }
+
+    private void Setup()
+    {
+        Task consumerThread = Task.Run(() =>
+        {
+            while (true)
+            {
+                try
+                {
+                    AttrTask task = tasks.Take();
+                    object obj = task.Getter();
+                    WindowUtils.RunOnMainThread(() => task.Setter(obj));
+                }
+                catch (Exception ex)
+                {
+                    ex.PrintStackTrace();
+                }
+            }
+        });
+    }
+
+    private BlockingCollection<AttrTask> tasks = new BlockingCollection<AttrTask>();
+    public void UpdatePropertyAsync<T>(Func<T> Getter, Action<T> Setter)
     {
         QueueTask(Getter, Setter);
     }
 
-    private static void QueueTask<T>(Func<T> Getter, Action<T> Setter)
+    private void QueueTask<T>(Func<T> Getter, Action<T> Setter)
     {
-        AttrTask nTask = new AttrTask(() => Getter(), (obj) => Setter((T) obj));
-        tasks.Add(nTask);
-        ThreadPool.QueueUserWorkItem((state) =>
+        Task.Run(() =>
         {
-            try
-            {
-                AttrTask task = tasks.Take();
-                object obj = task.Getter();
-                WindowUtils.RunOnMainThread(() => task.Setter(obj));
-            }
-            catch (Exception e)
-            {
-                e.PrintStackTrace();
-            }
+            AttrTask nTask = new AttrTask(() => Getter(), (obj) => Setter((T)obj));
+            tasks.Add(nTask);
         });
     }
 }

@@ -39,6 +39,8 @@ using BitConverter = Mku.Convert.BitConverter;
 using Mku.SalmonFS.File;
 using Mku.FS.Drive.Utils;
 using Mku.FS.File;
+using System.Diagnostics;
+using System.Threading;
 
 namespace Salmon.Vault.Image;
 
@@ -55,6 +57,7 @@ public class Thumbnails
 
     private static readonly ConcurrentDictionary<AesFile, BitmapImage> cache = new ConcurrentDictionary<AesFile, BitmapImage>();
     private static int cacheSize;
+    private static object _lock = new object();
 
     /// <summary>
     /// Returns a bitmap thumbnail from an encrypted file
@@ -119,25 +122,60 @@ public class Thumbnails
     /// </summary>
     /// <param name="salmonFile"></param>
     /// <returns></returns>
-    public static void GenerateThumbnail(SalmonFileViewModel item)
+    public static void GenerateThumbnailAsync(SalmonFileViewModel item)
     {
-
-        BitmapImage bitmapImage;
         if (cache.ContainsKey(item.GetAesFile()))
         {
-            bitmapImage = cache[item.GetAesFile()];
+            BitmapImage bitmapImage = cache[item.GetAesFile()];
             WindowUtils.RunOnMainThread(() =>
             {
                 item.Image = bitmapImage;
             });
+            return;
         }
-        else if (item.GetAesFile().IsDirectory || !FileUtils.IsImage(item.GetAesFile().Name))
+        Task.Run(() =>
+        {
+            
+            try
+            {
+                lock (_lock)
+                {
+                    GenerateThumbnail(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                Console.Error.WriteLine(ex);
+                WindowUtils.RunOnMainThread(() =>
+                {
+                    SetDefaultIcon(item);
+                });
+            }
+        }).ConfigureAwait(false);
+    }
+
+    private static void SetDefaultIcon(SalmonFileViewModel item)
+    {
+        BitmapImage bitmapImage = GetIcon(item.GetAesFile());
+        AddCache(item.GetAesFile(), bitmapImage);
+        item.Image = bitmapImage;
+    }
+
+    private static void GenerateThumbnail(SalmonFileViewModel item)
+    {
+
+        bool isDirectory = false;
+        string name = "";
+        isDirectory = item.GetAesFile().IsDirectory;
+        name = item.GetAesFile().Name;
+        
+        BitmapImage bitmapImage;
+        if (isDirectory || !FileUtils.IsImage(name))
         {
             WindowUtils.RunOnMainThread(() =>
             {
-                bitmapImage = GetIcon(item.GetAesFile());
-                AddCache(item.GetAesFile(), bitmapImage);
-                item.Image = bitmapImage;
+                SetDefaultIcon(item);
             });
         }
         else
@@ -145,27 +183,31 @@ public class Thumbnails
             // we might have multiple requests so we make sure we process only once
             AddCache(item.GetAesFile(), null);
 
-            Task.Run(() =>
+            Stream nStream = GenerateThumbnail(item.GetAesFile());
+            if(nStream == null)
             {
-                Stream nStream = GenerateThumbnail(item.GetAesFile());
-                WindowUtils.RunOnMainThread(() =>
+                SetDefaultIcon(item);
+                return;
+            }
+            WindowUtils.RunOnMainThread(() =>
+            {
+                try
                 {
-                    try
-                    {
-                        bitmapImage = new BitmapImage();
-                        bitmapImage.BeginInit();
-                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmapImage.StreamSource = nStream;
-                        bitmapImage.EndInit();
-                        bitmapImage.Freeze();
-                        item.Image = bitmapImage;
-                        AddCache(item.GetAesFile(), bitmapImage);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine(ex);
-                    }
-                });
+                    bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.StreamSource = nStream;
+                    bitmapImage.EndInit();
+                    bitmapImage.Freeze();
+                    item.Image = bitmapImage;
+                    AddCache(item.GetAesFile(), bitmapImage);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+                    Console.Error.WriteLine(ex);
+                    SetDefaultIcon(item);
+                }
             });
         }
     }
@@ -183,6 +225,8 @@ public class Thumbnails
     private static Stream GenerateThumbnail(AesFile file)
     {
         Stream stream = FromFile(file);
+        if (stream == null)
+            return null;
         System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(stream);
         stream.Close();
         bitmap = ResizeBitmap(bitmap, THUMBNAIL_SIZE);
@@ -212,7 +256,7 @@ public class Thumbnails
         cache[file] = image;
         try
         {
-            if(image != null)
+            if (image != null)
                 cacheSize += (int)(image.Width * image.Height * 4);
         }
         catch (Exception ex)
@@ -247,7 +291,7 @@ public class Thumbnails
         if (cache.ContainsKey(file))
         {
             BitmapImage image = cache[file];
-            cacheSize -= (int) (image.Width * image.Height * 4);
+            cacheSize -= (int)(image.Width * image.Height * 4);
             cache.Remove(file, out _);
         }
     }
@@ -258,15 +302,22 @@ public class Thumbnails
         try
         {
             string ext = FileUtils.GetExtensionFromFileName(file.Name).ToLower();
-            if (ext.Equals("gif") && file.Length > TMP_GIF_THUMB_MAX_SIZE)
+            if (ext.Equals("gif") && file.RealFile.Length > TMP_GIF_THUMB_MAX_SIZE)
+            {
                 stream = GetTempStream(file, TMP_GIF_THUMB_MAX_SIZE);
+            }
             else
-                stream = file.GetInputStream().AsReadStream();
+            {
+                stream = GetTempStream(file, long.MaxValue);
+            }
             stream.Position = 0;
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine(ex);
+            if (stream != null)
+                stream.Close();
+            throw ex;
         }
         return stream;
     }

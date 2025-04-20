@@ -142,6 +142,10 @@ public class SalmonSettings
     public static readonly string LAST_IMPORT_DIR_KEY = "LAST_IMPORT_DIR_KEY";
     public string LastImportDir { get; set; } = DEFAULT_LAST_IMPORT_DIR;
 
+    public static readonly string DEFAULT_LAST_EXPORT_DIR = null;
+    public static readonly string LAST_EXPORT_DIR_KEY = "LAST_EXPORT_DIR_KEY";
+    public string LastExportDir { get; set; } = DEFAULT_LAST_EXPORT_DIR;
+
     protected static SalmonSettings instance;
     protected ISettingsService SettingsService { get; set; }
 
@@ -169,5 +173,6 @@ public class SalmonSettings
         _sequencerAuthType = (AuthType)Enum.Parse(typeof(AuthType), SettingsService.SequenceAuthType);
         DeleteAfterImport = SettingsService.DeleteAfterImport;
         LastImportDir = SettingsService.LastImportDir;
+        LastExportDir = SettingsService.LastExportDir;
     }
 }
