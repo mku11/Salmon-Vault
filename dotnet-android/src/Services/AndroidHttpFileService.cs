@@ -32,8 +32,13 @@ public class AndroidHttpFileService : IHttpFileService
 {
     public readonly int REQUEST_DIR = 1000;
 
-    public IFile GetFile(string url, bool isDirectory)
+    public IFile GetFile(string url)
     {
         return new HttpFile(url);
+    }
+
+    public IFile GetFile(string url, Credentials credentials)
+    {
+        return new HttpFile(url, credentials);
     }
 }

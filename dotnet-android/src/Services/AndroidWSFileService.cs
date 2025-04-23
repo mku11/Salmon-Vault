@@ -31,7 +31,7 @@ public class AndroidWSFileService : IWSFileService
 {
     public readonly int REQUEST_DIR = 1000;
 
-    public IFile GetFile(string filepath, bool isDirectory, string servicePath, WSFile.Credentials credentials)
+    public IFile GetFile(string filepath, string servicePath, Credentials credentials)
     {
         return new WSFile(filepath, servicePath, credentials);
     }
