@@ -31,14 +31,21 @@ import { BooleanProperty } from "../../common/binding/boolean_property.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
 import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
 import { AesFileReadableStream } from "../../lib/salmon-fs/salmonfs/streams/aes_file_readable_stream.js";
+import { WSFile } from "../../lib/salmon-fs/fs/file/ws_file.js";
+import { HttpSyncClient } from "../../lib/salmon-fs/fs/file/http_sync_client.js";
 import { SalmonDialog } from "../dialog/salmon_dialog.js";
 
 export class MediaPlayerController {
     static MIN_FILE_STREAMING = 1 * 1024 * 1024;
+    static MEDIA_BUFFERS = 2;
+    // make sure we use a large enough buffer for the MediaDataSource since some videos stall
+    static MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    static MEDIA_BACKOFFSET = 256 * 1024;
+    // increase the threads if you have more cpus available for parallel processing
+    static mediaThreads = 1;
     static modalURL = "media-player.html";
 
     filePath;
-    handler;
     modalWindow;
     player;
     progressVisibility;
@@ -99,9 +106,14 @@ export class MediaPlayerController {
 				var link = document.createElement("a");
 				link.href = "?path=" + encodeURIComponent(this.filePath);
 				this.url = link.href;
+                let realFile = file.getRealFile();
+                let servicePath = realFile.constructor.name === 'WSFile' ? realFile.getServicePath() : null;
+                let credentials = realFile.getCredentials();
+                let serviceUser = credentials?.getServiceUser();
+                let servicePassword = credentials?.getServicePassword();
 				await Handler.getInstance().register(this.url, {
-					fileHandle: file.getRealFile().getPath(),
-					fileClass: file.getRealFile().constructor.name,
+					fileHandle: realFile.getPath(),
+					fileClass: realFile.constructor.name,
 					key: file.getEncryptionKey(),
 					integrity: file.isIntegrityEnabled(),
 					hash_key: file.getHashKey(),
@@ -109,7 +121,11 @@ export class MediaPlayerController {
 					// you can turn on the FileReadableStream which is better in caching content
 					// though parallelism is not available for service workers in the browser
 					useFileReadableStream: false,
-                    workerPath: workerPath
+                    workerPath: workerPath,
+                    servicePath: servicePath,
+                    serviceUser: serviceUser,
+                    servicePassword: servicePassword,
+                    allowClearTextTraffic: HttpSyncClient.getAllowClearTextTraffic()
 				});
 			}
 			// set the video player to the content

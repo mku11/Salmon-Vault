@@ -42,6 +42,9 @@ export class ISettingsService {
     getLastImportDir() { }
     setLastImportDir(value) { }
 
+    getLastExportDir() { }
+    setLastExportDir(value) { }
+
     getDeleteAfterImport() { }
     setDeleteAfterImport(value) { }
 }

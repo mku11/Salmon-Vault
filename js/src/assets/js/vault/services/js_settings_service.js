@@ -122,4 +122,13 @@ export class JsSettingsService extends ISettingsService {
     setLastImportDir(value) {
         this.prefs.put(SalmonSettings.LAST_IMPORT_DIR_KEY, value);
     }
+
+    getLastExportDir() {
+        return this.prefs.get(SalmonSettings.LAST_EXPORT_DIR_KEY,
+            SalmonSettings.DEFAULT_LAST_EXPORT_DIR);
+    }
+
+    setLastExportDir(value) {
+        this.prefs.put(SalmonSettings.LAST_EXPORT_DIR_KEY, value);
+    }
 }

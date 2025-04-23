@@ -32,6 +32,10 @@ export class ServiceLocator
         this._services = {};
     }
 
+    /**
+     * 
+     * @returns {ServiceLocator} The service locator
+     */
     static getInstance()
     {
         if (this.instance == null)
