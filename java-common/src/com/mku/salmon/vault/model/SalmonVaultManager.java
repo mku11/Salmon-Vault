@@ -411,7 +411,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             try {
                 propertyChanged(this, "taskRunning");
                 closeVault();
-                this.drive = AesDrive.openDrive(dir, getDriveClassType(), password, this.sequencer);
+                this.drive = AesDrive.openDrive(dir, getDriveClassType(dir), password, this.sequencer);
                 this.currDir = this.drive.getRoot();
                 SalmonSettings.getInstance().setVaultLocation(dir.getPath());
                 refresh();
@@ -429,8 +429,14 @@ public class SalmonVaultManager implements IPropertyNotifier {
         });
     }
 
-    protected Class<?> getDriveClassType() {
-        return Drive.class;
+    protected Class<?> getDriveClassType(IFile vaultDir) {
+		if(vaultDir instanceof File)
+            return Drive.class;
+        else if (vaultDir instanceof HttpFile)
+            return HttpDrive.class;
+        else if (vaultDir instanceof WSFile)
+            return WSDrive.class;
+        throw new RuntimeException("Unknown drive type");
     }
 
     public void deleteSelectedFiles() {
@@ -917,7 +923,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                     dir.mkdir();
                 }
                 closeVault();
-                this.drive = AesDrive.createDrive(dir, getDriveClassType(), password, this.sequencer);
+                this.drive = AesDrive.createDrive(dir, getDriveClassType(dir), password, this.sequencer);
                 this.currDir = this.drive.getRoot();
                 SalmonSettings.getInstance().setVaultLocation(dir.getPath());
                 this.refresh();

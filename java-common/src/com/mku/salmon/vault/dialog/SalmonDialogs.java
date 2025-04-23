@@ -24,6 +24,7 @@ SOFTWARE.
 */
 
 import com.mku.fs.drive.utils.FileUtils;
+import com.mku.fs.file.Credentials;
 import com.mku.fs.file.IFile;
 import com.mku.fs.file.WSFile;
 import com.mku.func.Consumer;
@@ -249,10 +250,10 @@ public class SalmonDialogs {
 
     public static void promptCreateVault() {
         List<String> vaultTypes = new ArrayList<>(List.of("Local", "Web Service"));
-        SalmonDialog.promptSingleValue("Vault Type", vaultTypes,-1,
+        SalmonDialog.promptSingleValue("Vault Type", vaultTypes, -1,
                 (Integer which) ->
                 {
-                    switch(which) {
+                    switch (which) {
                         case 0:
                             promptCreateLocalVault();
                             break;
@@ -286,8 +287,8 @@ public class SalmonDialogs {
                             "Type in the file path for the vault",
                             (path, isChecked) -> {
                                 IFile dir = ServiceLocator.getInstance().resolve(IWSFileService.class)
-                                        .getFile(path, false, texts[0],
-                                                new WSFile.Credentials(texts[1], texts[2]));
+                                        .getFile(path, texts[0],
+                                                new Credentials(texts[1], texts[2]));
                                 SalmonDialogs.promptSetPassword((String pass) ->
                                 {
                                     SalmonVaultManager.getInstance().createVault(dir, pass);
@@ -301,7 +302,7 @@ public class SalmonDialogs {
         SalmonDialog.promptSingleValue("Vault Type", vaultTypes, -1,
                 (Integer which) ->
                 {
-                    switch(which) {
+                    switch (which) {
                         case 0:
                             promptOpenLocalVault();
                             break;
@@ -333,15 +334,24 @@ public class SalmonDialogs {
     }
 
     public static void promptOpenHttpVault() {
-        SalmonDialog.promptEdit("Open Http Vault",
-                "Type in the HTTP URL for the remote vault",
-                (url, isChecked) -> {
-                    IFile dir = ServiceLocator.getInstance().resolve(IHttpFileService.class).getFile(url, false);
+        SalmonDialog.promptCredentialsEdit("Open HTTP Vault",
+                "Type in the URL for the HTTP Service",
+                new String[]{"URL", "User name", "Password"},
+                new String[]{"http://192.168.1.4/testvault", "user", "password"},
+                new boolean[]{false, false, true},
+                (texts) -> {
+                    IFile dir;
+                    if(texts[1]!=null && texts[1].length() > 0) {
+                        dir = ServiceLocator.getInstance().resolve(IHttpFileService.class)
+                                .getFile(texts[0], new Credentials(texts[1], texts[2]));
+                    } else {
+                        dir = ServiceLocator.getInstance().resolve(IHttpFileService.class).getFile(texts[0]);
+                    }
                     SalmonDialogs.promptPassword((password) -> {
                         password = "test";
                         SalmonVaultManager.getInstance().openVault(dir, password);
                     });
-                }, "http://192.168.1.4/testvaultc", false, false, false, null);
+                });
     }
 
     public static void promptOpenWSVault() {
@@ -355,8 +365,8 @@ public class SalmonDialogs {
                             "Type in the file path for the vault",
                             (path, isChecked) -> {
                                 IFile dir = ServiceLocator.getInstance().resolve(IWSFileService.class)
-                                        .getFile(path, false, texts[0],
-                                                new WSFile.Credentials(texts[1], texts[2]));
+                                        .getFile(path, texts[0],
+                                                new Credentials(texts[1], texts[2]));
                                 SalmonDialogs.promptPassword((password) -> {
                                     SalmonVaultManager.getInstance().openVault(dir, password);
                                 });

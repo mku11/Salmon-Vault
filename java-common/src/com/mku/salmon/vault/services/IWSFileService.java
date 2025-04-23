@@ -24,9 +24,9 @@ SOFTWARE.
 */
 
 
+import com.mku.fs.file.Credentials;
 import com.mku.fs.file.IFile;
-import com.mku.fs.file.WSFile;
 
 public interface IWSFileService {
-    public IFile getFile(String filepath, boolean isDirectory, String servicePath, WSFile.Credentials credentials);
+    public IFile getFile(String filepath, String servicePath, Credentials credentials);
 }

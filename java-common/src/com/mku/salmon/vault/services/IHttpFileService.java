@@ -24,9 +24,11 @@ SOFTWARE.
 */
 
 
+import com.mku.fs.file.Credentials;
 import com.mku.fs.file.IFile;
 
 public interface IHttpFileService
 {
-    public IFile getFile(String filepath, boolean isDirectory);
+    public IFile getFile(String filepath);
+    public IFile getFile(String filepath, Credentials credentials);
 }
