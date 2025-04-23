@@ -25,6 +25,7 @@ SOFTWARE.
 
 import android.app.Activity;
 
+import com.mku.fs.file.Credentials;
 import com.mku.fs.file.HttpFile;
 import com.mku.fs.file.IFile;
 import com.mku.fs.file.WSFile;
@@ -37,7 +38,7 @@ public class AndroidWebServiceFileService implements IWSFileService {
         this.activity = activity;
     }
 
-    public IFile getFile(String filepath, boolean isDirectory, String servicePath, WSFile.Credentials credentials)
+    public IFile getFile(String filepath, String servicePath, Credentials credentials)
     {
         return new WSFile(filepath, servicePath, credentials);
     }

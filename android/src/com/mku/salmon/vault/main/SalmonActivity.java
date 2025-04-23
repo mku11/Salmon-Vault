@@ -54,6 +54,7 @@ import com.mku.android.fs.file.AndroidFile;
 import com.mku.android.fs.file.AndroidFileSystem;
 import com.mku.android.salmonfs.drive.AndroidDrive;
 import com.mku.fs.drive.utils.FileUtils;
+import com.mku.fs.file.HttpSyncClient;
 import com.mku.fs.file.IFile;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
@@ -122,6 +123,7 @@ public class SalmonActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        HttpSyncClient.setAllowClearTextTraffic(true);
         setupServices();
         setupWindow();
         setContentView(R.layout.main);
@@ -746,15 +748,12 @@ public class SalmonActivity extends AppCompatActivity {
             sortTypes.add((i % 2 == 1 ? "↓" : "↑") + " " + values[i - (i + 1) % 2].toString());
         }
 
-        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_list_item_activated_1, sortTypes.toArray(new String[0]));
-        SalmonDialog.promptSingleValue(itemsAdapter, getString(R.string.Sort), sortType.ordinal(),
-                (AlertDialog dialog, Integer which) ->
+        SalmonDialog.promptSingleValue(getString(R.string.Sort), sortTypes, sortType.ordinal(),
+                (Integer which) ->
                 {
                     sortType = values[which];
                     sortFiles(sortType);
                     adapter.notifyDataSetChanged();
-                    dialog.dismiss();
                 }
         );
     }

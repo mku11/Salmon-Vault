@@ -28,6 +28,7 @@ import android.app.Activity;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.mku.android.fs.file.AndroidFile;
+import com.mku.fs.file.Credentials;
 import com.mku.fs.file.File;
 import com.mku.fs.file.HttpFile;
 import com.mku.fs.file.IFile;
@@ -40,7 +41,11 @@ public class AndroidHttpFileService implements IHttpFileService {
         this.activity = activity;
     }
 
-    public IFile getFile(String filepath, boolean isDirectory) {
+    public IFile getFile(String filepath) {
         return new HttpFile(filepath);
+    }
+
+    public IFile getFile(String filepath, Credentials credentials) {
+        return new HttpFile(filepath, credentials);
     }
 }

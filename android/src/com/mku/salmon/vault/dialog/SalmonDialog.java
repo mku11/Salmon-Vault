@@ -27,6 +27,7 @@ import com.mku.salmon.vault.utils.WindowUtils;
 
 import com.mku.func.BiConsumer;
 
+import java.util.List;
 import java.util.TreeMap;
 
 /*
@@ -320,9 +321,8 @@ public class SalmonDialog {
                                          int currSelection, Consumer<Integer> onClickListener) {
 											 
 		Activity activity = WindowUtils.getUiActivity();
-        ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 activity, android.R.layout.simple_list_item_activated_1, items.toArray(new String[0]));
-        Activity activity = WindowUtils.getUiActivity();
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
         if (title != null)
             builder.setTitle(title);
