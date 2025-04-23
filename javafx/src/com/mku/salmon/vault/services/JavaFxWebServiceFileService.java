@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.fs.file.HttpFile;
+import com.mku.fs.file.Credentials;
 import com.mku.fs.file.IFile;
 import com.mku.fs.file.WSFile;
 
@@ -33,7 +33,7 @@ public class JavaFxWebServiceFileService implements IWSFileService
     {
     }
 
-    public IFile getFile(String filepath, boolean isDirectory, String servicePath, WSFile.Credentials credentials)
+    public IFile getFile(String filepath, String servicePath, Credentials credentials)
     {
         return new WSFile(filepath, servicePath, credentials);
     }

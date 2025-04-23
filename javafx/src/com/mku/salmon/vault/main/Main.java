@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.fs.file.HttpSyncClient;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.controller.MainController;
 import com.mku.salmon.vault.dialog.SalmonDialog;
@@ -36,6 +37,7 @@ import javafx.stage.Stage;
 public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
+        HttpSyncClient.setAllowClearTextTraffic(true);
         WindowUtils.setDefaultIconPath(SalmonConfig.icon);
         SalmonDialog.setDefaultStyleSheet(SalmonConfig.css);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/main.fxml"));

@@ -23,18 +23,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.fs.file.Credentials;
 import com.mku.fs.file.File;
 import com.mku.fs.file.HttpFile;
 import com.mku.fs.file.IFile;
 
 public class JavaFxHttpFileService implements IHttpFileService
 {
-    public JavaFxHttpFileService()
-    {
-    }
-
-    public IFile getFile(String filepath, boolean isDirectory)
+    public IFile getFile(String filepath)
     {
         return new HttpFile(filepath);
+    }
+    public IFile getFile(String filepath, Credentials credentials)
+    {
+        return new HttpFile(filepath, credentials);
     }
 }
