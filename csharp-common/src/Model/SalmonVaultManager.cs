@@ -442,7 +442,6 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 CloseVault();
                 this.Drive = AesDrive.OpenDrive(dir, GetDriveClassType(dir), password, this.Sequencer);
                 this.CurrDir = this.Drive.Root;
-                SalmonSettings.GetInstance().VaultLocation = dir.Path;
                 Refresh();
             }
             catch (Exception e)
@@ -1024,7 +1023,6 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 }
                 this.Drive = AesDrive.CreateDrive(dir, GetDriveClassType(dir), password, Sequencer);
                 this.CurrDir = this.Drive.Root;
-                SalmonSettings.GetInstance().VaultLocation = dir.Path;
                 Refresh();
                 SalmonDialog.PromptDialog("Action", "Vault created, you can start importing your files");
             }

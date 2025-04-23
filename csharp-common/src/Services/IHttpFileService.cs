@@ -28,5 +28,7 @@ namespace Salmon.Vault.Services;
 
 public interface IHttpFileService
 {
-    public IFile GetFile(string url, bool isDirectory);
+    public IFile GetFile(string url);
+
+    public IFile GetFile(string url, Credentials credentials);
 }

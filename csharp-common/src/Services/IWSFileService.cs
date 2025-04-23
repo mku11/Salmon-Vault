@@ -28,5 +28,5 @@ namespace Salmon.Vault.Services;
 
 public interface IWSFileService
 {
-    public IFile GetFile(string filepath, bool isDirectory, string servicePath, WSFile.Credentials credentials);
+    public IFile GetFile(string filepath, string servicePath, Credentials credentials);
 }

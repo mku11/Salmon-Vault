@@ -28,6 +28,7 @@ using Mku.Salmon.Password;
 using Mku.SalmonFS.Auth;
 using Mku.SalmonFS.File;
 using Salmon.Vault.Config;
+using Salmon.Vault.Dialog;
 using Salmon.Vault.Extensions;
 using Salmon.Vault.Model;
 using Salmon.Vault.Services;
@@ -315,14 +316,14 @@ public class SalmonDialogs
     public static void PromptCreateLocalVault()
     {
         ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFolder("Select the vault",
-                SalmonSettings.GetInstance().VaultLocation, (file) =>
+            SalmonSettings.GetInstance().VaultLocation, (dir) =>
+            {
+                SalmonDialogs.PromptSetPassword((string pass) =>
                 {
-                    SalmonDialogs.PromptSetPassword((string pass) =>
-                                {
-                                    SalmonVaultManager.Instance.CreateVault((IFile)file, pass);
-                                });
-                },
-                SalmonVaultManager.REQUEST_CREATE_VAULT_DIR);
+                    SalmonVaultManager.Instance.CreateVault((IFile)dir, pass);
+                    SalmonSettings.GetInstance().VaultLocation = ((IFile)dir).Path;
+                });
+            }, SalmonVaultManager.REQUEST_CREATE_VAULT_DIR);
     }
 
     public static void PromptCreateWSVault()
@@ -339,8 +340,8 @@ public class SalmonDialogs
                         (path, isChecked) =>
                         {
                             IFile dir = ServiceLocator.GetInstance().Resolve<IWSFileService>()
-                                            .GetFile(path, false, texts[0],
-                                            new WSFile.Credentials(texts[1], texts[2]));
+                                            .GetFile(path, texts[0],
+                                            new Credentials(texts[1], texts[2]));
                             SalmonDialogs.PromptSetPassword((string pass) =>
                             {
                                 pass = "test";
@@ -382,6 +383,7 @@ public class SalmonDialogs
                         try
                         {
                             SalmonVaultManager.Instance.OpenVault((IFile)dir, password);
+                            SalmonSettings.GetInstance().VaultLocation = ((IFile)dir).Path;
                         }
                         catch (Exception ex)
                         {
@@ -393,20 +395,31 @@ public class SalmonDialogs
         SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
     }
 
-
     public static void PromptOpenHttpVault()
     {
-        SalmonDialog.PromptEdit("Open Http Vault",
-                "Type in the HTTP URL for the remote vault",
-                (url, isChecked) =>
+        SalmonDialog.PromptCredentialsEdit("Open HTTP Vault",
+                "Type in the URL for the HTTP Service",
+                new string[] { "URL", "User name", "Password" },
+                new string[] { "http://192.168.1.4/testvault", "user", "password" },
+                new bool[] { false, false, true },
+                (texts) =>
                 {
-                    IFile dir = ServiceLocator.GetInstance().Resolve<IHttpFileService>().GetFile(url, false);
+                    IFile dir;
+                    if (texts[1] != null && texts[1].Length > 0)
+                    {
+                        dir = ServiceLocator.GetInstance().Resolve<IHttpFileService>()
+                                        .GetFile(texts[0], new Credentials(texts[1], texts[2]));
+                    }
+                    else
+                    {
+                        dir = ServiceLocator.GetInstance().Resolve<IHttpFileService>().GetFile(texts[0]);
+                    }
                     SalmonDialogs.PromptPassword((password) =>
                     {
                         password = "test";
                         SalmonVaultManager.Instance.OpenVault(dir, password);
                     });
-                }, "http://192.168.1.4/testvault", false, false, false, null);
+                });
     }
 
     public static void PromptOpenWSVault()
@@ -423,8 +436,8 @@ public class SalmonDialogs
                         (path, isChecked) =>
                     {
                         IFile dir = ServiceLocator.GetInstance().Resolve<IWSFileService>()
-                                                .GetFile(path, false, texts[0],
-                                                        new WSFile.Credentials(texts[1], texts[2]));
+                                                .GetFile(path, texts[0],
+                                                        new Credentials(texts[1], texts[2]));
                         SalmonDialogs.PromptPassword((password) =>
                         {
                             password = "test";
