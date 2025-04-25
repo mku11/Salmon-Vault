@@ -195,6 +195,7 @@ export class SalmonDialog extends SalmonWindow {
                         onClickListener(selection.selectedIndex);
                     }
                 });
+                dialog.setSecondButton("Cancel");
                 dialog.show();
             });
         });
