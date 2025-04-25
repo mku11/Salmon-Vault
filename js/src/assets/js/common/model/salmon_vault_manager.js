@@ -42,6 +42,7 @@ import { FileSequencer } from "../../lib/salmon-fs/salmonfs/sequence/file_sequen
 import { SequenceSerializer } from "../../lib/salmon-core/salmon/sequence/sequence_serializer.js";
 import { ByteUtils } from "../../common/utils/byte_utils.js";
 import { BatchCopyOptions, BatchDeleteOptions, BatchExportOptions, BatchImportOptions } from "../../lib/salmon-fs/fs/drive/utils/file_commander.js";
+import { SearchOptions } from "../../lib/salmon-fs/fs/drive/utils/file_searcher.js";
 
 export class SalmonVaultManager extends IPropertyNotifier {
     static SEQUENCER_DIR_NAME = ".salmon";
@@ -636,7 +637,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
         if (await file.getName() == newFilename)
             return;
         try {
-            this.fileCommander.renameFile(file, newFilename);
+            await this.fileCommander.renameFile(file, newFilename);
             await SalmonVaultManager.getInstance().updateListItem(file);
         } catch (e) {
             console.error(e);
@@ -648,10 +649,10 @@ export class SalmonVaultManager extends IPropertyNotifier {
      * Create a directory
      * @param {string} folderName 
      */
-    createDirectory(folderName) {
+    async createDirectory(folderName) {
         try {
-            SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName);
-            SalmonVaultManager.getInstance().refresh();
+            await SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName);
+            await SalmonVaultManager.getInstance().refresh();
         } catch (exception) {
             console.error(exception);
             if (!SalmonVaultManager.getInstance().handleException(exception)) {
@@ -664,10 +665,10 @@ export class SalmonVaultManager extends IPropertyNotifier {
      * Create a file
      * @param {string} fileName 
      */
-    createFile(fileName) {
+    async createFile(fileName) {
         try {
-            SalmonVaultManager.getInstance().getCurrDir().createFile(fileName);
-            SalmonVaultManager.getInstance().refresh();
+            await SalmonVaultManager.getInstance().getCurrDir().createFile(fileName);
+            await SalmonVaultManager.getInstance().refresh();
         } catch (exception) {
             console.error(exception);
             if (!SalmonVaultManager.getInstance().handleException(exception)) {
@@ -676,10 +677,10 @@ export class SalmonVaultManager extends IPropertyNotifier {
         }
     }
 
-    setPassword(pass) {
+    async setPassword(pass) {
         try {
             this.propertyChanged(this, "taskRunning");
-            SalmonVaultManager.getInstance().getDrive().setPassword(pass);
+            await SalmonVaultManager.getInstance().getDrive().setPassword(pass);
             SalmonDialog.promptDialog("Password changed");
         } catch (e) {
             SalmonDialog.promptDialog("Could not change password: " + e.message);
@@ -824,7 +825,9 @@ export class SalmonVaultManager extends IPropertyNotifier {
             this.populateFileList(null);
             this.setTaskRunning(true);
             this.setStatus("Searching");
-            this.salmonFiles = await this.fileCommander.search(this.currDir, value, any, (salmonFile) => {
+            let searchOptions = new SearchOptions();
+            searchOptions.anyTerm = any;
+            searchOptions.onResultFound = (salmonFile) => {
                 let position = 0;
                 for (let file of this.fileItemList) {
                     if (salmonFile.getTag() != null &&
@@ -838,7 +841,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 } catch (e) {
                     console.error(e);
                 }
-            }, null);
+            };
+            this.salmonFiles = await this.fileCommander.search(this.currDir, value, searchOptions);
             if (!this.fileCommander.isFileSearcherStopped())
                 this.setStatus("Search Complete");
             else
