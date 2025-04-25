@@ -196,7 +196,8 @@ export class Thumbnails {
         textElement.style.transform = "translate(-50%, -50%)";
         textElement.classList.add("image-text");
         textElement.innerText = text;
-        parent.appendChild(textElement);
+        if(parent)
+            parent.appendChild(textElement);
     }
 
     static async resize(image, width, height) {
