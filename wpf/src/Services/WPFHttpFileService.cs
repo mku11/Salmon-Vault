@@ -28,8 +28,12 @@ namespace Salmon.Vault.Services;
 
 public class WPFHttpFileService : IHttpFileService
 {
-    public IFile GetFile(string filepath, bool isDirectory)
+    public IFile GetFile(string filepath)
     {
         return new HttpFile(filepath);
+    }
+    public IFile GetFile(string filepath, Credentials credentials)
+    {
+        return new HttpFile(filepath, credentials);
     }
 }

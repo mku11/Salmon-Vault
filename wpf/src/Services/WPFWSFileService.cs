@@ -28,7 +28,7 @@ namespace Salmon.Vault.Services;
 
 public class WPFWSFileService : IWSFileService
 {
-    public IFile GetFile(string filepath, bool isDirectory, string servicePath, WSFile.Credentials credentials)
+    public IFile GetFile(string filepath, string servicePath, Credentials credentials)
     {
         return new WSFile(filepath, servicePath, credentials);
     }
