@@ -31,7 +31,6 @@ import { BooleanProperty } from "../../common/binding/boolean_property.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
 import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
 import { AesFileReadableStream } from "../../lib/salmon-fs/salmonfs/streams/aes_file_readable_stream.js";
-import { WSFile } from "../../lib/salmon-fs/fs/file/ws_file.js";
 import { HttpSyncClient } from "../../lib/salmon-fs/fs/file/http_sync_client.js";
 import { SalmonDialog } from "../dialog/salmon_dialog.js";
 
