@@ -112,7 +112,6 @@ export class SalmonSettings {
 
     static AuthType = {
         User: { name: 'User', ordinal: 0 },
-        Service: { name: 'Service', ordinal: 1 }
     }
 
     sequencerAuthType = SalmonSettings.DEFAULT_AUTH_TYPE;
