@@ -144,3 +144,9 @@ body {
     background-color: #485167bb;
     color: white;
 }
+
+select {
+    background: #485167bb;
+    color: white;
+    border-color: white;
+}

@@ -202,3 +202,12 @@ table td {
   width: 100%;
   border-collapse: collapse;
 }
+
+select {
+  border-radius: 2pt;
+  height: 20pt;
+}
+
+.settings-row {
+  height: 24pt;
+}
