@@ -24,14 +24,13 @@ SOFTWARE.
 
 using Mku.FS.File;
 using Salmon.Vault.Services;
-using Windows.Storage.Pickers;
 
 namespace Salmon.Vault.MAUI.WinUI;
 
-public class WinFileService: IFileService
+public class WinWSFileService: IWSFileService
 {
-    public IFile GetFile(string filepath)
+    public IFile GetFile(string filepath, string servicePath, Credentials credentials)
     {
-        return new File(filepath);
+        return new WSFile(filepath, servicePath, credentials);
     }
 }

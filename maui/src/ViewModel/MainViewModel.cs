@@ -21,9 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-using Mku.Salmon;
-using Mku.Salmon.Utils;
-using Mku.Utils;
+using Mku.FS.Drive.Utils;
+using Mku.SalmonFS.Drive.Utils;
+using Mku.SalmonFS.File;
 using Salmon.Vault.Dialog;
 using Salmon.Vault.MAUI;
 using Salmon.Vault.Model;
@@ -219,7 +219,7 @@ public class MainViewModel : INotifyPropertyChanged
         SelectedItems.CollectionChanged += SelectedItems_CollectionChanged;
     }
 
-    private void FileItemAdded(int position, SalmonFile file)
+    private void FileItemAdded(int position, AesFile file)
     {
         WindowUtils.RunOnMainThread(() =>
         {
@@ -289,10 +289,10 @@ public class MainViewModel : INotifyPropertyChanged
                 .Select(x => new SalmonFileViewModel(x)));
     }
 
-    private List<SalmonFileViewModel> GetViewModels(HashSet<SalmonFile> files)
+    private List<SalmonFileViewModel> GetViewModels(HashSet<AesFile> files)
     {
         List<SalmonFileViewModel> list = new List<SalmonFileViewModel>();
-        foreach (SalmonFile file in files)
+        foreach (AesFile file in files)
         {
             SalmonFileViewModel vm = GetViewModel(file);
             if (vm != null)
@@ -301,7 +301,7 @@ public class MainViewModel : INotifyPropertyChanged
         return list;
     }
 
-    private SalmonFileViewModel GetViewModel(SalmonFile item)
+    private SalmonFileViewModel GetViewModel(AesFile item)
     {
         foreach (SalmonFileViewModel vm in FileItemList)
         {
@@ -332,10 +332,10 @@ public class MainViewModel : INotifyPropertyChanged
                 break;
 
             case ActionType.EXPORT:
-                manager.ExportSelectedFiles(false);
+                ExportSelectedFiles(false);
                 break;
             case ActionType.EXPORT_AND_DELETE:
-                manager.ExportSelectedFiles(true);
+                ExportSelectedFiles(true);
                 break;
             case ActionType.SEARCH:
                 SalmonDialogs.PromptSearch();
@@ -394,7 +394,7 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void StartTextEditor(SalmonFileViewModel item)
     {
-        if (((SalmonFileViewModel)item).GetSalmonFile().Size > 1 * 1024 * 1024)
+        if (((SalmonFileViewModel)item).GetSalmonFile().Length > 1 * 1024 * 1024)
         {
             SalmonDialog.PromptDialog("Error", "File too large");
             return;
@@ -427,19 +427,19 @@ public class MainViewModel : INotifyPropertyChanged
         AppShell.Current.GoToAsync(nameof(SettingsViewer), parameters);
     }
 
-    private void UpdateListItem(SalmonFile file)
+    private void UpdateListItem(AesFile file)
     {
         SalmonFileViewModel vm = GetViewModel(file);
         vm.Update();
     }
 
-    public bool OpenListItem(SalmonFile file)
+    public bool OpenListItem(AesFile file)
     {
         SalmonFileViewModel vm = GetViewModel(file);
 
         try
         {
-            if (FileUtils.IsVideo(file.BaseName) || FileUtils.IsAudio(file.BaseName))
+            if (FileUtils.IsVideo(file.Name) || FileUtils.IsAudio(file.Name))
             {
 #if ANDROID
                     // we can only use the android webview for small content like images
@@ -451,17 +451,17 @@ public class MainViewModel : INotifyPropertyChanged
                 return true;
 #endif
             }
-            else if (FileUtils.IsImage(file.BaseName))
+            else if (FileUtils.IsImage(file.Name))
             {
                 StartContentViewer(vm);
                 return true;
             }
-            else if (FileUtils.IsPdf(file.BaseName))
+            else if (FileUtils.IsPdf(file.Name))
             {
                 StartContentViewer(vm);
                 return true;
             }
-            else if (FileUtils.IsText(file.BaseName))
+            else if (FileUtils.IsText(file.Name))
             {
                 StartTextEditor(vm);
                 return true;
@@ -488,7 +488,10 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void ExportSelectedFiles(bool deleteSource)
     {
-        manager.ExportSelectedFiles(deleteSource);
+        if(deleteSource)
+            SalmonDialogs.PromptExportFolder("Export Files and Delete Files", SalmonVaultManager.REQUEST_EXPORT_DIR, deleteSource);
+        else
+            SalmonDialogs.PromptExportFolder("Export Files", SalmonVaultManager.REQUEST_EXPORT_DIR, deleteSource);
     }
 
     internal void ShowProperties(SalmonFileViewModel viewModel)
@@ -558,7 +561,7 @@ public class MainViewModel : INotifyPropertyChanged
     internal void SortByName()
     {
         List<SalmonFileViewModel> list = FileItemList.ToList();
-        Comparer<SalmonFile> comparer = nameOrderAsc ? SalmonFileComparators.FilenameDescComparator : SalmonFileComparators.FilenameAscComparator;
+        Comparer<AesFile> comparer = nameOrderAsc ? AesFileComparators.FilenameDescComparator : AesFileComparators.FilenameAscComparator;
         list.Sort((a, b) => comparer.Compare(a.GetSalmonFile(), b.GetSalmonFile()));
         FileItemList = new ObservableCollection<SalmonFileViewModel>(list);
         nameOrderAsc = !nameOrderAsc;
@@ -568,7 +571,7 @@ public class MainViewModel : INotifyPropertyChanged
     internal void SortByDate()
     {
         List<SalmonFileViewModel> list = FileItemList.ToList();
-        Comparer<SalmonFile> comparer = dateOrderAsc ? SalmonFileComparators.DateDescComparator : SalmonFileComparators.DateAscComparator;
+        Comparer<AesFile> comparer = dateOrderAsc ? AesFileComparators.DateDescComparator : AesFileComparators.DateAscComparator;
         list.Sort((a, b) => comparer.Compare(a.GetSalmonFile(), b.GetSalmonFile()));
         FileItemList = new ObservableCollection<SalmonFileViewModel>(list);
         dateOrderAsc = !dateOrderAsc;
@@ -578,7 +581,7 @@ public class MainViewModel : INotifyPropertyChanged
     internal void SortByType()
     {
         List<SalmonFileViewModel> list = FileItemList.ToList();
-        Comparer<SalmonFile> comparer = typeOrderAsc ? SalmonFileComparators.TypeDescComparator : SalmonFileComparators.TypeAscComparator;
+        Comparer<AesFile> comparer = typeOrderAsc ? AesFileComparators.TypeDescComparator : AesFileComparators.TypeAscComparator;
         list.Sort((a, b) => comparer.Compare(a.GetSalmonFile(), b.GetSalmonFile()));
         FileItemList = new ObservableCollection<SalmonFileViewModel>(list);
         typeOrderAsc = !typeOrderAsc;
@@ -588,7 +591,7 @@ public class MainViewModel : INotifyPropertyChanged
     internal void SortBySize()
     {
         List<SalmonFileViewModel> list = FileItemList.ToList();
-        Comparer<SalmonFile> comparer = sizeOrderAsc ? SalmonFileComparators.SizeDescComparator : SalmonFileComparators.SizeAscComparator;
+        Comparer<AesFile> comparer = sizeOrderAsc ? AesFileComparators.SizeDescComparator : AesFileComparators.SizeAscComparator;
         list.Sort((a, b) => comparer.Compare(a.GetSalmonFile(), b.GetSalmonFile()));
         FileItemList = new ObservableCollection<SalmonFileViewModel>(list);
         sizeOrderAsc = !sizeOrderAsc;

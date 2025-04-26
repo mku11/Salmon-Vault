@@ -240,11 +240,11 @@ public class SalmonFileProvider : DocumentsProvider
     class OnCloseListener : Java.Lang.Object, IOnCloseListener
     {
         SalmonFile file;
-        IRealFile importFile;
+        IFile importFile;
         SalmonFileProvider provider;
         string filename;
 
-        public OnCloseListener(SalmonFileProvider provider, SalmonFile file, IRealFile importFile, string filename)
+        public OnCloseListener(SalmonFileProvider provider, SalmonFile file, IFile importFile, string filename)
         {
             this.file = file;
             this.importFile = importFile;
@@ -255,7 +255,7 @@ public class SalmonFileProvider : DocumentsProvider
         public void OnClose(Java.IO.IOException? ex)
         {
             SalmonFile parentDir = file.Parent;
-            provider.GetManager().ImportFiles(new IRealFile[] { importFile }, parentDir, false,
+            provider.GetManager().ImportFiles(new IFile[] { importFile }, parentDir, false,
                 (SalmonFile[] importedSalmonFiles) =>
                 {
                     try
@@ -311,7 +311,7 @@ public class SalmonFileProvider : DocumentsProvider
             {
                 Android.OS.Handler handler = new Android.OS.Handler(Context.MainLooper);
                 SalmonFile file = salmonFile;
-                IRealFile importFile = new DotNetFile(sharedFile.Path);
+                IFile importFile = new DotNetFile(sharedFile.Path);
                 descriptor = Android.OS.ParcelFileDescriptor.Open(sharedFile, accessMode, handler, new OnCloseListener(this, file, importFile, filename));
             }
             catch (IOException e)

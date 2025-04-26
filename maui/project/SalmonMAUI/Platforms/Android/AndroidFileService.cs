@@ -17,9 +17,9 @@ public class AndroidFileService : IFileService
         this.activity = activity;
     }
 
-    public IRealFile GetFile(string filepath, bool isDirectory)
+    public IFile GetFile(string filepath, bool isDirectory)
     {
-        IRealFile file;
+        IFile file;
         if (filepath.StartsWith("content:"))
         {
             DocumentFile docFile;

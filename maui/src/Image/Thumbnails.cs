@@ -22,11 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using Mku.File;
-using Mku.Salmon;
 using Mku.Salmon.Streams;
-using Mku.Salmon;
-using Mku.Utils;
 using System.Collections.Concurrent;
 using IImage = Microsoft.Maui.Graphics.IImage;
 using System.Text;
@@ -40,6 +36,12 @@ using Microsoft.Maui.Controls;
 using System.IO;
 using Microsoft.Maui.Graphics;
 using System.Collections.Generic;
+using Mku.FS.File;
+using Mku.SalmonFS.File;
+using Mku.FS.Drive.Utils;
+
+
+
 
 #if IOS || ANDROID || MACCATALYST
 using Microsoft.Maui.Graphics.Platform;
@@ -63,6 +65,7 @@ public class Thumbnails
 
     private static readonly int MAX_CACHE_SIZE = 10 * 1024 * 1024;
 
+    private static AesFileAttrQueue AesFileAttrQueue { get; set; } = new AesFileAttrQueue();
     private static readonly ConcurrentDictionary<SalmonFileViewModel, byte[]> cache = new ConcurrentDictionary<SalmonFileViewModel, byte[]>();
     private static int cacheSize;
 
@@ -71,17 +74,17 @@ public class Thumbnails
     /// </summary>
     /// <param name="salmonFile">The encrypted media file which will be used to get the thumbnail</param>
     /// <returns></returns>
-    public static ImageSource GetVideoThumbnail(SalmonFile salmonFile)
+    public static ImageSource GetVideoThumbnail(AesFile salmonFile)
     {
         return GetVideoThumbnail(salmonFile, 0);
     }
 
-    public static ImageSource GetVideoThumbnail(SalmonFile salmonFile, long ms)
+    public static ImageSource GetVideoThumbnail(AesFile salmonFile, long ms)
     {
         throw new NotSupportedException();
     }
 
-    public static ImageSource GetVideoThumbnailMedia(IRealFile file, long ms)
+    public static ImageSource GetVideoThumbnailMedia(IFile file, long ms)
     {
         throw new NotSupportedException();
     }
@@ -91,7 +94,7 @@ public class Thumbnails
     /// </summary>
     /// <param name="salmonFile">The encrypted file that will be used to get the temp file</param>
     /// <returns></returns>
-    private static IRealFile GetVideoTmpFile(SalmonFile salmonFile)
+    private static IFile GetVideoTmpFile(AesFile salmonFile)
     {
         throw new NotSupportedException();
     }
@@ -103,10 +106,10 @@ public class Thumbnails
     /// <param name="salmonFile">The encrypted file to be used</param>
     /// <param name="maxSize">The max content length that will be decrypted from the beginning of the file</param>
     /// <returns></returns>
-    private static Stream GetTempStream(SalmonFile salmonFile, long maxSize)
+    private static Stream GetTempStream(AesFile salmonFile, long maxSize)
     {
         MemoryStream ms = new MemoryStream((int)maxSize);
-        SalmonStream ins = salmonFile.GetInputStream();
+        AesStream ins = salmonFile.GetInputStream();
         byte[] buffer = new byte[BUFFER_SIZE];
         int bytesRead;
         long totalBytesRead = 0;
@@ -141,10 +144,10 @@ public class Thumbnails
         // we might have multiple requests so we make sure we process only once
         ImageSource bitmapImage = null; //  GetIcon(item.GetSalmonFile());
         cache[item] = null;
-        SalmonFileAttrQueue.UpdatePropertyAsync(() =>
+        AesFileAttrQueue.UpdatePropertyAsync(() =>
         {
             ImageSource bitmapImage = null;
-            if (item.GetSalmonFile().IsDirectory || !FileUtils.IsImage(item.GetSalmonFile().BaseName))
+            if (item.GetSalmonFile().IsDirectory || !FileUtils.IsImage(item.GetSalmonFile().Name))
             {
                 bitmapImage = GetIcon(item.GetSalmonFile());
             }
@@ -178,7 +181,7 @@ public class Thumbnails
         });
     }
 
-    public static ImageSource GetIcon(SalmonFile salmonFile)
+    public static ImageSource GetIcon(AesFile salmonFile)
     {
         string icon = salmonFile.IsFile ? "file_item_small.png" : "folder_small.png";
         // make sure that the image files are marked as MauiImage in VS properties
@@ -186,7 +189,7 @@ public class Thumbnails
         return image;
     }
 
-    private static MemoryStream GenerateThumbnail(SalmonFile file)
+    private static MemoryStream GenerateThumbnail(AesFile file)
     {
         Stream stream = FromFile(file);
         IImage image = null;
@@ -276,16 +279,16 @@ public class Thumbnails
         }
     }
 
-    private static Stream FromFile(SalmonFile file)
+    private static Stream FromFile(AesFile file)
     {
         Stream stream = null;
         try
         {
-            string ext = FileUtils.GetExtensionFromFileName(file.BaseName).ToLower();
-            if (ext.Equals("gif") && file.Size > TMP_GIF_THUMB_MAX_SIZE)
+            string ext = FileUtils.GetExtensionFromFileName(file.Name).ToLower();
+            if (ext.Equals("gif") && file.Length > TMP_GIF_THUMB_MAX_SIZE)
                 stream = GetTempStream(file, TMP_GIF_THUMB_MAX_SIZE);
             else
-                stream = new BufferedStream(file.GetInputStream(), BUFFER_SIZE);
+                stream = file.GetInputStream().AsReadStream();
             stream.Position = 0;
         }
         catch (Exception ex)
@@ -295,9 +298,9 @@ public class Thumbnails
         return stream;
     }
 
-    public static Color GetTintColor(SalmonFile item)
+    public static Color GetTintColor(AesFile item)
     {
-        if (!item.IsFile || FileUtils.IsImage(item.BaseName))
+        if (!item.IsFile || FileUtils.IsImage(item.Name))
             return Colors.Transparent;
         SHA256 sha256 = SHA256.Create();
         string ext = GetExt(item);
@@ -306,10 +309,10 @@ public class Thumbnails
         return Color.FromArgb("#88" + hashstring);
     }
 
-    public static string GetExt(SalmonFile salmonFile)
+    public static string GetExt(AesFile salmonFile)
     {
-        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.BaseName))
+        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.Name))
             return "";
-        return FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+        return FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
     }
 }

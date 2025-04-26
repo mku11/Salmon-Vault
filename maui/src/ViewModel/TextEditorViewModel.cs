@@ -31,6 +31,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Input;
+using Mku.SalmonFS.File;
 
 namespace Salmon.Vault.ViewModel;
 
@@ -151,8 +152,8 @@ public class TextEditorViewModel : INotifyPropertyChanged
         try
         {
 
-			SalmonFile oldFile = item.GetSalmonFile();
-            SalmonFile targetFile = editor.OnSave(item.GetSalmonFile(), ContentArea);
+            AesFile oldFile = item.GetSalmonFile();
+            AesFile targetFile = editor.OnSave(item.GetSalmonFile(), ContentArea);
             int index = SalmonVaultManager.Instance.FileItemList.IndexOf(oldFile);
             if (index >= 0)
             {

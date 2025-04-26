@@ -89,6 +89,15 @@ public class MAUISettingsService : ISettingsService
         }
     }
 
+    public string LastExportDir
+    {
+        get => Preferences.Default.Get("lastExportDir", SalmonSettings.DEFAULT_LAST_EXPORT_DIR);
+        set
+        {
+            Preferences.Default.Set("lastExportDir", value);
+        }
+    }
+
     public bool DeleteAfterImport
     {
         get => Preferences.Default.Get("deleteAfterImport", SalmonSettings.DEFAULT_DELETE_AFTER_IMPORT);

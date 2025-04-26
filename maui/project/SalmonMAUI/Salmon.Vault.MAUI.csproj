@@ -23,8 +23,8 @@
 		<ApplicationIdGuid>a36c16ff-b265-49ca-9ebc-ee7c747d62fe</ApplicationIdGuid>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
-		<ApplicationVersion>106</ApplicationVersion>
+		<ApplicationDisplayVersion>3.0.1</ApplicationDisplayVersion>
+		<ApplicationVersion>301</ApplicationVersion>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
@@ -102,6 +102,8 @@
 
 		<Compile Include="..\..\..\csharp-common\src\Services\ServiceLocator.cs" Link="Common\Services\ServiceLocator.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IFileService.cs" Link="Common\Services\IFileService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IHttpFileService.cs" Link="Common\Services\IHttpFileService.cs" />
+		<Compile Include="..\..\..\csharp-common\src\Services\IWSFileService.cs" Link="Common\Services\IWSFileService.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IWebBrowserService.cs" Link="Common\Services\IWebBrowserService.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IFileDialogService.cs" Link="Common\Services\IFileDialogService.cs" />
 		<Compile Include="..\..\..\csharp-common\src\Services\IKeyboardService.cs" Link="Common\Services\IKeyboardService.cs" />
@@ -291,12 +293,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MimeTypesMap" Version="1.0.8" />
+		<PackageReference Include="MimeTypesMap" Version="1.0.9" />
 		<PackageReference Include="Redth.Maui.VirtualListView" Version="0.3.1" />
-		<PackageReference Include="Salmon.Core" Version="2.0.0" />
-		<PackageReference Include="Salmon.FS" Version="2.0.0" />
-		<PackageReference Include="Salmon.Native" Version="2.0.0" />
-		<PackageReference Include="Salmon.Win" Version="2.0.0" />
+		<PackageReference Include="Salmon.Core" Version="3.0.1" />
+		<PackageReference Include="Salmon.FS" Version="3.0.1" />
+		<PackageReference Include="Salmon.Native" Version="3.0.1" />
+		<PackageReference Include="Salmon.Win" Version="3.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -313,10 +315,10 @@
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
 		<PackageReference Include="Salmon.FS.Android">
-			<Version>2.0.0</Version>
+			<Version>3.0.1</Version>
 		</PackageReference>
 		<PackageReference Include="Salmon.Native.Android">
-			<Version>2.0.0</Version>
+			<Version>3.0.1</Version>
 		</PackageReference>
 		<PackageReference Include="Xamarin.AndroidX.Fragment.Ktx">
 			<!-- fixes issue with Type androidx.collection.ArrayMapKt is defined multiple times -->
@@ -343,11 +345,11 @@
 	</ProjectExtensions>
 
 	<ItemGroup>
-		<PackageReference Update="Microsoft.Maui.Controls" Version="8.0.82" />
+		<PackageReference Update="Microsoft.Maui.Controls" Version="8.0.21" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Update="Microsoft.Maui.Controls.Compatibility" Version="8.0.3" />
+		<PackageReference Update="Microsoft.Maui.Controls.Compatibility" Version="8.0.21" />
 	</ItemGroup>
 
 </Project>

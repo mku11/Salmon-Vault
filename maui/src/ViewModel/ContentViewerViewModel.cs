@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 using Mku.Salmon;
+using Mku.SalmonFS.File;
 using Salmon.Vault.Model;
 using System.ComponentModel;
 
@@ -65,7 +66,7 @@ public class ContentViewerViewModel : INotifyPropertyChanged
     public void Load(SalmonFileViewModel fileItem)
     {
         item = fileItem;
-        SalmonFile file = item.GetSalmonFile();
+        AesFile file = item.GetSalmonFile();
         contentViewer.Load(file);
     }
 

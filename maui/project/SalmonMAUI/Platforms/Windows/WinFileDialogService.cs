@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 using Microsoft.Maui;
-using Mku.File;
+using Mku.FS.File;
 using Salmon.Vault.Services;
 using System;
 using System.Collections.Generic;
@@ -58,7 +58,7 @@ public class WinFileDialogService : IFileDialogService
         StorageFile file = await picker.PickSingleFileAsync();
         if (file != null)
         {
-            OnFilePicked(new DotNetFile(file.Path));
+            OnFilePicked(new File(file.Path));
         }
     }
 
@@ -80,7 +80,7 @@ public class WinFileDialogService : IFileDialogService
         IReadOnlyList<StorageFile> files = await picker.PickMultipleFilesAsync();
         if (files != null)
         {
-            List<IRealFile> filesPaths = new List<IRealFile>(files.Select(x => new DotNetFile(x.Path)));
+            List<IFile> filesPaths = new List<IFile>(files.Select(x => new File(x.Path)));
             OnFilesPicked(filesPaths.ToArray());
         }
     }
@@ -95,7 +95,7 @@ public class WinFileDialogService : IFileDialogService
         var file = await picker.PickSingleFolderAsync();
         if (file != null)
         {
-            OnFolderPicked(new DotNetFile(file.Path));
+            OnFolderPicked(new File(file.Path));
         }
     }
 
@@ -112,7 +112,7 @@ public class WinFileDialogService : IFileDialogService
         StorageFile file = await picker.PickSaveFileAsync();
         if (file != null)
         {
-            DotNetFile rfile = new DotNetFile(file.Path);
+            File rfile = new File(file.Path);
             OnFilePicked(rfile);
         }
     }

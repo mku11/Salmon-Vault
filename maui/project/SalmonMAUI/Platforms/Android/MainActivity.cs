@@ -146,26 +146,26 @@ public class MainActivity : MauiAppCompatActivity
         if (requestCode == SalmonVaultManager.REQUEST_OPEN_VAULT_DIR)
         {
             ActivityCommon.SetUriPermissions(data, uri);
-            IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
-            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            IFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
+            Action<IFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
             callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_CREATE_VAULT_DIR)
         {
             ActivityCommon.SetUriPermissions(data, uri);
-            IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
-            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            IFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(uri.ToString(), true);
+            Action<IFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
             callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_FILES)
         {
             string[] filesToImport = ActivityCommon.GetFilesFromIntent(this, data);
-            IRealFile[] files = new AndroidFile[filesToImport.Length];
+            IFile[] files = new AndroidFile[filesToImport.Length];
             for (int i = 0; i < files.Length; i++)
             {
                 files[i] = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(filesToImport[i], false);
             }
-            Action<IRealFile[]> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            Action<IFile[]> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
             callback(files);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE)
@@ -174,8 +174,8 @@ public class MainActivity : MauiAppCompatActivity
             string importFile = files != null ? files[0] : null;
             if (importFile == null)
                 return;
-            IRealFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(importFile, false);
-            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            IFile file = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(importFile, false);
+            Action<IFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
             callback(file);
         }
         else if (requestCode == SalmonVaultManager.REQUEST_EXPORT_AUTH_FILE)
@@ -184,8 +184,8 @@ public class MainActivity : MauiAppCompatActivity
             string exportAuthDir = dirs != null ? dirs[0] : null;
             if (exportAuthDir == null)
                 return;
-            IRealFile dir = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(exportAuthDir, true);
-            IRealFile exportAuthFile;
+            IFile dir = ServiceLocator.GetInstance().Resolve<IFileService>().GetFile(exportAuthDir, true);
+            IFile exportAuthFile;
             try
             {
                 exportAuthFile = dir.CreateFile(SalmonDrive.AuthConfigFilename);
@@ -194,7 +194,7 @@ public class MainActivity : MauiAppCompatActivity
             {
                 throw new RuntimeException(e);
             }
-            Action<IRealFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
+            Action<IFile> callback = ServiceLocator.GetInstance().Resolve<IFileDialogService>().GetCallback(requestCode);
             callback(exportAuthFile);
         }
     }

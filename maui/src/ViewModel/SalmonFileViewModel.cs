@@ -24,8 +24,8 @@ SOFTWARE.
 
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using Mku.Salmon;
-using Mku.Utils;
+using Mku.FS.Drive.Utils;
+using Mku.SalmonFS.File;
 using Salmon.Vault.Image;
 using Salmon.Vault.Model;
 using Salmon.Vault.Utils;
@@ -37,6 +37,7 @@ namespace Salmon.Vault.ViewModel;
 public class SalmonFileViewModel : INotifyPropertyChanged
 {
     private static string dateFormat = "dd/MM/yyyy hh:mm tt";
+    private static AesFileAttrQueue AesFileAttrQueue { get; set; } = new AesFileAttrQueue();
 
     private string _name;
     public string Name
@@ -45,7 +46,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_name == null)
             {
-                SalmonFileAttrQueue.UpdatePropertyAsync(() => salmonFile.BaseName, (basename) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => salmonFile.Name, (basename) =>
                 {
                     this.Name = basename;
                 });
@@ -70,7 +71,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_date == null)
             {
-                SalmonFileAttrQueue.UpdatePropertyAsync(() => GetDateText(), (date) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => GetDateText(), (date) =>
                 {
                     this.Date = date;
                 });
@@ -95,7 +96,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_type == null)
             {
-                SalmonFileAttrQueue.UpdatePropertyAsync(() => GetExtText(), (type) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => GetExtText(), (type) =>
                 {
                     this.Type = type;
                 });
@@ -120,7 +121,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_sizeText == null)
             {
-                SalmonFileAttrQueue.UpdatePropertyAsync(() => GetSizeText(), (sizeText) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => GetSizeText(), (sizeText) =>
                 {
                     this.SizeText = sizeText;
                 });
@@ -145,7 +146,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_path == null)
             {
-                SalmonFileAttrQueue.UpdatePropertyAsync(() => salmonFile.Path, (path) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => salmonFile.Path, (path) =>
                 {
                     this.Path = path;
                 });
@@ -233,7 +234,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         {
             if (_ext == null)
             {
-                SalmonFileAttrQueue.UpdatePropertyAsync(() => Thumbnails.GetExt(salmonFile), (ext) =>
+                AesFileAttrQueue.UpdatePropertyAsync(() => Thumbnails.GetExt(salmonFile), (ext) =>
                 {
                     this.Ext = ext;
                 });
@@ -250,14 +251,14 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         }
     }
 
-    private SalmonFile salmonFile;
+    private AesFile salmonFile;
 
-    public SalmonFileViewModel(SalmonFile salmonFile)
+    public SalmonFileViewModel(AesFile salmonFile)
     {
         this.salmonFile = salmonFile;
     }
 
-    public void SetSalmonFile(SalmonFile file)
+    public void SetSalmonFile(AesFile file)
     {
         this.salmonFile = file;
         Update();
@@ -273,7 +274,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
 
     public void Update()
     {
-        Name = salmonFile.BaseName;
+        Name = salmonFile.Name;
         Date = GetDateText();
         SizeText = GetSizeText();
         Type = GetExtText();
@@ -282,7 +283,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
 
     private string GetExtText()
     {
-        return FileUtils.GetExtensionFromFileName(salmonFile.BaseName).ToLower();
+        return FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
     }
 
     private string GetSizeText()
@@ -298,20 +299,20 @@ public class SalmonFileViewModel : INotifyPropertyChanged
 
     private string GetDateText()
     {
-        return DateTimeOffset.FromUnixTimeMilliseconds(salmonFile.LastDateTimeModified).LocalDateTime.ToString(dateFormat);
+        return DateTimeOffset.FromUnixTimeMilliseconds(salmonFile.LastDateModified).LocalDateTime.ToString(dateFormat);
     }
 
-    public SalmonFile GetSalmonFile()
+    public AesFile GetSalmonFile()
     {
         return salmonFile;
     }
 
     public SalmonFileViewModel[] ListFiles()
     {
-        SalmonFile[] files = salmonFile.ListFiles();
+        AesFile[] files = salmonFile.ListFiles();
         SalmonFileViewModel[] nfiles = new SalmonFileViewModel[files.Length];
         int count = 0;
-        foreach (SalmonFile file in files)
+        foreach (AesFile file in files)
             nfiles[count++] = new SalmonFileViewModel(file);
         return nfiles;
     }
@@ -325,7 +326,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         salmonFile.CreateDirectory(folderName, key, dirNameNonce);
     }
 
-    public long LastDateTimeModified => salmonFile.LastDateTimeModified;
+    public long LastDateTimeModified => salmonFile.LastDateModified;
 
     public void Delete()
     {
@@ -335,7 +336,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
     public void Rename(string newValue)
     {
         salmonFile.Rename(newValue);
-        Name = salmonFile.BaseName;
+        Name = salmonFile.Name;
     }
 
     override
