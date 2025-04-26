@@ -73,12 +73,15 @@ dependencies {
 
     implementation 'net.java.dev.jna:jna:5.13.0'
 
-
-    implementation 'com.github.pcorless.icepdf:icepdf-core:7.2.4_P01'
-    implementation 'com.github.pcorless.icepdf:icepdf-viewer:7.2.4_P01'
+    // set icepdf version to 7.2.0 to use PDFBox 2.x until docx4j upgrades to PDFBox 3.x
+    implementation 'com.github.pcorless.icepdf:icepdf-core:7.2.0'
+    implementation 'com.github.pcorless.icepdf:icepdf-viewer:7.2.0'
 
     implementation 'org.jcodec:jcodec:0.2.5'
     implementation 'org.jcodec:jcodec-javase:0.2.5'
+
+    implementation 'org.docx4j:docx4j-export-fo:11.5.2'
+    implementation 'org.docx4j:docx4j-JAXB-ReferenceImpl:11.5.2'
 
     implementation 'org.openjfx:javafx-base:17.0.2'
     implementation 'org.openjfx:javafx-base:17.0.2:win'

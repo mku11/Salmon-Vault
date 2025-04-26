@@ -24,18 +24,30 @@ SOFTWARE.
 */
 
 import com.mku.salmon.vault.dialog.SalmonDialog;
+import com.mku.salmon.vault.utils.FileTypes;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
+import com.mku.salmonfs.file.AesFile;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
+import org.docx4j.Docx4J;
+import org.docx4j.convert.out.FOSettings;
+import org.docx4j.fonts.BestMatchingMapper;
+import org.docx4j.fonts.IdentityPlusMapper;
+import org.docx4j.fonts.Mapper;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.icepdf.ri.common.ComponentKeyBinding;
 import org.icepdf.ri.common.SwingController;
 import org.icepdf.ri.common.SwingViewBuilder;
 
 import javax.swing.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class PDFViewerController {
+
+    private static final boolean useFacade = false;
 
     public static void openPDFViewer(SalmonFileViewModel file, Stage owner) throws IOException {
         SwingController swingController = new SwingController();
@@ -45,16 +57,65 @@ public class PDFViewerController {
         swingController.getDocumentViewController().setAnnotationCallback(
                 new org.icepdf.ri.common.MyAnnotationCallback(
                         swingController.getDocumentViewController()));
-        JFrame window = new JFrame("PDF Viewer");
+        String title = getTitle(file);
+        JFrame window = new JFrame(title);
         window.getContentPane().add(viewerComponentPanel);
         window.pack();
         window.setVisible(true);
         try {
-            InputStream stream = file.getAesFile().getInputStream().asReadStream();
-            swingController.openDocument(stream, "Encrypted PDF", file.getAesFile().getName());
+            InputStream stream = getStream(file);
+            swingController.openDocument(stream, "Encrypted", file.getAesFile().getName());
         } catch (Exception e) {
             e.printStackTrace();
             new SalmonDialog(Alert.AlertType.ERROR, "Could not load PDF: " + e.getMessage()).show();
         }
+    }
+
+    private static InputStream getStream(SalmonFileViewModel file) throws Exception {
+        String filename = file.getAesFile().getName();
+        InputStream stream;
+        if (FileTypes.isPDF(filename)) {
+            stream = file.getAesFile().getInputStream().asReadStream();
+        } else {
+            stream = convert(file.getAesFile());
+        }
+        return stream;
+    }
+
+    private static String getTitle(SalmonFileViewModel file) throws IOException {
+        String title = "PDF Viewer";
+        String filename = file.getAesFile().getName();
+        if (FileTypes.isDocument(filename)) {
+            title = "Document Viewer";
+        }
+        return title;
+    }
+
+    public static InputStream convert(AesFile aesFile) throws Exception {
+        WordprocessingMLPackage opcPackage = getPackage(aesFile);
+        String os = System.getProperty("os.name").toUpperCase();
+        Mapper fontMapper;
+        if (os.startsWith("WINDOWS")) {
+            fontMapper = new IdentityPlusMapper();
+        } else {
+            fontMapper = new BestMatchingMapper();
+        }
+        opcPackage.setFontMapper(fontMapper);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        if (useFacade) {
+            Docx4J.toPDF(opcPackage, outputStream);
+        } else {
+            FOSettings foSettings = Docx4J.createFOSettings();
+            foSettings.setOpcPackage(opcPackage);
+            int flags = Docx4J.FLAG_EXPORT_PREFER_NONXSL;
+            Docx4J.toFO(foSettings, outputStream, flags);
+        }
+        InputStream stream = new ByteArrayInputStream(outputStream.toByteArray());
+        return stream;
+    }
+
+    private static WordprocessingMLPackage getPackage(AesFile aesFile) throws Exception {
+        InputStream inputStream = aesFile.getInputStream().asReadStream();
+        return WordprocessingMLPackage.load(inputStream);
     }
 }

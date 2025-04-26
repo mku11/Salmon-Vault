@@ -34,6 +34,7 @@ import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.model.win.SalmonWinVaultManager;
 import com.mku.salmon.vault.services.*;
 import com.mku.salmon.vault.utils.WindowUtils;
+import com.mku.salmon.vault.utils.FileTypes;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import com.mku.salmonfs.file.AesFile;
 import javafx.application.Platform;
@@ -610,7 +611,8 @@ public class MainController {
             } else if (FileUtils.isImage(file.getName())) {
                 startImageViewer(vm);
                 return true;
-            } else if (ext.toLowerCase().equals("pdf")) {
+            } else if (FileTypes.isPDF(file.getName()) || FileTypes.isDocument(file.getName())
+            || FileTypes.isPresentation(file.getName()) || FileTypes.isSpreadsheet(file.getName())) {
                 startPDFViewer(vm);
                 return true;
             } else if (FileUtils.isText(file.getName())) {
