@@ -598,6 +598,7 @@ public class MainController {
     private boolean OpenListItem(AesFile file) {
         SalmonFileViewModel vm = getViewModel(file);
         try {
+            String ext = FileUtils.getExtensionFromFileName(file.getName()).toLowerCase();
             if (FileUtils.isVideo(file.getName())) {
                 startMediaPlayer(vm);
                 return true;
@@ -606,6 +607,9 @@ public class MainController {
                 return true;
             } else if (FileUtils.isImage(file.getName())) {
                 startImageViewer(vm);
+                return true;
+            } else if (ext.toLowerCase().equals("pdf")) {
+                startPDFViewer(vm);
                 return true;
             } else if (FileUtils.isText(file.getName())) {
                 startTextEditor(vm);
@@ -679,6 +683,16 @@ public class MainController {
         WindowUtils.runOnMainThread(() -> {
             try {
                 ImageViewerController.openImageViewer(item, stage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void startPDFViewer(SalmonFileViewModel item) {
+        WindowUtils.runOnMainThread(() -> {
+            try {
+                PDFViewerController.openPDFViewer(item, stage);
             } catch (IOException e) {
                 e.printStackTrace();
             }
