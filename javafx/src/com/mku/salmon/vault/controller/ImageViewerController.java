@@ -57,9 +57,6 @@ public class ImageViewerController {
     @FXML
     private VBox root;
 
-    @FXML
-    private HBox imageContainer;
-
     private final ObjectProperty<Image> image = new SimpleObjectProperty<>(this, "image");
     private SalmonImageViewer viewer;
 
