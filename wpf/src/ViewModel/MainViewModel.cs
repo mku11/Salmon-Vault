@@ -568,7 +568,7 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void OnExportAndDelete()
     {
-        SalmonDialogs.PromptExportFolder("Export Files", SalmonVaultManager.REQUEST_EXPORT_DIR, true);
+        SalmonDialogs.PromptExportFolder("Export Files and Delete Files", SalmonVaultManager.REQUEST_EXPORT_DIR, true);
     }
 
     internal void OnCopy()
