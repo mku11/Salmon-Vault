@@ -583,6 +583,8 @@ public class MainController {
     }
 
     protected void openItem(int position) throws Exception {
+        if(fileItemList.size() < position)
+            return;
         SalmonFileViewModel selectedFile = fileItemList.get(position);
         manager.openItem(selectedFile.getAesFile());
     }
