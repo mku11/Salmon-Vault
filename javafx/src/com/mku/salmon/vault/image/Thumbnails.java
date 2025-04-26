@@ -26,6 +26,7 @@ SOFTWARE.
 import com.mku.convert.BitConverter;
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.streams.AesStream;
+import com.mku.salmon.vault.io.AesSeekableByteChannel;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.InputStreamWrapper;
 import com.mku.streams.MemoryStream;
@@ -34,6 +35,10 @@ import com.mku.streams.RandomAccessStream;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
+import org.jcodec.api.FrameGrab;
+import org.jcodec.common.model.Picture;
+import org.jcodec.scale.AWTUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -80,16 +85,12 @@ public class Thumbnails {
     /// </summary>
     /// <param name="salmonFile">The encrypted media file which will be used to get the thumbnail</param>
     /// <returns></returns>
-    public static ImageView getVideoThumbnail(AesFile salmonFile) {
-        return getVideoThumbnail(salmonFile, 0);
-    }
+    public static Image getVideoThumbnail(AesFile salmonFile) throws Exception {
 
-    public static ImageView getVideoThumbnail(AesFile salmonFile, long ms) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static ImageView getVideoThumbnailMedia(File file, long ms) {
-        throw new UnsupportedOperationException();
+        Picture picture = FrameGrab.getFrameFromChannelAtSec(new AesSeekableByteChannel(salmonFile), 3);
+        BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
+        WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
+        return image;
     }
 
     /// <summary>
@@ -208,7 +209,8 @@ public class Thumbnails {
     private static void generateThumbnail(ThumbnailTask task) {
         Image image = null;
         try {
-            if (task.file.isFile() && FileUtils.isImage(task.file.getName())) {
+            if (task.file.isFile()
+                    && (FileUtils.isImage(task.file.getName()) || FileUtils.isVideo(task.file.getName()))) {
                 image = Thumbnails.fromFile(task.file);
             }
             if (image == null)
@@ -245,11 +247,15 @@ public class Thumbnails {
         Image image = null;
         try {
             String ext = FileUtils.getExtensionFromFileName(file.getName()).toLowerCase();
-            if (ext.equals("gif") && file.getLength() > TMP_GIF_THUMB_MAX_SIZE)
-                stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(file, TMP_GIF_THUMB_MAX_SIZE)), BUFFER_SIZE);
-            else
-                stream = new BufferedInputStream(new InputStreamWrapper(file.getInputStream()), BUFFER_SIZE);
-            image = new Image(stream, THUMBNAIL_SIZE, THUMBNAIL_SIZE, true, true);
+            if(FileUtils.isImage(file.getName())) {
+                if (ext.equals("gif") && file.getLength() > TMP_GIF_THUMB_MAX_SIZE)
+                    stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(file, TMP_GIF_THUMB_MAX_SIZE)), BUFFER_SIZE);
+                else
+                    stream = new BufferedInputStream(new InputStreamWrapper(file.getInputStream()), BUFFER_SIZE);
+                image = new Image(stream, THUMBNAIL_SIZE, THUMBNAIL_SIZE, true, true);
+            } else {
+                image = getVideoThumbnail(file);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
