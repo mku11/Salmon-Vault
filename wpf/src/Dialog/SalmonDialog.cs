@@ -344,7 +344,7 @@ public class SalmonDialog : System.Windows.Window
         });
     }
 
-    private static Control CreateTextField(String hint, String value, bool isPassword)
+    private static Control CreateTextField(string hint, string value, bool isPassword)
     {
         if (!isPassword)
         {
@@ -450,8 +450,6 @@ public class SalmonDialog : System.Windows.Window
             Console.Error.WriteLine("Could not set dimentions: " + ex);
         }
     }
-
-
 
     public static void PromptSingleValue(string title, List<string> items,
                                          int currSelection, Action<int> onClickListener)
