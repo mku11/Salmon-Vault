@@ -25,8 +25,10 @@ SOFTWARE.
 
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.utils.FileTypes;
+import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import com.mku.salmonfs.file.AesFile;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import org.docx4j.Docx4J;
@@ -62,6 +64,8 @@ public class PDFViewerController {
         window.getContentPane().add(viewerComponentPanel);
         window.pack();
         window.setVisible(true);
+        window.setIconImage(SwingFXUtils.fromFXImage(WindowUtils.getDefaultIcon(), null));
+
         try {
             InputStream stream = getStream(file);
             swingController.openDocument(stream, "Encrypted", file.getAesFile().getName());
