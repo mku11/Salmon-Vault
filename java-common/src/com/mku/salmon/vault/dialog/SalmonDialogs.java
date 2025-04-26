@@ -521,8 +521,26 @@ public class SalmonDialogs {
                         IFile folder = (IFile) obj;
                         if (folder == null)
                             return;
-                        SalmonSettings.getInstance().setLastImportDir(folder.getPath());
+                        SalmonSettings.getInstance().setLastExportDir(folder.getPath());
                         SalmonVaultManager.getInstance().exportSelectedFiles(folder, delete);
+                    } catch (Exception e) {
+                        SalmonDialog.promptDialog("Error", "Could not export folder: " + e);
+                    }
+                }, requestCode);
+    }
+
+    public static void promptShare(String text, int requestCode, Consumer<IFile> onFolderPicked) {
+        if (!SalmonDialogs.isDriveLoaded())
+            return;
+        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder(text,
+                SalmonSettings.getInstance().getLastExportDir(), (obj) ->
+                {
+                    try {
+                        IFile folder = (IFile) obj;
+                        if (folder == null)
+                            return;
+                        SalmonSettings.getInstance().setLastExportDir(folder.getPath());
+                        onFolderPicked.accept(folder);
                     } catch (Exception e) {
                         SalmonDialog.promptDialog("Error", "Could not export folder: " + e);
                     }

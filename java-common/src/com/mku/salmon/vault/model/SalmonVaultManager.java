@@ -430,7 +430,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     protected Class<?> getDriveClassType(IFile vaultDir) {
-		if(vaultDir instanceof File)
+        if (vaultDir instanceof File)
             return Drive.class;
         else if (vaultDir instanceof HttpFile)
             return HttpDrive.class;
@@ -575,11 +575,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void exportSelectedFiles(IFile exportDir, boolean deleteSource) {
         if (this.drive == null)
             return;
-        exportFiles(selectedFiles.toArray(new AesFile[0]), exportDir,
-                (files) ->
-                {
-                    refresh();
-                }, deleteSource);
+        exportFiles(selectedFiles.toArray(new AesFile[0]), exportDir, deleteSource, (files) ->
+        {
+            refresh();
+        });
         clearSelectedFiles();
     }
 
@@ -740,7 +739,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         Browse, Search, Copy, Move
     }
 
-    public void exportFiles(AesFile[] items, IFile exportDir, Consumer<IFile[]> onFinished, boolean deleteSource) {
+    public void exportFiles(AesFile[] items, IFile exportDir, boolean deleteSource, Consumer<IFile[]> onFinished) {
         if (isJobRunning())
             throw new RuntimeException("Another job is running");
         executor.execute(() ->
@@ -791,8 +790,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 SalmonDialog.promptDialog("Export", "Some files failed: " + exception[0].getMessage());
             else if (files != null) {
                 setTaskMessage("Export Complete");
-                SalmonDialog.promptDialog("Export", "Files Exported To: "
-                        + exportDir.getDisplayPath());
             }
             setFileProgress(1);
             setFilesProgress(1);
@@ -801,8 +798,13 @@ public class SalmonVaultManager implements IPropertyNotifier {
         });
     }
 
-    public void importFiles(IFile[] fileNames, AesFile importDir, boolean deleteSource,
+    public void importFiles(IFile[] files, AesFile importDir, boolean deleteSource,
                             Consumer<AesFile[]> onFinished) {
+        importFiles(files, importDir, deleteSource, onFinished, true);
+    }
+
+    public void importFiles(IFile[] files, AesFile importDir, boolean deleteSource,
+                            Consumer<AesFile[]> onFinished, boolean autorename) {
         if (isJobRunning())
             throw new RuntimeException("Another job is running");
         executor.execute(() ->
@@ -814,11 +816,12 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
             final Exception[] exception = {null};
             int[] processedFiles = new int[]{-1};
-            AesFile[] files = null;
+            AesFile[] aesFiles = null;
             List<IFile> failedFiles = new ArrayList<>();
             try {
                 FileCommander.BatchImportOptions importOptions = new FileCommander.BatchImportOptions();
-                importOptions.autoRename = IFile.autoRename;
+                if(autorename)
+                    importOptions.autoRename = IFile.autoRename;
                 importOptions.deleteSource = deleteSource;
                 importOptions.integrity = true;
                 importOptions.onProgressChanged = (taskProgress) ->
@@ -841,9 +844,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
                     failedFiles.add(file);
                     exception[0] = ex;
                 };
-                files = fileCommander.importFiles(fileNames, importDir, importOptions);
+                aesFiles = fileCommander.importFiles(files, importDir, importOptions);
                 if (onFinished != null)
-                    onFinished.accept(files);
+                    onFinished.accept(aesFiles);
             } catch (Exception e) {
                 e.printStackTrace();
                 if (!handleException(e)) {
@@ -854,7 +857,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 setTaskMessage("Import Stopped");
             else if (failedFiles.size() > 0)
                 SalmonDialog.promptDialog("Import", "Some files failed: " + exception[0].getMessage());
-            else if (files != null)
+            else if (aesFiles != null)
                 setTaskMessage("Import Complete");
             setFileProgress(1);
             setFilesProgress(1);

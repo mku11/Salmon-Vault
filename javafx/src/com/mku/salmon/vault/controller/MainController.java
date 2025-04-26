@@ -333,7 +333,7 @@ public class MainController {
     }
 
     public void onExportAndDelete() {
-        SalmonDialogs.promptExportFolder("Export Files", SalmonVaultManager.REQUEST_EXPORT_DIR, true);
+        SalmonDialogs.promptExportFolder("Export Files and Delete", SalmonVaultManager.REQUEST_EXPORT_DIR, true);
     }
 
     public void onNewFolder() {
@@ -584,7 +584,7 @@ public class MainController {
     }
 
     protected void openItem(int position) throws Exception {
-        if(fileItemList.size() < position)
+        if (fileItemList.size() < position)
             return;
         SalmonFileViewModel selectedFile = fileItemList.get(position);
         manager.openItem(selectedFile.getAesFile());
@@ -601,7 +601,6 @@ public class MainController {
     private boolean OpenListItem(AesFile file) {
         SalmonFileViewModel vm = getViewModel(file);
         try {
-            String ext = FileUtils.getExtensionFromFileName(file.getName()).toLowerCase();
             if (FileUtils.isVideo(file.getName())) {
                 startMediaPlayer(vm);
                 return true;
@@ -611,8 +610,7 @@ public class MainController {
             } else if (FileUtils.isImage(file.getName())) {
                 startImageViewer(vm);
                 return true;
-            } else if (FileTypes.isPDF(file.getName()) || FileTypes.isDocument(file.getName())
-            || FileTypes.isPresentation(file.getName()) || FileTypes.isSpreadsheet(file.getName())) {
+            } else if (FileTypes.isPDF(file.getName()) || FileTypes.isDocument(file.getName())) {
                 startPDFViewer(vm);
                 return true;
             } else if (FileUtils.isText(file.getName())) {
@@ -629,10 +627,9 @@ public class MainController {
     }
 
     private void promptOpenExternalApp(AesFile file, String msg) {
-        SalmonDialog.promptDialog("Open External", (msg != null ? msg + " " : "") + "Press Ok to export the file and " +
-                        "open it with an external app. This file will be placed in the export folder and will also be " +
-                        "visible to all other apps in this device. If you edit this file externally you will have to " +
-                        "import the file manually back into the vault.\n",
+        SalmonDialog.promptDialog("Open External", (msg != null ? msg + " " : "")
+                        + "Press Ok to export the file temporarily and " +
+                        "open it with an external app. \n",
                 "Ok", () -> {
                     try {
                         openWith(file);
@@ -643,28 +640,99 @@ public class MainController {
     }
 
     private void openWith(AesFile salmonFile) {
+        SalmonDialogs.promptShare("Share File", SalmonVaultManager.REQUEST_EXPORT_DIR, (sharedDir) -> {
+            openWith(salmonFile, sharedDir);
+        });
+    }
+
+    private void openWith(AesFile salmonFile, IFile sharedDir) {
+        AesFile parentDir = salmonFile.getParent();
         if (manager.isJobRunning())
             throw new RuntimeException("Another job is running");
-        IFile exportDir = SalmonVaultManager.getInstance().getDrive().getExportDir();
-        manager.exportFiles(new AesFile[]{salmonFile}, exportDir, (files) ->
+        IFile[] sharedFiles = new IFile[1];
+        manager.exportFiles(new AesFile[]{salmonFile}, sharedDir, false, (files) ->
         {
             WindowUtils.runOnMainThread(() -> {
                 try {
+                    IFile sharedFile = files[0];
+                    sharedFiles[0] = sharedFile;
                     String os = System.getProperty("os.name").toUpperCase();
                     if (os.startsWith("WINDOWS")) { // for windows we let the user choose the app
-                        Runtime.getRuntime().exec("rundll32.exe SHELL32.DLL,OpenAs_RunDLL " + files[0].getPath());
+                        Runtime.getRuntime().exec("rundll32.exe SHELL32.DLL,OpenAs_RunDLL " + sharedFile.getPath());
                     } else {
                         if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-                            Desktop.getDesktop().edit(new File(files[0].getPath()));
+                            Desktop.getDesktop().edit(new File(sharedFile.getPath()));
                         } else if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-                            Desktop.getDesktop().open(new File(files[0].getPath()));
+                            Desktop.getDesktop().open(new File(sharedFile.getPath()));
                         }
                     }
                 } catch (Exception e) {
                     new SalmonDialog(Alert.AlertType.ERROR, "Could not launch external app: " + e).show();
                 }
             });
-        }, false);
+        });
+        SalmonDialog.promptDialog("Open External",
+                "You will be soon prompted to open the file with an app. " +
+                "When you're done with the changes click OK to import your file.", "Import", () -> {
+            manager.importFiles(sharedFiles, parentDir, false, (files) -> {
+                if (files.length == 0 || !files[0].exists()) {
+                    SalmonDialog.promptDialog("Import Error",
+                            "Could not import the file make sure you delete or re-import manually: "
+                            + sharedFiles[0].getDisplayPath());
+                } else {
+                    renameOldFile(salmonFile);
+                    deleteAfterImportShared(sharedFiles[0]);
+                }
+            }, false);
+        }, "Ignore", () -> {
+            deleteAfterImportShared(sharedFiles[0]);
+        });
+    }
+
+    private void renameOldFile(AesFile salmonFile) {
+        try {
+            String ext = FileUtils.getExtensionFromFileName(salmonFile.getName());
+            int idx = salmonFile.getName().lastIndexOf(".");
+            String newFilename;
+            if (idx >= 0)
+                newFilename = salmonFile.getName().substring(0, idx) + ".bak." + ext;
+            else
+                newFilename = salmonFile.getName() + ".bak";
+            salmonFile.rename(newFilename);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public IFile getSharedDir() throws Exception {
+        String sharedDir;
+        String os = System.getProperty("os.name").toUpperCase();
+        if (os.toUpperCase().contains("WIN")) {
+            sharedDir = System.getenv("HOMEDRIVE") + System.getenv("HOMEPATH") + "\\"
+                    + "SalmonShared";
+        } else if (os.toUpperCase().contains("MAC")) {
+            sharedDir = System.getProperty("user.home") + "/" + "SalmonShared";
+        } else if (os.toUpperCase().contains("LINUX")) {
+            sharedDir = System.getProperty("user.dir") + "/" + "SalmonShared";
+        } else
+            throw new Exception("Operating System not supported");
+        return new com.mku.fs.file.File(sharedDir);
+    }
+
+    private void deleteAfterImportShared(IFile sharedFile) {
+        boolean res = false;
+        try {
+            res = sharedFile.delete();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        if (!res) {
+            SalmonDialog.promptDialog("Error",
+                    "Could not delete the exported file, make sure you close the external app or delete manually: "
+                            + sharedFile.getDisplayPath(), "Try again", () -> {
+                        deleteAfterImportShared(sharedFile);
+                    }, "Cancel", null);
+        }
     }
 
     private void startTextEditor(SalmonFileViewModel item) {
