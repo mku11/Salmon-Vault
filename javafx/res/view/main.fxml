@@ -177,7 +177,7 @@
                             <PropertyValueFactory property="size" />
                         </cellValueFactory>
                     </TableColumn>
-                    <TableColumn editable="false" minWidth="200" style="-fx-alignment: CENTER-LEFT;" text="Path">
+                    <TableColumn editable="false" minWidth="200" style="-fx-alignment: CENTER-LEFT;" text="Path" visible="false">
                         <cellValueFactory>
                             <PropertyValueFactory property="path" />
                         </cellValueFactory>
