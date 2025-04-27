@@ -271,6 +271,7 @@ public class SalmonDialogs {
                     SalmonDialogs.promptSetPassword((String pass) ->
                     {
                         SalmonVaultManager.getInstance().createVault((IFile) file, pass);
+                        SalmonSettings.getInstance().setVaultLocation(((IFile) file).getPath());
                     });
                 },
                 SalmonVaultManager.REQUEST_CREATE_VAULT_DIR);
@@ -324,6 +325,7 @@ public class SalmonDialogs {
                     SalmonDialogs.promptPassword((String password) -> {
                         try {
                             SalmonVaultManager.getInstance().openVault((IFile) dir, password);
+                            SalmonSettings.getInstance().setVaultLocation(((IFile) dir).getPath());
                         } catch (Exception ex) {
                             SalmonDialog.promptDialog("Error", "Could not create vault: "
                                     + ex.getMessage());

@@ -416,7 +416,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 closeVault();
                 this.drive = AesDrive.openDrive(dir, getDriveClassType(dir), password, this.sequencer);
                 this.currDir = this.drive.getRoot();
-                SalmonSettings.getInstance().setVaultLocation(dir.getPath());
                 refresh();
             } catch (Error e) {
                 e.printStackTrace();
@@ -943,7 +942,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 closeVault();
                 this.drive = AesDrive.createDrive(dir, getDriveClassType(dir), password, this.sequencer);
                 this.currDir = this.drive.getRoot();
-                SalmonSettings.getInstance().setVaultLocation(dir.getPath());
                 this.refresh();
                 SalmonDialog.promptDialog("Action", "Vault created, you can start importing your files");
             } catch (Exception e) {
