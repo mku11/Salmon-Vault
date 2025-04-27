@@ -51,3 +51,5 @@ node_modules
 
 js/src/assets/js
 js/project/app_package
+
+*.log
