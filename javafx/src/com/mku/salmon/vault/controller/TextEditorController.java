@@ -79,7 +79,6 @@ public class TextEditorController {
         Parent root = loader.load();
         TextEditorController controller = loader.getController();
         Stage stage = new Stage();
-        stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(owner);
         controller.setStage(stage);
         controller.load(file);

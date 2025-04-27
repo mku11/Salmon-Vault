@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
@@ -43,6 +44,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -59,6 +61,15 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class MediaPlayerController {
+    private static final Image playImage = new Image(MediaPlayerController.class.getResourceAsStream("/icons/play.png"));
+    private static final Image pauseImage = new Image(MediaPlayerController.class.getResourceAsStream("/icons/pause.png"));
+    private static final SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+    private static final double mediaViewHorizMargin = 24;
+    private static final double mediaViewVertMargin = 64;
+
+    @FXML
+    public GridPane gridPane;
+
     @FXML
     public Button playButton;
     @FXML
@@ -128,13 +139,6 @@ public class MediaPlayerController {
         return totaltime;
     }
 
-    private final Image playImage = new Image(this.getClass().getResourceAsStream("/icons/play.png"));
-    private final Image pauseImage = new Image(this.getClass().getResourceAsStream("/icons/pause.png"));
-
-    private final SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
-
-    private static final double mediaViewMargin = 24;
-
     @FXML
     private void initialize() {
         format.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -142,8 +146,6 @@ public class MediaPlayerController {
         currtime.setValue(format.format(new Date()));
         totaltime.setValue(format.format(new Date()));
     }
-
-    private Executor executor = Executors.newSingleThreadExecutor();
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -157,31 +159,33 @@ public class MediaPlayerController {
         Parent root = loader.load();
         MediaPlayerController controller = loader.getController();
         Stage stage = new Stage();
-        stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(owner);
         controller.setStage(stage);
         controller.load(file);
         stage.getIcons().add(WindowUtils.getDefaultIcon());
-        stage.setTitle("Media Player");
         Scene scene = new Scene(root);
         stage.setScene(scene);
         WindowUtils.setDefaultIconPath(SalmonConfig.icon);
-        stage.widthProperty().addListener((observable, oldValue, newValue) -> {
-            controller.mediaView.setFitWidth(newValue.doubleValue()
-                    - controller.root.getPadding().getLeft()
-                    - controller.root.getPadding().getRight()
-                    - mediaViewMargin
-            );
-        });
-        stage.heightProperty().addListener((observable, oldValue, newValue) -> {
-            controller.mediaView.setFitHeight(newValue.doubleValue()
-                    - controller.root.getPadding().getTop()
-                    - controller.root.getPadding().getBottom()
-                    - controller.controlContainer.getHeight()
-                    - controller.menuBar.getHeight()
-                    - mediaViewMargin
-            );
-        });
+        if (FileUtils.isVideo(file.getAesFile().getName())) {
+            stage.widthProperty().addListener((observable, oldValue, newValue) -> {
+                controller.mediaView.setFitWidth(newValue.doubleValue()
+                        - controller.root.getPadding().getLeft()
+                        - controller.root.getPadding().getRight()
+                        - mediaViewHorizMargin
+                );
+            });
+            stage.heightProperty().addListener((observable, oldValue, newValue) -> {
+                controller.mediaView.setFitHeight(newValue.doubleValue()
+                        - controller.root.getPadding().getTop()
+                        - controller.root.getPadding().getBottom()
+                        - controller.controlContainer.getHeight()
+                        - controller.menuBar.getHeight()
+                        - mediaViewVertMargin
+                );
+            });
+            scene.getWindow().setWidth(800);
+            scene.getWindow().setHeight(600);
+        }
         stage.show();
         controller.play();
     }
@@ -195,6 +199,7 @@ public class MediaPlayerController {
         String filePath;
         try {
             filePath = file.getRealPath();
+            stage.setTitle("Media Player - " + file.getName());
             this.url = AesStreamHandler.getInstance().register(filePath, file);
             Media m = new Media(url);
             mp = new MediaPlayer(m);

@@ -11,9 +11,8 @@
           GridPane.hgrow="ALWAYS"
           GridPane.vgrow="ALWAYS"
           stylesheets="/css/dark.css"
-          minHeight="128"
-          minWidth="128"
-          prefWidth="800" prefHeight="600">
+          prefWidth="400" prefHeight="96"
+          fx:id="gridPane">
     <VBox fx:id="root" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
         <padding>
             <Insets bottom="10" left="10" right="10" top="10"/>

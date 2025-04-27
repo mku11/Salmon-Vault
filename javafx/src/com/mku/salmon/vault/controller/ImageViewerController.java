@@ -83,7 +83,6 @@ public class ImageViewerController {
         Parent root = loader.load();
         ImageViewerController controller = loader.getController();
         Stage stage = new Stage();
-        stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(owner);
         controller.setStage(stage);
         controller.load(file);
