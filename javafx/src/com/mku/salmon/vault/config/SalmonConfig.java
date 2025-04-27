@@ -30,9 +30,12 @@ public class SalmonConfig {
     public static final String APP_NAME = "Salmon Vault";
     public static final String ABOUT_TEXT = "License: MIT License\n\n" +
             "Open source projects included:\n" +
-            "Java Native Access - Apache 2.0 - https://github.com/java-native-access/jna\n" +
-            "JavaFX - GPLv2.0 - https://github.com/openjdk/jfx\n" +
-            "uxwing icons - https://uxwing.com\n\n" +
+            "Salmon-AES-CTR - MIT License - https://github.com/mku11/Salmon-AES-CTR\n" +
+            "JavaFX - GPLv2.0 License - https://github.com/openjdk/jfx\n" +
+            "Java Native Access - Apache 2.0 License - https://github.com/java-native-access/jna\n" +
+            "docx4j - Apache 2.0 License- https://github.com/plutext/docx4j\n" +
+            "jcodec - BSD-2-Clause License - https://github.com/jcodec/jcodec\n" +
+            "uxwing icons - https://uxwing.com/license - https://uxwing.com\n\n" +
             "For more information visit the project website";
     public static final String SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
     public static final String icon = "icons/logo_48x48.png";
