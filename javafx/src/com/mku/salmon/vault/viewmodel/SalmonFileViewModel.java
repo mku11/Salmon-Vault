@@ -27,23 +27,31 @@ import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.utils.ByteUtils;
 
+import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.file.AesFile;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.WritableValue;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class SalmonFileViewModel {
     private static final int BACKGROUND_THREADS = 4;
+    private static final int THUMBNAIL_MAX_STEPS = 10;
+    private static final long VIDEO_THUMBNAIL_MSECS = 3000;
+
     private static final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
 
     private SimpleObjectProperty<ImageView> image = new SimpleObjectProperty<>();
@@ -55,9 +63,14 @@ public class SalmonFileViewModel {
 
     private AesFile salmonFile;
 
+    private Executor executor = Executors.newFixedThreadPool(BACKGROUND_THREADS);
+
     public SalmonFileViewModel(AesFile salmonFile) {
         this.salmonFile = salmonFile;
     }
+
+    private boolean animate = false;
+    private static SalmonFileViewModel animationViewModel;
 
     @FXML
     public SimpleObjectProperty<ImageView> imageProperty() {
@@ -164,5 +177,63 @@ public class SalmonFileViewModel {
     public void rename(String newValue) throws Exception {
         salmonFile.rename(newValue);
         name.setValue(salmonFile.getName());
+    }
+
+    private void checkAnimation() throws IOException {
+        if (animationViewModel != this || !animationViewModel.animate) {
+            resetAnimation();
+            animationViewModel = this;
+            animationViewModel.animate = true;
+            if (getExtText().equals("mp4")) {
+                animateVideo();
+            }
+        }
+    }
+
+    private void animateVideo() {
+        executor.execute(() -> {
+            int i = 0;
+            try {
+                while (animationViewModel == this && animationViewModel.animate) {
+                    i++;
+                    i %= THUMBNAIL_MAX_STEPS;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    Image image = null;
+                    try {
+                        image = Thumbnails.getVideoThumbnail(salmonFile,
+                                (i + 1) * VIDEO_THUMBNAIL_MSECS / 1000f);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (image == null)
+                        continue;
+                    Image finalImage = image;
+                    WindowUtils.runOnMainThread(() -> {
+                        if(animationViewModel == this && animationViewModel.animate)
+                            this.image.get().setImage(finalImage);
+                    });
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public synchronized void resetAnimation() {
+        if(animationViewModel != null)
+            animationViewModel.animate = false;
+        animationViewModel = null;
+    }
+
+    public void entered() {
+        try {
+            checkAnimation();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

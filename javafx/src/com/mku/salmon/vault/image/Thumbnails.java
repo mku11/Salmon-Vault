@@ -86,8 +86,15 @@ public class Thumbnails {
     /// <param name="salmonFile">The encrypted media file which will be used to get the thumbnail</param>
     /// <returns></returns>
     public static Image getVideoThumbnail(AesFile salmonFile) throws Exception {
-
         Picture picture = FrameGrab.getFrameFromChannelAtSec(new AesSeekableByteChannel(salmonFile), 3);
+        BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
+        WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
+        return image;
+    }
+
+    public static Image getVideoThumbnail(AesFile salmonFile, double secs) throws Exception {
+
+        Picture picture = FrameGrab.getFrameFromChannelAtSec(new AesSeekableByteChannel(salmonFile), secs);
         BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
         WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
         return image;

@@ -262,6 +262,9 @@ public class MainController {
                     openContextMenu(row.getItem());
                 }
             });
+            row.setOnMouseEntered(event -> {
+                row.getItem().entered();
+            });
             return row;
         });
         table.setOnKeyPressed(event -> {
