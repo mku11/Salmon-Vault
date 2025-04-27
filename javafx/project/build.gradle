@@ -3,7 +3,7 @@ plugins {
     id 'application'
 }
 
-group 'com.mku.salmon'
+group 'com.mku.salmon.vault'
 version '3.0.1'
 
 repositories {
