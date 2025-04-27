@@ -287,8 +287,8 @@ public class SalmonDialog extends javafx.scene.control.Alert {
         final Button btOk = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
         btOk.addEventFilter(ActionEvent.ACTION, event -> {
             RadioButton button = (RadioButton) toggleGroup.getSelectedToggle();
-            onClickListener.accept(buttons.indexOf(button));
             alert.hide();
+            onClickListener.accept(buttons.indexOf(button));
         });
     }
 }
