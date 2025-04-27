@@ -192,6 +192,7 @@ public class MainController {
     private void managerPropertyChanged(Object owner, String propertyName) {
         if (propertyName.equals("FileItemList")) {
             updateFileViewModels();
+            Thumbnails.enableAnimation(true);
         } else if (propertyName.equals("CurrentItem")) {
             selectItem(manager.getCurrentItem());
         } else if (propertyName.equals("Status")) {
@@ -368,6 +369,10 @@ public class MainController {
     public void onDelete() {
         if (!table.isFocused())
             return;
+
+        Thumbnails.enableAnimation(false);
+        SalmonFileViewModel.resetAnimation();
+        Thumbnails.clearVideoThumbnails();
         SalmonDialogs.promptDelete();
     }
 

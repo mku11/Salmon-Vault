@@ -61,12 +61,15 @@ public class Thumbnails {
     private static final int TMP_GIF_THUMB_MAX_SIZE = 512 * 1024;
     private static final int BUFFER_SIZE = 256 * 1024;
     private static final int THUMBNAIL_SIZE = 128;
+    private static final long VIDEO_THUMBNAIL_MSECS = 3000;
 
     private static final int MAX_CACHE_SIZE = 20 * 1024 * 1024;
     private static final HashMap<AesFile, Image> cache = new HashMap<>();
     private static int TINT_COLOR_ALPHA = 60;
     private static int cacheSize;
 
+
+    private static final HashMap<AesFile, AesSeekableByteChannel> byteChannels = new HashMap<>();
     private static final Executor executor = Executors.newFixedThreadPool(2);
     private static final LinkedBlockingDeque<ThumbnailTask> tasks = new LinkedBlockingDeque<>();
 
@@ -86,18 +89,43 @@ public class Thumbnails {
     /// <param name="salmonFile">The encrypted media file which will be used to get the thumbnail</param>
     /// <returns></returns>
     public static Image getVideoThumbnail(AesFile salmonFile) throws Exception {
-        Picture picture = FrameGrab.getFrameFromChannelAtSec(new AesSeekableByteChannel(salmonFile), 3);
+        return getVideoThumbnail(salmonFile, VIDEO_THUMBNAIL_MSECS / 1000f);
+    }
+
+    public static boolean isAnimationEnabled() {
+        return !animationStopped;
+    }
+
+    private static boolean animationStopped = false;
+
+    public static void enableAnimation(boolean value) {
+        animationStopped = !value;
+    }
+
+    public static synchronized Image getVideoThumbnail(AesFile salmonFile, double secs) throws Exception {
+        if(animationStopped)
+            return null;
+        AesSeekableByteChannel byteChannel = byteChannels.getOrDefault(salmonFile, null);
+        if(byteChannel == null) {
+            byteChannel = new AesSeekableByteChannel(salmonFile);
+            byteChannels.put(salmonFile, byteChannel);
+        }
+        byteChannel.setPosition(0);
+        Picture picture = FrameGrab.getFrameFromChannelAtSec(byteChannel, secs);
         BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
         WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
         return image;
     }
 
-    public static Image getVideoThumbnail(AesFile salmonFile, double secs) throws Exception {
-
-        Picture picture = FrameGrab.getFrameFromChannelAtSec(new AesSeekableByteChannel(salmonFile), secs);
-        BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
-        WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
-        return image;
+    public synchronized static void clearVideoThumbnails() {
+        for(AesSeekableByteChannel byteChannel : byteChannels.values()) {
+            try {
+                byteChannel.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        byteChannels.clear();
     }
 
     /// <summary>

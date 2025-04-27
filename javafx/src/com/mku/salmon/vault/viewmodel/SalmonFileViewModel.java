@@ -177,7 +177,7 @@ public class SalmonFileViewModel {
         name.setValue(salmonFile.getName());
     }
 
-    private void checkAnimation() throws IOException {
+    private void checkAndStartAnimation() throws IOException {
         if (animationViewModel != this || !animationViewModel.animate) {
             resetAnimation();
             animationViewModel = this;
@@ -190,6 +190,8 @@ public class SalmonFileViewModel {
 
     private void animateVideo() {
         executor.execute(() -> {
+            if (!Thumbnails.isAnimationEnabled())
+                return;
             int i = 0;
             try {
                 while (animationViewModel == this && animationViewModel.animate) {
@@ -211,7 +213,7 @@ public class SalmonFileViewModel {
                         continue;
                     Image finalImage = image;
                     WindowUtils.runOnMainThread(() -> {
-                        if(animationViewModel == this && animationViewModel.animate)
+                        if (animationViewModel == this && animationViewModel.animate)
                             this.image.get().setImage(finalImage);
                     });
                 }
@@ -221,15 +223,15 @@ public class SalmonFileViewModel {
         });
     }
 
-    public synchronized void resetAnimation() {
-        if(animationViewModel != null)
+    public static void resetAnimation() {
+        if (animationViewModel != null)
             animationViewModel.animate = false;
         animationViewModel = null;
     }
 
     public void entered() {
         try {
-            checkAnimation();
+            checkAndStartAnimation();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

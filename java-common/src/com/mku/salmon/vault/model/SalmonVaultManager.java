@@ -496,9 +496,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
             }
             if (fileCommander.areJobsStopped())
                 setTaskMessage("Delete Stopped");
-            else if (failedFiles.size() > 0)
+            else if (failedFiles.size() > 0) {
+                exception[0].printStackTrace();
                 SalmonDialog.promptDialog("Delete", "Some files failed: " + exception[0].getMessage());
-            else
+            } else
                 setTaskMessage("Delete Complete");
             setFileProgress(1);
             setFilesProgress(1);
