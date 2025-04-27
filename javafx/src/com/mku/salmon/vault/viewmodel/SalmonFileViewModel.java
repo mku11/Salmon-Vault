@@ -33,11 +33,9 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.WritableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -48,7 +46,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class SalmonFileViewModel {
-    private static final int BACKGROUND_THREADS = 4;
+    private static final int BACKGROUND_THREADS = 1;
     private static final int THUMBNAIL_MAX_STEPS = 10;
     private static final long VIDEO_THUMBNAIL_MSECS = 3000;
 
