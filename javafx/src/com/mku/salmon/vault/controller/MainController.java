@@ -380,6 +380,9 @@ public class MainController {
         if (!table.isFocused())
             return;
         try {
+            Thumbnails.enableAnimation(false);
+            SalmonFileViewModel.resetAnimation();
+            Thumbnails.clearVideoThumbnails();
             manager.pasteSelected();
         } catch (Exception ex) {
             SalmonDialog.promptDialog("Error", "Could not paste files: " + ex);
