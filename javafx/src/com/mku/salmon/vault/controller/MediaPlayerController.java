@@ -133,7 +133,7 @@ public class MediaPlayerController {
 
     private final SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
 
-    private static final double mediaViewMargin = 64;
+    private static final double mediaViewMargin = 24;
 
     @FXML
     private void initialize() {
