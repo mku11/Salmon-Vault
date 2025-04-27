@@ -33,6 +33,7 @@ import com.mku.func.Function;
 import com.mku.salmon.sequence.INonceSequenceSerializer;
 import com.mku.salmon.sequence.INonceSequencer;
 import com.mku.salmon.sequence.SequenceSerializer;
+import com.mku.salmon.streams.AesStream;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
@@ -46,11 +47,13 @@ import com.mku.salmonfs.drive.WSDrive;
 import com.mku.salmonfs.drive.utils.AesFileCommander;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.salmonfs.sequence.FileSequencer;
+import com.mku.streams.RandomAccessStream;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.RandomAccess;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -710,14 +713,24 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public void createFile(String fileName) {
         executor.submit(() -> {
+            RandomAccessStream stream = null;
             try {
-                SalmonVaultManager.getInstance().getCurrDir().createFile(fileName);
-                SalmonVaultManager.getInstance().refresh();
+                AesFile file = SalmonVaultManager.getInstance().getCurrDir().createFile(fileName);
+                stream = file.getOutputStream();
+                stream.write("\n".getBytes(), 0, 1);
+                stream.flush();
             } catch (Exception exception) {
                 exception.printStackTrace();
                 if (!SalmonVaultManager.getInstance().handleException(exception)) {
                     SalmonDialog.promptDialog("Error", "Could not create file: " + exception.getMessage());
                 }
+            } finally {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                SalmonVaultManager.getInstance().refresh();
             }
         });
     }

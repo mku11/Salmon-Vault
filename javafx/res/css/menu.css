@@ -73,6 +73,13 @@
       -fx-graphic: none;
   }
 
+  #menu-create-file > .label{
+        -fx-graphic: url("../icons/add_file_small.png");
+    }
+    #menu-create-file .accelerator-text {
+        -fx-graphic: none;
+    }
+
   #menu-copy > .label{
       -fx-graphic: url("../icons/copy_file_small.png");
   }

@@ -346,6 +346,10 @@ public class MainController {
         SalmonDialogs.promptNewFolder();
     }
 
+    public void onNewFile() {
+        SalmonDialogs.promptNewFile();
+    }
+
     public void onCopy() {
         if (!table.isFocused())
             return;
@@ -653,7 +657,7 @@ public class MainController {
     }
 
     private void openWith(AesFile salmonFile) {
-        SalmonDialogs.promptShare("Share File", SalmonVaultManager.REQUEST_EXPORT_DIR, (sharedDir) -> {
+        SalmonDialogs.promptShare("Export and Share File", SalmonVaultManager.REQUEST_EXPORT_DIR, (sharedDir) -> {
             openWith(salmonFile, sharedDir);
         });
     }
