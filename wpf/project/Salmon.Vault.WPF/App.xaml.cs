@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+using Mku.FS.File;
 using Salmon.Vault.Services;
 using Salmon.Vault.View;
 using System.Windows;
@@ -34,6 +35,8 @@ public partial class App : Application
 
     private void Application_Startup(object sender, StartupEventArgs e)
     {
+		// set to false for production
+        HttpSyncClient.AllowClearTextTraffic = false;
         SetupServices();
         MainWindow = new MainWindow();
         MainWindow.Show();
