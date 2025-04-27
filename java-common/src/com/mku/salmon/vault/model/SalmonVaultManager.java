@@ -879,13 +879,14 @@ public class SalmonVaultManager implements IPropertyNotifier {
             setFileProgress(0);
             setFilesProgress(0);
             try {
-                if (currDir.getPath() != null)
-                    setPathText(currDir.getPath() + "?search=" + value);
+                salmonFiles = new AesFile[]{};
+                populateFileList(null);
+                // FIXME: wait till observers clear the previous list
+                Thread.sleep(2000);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            salmonFiles = new AesFile[]{};
-            populateFileList(null);
+
             setTaskRunning(true);
             setStatus("Searching");
             FileSearcher.SearchOptions searchOptions = new FileSearcher.SearchOptions();
