@@ -263,7 +263,9 @@ public class MainController {
                 }
             });
             row.setOnMouseEntered(event -> {
-                row.getItem().entered();
+                SalmonFileViewModel item = row.getItem();
+                if(item != null)
+                    item.entered();
             });
             return row;
         });
