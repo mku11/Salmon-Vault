@@ -61,6 +61,7 @@ task unzipNative(type: Sync) {
     into file(project.nativeLibsDir)
 }
 build.dependsOn unzipNative
+classes.dependsOn unzipNative
 
 dependencies {
 
