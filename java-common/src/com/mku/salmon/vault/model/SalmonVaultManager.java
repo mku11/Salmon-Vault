@@ -833,7 +833,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             List<IFile> failedFiles = new ArrayList<>();
             try {
                 FileCommander.BatchImportOptions importOptions = new FileCommander.BatchImportOptions();
-                if(autorename)
+                if (autorename)
                     importOptions.autoRename = IFile.autoRename;
                 importOptions.deleteSource = deleteSource;
                 importOptions.integrity = true;
@@ -963,16 +963,19 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public String getFileProperties(AesFile item)
             throws IOException {
-        return "Name: " + item.getName() + "\n" +
+        String props = "Name: " + item.getName() + "\n" +
                 "Path: " + item.getPath() + "\n" +
                 (!item.isDirectory() ? ("Size: " + ByteUtils.getBytes(item.getLength(), 2)
                         + " (" + item.getLength() + " bytes)") : "Items: " + item.listFiles().length) + "\n" +
                 "Encrypted Name: " + item.getRealFile().getName() + "\n" +
                 "Encrypted Path: " + item.getRealFile().getDisplayPath() + "\n" +
                 (!item.isDirectory() ? "Encrypted Size: " + ByteUtils.getBytes(item.getRealFile().getLength(), 2)
-                        + " (" + item.getRealFile().getLength() + " bytes)" : "") + "\n" +
-                "Integrity enabled: " + (item.getFileChunkSize() > 0 ? "Yes" : "No") + "\n" +
-                (item.getFileChunkSize() > 0 ? "Integrity chunk size: " + item.getFileChunkSize() + " bytes" : "");
+                        + " (" + item.getRealFile().getLength() + " bytes)" : "") + "\n";
+        if (item.isFile()) {
+            props += "Integrity enabled: " + (item.getFileChunkSize() > 0 ? "Yes" : "No") + "\n" +
+                    (item.getFileChunkSize() > 0 ? "Integrity chunk size: " + item.getFileChunkSize() + " bytes" : "") + "\n";
+        }
+        return props;
     }
 
     public boolean canGoBack() {
