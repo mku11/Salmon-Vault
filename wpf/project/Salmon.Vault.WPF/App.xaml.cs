@@ -36,7 +36,7 @@ public partial class App : Application
     private void Application_Startup(object sender, StartupEventArgs e)
     {
 		// set to false for production
-        HttpSyncClient.AllowClearTextTraffic = false;
+        HttpSyncClient.AllowClearTextTraffic = true;
         SetupServices();
         MainWindow = new MainWindow();
         MainWindow.Show();
