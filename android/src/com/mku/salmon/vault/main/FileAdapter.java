@@ -457,6 +457,8 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
             itemView.setOnClickListener((View view) ->
             {
+                if(super.getLayoutPosition() >= items.size())
+                    return;
                 AesFile salmonFile = items.get(super.getLayoutPosition());
                 if (mode == Mode.MULTI_SELECT) {
                     selected.setChecked(!selected.isChecked());
