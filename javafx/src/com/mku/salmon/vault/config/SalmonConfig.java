@@ -24,8 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmon.vault.controller.MainController;
-
 public class SalmonConfig {
     public static final String APP_NAME = "Salmon Vault";
     public static final String ABOUT_TEXT = "License: MIT License\n\n" +
