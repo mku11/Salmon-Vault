@@ -266,6 +266,7 @@ public class SalmonFileViewModel : INotifyPropertyChanged
         Ext = GetExtText();
         Thumbnails.ResetCache(salmonFile);
         Image = null;
+        Thumbnails.GenerateThumbnailAsync(this);
         TintColor = default;
     }
 
@@ -319,12 +320,6 @@ public class SalmonFileViewModel : INotifyPropertyChanged
     public void Delete()
     {
         salmonFile.Delete();
-    }
-
-    public void Rename(string newValue)
-    {
-        salmonFile.Rename(newValue);
-        Name = salmonFile.Name;
     }
 
     override
