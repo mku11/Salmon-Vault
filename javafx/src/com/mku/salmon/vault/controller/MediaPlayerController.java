@@ -139,6 +139,8 @@ public class MediaPlayerController {
         return totaltime;
     }
 
+    private static final Executor executor = Executors.newSingleThreadExecutor();
+
     @FXML
     private void initialize() {
         format.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -159,9 +161,7 @@ public class MediaPlayerController {
         Parent root = loader.load();
         MediaPlayerController controller = loader.getController();
         Stage stage = new Stage();
-        stage.initOwner(owner);
         controller.setStage(stage);
-        controller.load(file);
         stage.getIcons().add(WindowUtils.getDefaultIcon());
         Scene scene = new Scene(root);
         stage.setScene(scene);
@@ -187,7 +187,10 @@ public class MediaPlayerController {
             scene.getWindow().setHeight(600);
         }
         stage.show();
-        controller.play();
+        executor.execute(() -> {
+            controller.load(file);
+            controller.play();
+        });
     }
 
     private void play() {
@@ -199,7 +202,6 @@ public class MediaPlayerController {
         String filePath;
         try {
             filePath = file.getRealPath();
-            stage.setTitle("Media Player - " + file.getName());
             this.url = AesStreamHandler.getInstance().register(filePath, file);
             Media m = new Media(url);
             mp = new MediaPlayer(m);
@@ -207,6 +209,11 @@ public class MediaPlayerController {
             mp.setOnPlaying(() -> setImage(pauseImage));
             mediaView.setMediaPlayer(mp);
             startTimer();
+
+            String filename = file.getName();
+            WindowUtils.runOnMainThread(()->{
+                stage.setTitle("Media Player - " + filename);
+            });
         } catch (Exception e) {
             e.printStackTrace();
             SalmonDialog.promptDialog("Error", "Could not load file: " + e);

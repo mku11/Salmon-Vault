@@ -44,6 +44,8 @@ import javafx.stage.Stage;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class ImageViewerController {
     private static final int ENC_BUFFER_SIZE = 128 * 1024;
@@ -77,15 +79,14 @@ public class ImageViewerController {
     }
 
     private static double imageViewMargin = 64;
+    private static final Executor executor = Executors.newSingleThreadExecutor();
 
     public static void openImageViewer(SalmonFileViewModel file, Stage owner) throws IOException {
         FXMLLoader loader = new FXMLLoader(SalmonSettings.getInstance().getClass().getResource("/view/image-viewer.fxml"));
         Parent root = loader.load();
         ImageViewerController controller = loader.getController();
         Stage stage = new Stage();
-        stage.initOwner(owner);
         controller.setStage(stage);
-        controller.load(file);
         stage.getIcons().add(WindowUtils.getDefaultIcon());
         stage.setTitle("Image Viewer");
         Scene scene = new Scene(root);
@@ -107,10 +108,13 @@ public class ImageViewerController {
             );
         });
         stage.show();
+        executor.execute(() -> {
+            controller.load(file);
+        });
     }
 
     private void load(SalmonFileViewModel file) {
-        if(viewer == null)
+        if (viewer == null)
             viewer = new SalmonImageViewer();
         try {
             viewer.load(file.getAesFile());

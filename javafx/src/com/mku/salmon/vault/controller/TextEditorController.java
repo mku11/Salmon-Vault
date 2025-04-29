@@ -44,6 +44,8 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class TextEditorController {
 
@@ -65,6 +67,8 @@ public class TextEditorController {
     private int currentCaretPosition = 0;
     private SalmonTextEditor editor;
 
+    private static final Executor executor = Executors.newSingleThreadExecutor();
+
     @FXML
     private void initialize() {
         editor = new SalmonTextEditor();
@@ -79,15 +83,16 @@ public class TextEditorController {
         Parent root = loader.load();
         TextEditorController controller = loader.getController();
         Stage stage = new Stage();
-        stage.initOwner(owner);
         controller.setStage(stage);
-        controller.load(file);
         stage.getIcons().add(WindowUtils.getDefaultIcon());
         stage.setTitle("TextEditor");
         Scene scene = new Scene(root);
         stage.setScene(scene);
         WindowUtils.setDefaultIconPath(SalmonConfig.icon);
-        stage.showAndWait();
+        stage.show();
+        executor.execute(() -> {
+            controller.load(file);
+        });
     }
 
     private void load(SalmonFileViewModel item) {
