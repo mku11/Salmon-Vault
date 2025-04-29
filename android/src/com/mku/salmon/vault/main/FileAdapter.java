@@ -92,6 +92,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     private HashSet<BiConsumer<Object, String>> observers = new HashSet<>();
 
     private ViewHolder animationViewHolder;
+    private ExecutorService animationExecutor;
 
     public void setOnCacheCleared(Runnable onCacheCleared) {
         this.onCacheCleared = onCacheCleared;
@@ -141,6 +142,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
     private void createThread() {
         executor = Executors.newFixedThreadPool(TASK_THREADS);
+        animationExecutor = Executors.newSingleThreadExecutor();
     }
 
     @Override
@@ -263,7 +265,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     }
 
     private void animateVideo(ViewHolder viewHolder) {
-        executor.submit(() -> {
+        animationExecutor.submit(() -> {
             int i = 0;
             java.io.File tmpFile = null;
             MediaMetadataRetriever retriever = null;
