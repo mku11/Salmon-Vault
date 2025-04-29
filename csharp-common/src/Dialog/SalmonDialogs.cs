@@ -24,11 +24,9 @@ SOFTWARE.
 
 using Mku.FS.Drive.Utils;
 using Mku.FS.File;
-using Mku.Salmon.Password;
 using Mku.SalmonFS.Auth;
 using Mku.SalmonFS.File;
 using Salmon.Vault.Config;
-using Salmon.Vault.Dialog;
 using Salmon.Vault.Extensions;
 using Salmon.Vault.Model;
 using Salmon.Vault.Services;
@@ -37,7 +35,6 @@ using Salmon.Vault.Utils;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Salmon.Vault.Dialog;
 
