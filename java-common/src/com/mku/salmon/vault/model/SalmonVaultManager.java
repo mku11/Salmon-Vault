@@ -720,6 +720,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             AesFile file = null;
             try {
                 file = SalmonVaultManager.getInstance().getCurrDir().createFile(fileName);
+                file.setApplyIntegrity(true);
                 stream = file.getOutputStream();
                 stream.write("\n".getBytes(), 0, 1);
                 stream.flush();
