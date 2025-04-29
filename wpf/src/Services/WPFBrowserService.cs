@@ -106,6 +106,8 @@ public class WPFBrowserService : IWebBrowserService
 
     public void Release()
     {
+        if (this.webView == null)
+            return;
         this.webView.CoreWebView2.Stop();
         this.webView.CoreWebView2.CookieManager.DeleteAllCookies();
         this.webView.CoreWebView2.CallDevToolsProtocolMethodAsync("Network.clearBrowserCache", "{}");
