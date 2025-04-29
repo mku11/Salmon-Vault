@@ -381,6 +381,7 @@ public class SalmonDialog : System.Windows.Window
             {
                 btnOk.Click += (object sender, RoutedEventArgs e) =>
                 {
+                    alert.Hide();
                     buttonListener1.Invoke();
                 };
             }
@@ -392,6 +393,7 @@ public class SalmonDialog : System.Windows.Window
                 {
                     btnCancel.Click += (object sender, RoutedEventArgs e) =>
                     {
+                        alert.Hide();
                         buttonListener2.Invoke();
                     };
                 }
