@@ -32,6 +32,7 @@ using Mku.SalmonFS.Sequence;
 using Mku.Streams;
 using Salmon.Vault.Config;
 using Salmon.Vault.Dialog;
+using Salmon.Vault.Extensions;
 using Salmon.Vault.Settings;
 using Salmon.Vault.Utils;
 using System;
@@ -982,10 +983,17 @@ public class SalmonVaultManager : INotifyPropertyChanged
             FileManagerMode = Mode.Search;
             FileProgress = 0;
             FilesProgress = 0;
-            if (CurrDir.Path != null)
-                SetPathText(CurrDir.Path + "?search=" + value);
-            salmonFiles = new AesFile[] { };
-            PopulateFileList(null);
+            try
+            {
+                salmonFiles = new AesFile[] { };
+                PopulateFileList(null);
+                // FIXME: wait till observers clear the previous list
+                Thread.Sleep(2000);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+            }
             SetTaskRunning(true);
             Status = "Searching";
             FileSearcher.SearchOptions searchOptions = new FileSearcher.SearchOptions();
