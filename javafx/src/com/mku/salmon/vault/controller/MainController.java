@@ -186,6 +186,7 @@ public class MainController {
 
     private void updateListItem(AesFile file) {
         SalmonFileViewModel vm = getViewModel(file);
+        Thumbnails.enableAnimation(true);
         vm.update();
     }
 
@@ -564,7 +565,12 @@ public class MainController {
 
         item = new MenuItem("Rename");
         item.setGraphic(getImageIcon("/icons/rename_small.png"));
-        item.setOnAction((event) -> SalmonDialogs.promptRenameFile(fileItem.getAesFile()));
+        item.setOnAction((event) -> {
+            Thumbnails.enableAnimation(false);
+            SalmonFileViewModel.resetAnimation();
+            Thumbnails.clearVideoThumbnails();
+            SalmonDialogs.promptRenameFile(fileItem.getAesFile());
+        });
         contextMenu.getItems().add(item);
 
         item = new MenuItem("Export (Ctrl+E)");
