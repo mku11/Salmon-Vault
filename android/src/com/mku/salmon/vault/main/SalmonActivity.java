@@ -418,8 +418,8 @@ public class SalmonActivity extends AppCompatActivity {
                 }
                 menu.add(5, ActionType.NEW_FOLDER.ordinal(), 0, getString(R.string.NewFolder))
                         .setIcon(R.drawable.add_folder_small);
-//                menu.add(5, ActionType.NEW_FILE.ordinal(), 0, getString(R.string.NewFile))
-//                        .setIcon(R.drawable.add_file_small);
+                menu.add(5, ActionType.NEW_FILE.ordinal(), 0, getString(R.string.NewFile))
+                        .setIcon(R.drawable.add_file_small);
             }
 
             menu.add(6, ActionType.SORT.ordinal(), 0, getResources().getString(R.string.Sort))
