@@ -266,7 +266,7 @@ public class MainController {
             });
             row.setOnMouseEntered(event -> {
                 SalmonFileViewModel item = row.getItem();
-                if(item != null)
+                if (item != null)
                     item.entered();
             });
             return row;
@@ -459,38 +459,24 @@ public class MainController {
     }
 
     private void selectItem(AesFile file) {
-        SalmonFileViewModel vm = getViewModel(file);
-        if (vm == null) {
-            WindowUtils.runOnMainThread(() -> {
+        WindowUtils.runOnMainThread(() -> {
+            SalmonFileViewModel vm = getViewModel(file);
+            if (vm == null) {
                 try {
                     table.getSelectionModel().clearSelection();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-            });
-            return;
-        }
-        try {
-            int index = 0;
-            for (SalmonFileViewModel viewModel : fileItemList) {
-                if (viewModel == vm) {
-                    int finalIndex = index;
-                    WindowUtils.runOnMainThread(() -> {
-                        try {
-                            table.getSelectionModel().select(finalIndex);
-                            table.scrollTo(table.selectionModelProperty().get().getSelectedIndex());
-                            table.requestFocus();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    });
-                    break;
-                }
-                index++;
+                return;
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+            try {
+                table.getSelectionModel().select(vm);
+                table.scrollTo(table.selectionModelProperty().get().getSelectedIndex());
+                table.requestFocus();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
     }
 
     public void setupSalmonManager() {
@@ -633,7 +619,7 @@ public class MainController {
             } else if (FileUtils.isImage(file.getName())) {
                 startImageViewer(vm);
                 return true;
-            } else if (FileTypes.isPDF(file.getName()) || FileTypes.isDocument(file.getName())) {
+            } else if (FileTypes.isPDF(file.getName())) {
                 startPDFViewer(vm);
                 return true;
             } else if (FileUtils.isText(file.getName())) {
@@ -696,20 +682,20 @@ public class MainController {
         });
         SalmonDialog.promptDialog("Open External",
                 "You will be soon prompted to open the file with an app.\n" +
-                "When you're done with the changes click OK to import your file.", "Import", () -> {
-            manager.importFiles(sharedFiles, parentDir, false, (files) -> {
-                if (files.length == 0 || !files[0].exists()) {
-                    SalmonDialog.promptDialog("Import Error",
-                            "Could not import the file make sure you delete or re-import manually: "
-                            + sharedFiles[0].getDisplayPath());
-                } else {
-                    renameOldFile(salmonFile);
+                        "When you're done with the changes click OK to import your file.", "Import", () -> {
+                    manager.importFiles(sharedFiles, parentDir, false, (files) -> {
+                        if (files.length == 0 || !files[0].exists()) {
+                            SalmonDialog.promptDialog("Import Error",
+                                    "Could not import the file make sure you delete or re-import manually: "
+                                            + sharedFiles[0].getDisplayPath());
+                        } else {
+                            renameOldFile(salmonFile);
+                            deleteAfterImportShared(sharedFiles[0]);
+                        }
+                    }, false);
+                }, "Ignore", () -> {
                     deleteAfterImportShared(sharedFiles[0]);
-                }
-            }, false);
-        }, "Ignore", () -> {
-            deleteAfterImportShared(sharedFiles[0]);
-        });
+                });
     }
 
     private void renameOldFile(AesFile salmonFile) {

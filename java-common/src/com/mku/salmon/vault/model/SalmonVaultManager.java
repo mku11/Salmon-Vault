@@ -323,7 +323,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         {
             if (fileManagerMode != Mode.Search)
                 salmonFiles = currDir.listFiles();
-            AesFile selectedFile = selectedFiles.size() > 1 ? selectedFiles.iterator().next() : null;
+            AesFile selectedFile = selectedFiles.size() > 0 ? selectedFiles.iterator().next() : null;
             populateFileList(selectedFile);
         });
 
@@ -698,14 +698,18 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public void createDirectory(String folderName) {
         executor.submit(() -> {
+            AesFile file = null;
             try {
-                SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName);
-                SalmonVaultManager.getInstance().refresh();
+                file = SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName);
             } catch (Exception exception) {
                 exception.printStackTrace();
                 if (!SalmonVaultManager.getInstance().handleException(exception)) {
                     SalmonDialog.promptDialog("Error", "Could not create folder: " + exception.getMessage());
                 }
+            } finally {
+                if(file != null)
+                    setSelectedFiles(new HashSet<>(List.of(file)));
+                SalmonVaultManager.getInstance().refresh();
             }
         });
     }
@@ -713,8 +717,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void createFile(String fileName) {
         executor.submit(() -> {
             RandomAccessStream stream = null;
+            AesFile file = null;
             try {
-                AesFile file = SalmonVaultManager.getInstance().getCurrDir().createFile(fileName);
+                file = SalmonVaultManager.getInstance().getCurrDir().createFile(fileName);
                 stream = file.getOutputStream();
                 stream.write("\n".getBytes(), 0, 1);
                 stream.flush();
@@ -729,6 +734,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+                if(file != null)
+                    setSelectedFiles(new HashSet<>(List.of(file)));
                 SalmonVaultManager.getInstance().refresh();
             }
         });
