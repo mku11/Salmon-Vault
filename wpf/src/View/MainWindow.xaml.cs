@@ -97,28 +97,28 @@ namespace Salmon.Vault.View
         {
             ImageViewer imageViewer = new ImageViewer(viewModel);
             imageViewer.Owner = this;
-            imageViewer.ShowDialog();
+            imageViewer.Show();
         }
 
         public void OpenTextEditor(SalmonFileViewModel viewModel)
         {
             TextEditor textEditor = new TextEditor(viewModel);
             textEditor.Owner = this;
-            textEditor.ShowDialog();
+            textEditor.Show();
         }
 
         public void OpenMediaPlayer(SalmonFileViewModel viewModel)
         {
             MediaPlayer mediaPlayer = new MediaPlayer(viewModel);
             mediaPlayer.Owner = this;
-            mediaPlayer.ShowDialog();
+            mediaPlayer.Show();
         }
 
         public void OpenContentViewer(SalmonFileViewModel viewModel)
         {
             ContentViewer contentViewer = new ContentViewer(viewModel);
             contentViewer.Owner = this;
-            contentViewer.ShowDialog();
+            contentViewer.Show();
         }
 
         public void OpenSettings()
