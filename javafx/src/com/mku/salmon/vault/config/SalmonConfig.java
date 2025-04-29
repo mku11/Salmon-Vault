@@ -33,8 +33,12 @@ public class SalmonConfig {
             "Salmon-AES-CTR - MIT License - https://github.com/mku11/Salmon-AES-CTR\n\n" +
             "JavaFX - GPLv2.0 License - https://github.com/openjdk/jfx\n\n" +
             "Java Native Access - Apache 2.0 License - https://github.com/java-native-access/jna\n\n" +
-            "docx4j - Apache 2.0 License- https://github.com/plutext/docx4j\n\n" +
+            "docx4j - Apache 2.0 License - https://github.com/plutext/docx4j\n\n" +
             "jcodec - BSD-2-Clause License - https://github.com/jcodec/jcodec\n\n" +
+            "Apache™ XML Graphics Project - Apache 2.0 License - https://xmlgraphics.apache.org\n\n" +
+            "Apache PDFBox - Apache 2.0 License - https://pdfbox.apache.org\n\n" +
+            "iStack Common Utility Code - BSD-3-Clause license - https://github.com/eclipse-ee4j/jaxb-istack-commons\n\n" +
+            "Eclipse Implementation of JAXB - BSD-3-Clause license - https://github.com/eclipse-ee4j/jaxb-ri\n\n" +
             "uxwing icons - https://uxwing.com/license - https://uxwing.com\n\n" +
             "For more information visit the project website";
     public static final String SourceCodeURL = "https://github.com/mku11/Salmon-Vault";
