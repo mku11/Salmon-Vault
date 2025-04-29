@@ -689,7 +689,7 @@ public class MainController {
             });
         });
         SalmonDialog.promptDialog("Open External",
-                "You will be soon prompted to open the file with an app. " +
+                "You will be soon prompted to open the file with an app.\n" +
                 "When you're done with the changes click OK to import your file.", "Import", () -> {
             manager.importFiles(sharedFiles, parentDir, false, (files) -> {
                 if (files.length == 0 || !files[0].exists()) {
