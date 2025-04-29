@@ -23,10 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.android.fs.file.AndroidFile;
 import com.mku.android.salmon.sequence.AndroidSequenceSerializer;
 import com.mku.android.salmonfs.drive.AndroidDrive;
+import com.mku.fs.file.File;
+import com.mku.fs.file.IFile;
 import com.mku.salmon.sequence.INonceSequenceSerializer;
 import com.mku.salmon.vault.model.SalmonVaultManager;
+import com.mku.salmonfs.drive.Drive;
 
 public class SalmonAndroidVaultManager extends SalmonVaultManager {
     synchronized
@@ -40,8 +44,10 @@ public class SalmonAndroidVaultManager extends SalmonVaultManager {
     protected INonceSequenceSerializer createSerializer() {
         return new AndroidSequenceSerializer();
     }
-	
-	protected Class<?> getDriveClassType() {
-		return AndroidDrive.class;
-	}
+
+    protected Class<?> getDriveClassType(IFile vaultDir) {
+        if (vaultDir instanceof AndroidFile)
+            return AndroidDrive.class;
+        return super.getDriveClassType(vaultDir);
+    }
 }
