@@ -365,7 +365,7 @@ public class MainViewModel : INotifyPropertyChanged
                 SalmonDialogs.PromptOpenVault();
                 break;
             case ActionType.CREATE_VAULT:
-                SalmonDialogs.PromptCreateVault(); 
+                SalmonDialogs.PromptCreateVault();
                 break;
             case ActionType.CLOSE_VAULT:
                 manager.CloseVault();
@@ -493,10 +493,9 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void PromptOpenExternalApp(AesFile file, string msg)
     {
-        SalmonDialog.PromptDialog("Open External", (msg != null ? msg + " " : "") + "Press Ok to export the file and " +
-                        "open it with an external app. This file will be placed in the export folder and will also be " +
-                        "visible to all other apps in this device. If you edit this file externally you will have to " +
-                        "import the file manually back into the vault.\n",
+        SalmonDialog.PromptDialog("Open External", (msg != null ? msg + " " : "")
+            + "Press Ok to export the file temporarily and " +
+            "open it with an external app. \n",
                 "Ok", () =>
                 {
                     try
@@ -512,25 +511,99 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void OpenWith(AesFile salmonFile)
     {
+        SalmonDialogs.PromptShare("Export and Share File", SalmonVaultManager.REQUEST_EXPORT_DIR, (sharedDir) =>
+        {
+            OpenWith(salmonFile, sharedDir);
+        });
+    }
+
+    private void OpenWith(AesFile salmonFile, IFile sharedDir)
+    {
+        AesFile parentDir = salmonFile.Parent;
         if (manager.IsJobRunning)
             throw new Exception("Another job is running");
-        IFile exportDir = SalmonVaultManager.Instance.Drive.ExportDir;
-        manager.ExportFiles(new AesFile[] { salmonFile }, exportDir, (files)=>
+        IFile[] sharedFiles = new IFile[1];
+        manager.ExportFiles(new AesFile[] { salmonFile }, sharedDir, false, (files) =>
         {
-            WindowUtils.RunOnMainThread(()=> {
+            WindowUtils.RunOnMainThread(() =>
+            {
                 try
                 {
-                    ProcessStartInfo psi = new ProcessStartInfo();
-                    psi.FileName = files[0].Path;
-                    psi.UseShellExecute = true;
-                    Process.Start(psi);
+                    IFile sharedFile = files[0];
+                    sharedFiles[0] = sharedFile;
+                    Process.Start("rundll32.exe", "shell32.dll,OpenAs_RunDLL " + files[0].Path);
                 }
                 catch (Exception e)
                 {
                     new SalmonDialog("Could not launch external app: " + e.Message).Show();
                 }
             });
-        }, false);
+        });
+
+        SalmonDialog.PromptDialog("Open External",
+        "You will be soon prompted to open the file with an app. " +
+        "When you're done with the changes click OK to import your file.", "Import", () =>
+        {
+            manager.ImportFiles(sharedFiles, parentDir, false, (files) =>
+            {
+                if (files.Length == 0 || !files[0].Exists)
+                {
+                    SalmonDialog.PromptDialog("Import Error",
+                            "Could not import the file make sure you delete or re-import manually: "
+                            + sharedFiles[0].DisplayPath);
+                }
+                else
+                {
+                    RenameOldFile(salmonFile);
+                    DeleteAfterImportShared(sharedFiles[0]);
+                }
+            }, false);
+        }, "Ignore", () =>
+        {
+            DeleteAfterImportShared(sharedFiles[0]);
+        });
+    }
+
+
+    private void RenameOldFile(AesFile salmonFile)
+    {
+        try
+        {
+            string ext = FileUtils.GetExtensionFromFileName(salmonFile.Name);
+            int idx = salmonFile.Name.LastIndexOf(".");
+            string newFilename;
+            if (idx >= 0)
+                newFilename = salmonFile.Name.Substring(0, idx) + ".bak." + ext;
+            else
+                newFilename = salmonFile.Name + ".bak";
+            salmonFile.Rename(newFilename);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+        }
+    }
+
+    private void DeleteAfterImportShared(IFile sharedFile)
+    {
+        bool res = false;
+        try
+        {
+            res = sharedFile.Delete();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+        }
+        if (!res)
+        {
+            SalmonDialog.PromptDialog("Error",
+                    "Could not delete the exported file, make sure you close the external app or delete manually: "
+                            + sharedFile.DisplayPath, "Try again", () =>
+                            {
+                                DeleteAfterImportShared(sharedFile);
+                            }, "Cancel", null);
+        }
     }
 
     public void OnShow()

@@ -37,6 +37,7 @@ using Salmon.Vault.Utils;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Salmon.Vault.Dialog;
 
@@ -630,6 +631,28 @@ public class SalmonDialogs
                             return;
                         SalmonSettings.GetInstance().LastImportDir = folder.Path;
                         SalmonVaultManager.Instance.ExportSelectedFiles(folder, delete);
+                    }
+                    catch (Exception e)
+                    {
+                        SalmonDialog.PromptDialog("Error", "Could not export folder: " + e);
+                    }
+                }, requestCode);
+    }
+
+    public static void PromptShare(string text, int requestCode, Action<IFile> onFolderPicked)
+    {
+        if (!SalmonDialogs.IsDriveLoaded())
+            return;
+        ServiceLocator.GetInstance().Resolve<IFileDialogService>().OpenFolder(text,
+                SalmonSettings.GetInstance().LastExportDir, (obj) =>
+                {
+                    try
+                    {
+                        IFile folder = (IFile)obj;
+                        if (folder == null)
+                            return;
+                        SalmonSettings.GetInstance().LastExportDir = folder.Path;
+                        onFolderPicked(folder);
                     }
                     catch (Exception e)
                     {

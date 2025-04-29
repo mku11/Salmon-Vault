@@ -463,7 +463,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     virtual
     protected Type GetDriveClassType(IFile vaultDir)
     {
-        if(vaultDir is File)
+        if (vaultDir is File)
             return typeof(Drive);
         else if (vaultDir is HttpFile)
             return typeof(HttpDrive);
@@ -628,10 +628,10 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         if (Drive == null)
             return;
-        ExportFiles(SelectedFiles.ToArray(), exportDir, (files) =>
+        ExportFiles(SelectedFiles.ToArray(), exportDir, deleteSource, (files) =>
         {
             Refresh();
-        }, deleteSource);
+        });
         ClearSelectedFiles();
     }
 
@@ -798,7 +798,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 {
                     SalmonDialog.PromptDialog("Error", "Could not create file: " + exception.Message);
                 }
-            } finally
+            }
+            finally
             {
                 if (stream != null)
                     stream.Close();
@@ -833,7 +834,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
         Browse, Search, Copy, Move
     }
 
-    public void ExportFiles(AesFile[] items, IFile exportDir, Action<IFile[]> OnFinished, bool deleteSource)
+    public void ExportFiles(AesFile[] items, IFile exportDir, bool deleteSource, Action<IFile[]> OnFinished)
     {
         if (IsJobRunning)
             throw new Exception("Another Job is Running");
@@ -891,18 +892,16 @@ public class SalmonVaultManager : INotifyPropertyChanged
             else if (files != null)
             {
                 SetTaskMessage("Export Complete");
-                SalmonDialog.PromptDialog("Export", "Files Exported To: "
-                    + exportDir.DisplayPath);
             }
             FileProgress = 1;
             FilesProgress = 1;
-
             SetTaskRunning(false);
+            Refresh();
         });
     }
 
-    public void ImportFiles(IFile[] fileNames, AesFile importDir, bool deleteSource,
-                            Action<AesFile[]> OnFinished)
+    public void ImportFiles(IFile[] files, AesFile importDir, bool deleteSource,
+                            Action<AesFile[]> OnFinished, bool autorename = true)
     {
         if (IsJobRunning)
             throw new Exception("Another Job is Running");
@@ -915,14 +914,15 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
             Exception exception = null;
             int[] processedFiles = new int[] { -1 };
-            AesFile[] files = null;
+            AesFile[] aesFiles = null;
             List<IFile> failedFiles = new List<IFile>();
             try
             {
                 FileCommander.BatchImportOptions importOptions = new FileCommander.BatchImportOptions();
                 importOptions.integrity = true;
                 importOptions.deleteSource = deleteSource;
-                importOptions.autoRename = IFile.AutoRename;
+                if (autorename)
+                    importOptions.autoRename = IFile.AutoRename;
                 importOptions.onProgressChanged = (taskProgress) =>
                 {
                     if (processedFiles[0] < taskProgress.ProcessedFiles)
@@ -946,8 +946,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
                     failedFiles.Add(file);
                     exception = ex;
                 };
-                files = fileCommander.ImportFiles(fileNames, importDir, importOptions);
-                OnFinished(files);
+                aesFiles = fileCommander.ImportFiles(files, importDir, importOptions);
+                OnFinished(aesFiles);
             }
             catch (Exception e)
             {
@@ -961,11 +961,12 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 SetTaskMessage("Import Stopped");
             else if (failedFiles.Count > 0)
                 SalmonDialog.PromptDialog("Import", "Some files failed: " + exception.Message);
-            else if (files != null)
+            else if (aesFiles != null)
                 SetTaskMessage("Import Complete");
             FileProgress = 1;
             FilesProgress = 1;
             SetTaskRunning(false);
+            Refresh();
         });
     }
 
