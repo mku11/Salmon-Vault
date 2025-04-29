@@ -172,11 +172,6 @@ public class SalmonFileViewModel {
         return salmonFile;
     }
 
-    public void rename(String newValue) throws Exception {
-        salmonFile.rename(newValue);
-        name.setValue(salmonFile.getName());
-    }
-
     private void checkAndStartAnimation() throws IOException {
         if (animationViewModel != this || !animationViewModel.animate) {
             resetAnimation();
