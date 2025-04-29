@@ -27,6 +27,7 @@ import com.mku.convert.BitConverter;
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.streams.AesStream;
 import com.mku.salmon.vault.io.AesSeekableByteChannel;
+import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.InputStreamWrapper;
 import com.mku.streams.MemoryStream;
@@ -71,6 +72,7 @@ public class Thumbnails {
 
     private static final HashMap<AesFile, AesSeekableByteChannel> byteChannels = new HashMap<>();
     private static final Executor executor = Executors.newFixedThreadPool(2);
+    private static final Executor videoThumbExecutor = Executors.newFixedThreadPool(2);
     private static final LinkedBlockingDeque<ThumbnailTask> tasks = new LinkedBlockingDeque<>();
 
     private static class ThumbnailTask {
@@ -103,10 +105,10 @@ public class Thumbnails {
     }
 
     public static synchronized Image getVideoThumbnail(AesFile salmonFile, double secs) throws Exception {
-        if(animationStopped)
+        if (animationStopped)
             return null;
         AesSeekableByteChannel byteChannel = byteChannels.getOrDefault(salmonFile, null);
-        if(byteChannel == null) {
+        if (byteChannel == null) {
             byteChannel = new AesSeekableByteChannel(salmonFile);
             byteChannels.put(salmonFile, byteChannel);
         }
@@ -118,7 +120,7 @@ public class Thumbnails {
     }
 
     public synchronized static void clearVideoThumbnails() {
-        for(AesSeekableByteChannel byteChannel : byteChannels.values()) {
+        for (AesSeekableByteChannel byteChannel : byteChannels.values()) {
             try {
                 byteChannel.close();
             } catch (IOException e) {
@@ -191,7 +193,12 @@ public class Thumbnails {
         executor.execute(() -> {
             try {
                 ThumbnailTask task1 = tasks.take();
-                generateThumbnail(task1);
+                if (FileUtils.isVideo(task1.file.getName()))
+                    videoThumbExecutor.execute(() -> {
+                        generateThumbnail(task1);
+                    });
+                else
+                    generateThumbnail(task1);
             } catch (Exception e) {
                 System.err.println("Could not generate thumbnail: " + e);
             }
@@ -251,7 +258,10 @@ public class Thumbnails {
             if (image == null)
                 image = getIcon(task.file);
             addCache(task.file, image);
-            task.view.setImage(image);
+            Image finalImage = image;
+            WindowUtils.runOnMainThread(() -> {
+                task.view.setImage(finalImage);
+            });
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -282,7 +292,7 @@ public class Thumbnails {
         Image image = null;
         try {
             String ext = FileUtils.getExtensionFromFileName(file.getName()).toLowerCase();
-            if(FileUtils.isImage(file.getName())) {
+            if (FileUtils.isImage(file.getName())) {
                 if (ext.equals("gif") && file.getLength() > TMP_GIF_THUMB_MAX_SIZE)
                     stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(file, TMP_GIF_THUMB_MAX_SIZE)), BUFFER_SIZE);
                 else
