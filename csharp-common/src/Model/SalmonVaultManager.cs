@@ -29,6 +29,7 @@ using Mku.SalmonFS.Drive;
 using Mku.SalmonFS.Drive.Utils;
 using Mku.SalmonFS.File;
 using Mku.SalmonFS.Sequence;
+using Mku.Streams;
 using Salmon.Vault.Config;
 using Salmon.Vault.Dialog;
 using Salmon.Vault.Settings;
@@ -38,6 +39,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -777,14 +779,17 @@ public class SalmonVaultManager : INotifyPropertyChanged
         });
     }
 
-    public void CreateFile(String fileName)
+    public void CreateFile(string fileName)
     {
         ThreadPool.QueueUserWorkItem(state =>
         {
+            RandomAccessStream stream = null;
             try
             {
-                SalmonVaultManager.Instance.CurrDir.CreateFile(fileName);
-                SalmonVaultManager.Instance.Refresh();
+                AesFile file = SalmonVaultManager.Instance.CurrDir.CreateFile(fileName);
+                stream = file.GetOutputStream();
+                stream.Write(UTF8Encoding.UTF8.GetBytes("\n"), 0, 1);
+                stream.Flush();
             }
             catch (Exception exception)
             {
@@ -793,6 +798,11 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 {
                     SalmonDialog.PromptDialog("Error", "Could not create file: " + exception.Message);
                 }
+            } finally
+            {
+                if (stream != null)
+                    stream.Close();
+                SalmonVaultManager.Instance.Refresh();
             }
         });
     }

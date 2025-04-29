@@ -292,8 +292,8 @@ public class SalmonDialog : System.Windows.Window
     }
 
 
-    public static void PromptCredentialsEdit(string title, String msg,
-                                             string[] hints, String[] values, bool[] isPasswords,
+    public static void PromptCredentialsEdit(string title, string msg,
+                                             string[] hints, string[] values, bool[] isPasswords,
                                              Action<string[]> OnEdit)
     {
         WindowUtils.RunOnMainThread(() =>

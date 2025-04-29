@@ -340,6 +340,9 @@ public class MainViewModel : INotifyPropertyChanged
             case ActionType.NEW_FOLDER:
                 SalmonDialogs.PromptNewFolder();
                 break;
+            case ActionType.NEW_FILE:
+                SalmonDialogs.PromptNewFile();
+                break;
             case ActionType.COPY:
                 OnCopy();
                 break;

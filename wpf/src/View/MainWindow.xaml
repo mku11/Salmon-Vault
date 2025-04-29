@@ -26,6 +26,10 @@
                     CommandParameter="{x:Static viewmodel:ActionType.CREATE_VAULT}" Key="N" Modifiers="Ctrl"  />
         <KeyBinding Command="{Binding ClickCommand}"
                     CommandParameter="{x:Static viewmodel:ActionType.CLOSE_VAULT}" Key="L" Modifiers="Ctrl"  />
+        <KeyBinding Command="{Binding ClickCommand}" 
+                    CommandParameter="{x:Static viewmodel:ActionType.NEW_FOLDER}" Key="N" Modifiers="Ctrl+Shift"  />
+        <KeyBinding Command="{Binding ClickCommand}"
+                    CommandParameter="{x:Static viewmodel:ActionType.NEW_FILE}" Key="F" Modifiers="Ctrl+Shift"  />
         <KeyBinding Command="{Binding ClickCommand}"
                     CommandParameter="{x:Static viewmodel:ActionType.IMPORT_FILES}" Key="I" Modifiers="Ctrl"  />
         <KeyBinding Command="{Binding ClickCommand}"
@@ -132,6 +136,13 @@
                               CommandParameter="{x:Static viewmodel:ActionType.NEW_FOLDER}">
                         <MenuItem.Icon>
                             <Image Source="/Icons/add_folder_small.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="New File" 
+                            Command="{Binding ClickCommand}"
+                            CommandParameter="{x:Static viewmodel:ActionType.NEW_FILE}">
+                        <MenuItem.Icon>
+                            <Image Source="/Icons/add_file_small.png"/>
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator/>
