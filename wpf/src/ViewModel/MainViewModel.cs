@@ -541,7 +541,7 @@ public class MainViewModel : INotifyPropertyChanged
         });
 
         SalmonDialog.PromptDialog("Open External",
-        "You will be soon prompted to open the file with an app. " +
+        "You will be soon prompted to open the file with an app.\n" +
         "When you're done with the changes click OK to import your file.", "Import", () =>
         {
             manager.ImportFiles(sharedFiles, parentDir, false, (files) =>
