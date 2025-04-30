@@ -38,7 +38,7 @@ public partial class ContentViewer : System.Windows.Window
     {
         InitializeComponent();
         SalmonFileViewModel = viewModel;
-        ViewModel = (ContentViewerViewModel) DataContext;
+        ViewModel = (ContentViewerViewModel)DataContext;
         WebView.EnsureCoreWebView2Async();
         WebView.Loaded += WebView_Loaded;
         Unloaded += ContentViewer_Unloaded;
@@ -50,7 +50,14 @@ public partial class ContentViewer : System.Windows.Window
 
     private void ContentViewer_Unloaded(object sender, EventArgs e)
     {
-        WebView.Source = new Uri("about:blank");
+        try
+        {
+            WebView.Source = new Uri("about:blank");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+        }
         ViewModel.OnClose();
         webBrowserService.Release();
     }
