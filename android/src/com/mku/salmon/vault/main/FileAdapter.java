@@ -480,7 +480,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             itemView.setOnLongClickListener((View view) -> {
                 AesFile salmonFile = items.get(super.getLayoutPosition());
                 if (mode == Mode.SINGLE_SELECT) {
-                    setMultiSelect(true);
+                    setMultiSelect(true, false);
                 }
                 selected.setChecked(true);
                 selectedFiles.add(salmonFile);
