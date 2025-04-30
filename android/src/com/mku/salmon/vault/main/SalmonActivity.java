@@ -494,15 +494,18 @@ public class SalmonActivity extends AppCompatActivity {
 
             case VIEW:
                 openItem(adapter.getLastSelected());
-                adapter.setMultiSelect(false);
+                if(adapter.getSelectedFiles().size() == 1)
+                    adapter.setMultiSelect(false);
                 break;
             case VIEW_AS_TEXT:
                 startTextViewer(adapter.getLastSelected());
-                adapter.setMultiSelect(false);
+                if(adapter.getSelectedFiles().size() == 1)
+                    adapter.setMultiSelect(false);
                 break;
             case VIEW_EXTERNAL:
                 openWith(adapter.getLastSelected());
-                adapter.setMultiSelect(false);
+                if(adapter.getSelectedFiles().size() == 1)
+                    adapter.setMultiSelect(false);
                 break;
 
 
@@ -523,7 +526,8 @@ public class SalmonActivity extends AppCompatActivity {
                 return true;
             case RENAME:
                 SalmonDialogs.promptRenameFile(adapter.getLastSelected());
-                adapter.setMultiSelect(false);
+                if(adapter.getSelectedFiles().size() == 1)
+                    adapter.setMultiSelect(false);
                 break;
             case PROPERTIES:
                 SalmonDialogs.showProperties(adapter.getLastSelected());
