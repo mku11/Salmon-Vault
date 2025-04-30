@@ -471,6 +471,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                     adapter.lastSelected = salmonFile;
                     itemView.showContextMenu();
                 }
+                adapter.lastSelected = salmonFile;
                 notifyItemChanged(getLayoutPosition());
                 if (selectedFiles.size() == 0)
                     setMultiSelect(false);
