@@ -36,14 +36,16 @@ public class AesSeekableByteChannel implements SeekableByteChannel {
 
     private static final int BUFFER_SIZE = 512 * 1024;
     private final AesFile file;
-    private final AesStream stream;
     private final InputStream inputStream;
     private final byte[] buffer;
     private boolean isOpened = false;
+    private long position;
+    private long _size;
 
     public AesSeekableByteChannel(AesFile file) throws IOException {
         this.file = file;
-        this.stream = file.getInputStream();
+        AesStream stream = file.getInputStream();
+        _size = stream.getLength();
         this.inputStream = stream.asReadStream();
         this.isOpened = true;
         int bufferSize = BUFFER_SIZE / stream.getAlignSize() * stream.getAlignSize();
@@ -52,23 +54,24 @@ public class AesSeekableByteChannel implements SeekableByteChannel {
 
     @Override
     public long position() throws IOException {
-        return this.stream.getPosition();
+        return position;
     }
 
     @Override
     public SeekableByteChannel setPosition(long newPosition) throws IOException {
-        if(newPosition < this.stream.getPosition()) {
+        if(newPosition < this.position) {
             this.inputStream.reset();
             this.inputStream.skip(newPosition);
         } else {
-            this.inputStream.skip(newPosition - this.stream.getPosition());
+            this.inputStream.skip(newPosition - position);
         }
+        position = newPosition;
         return this;
     }
 
     @Override
     public long size() throws IOException {
-        return this.stream.getLength();
+        return this._size;
     }
 
     @Override
@@ -80,6 +83,7 @@ public class AesSeekableByteChannel implements SeekableByteChannel {
     public int read(ByteBuffer dst) throws IOException {
         int bytesRead = inputStream.read(buffer, 0, Math.min(dst.limit()-dst.position(), buffer.length));
         dst.put(buffer, 0, bytesRead);
+        position += bytesRead;
         return bytesRead;
     }
 
@@ -95,7 +99,7 @@ public class AesSeekableByteChannel implements SeekableByteChannel {
 
     @Override
     public void close() throws IOException {
-        this.stream.close();
+        this.inputStream.close();
         this.isOpened = false;
     }
 }
