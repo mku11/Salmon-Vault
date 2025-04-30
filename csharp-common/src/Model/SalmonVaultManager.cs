@@ -788,6 +788,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             try
             {
                 AesFile file = SalmonVaultManager.Instance.CurrDir.CreateFile(fileName);
+                file.SetApplyIntegrity(true);
                 stream = file.GetOutputStream();
                 stream.Write(UTF8Encoding.UTF8.GetBytes("\n"), 0, 1);
                 stream.Flush();
