@@ -48,6 +48,10 @@
         </activity>
 
         <activity
+            android:name="com.mku.salmon.vault.main.TextEditorActivity"
+            android:configChanges="screenSize|orientation"/>
+
+        <activity
             android:name="com.mku.salmon.vault.main.MediaPlayerActivity"
             android:configChanges="screenSize|orientation"/>
 

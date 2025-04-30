@@ -8,5 +8,9 @@
     <style name="salmonContentLoadingProgress">
         <item name="colorAccent">#955151</item>
     </style>
+
+    <style name="salmonEditText">
+        <item name="colorAccent">#955151</item>
+    </style>
 </resources>
 

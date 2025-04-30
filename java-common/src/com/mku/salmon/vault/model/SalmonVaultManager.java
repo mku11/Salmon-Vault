@@ -101,6 +101,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public Function<AesFile, Boolean> openListItem;
     public Consumer<AesFile> updateListItem;
+    public BiConsumer<Integer, AesFile> onFileItemRemoved;
     public BiConsumer<Integer, AesFile> onFileItemAdded;
 
     protected static SalmonVaultManager instance;

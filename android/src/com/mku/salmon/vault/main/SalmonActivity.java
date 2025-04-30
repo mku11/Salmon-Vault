@@ -197,6 +197,7 @@ public class SalmonActivity extends AppCompatActivity {
             manager.openListItem = this::openListItem;
             manager.observePropertyChanges(this::manager_PropertyChanged);
             manager.updateListItem = this::updateListItem;
+            manager.onFileItemRemoved = this::fileItemRemoved;
             manager.onFileItemAdded = this::fileItemAdded;
             adapter.observePropertyChanges(this::Adapter_PropertyChanged);
             WindowUtils.runOnMainThread(() ->
@@ -293,6 +294,14 @@ public class SalmonActivity extends AppCompatActivity {
             sortFiles(sortType);
             adapter.notifyDataSetChanged();
         }
+    }
+
+    private void fileItemRemoved(int position, AesFile file) {
+        WindowUtils.runOnMainThread(() ->
+        {
+            fileItemList.remove(position);
+            adapter.notifyItemRemoved(position);
+        });
     }
 
     private void fileItemAdded(int position, AesFile file) {
@@ -842,7 +851,7 @@ public class SalmonActivity extends AppCompatActivity {
                 startWebViewer(fileItemList.indexOf(file));
                 return true;
             } else if (FileUtils.isText(file.getName())) {
-                startWebViewer(fileItemList.indexOf(file));
+                startTextEditor(fileItemList.indexOf(file));
                 return true;
             } else {
                 SalmonDialog.promptDialog("Open External", this.getString(R.string.OpenExternalInstructions),
@@ -948,8 +957,22 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
+    private void startTextEditor(int position) {
+        AesFile file = fileItemList.get(position);
+        TextEditorActivity.setTextFile(file);
+        Intent intent = getTextEditorIntent();
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        WindowUtils.runOnMainThread(() -> {
+            startActivity(intent);
+        });
+    }
+
     protected Intent getWebViewerIntent() {
         return new Intent(this, WebViewerActivity.class);
+    }
+
+    protected Intent getTextEditorIntent() {
+        return new Intent(this, TextEditorActivity.class);
     }
 
     @Override
