@@ -106,7 +106,9 @@ public class TextEditorController {
             {
                 ShowTaskMessage("");
             }, 2000);
-            contentArea.requestFocus();
+            WindowUtils.runOnMainThread(() -> {
+                contentArea.requestFocus();
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
