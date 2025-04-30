@@ -75,7 +75,6 @@ public class TextEditorActivity extends AppCompatActivity {
 
     private void setupWindow() {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
-        WindowUtils.setUiActivity(this);
     }
 
     private void setupControls() {
