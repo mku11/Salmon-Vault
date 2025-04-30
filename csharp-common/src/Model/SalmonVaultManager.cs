@@ -43,6 +43,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 
 namespace Salmon.Vault.Model;
 
@@ -764,10 +765,10 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         ThreadPool.QueueUserWorkItem(state =>
         {
+            AesFile file = null;
             try
             {
-                SalmonVaultManager.Instance.CurrDir.CreateDirectory(folderName);
-                SalmonVaultManager.Instance.Refresh();
+                file = SalmonVaultManager.Instance.CurrDir.CreateDirectory(folderName);
             }
             catch (Exception exception)
             {
@@ -777,6 +778,12 @@ public class SalmonVaultManager : INotifyPropertyChanged
                     SalmonDialog.PromptDialog("Error", "Could not create folder: " + exception.Message);
                 }
             }
+            finally
+            {
+                if (file != null)
+                    SelectedFiles = new HashSet<AesFile>(new AesFile[] { file });
+                SalmonVaultManager.Instance.Refresh();
+            }
         });
     }
 
@@ -785,9 +792,10 @@ public class SalmonVaultManager : INotifyPropertyChanged
         ThreadPool.QueueUserWorkItem(state =>
         {
             RandomAccessStream stream = null;
+            AesFile file = null;
             try
             {
-                AesFile file = SalmonVaultManager.Instance.CurrDir.CreateFile(fileName);
+                file = SalmonVaultManager.Instance.CurrDir.CreateFile(fileName);
                 file.SetApplyIntegrity(true);
                 stream = file.GetOutputStream();
                 stream.Write(UTF8Encoding.UTF8.GetBytes("\n"), 0, 1);
@@ -805,6 +813,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
             {
                 if (stream != null)
                     stream.Close();
+                if (file != null)
+                    SelectedFiles = new HashSet<AesFile>(new AesFile[] { file });
                 SalmonVaultManager.Instance.Refresh();
             }
         });
