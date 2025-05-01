@@ -626,7 +626,7 @@ public class SalmonDialogs
                         IFile folder = (IFile)obj;
                         if (folder == null)
                             return;
-                        SalmonSettings.GetInstance().LastImportDir = folder.Path;
+                        SalmonSettings.GetInstance().LastExportDir = folder.Path;
                         SalmonVaultManager.Instance.ExportSelectedFiles(folder, delete);
                     }
                     catch (Exception e)
