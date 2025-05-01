@@ -32,7 +32,6 @@ using Mku.SalmonFS.Sequence;
 using Mku.Streams;
 using Salmon.Vault.Config;
 using Salmon.Vault.Dialog;
-using Salmon.Vault.Extensions;
 using Salmon.Vault.Settings;
 using Salmon.Vault.Utils;
 using System;
@@ -43,7 +42,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 
 namespace Salmon.Vault.Model;
 
