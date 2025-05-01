@@ -276,8 +276,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     copySelectedFiles() {
-        if (this.selectedFiles.size == 0)
-            return;
+        if (this.isJobRunning())
+            throw new Error("Another Job is Running");
         this.fileManagerMode = SalmonVaultManager.Mode.Copy;
         this.copyFiles = Array.from(this.selectedFiles);
         this.setTaskRunning(true, false);
@@ -285,8 +285,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     cutSelectedFiles() {
-        if (this.selectedFiles.size == 0)
-            return;
+        if (this.isJobRunning())
+            throw new Error("Another Job is Running");
         this.fileManagerMode = SalmonVaultManager.Mode.Move;
         this.copyFiles = Array.from(this.selectedFiles);
         this.setTaskRunning(true, false);
