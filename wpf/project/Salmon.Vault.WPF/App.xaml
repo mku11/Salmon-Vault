@@ -98,6 +98,7 @@
             </Style>
             <Style TargetType="DataGrid">
                 <Setter Property="Background" Value="Black"/>
+                <Setter Property="BorderThickness" Value="0"/>
             </Style>
             <Style TargetType="Border">
                 <Setter Property="Background" Value="{StaticResource SalmonBackground}"/>
