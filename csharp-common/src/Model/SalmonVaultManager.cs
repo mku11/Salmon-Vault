@@ -748,6 +748,9 @@ public class SalmonVaultManager : INotifyPropertyChanged
             try
             {
                 fileCommander.RenameFile(file, newFilename);
+                //FIXME: IFile is not reporting the correct length after rename
+                // so we reset here
+                file.RealFile.Reset();
                 WindowUtils.RunOnMainThread(() =>
                 {
                     SalmonVaultManager.Instance.UpdateListItem(file);
