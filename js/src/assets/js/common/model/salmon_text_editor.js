@@ -40,6 +40,7 @@ export class SalmonTextEditor
             ins = new MemoryStream(contents);
             let dir = await file.getParent();
             targetFile = await dir.createFile(await file.getName());
+            await targetFile.setApplyIntegrity(true);
             stream = await targetFile.getOutputStream();
             await ins.copyTo(stream);
             await stream.flush();
