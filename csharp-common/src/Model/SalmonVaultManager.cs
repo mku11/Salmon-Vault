@@ -1079,16 +1079,20 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public string GetFileProperties(AesFile item)
     {
-        return "Name: " + item.Name + "\n" +
+        string props = "Name: " + item.Name + "\n" +
                 "Path: " + item.Path + "\n" +
                 (!item.IsDirectory ? ("Size: " + ByteUtils.GetBytes(item.Length, 2)
                         + " (" + item.Length + " bytes)") : "Items: " + item.ListFiles().Length) + "\n" +
                 "Encrypted Name: " + item.RealFile.Name + "\n" +
                 "Encrypted Path: " + item.RealFile.DisplayPath + "\n" +
                 (!item.IsDirectory ? "Encrypted Size: " + ByteUtils.GetBytes(item.RealFile.Length, 2)
-                        + " (" + item.RealFile.Length + " bytes)" : "") + "\n" +
-                "Integrity enabled: " + (item.FileChunkSize > 0 ? "Yes" : "No") + "\n" +
-                (item.FileChunkSize > 0 ? "Integrity chunk size: " + item.FileChunkSize + " bytes" : "");
+                        + " (" + item.RealFile.Length + " bytes)" : "") + "\n";
+        if (item.IsFile)
+        {
+            props += "Integrity enabled: " + (item.FileChunkSize > 0 ? "Yes" : "No") + "\n" +
+                    (item.FileChunkSize > 0 ? "Integrity chunk size: " + item.FileChunkSize + " bytes" : "") + "\n";
+        }
+        return props;
     }
 
     public bool CanGoBack()
