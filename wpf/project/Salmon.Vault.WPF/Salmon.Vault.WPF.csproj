@@ -209,6 +209,10 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
 
+		<Resource Include="..\..\..\common\common-res\icons\save_small.png" Link="Icons\save_small.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		
 		<Resource Include="..\..\..\common\common-res\icons\search_small.png" Link="Icons\search_small.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
