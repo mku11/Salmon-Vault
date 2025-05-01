@@ -103,6 +103,12 @@ export class Binding {
                 obj.key = key;
             } else
                 throw new Error("Can only bind ObservableList to select options");
+        } else if (el.tagName.toLowerCase() === 'iframe' && elementField === 'src') {
+            if (obj instanceof ObjectProperty) {
+                Binding.#bindings[key] = objBinding;
+                obj.key = key;
+            } else
+                throw new Error("Can only bind ObjectProperty to iframe src");
         } else {
             throw new Error("Could not bind element: " + name);
         }

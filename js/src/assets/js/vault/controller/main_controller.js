@@ -53,6 +53,7 @@ import { ImageViewerController } from "./image_viewer_controller.js";
 import { TextEditorController } from "./text_editor_controller.js";
 import { SettingsController } from "./settings_controller.js";
 import { MediaPlayerController } from "./media_player_controller.js";
+import { PdfViewerController } from "./pdf_viewer_controller.js";
 
 export class MainController {
     static MAX_TEXT_FILE = 1 * 1024 * 1024;
@@ -488,6 +489,9 @@ export class MainController {
             } else if (FileUtils.isText(await file.getName())) {
                 self.startTextEditor(vm);
                 return true;
+            } else if (FileUtils.isPdf(await file.getName())) {
+                self.startPdfViewer(vm);
+                return true;
             }
         } catch (ex) {
             console.error(ex);
@@ -519,6 +523,14 @@ export class MainController {
     startMediaPlayer(item) {
         try {
             MediaPlayerController.openMediaPlayer(item, window);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    startPdfViewer(item) {
+        try {
+            PdfViewerController.openPdfViewer(item, window);
         } catch (e) {
             console.error(e);
         }
