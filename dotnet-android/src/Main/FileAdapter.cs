@@ -532,7 +532,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                 AesFile salmonFile = adapter.items[LayoutPosition];
                 if (adapter.mode == Mode.SINGLE_SELECT)
                 {
-                    adapter.SetMultiSelect(true);
+                    adapter.SetMultiSelect(true, false);
                 }
                 selected.Checked = true;
                 adapter.SelectedFiles.Add(salmonFile);
