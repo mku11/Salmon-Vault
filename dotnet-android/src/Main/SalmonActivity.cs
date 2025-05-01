@@ -324,7 +324,7 @@ public class SalmonActivity : AppCompatActivity
     {
         WindowUtils.RunOnMainThread(() =>
         {
-            fileItemList.Insert(position, file);
+            fileItemList.RemoveAt(position);
             adapter.NotifyItemRemoved(position);
         });
     }
