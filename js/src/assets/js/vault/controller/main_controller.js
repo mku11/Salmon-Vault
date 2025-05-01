@@ -59,7 +59,6 @@ export class MainController {
     static THREADS = 1;
 
     fileItemList = Binding.bind(document, 'table', 'tbody', new ObservableList());
-    table;
     status = Binding.bind(document, 'status', 'innerText', new StringProperty());
     path = Binding.bind(document, 'path', 'value', new StringProperty());
     progressVisibility = Binding.bind(document, 'progress-layout-container', 'display', new BooleanProperty());
@@ -278,11 +277,15 @@ export class MainController {
     }
 
     onExportAndDelete() {
-        SalmonDialogs.promptExportFolder("Export Files", SalmonVaultManager.REQUEST_EXPORT_DIR, true);
+        SalmonDialogs.promptExportFolder("Export Files and Delete", SalmonVaultManager.REQUEST_EXPORT_DIR, true);
     }
 
     onNewFolder() {
         SalmonDialogs.promptNewFolder();
+    }
+
+    onNewFile() {
+        SalmonDialogs.promptNewFile();
     }
 
     onCopy() {
@@ -358,13 +361,11 @@ export class MainController {
             for (let i = 0; i < this.fileItemList.size(); i++) {
                 let viewModel = this.fileItemList.get(i);
                 if (viewModel == vm) {
-                    let finalIndex = index;
                     setTimeout(() => {
                         try {
                             // TODO:
-                            // this.fileItemList.select(finalIndex);
-                            // this.table.scrollTo(table.selectionModelProperty().get().getSelectedIndex());
-                            // this.table.requestFocus();
+                            this.fileItemList.select(vm);
+                            this.fileItemList.bringIntoView(index);
                         } catch (ex) {
                             console.error(ex);
                         }
