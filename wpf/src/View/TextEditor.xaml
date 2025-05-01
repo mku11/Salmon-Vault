@@ -24,7 +24,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0">
-            <Grid>
+            <Grid Margin="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -32,12 +32,20 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Menu Grid.Column="0" x:Name="MainMenu" DockPanel.Dock="Top">
-                    <MenuItem Header="File">
-                        <MenuItem Header="Save" InputGestureText="Ctrl+S"
+                    <MenuItem Header="File" Height="28">
+                        <MenuItem Header="Save" InputGestureText="Ctrl+S" Height="28"
                               Command="{Binding ClickCommand}"
-                              CommandParameter="{x:Static viewmodel:ActionType.SAVE}"/>
-                        <MenuItem Header="Search" InputGestureText="Ctrl+F"
-                              Click="MenuItemSearch_Click"/>
+                              CommandParameter="{x:Static viewmodel:ActionType.SAVE}">
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/save_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Search" InputGestureText="Ctrl+F" Height="28"
+                              Click="MenuItemSearch_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/Icons/search_small.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuItem>
                 </Menu>
                 <TextBlock Grid.Column="1" HorizontalAlignment="Right" Text="Search:" Margin="4,0,4,0" 
@@ -46,7 +54,7 @@
                          MinWidth="100" VerticalContentAlignment="Center" KeyUp="SearchText_KeyUp"
                          />
                 <Button Grid.Column="3" x:Name="Search" Width="24" Height="24" HorizontalAlignment="Right"
-                        IsTabStop="True" Content="🔎" Click="Search_Click"/>
+                        IsTabStop="True" Content="🔎" Click="Search_Click" BorderThickness="0"/>
             </Grid>
         </DockPanel>
         <TextBox Grid.Row="1" VerticalAlignment="Stretch" x:Name="TextArea" TextWrapping="Wrap" AcceptsReturn="True"  AcceptsTab="True"
