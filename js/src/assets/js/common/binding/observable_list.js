@@ -33,6 +33,7 @@ export class ObservableList {
     onSelectionChanged = [];
     onItemClicked = null;
     onItemDoubleClicked = null;
+    onItemMouseEntered = null;
     contextMenu = {};
     getContextItemTitle = null;
 
@@ -108,6 +109,11 @@ export class ObservableList {
     async onDoubleClicked(event, index) {
         if(this.onItemDoubleClicked != null)
             this.onItemDoubleClicked(index);
+    }
+
+    async onMouseEntered(event, index) {
+        if(this.onItemMouseEntered != null)
+            this.onItemMouseEntered(index);
     }
 
     async itemPropertyChanged(owner, propertyName, self) {

@@ -218,6 +218,10 @@ export class Binding {
                 obj.onSetSelected(index, true);
                 obj.onDoubleClicked(event, index);
             }
+            row.onmouseenter = (event) => {
+                let trow = tbody.childNodes[index];
+                obj.onMouseEntered(event, index);
+            }
             for (let i = 0; i < th.length; i++) {
                 let column = th[i];
                 let propertyName = column.getAttribute("name");
