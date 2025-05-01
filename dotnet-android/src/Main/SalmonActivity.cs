@@ -543,15 +543,18 @@ public class SalmonActivity : AppCompatActivity
 
             case ActionType.VIEW:
                 OpenItem(adapter.GetLastSelected());
-                adapter.SetMultiSelect(false);
+                if (adapter.SelectedFiles.Count == 1)
+                    adapter.SetMultiSelect(false);
                 break;
             case ActionType.VIEW_AS_TEXT:
                 StartTextViewer(adapter.GetLastSelected());
-                adapter.SetMultiSelect(false);
+                if (adapter.SelectedFiles.Count == 1)
+                    adapter.SetMultiSelect(false);
                 break;
             case ActionType.VIEW_EXTERNAL:
                 OpenWith(adapter.GetLastSelected());
-                adapter.SetMultiSelect(false);
+                if (adapter.SelectedFiles.Count == 1)
+                    adapter.SetMultiSelect(false);
                 break;
 
             case ActionType.NEW_FOLDER:
@@ -572,7 +575,8 @@ public class SalmonActivity : AppCompatActivity
 
             case ActionType.RENAME:
                 SalmonDialogs.PromptRenameFile(adapter.GetLastSelected());
-                adapter.SetMultiSelect(false);
+                if (adapter.SelectedFiles.Count == 1)
+                    adapter.SetMultiSelect(false);
                 break;
             case ActionType.PROPERTIES:
                 SalmonDialogs.ShowProperties(adapter.GetLastSelected());
