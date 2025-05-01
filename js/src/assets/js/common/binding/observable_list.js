@@ -168,4 +168,8 @@ export class ObservableList {
     getLastSelection() {
         return this.lastSelection;
     }
+
+    bringIntoView(index) {
+        Binding.bringIntoView(this, index);
+    }
 }
