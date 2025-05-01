@@ -206,7 +206,7 @@ export class SalmonFileViewModel extends IPropertyNotifier {
     }
     
     async checkAndStartAnimation() {
-        if (SalmonFileViewModel.animationViewModel != this || !animationViewModel.animate) {
+        if (SalmonFileViewModel.animationViewModel != this || !SalmonFileViewModel.animationViewModel.animate) {
             SalmonFileViewModel.resetAnimation();
             SalmonFileViewModel.animationViewModel = this;
             SalmonFileViewModel.animationViewModel.animate = true;
