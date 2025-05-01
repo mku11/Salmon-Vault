@@ -392,4 +392,11 @@ export class Binding {
         let el = Binding.getElement(binding.root, binding.name);
         return document.activeElement == el;
     }
+
+    static bringIntoView(obj, index) {
+        let binding = Binding.getBinding(obj);
+        let el = Binding.getElement(binding.root, binding.name);
+        var rows = el.rows;
+        rows[index].scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
 }
