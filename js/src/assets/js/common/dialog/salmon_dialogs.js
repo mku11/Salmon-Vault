@@ -59,7 +59,7 @@ export class SalmonDialogs {
     }
 
     static promptChangePassword() {
-        if(!SalmonDialogs.driveLoaded())
+        if(!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialogs.promptSetPassword(async (pass) => {
             await SalmonVaultManager.getInstance().setPassword(pass);
@@ -67,7 +67,7 @@ export class SalmonDialogs {
     }
 
     static promptImportAuth() {
-        if(!SalmonDialogs.driveLoaded())
+        if(!SalmonDialogs.isDriveLoaded())
             return;
         let filename = AesDrive.getDefaultAuthConfigFilename();
         let ext = FileUtils.getExtensionFromFileName(filename);
@@ -86,7 +86,7 @@ export class SalmonDialogs {
     }
 
     static promptExportAuth() {
-        if(!SalmonDialogs.driveLoaded())
+        if(!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialog.promptEdit("Export Auth File",
             "Enter the Auth ID for the device you want to authorize",
@@ -109,7 +109,7 @@ export class SalmonDialogs {
     }
 
     static promptRevokeAuth() {
-        if(!SalmonDialogs.driveLoaded())
+        if(!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialog.promptDialog("Revoke Auth",
             "Revoke Auth for this drive? You will still be able to decrypt and view your files but you won't be able to import any more files in this drive.",
@@ -127,7 +127,7 @@ export class SalmonDialogs {
     }
 
     static async onDisplayAuthId() {
-        if(!SalmonDialogs.driveLoaded())
+        if(!SalmonDialogs.isDriveLoaded())
             return;
 
         try {
@@ -163,7 +163,7 @@ export class SalmonDialogs {
     }
 
     static promptDelete() {
-        if(!SalmonDialogs.driveLoaded())
+        if(!SalmonDialogs.isDriveLoaded())
             return;
         SalmonDialog.promptDialog(
             "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size + " item(s)?",
@@ -187,7 +187,7 @@ export class SalmonDialogs {
     }
 
     static promptSearch() {
-        if(!SalmonDialogs.driveLoaded())
+        if(!SalmonDialogs.isDriveLoaded())
             return;
 
         SalmonDialog.promptEdit("Search", "Keywords",
@@ -232,6 +232,7 @@ export class SalmonDialogs {
             SalmonSettings.getInstance().getVaultLocation(), (file) => {
                 SalmonDialogs.promptSetPassword(async (pass) => {
                     SalmonVaultManager.getInstance().createVault(file, pass);
+                    SalmonSettings.getInstance().setVaultLocation(file.getPath());
                 });
             },
             SalmonVaultManager.REQUEST_CREATE_VAULT_DIR);
@@ -285,6 +286,7 @@ export class SalmonDialogs {
             (dir) => {
                 SalmonDialogs.promptPassword(async (password) => {
                     await SalmonVaultManager.getInstance().openVault(dir, password);
+                    SalmonSettings.getInstance().setVaultLocation(dir.getPath());
                 });
             },
             SalmonVaultManager.REQUEST_OPEN_VAULT_DIR);
@@ -333,7 +335,7 @@ export class SalmonDialogs {
     }
 
     static promptImportFiles() {
-        if(!SalmonDialogs.driveLoaded())
+        if(!SalmonDialogs.isDriveLoaded())
             return;
         ServiceLocator.getInstance().resolve(IFileDialogService).openFiles("Select files to import",
             null, SalmonSettings.getInstance().getLastImportDir(), async (obj) => {
@@ -349,7 +351,7 @@ export class SalmonDialogs {
     }
 
     static promptNewFolder() {
-        if(!SalmonDialogs.driveLoaded())
+        if(!SalmonDialogs.isDriveLoaded())
             return;
 
         SalmonDialog.promptEdit("Create Folder",
@@ -398,7 +400,7 @@ export class SalmonDialogs {
         }
     }
 
-    static driveLoaded() {
+    static isDriveLoaded() {
         if (SalmonVaultManager.getInstance().getDrive() == null) {
             SalmonDialog.promptDialog("Error", "No Drive Loaded");
             return false;
@@ -453,7 +455,7 @@ export class SalmonDialogs {
                         let folder = obj;
                         if (folder == null)
                             return;
-                        SalmonSettings.getInstance().setLastImportDir(folder.getPath());
+                        SalmonSettings.getInstance().setLastExportDir(folder.getPath());
                         SalmonVaultManager.getInstance().exportSelectedFiles(folder, deleteSource);
                     } catch (e) {
                         SalmonDialog.promptDialog("Error", "Could not export folder: " + e);
