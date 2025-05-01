@@ -28,7 +28,7 @@ namespace Salmon.Vault.Services;
 
 public class WPFFileService : IFileService
 {
-    public IFile GetFile(string filepath)
+    public IFile GetFile(string filepath, bool isDirectory)
     {
         return new File(filepath);
     }
