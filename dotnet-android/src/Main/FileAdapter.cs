@@ -507,6 +507,8 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
             itemView.Click += (object sender, EventArgs e) =>
             {
+                if (base.LayoutPosition >= adapter.items.Count)
+                    return;
                 AesFile salmonFile = adapter.items[base.LayoutPosition];
                 if (adapter.mode == Mode.MULTI_SELECT)
                 {
