@@ -40,7 +40,6 @@ using View = Android.Views.View;
 using Salmon.Vault.DotNetAndroid;
 using Mku.SalmonFS.File;
 using Mku.Android.SalmonFS.Media;
-using Java.Util.Concurrent;
 using System.Threading.Tasks;
 
 namespace Salmon.Vault.Main;
