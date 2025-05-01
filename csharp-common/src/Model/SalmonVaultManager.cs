@@ -78,6 +78,9 @@ public class SalmonVaultManager : INotifyPropertyChanged
     public delegate void UpdateItem(AesFile file);
     public UpdateItem UpdateListItem;
 
+    public delegate void OnFileItemRemovedFromList(int position, AesFile file);
+    public OnFileItemRemovedFromList OnFileItemRemoved;
+
     public delegate void OnFileItemAddedToList(int position, AesFile file);
     public OnFileItemAddedToList OnFileItemAdded;
 

@@ -48,6 +48,9 @@
 		<Compile Include="..\..\src\Main\SettingsActivity.cs">
 			<Link>Main\SettingsActivity.cs</Link>
 		</Compile>
+		<Compile Include="..\..\src\Main\TextEditorActivity.cs">
+			<Link>Main\TextEditorActivity.cs</Link>
+		</Compile>
 		<Compile Include="..\..\src\Main\WebViewerActivity.cs">
 			<Link>Main\WebViewerActivity.cs</Link>
 		</Compile>

@@ -182,6 +182,7 @@ public class SalmonActivity : AppCompatActivity
             manager.OpenListItem = OpenListItem;
             manager.PropertyChanged += Manager_PropertyChanged;
             manager.UpdateListItem = UpdateListItem;
+            manager.OnFileItemRemoved = FileItemRemoved;
             manager.OnFileItemAdded = FileItemAdded;
             adapter.PropertyChanged += Adapter_PropertyChanged;
             WindowUtils.RunOnMainThread(() =>
@@ -317,6 +318,15 @@ public class SalmonActivity : AppCompatActivity
             SortFiles(sortType);
             adapter.NotifyDataSetChanged();
         }
+    }
+
+    private void FileItemRemoved(int position, AesFile file)
+    {
+        WindowUtils.RunOnMainThread(() =>
+        {
+            fileItemList.Insert(position, file);
+            adapter.NotifyItemRemoved(position);
+        });
     }
 
     private void FileItemAdded(int position, AesFile file)
@@ -934,7 +944,7 @@ public class SalmonActivity : AppCompatActivity
             }
             else if (FileUtils.IsText(file.Name))
             {
-                StartWebViewer(fileItemList.IndexOf(file));
+                StartTextEditor(fileItemList.IndexOf(file));
                 return true;
             }
             else
@@ -1074,9 +1084,25 @@ public class SalmonActivity : AppCompatActivity
         }
     }
 
+    private void StartTextEditor(int position)
+    {
+        AesFile file = fileItemList[position];
+        TextEditorActivity.SetTextFile(file);
+        Intent intent = GetTextEditorIntent();
+        intent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask);
+        WindowUtils.RunOnMainThread(()=> {
+            StartActivity(intent);
+        });
+    }
+
     protected Intent GetWebViewerIntent()
     {
         return new Intent(this, typeof(WebViewerActivity));
+    }
+
+    protected Intent GetTextEditorIntent()
+    {
+        return new Intent(this, typeof(TextEditorActivity));
     }
 
     protected override void OnDestroy()
