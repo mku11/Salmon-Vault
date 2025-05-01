@@ -522,6 +522,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                     adapter.lastSelected = salmonFile;
                     itemView.ShowContextMenu();
                 }
+                adapter.lastSelected = salmonFile;
                 adapter.NotifyItemChanged(LayoutPosition);
                 if (adapter.SelectedFiles.Count == 0)
                     adapter.SetMultiSelect(false);
