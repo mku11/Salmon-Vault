@@ -55,7 +55,7 @@ export class ImageViewerController {
         fetch(ImageViewerController.modalURL).then(async (response) => {
             let htmlText = await response.text();
             let controller = new ImageViewerController();
-            let modalWindow = await SalmonWindow.createModal("Image Viewer", htmlText);
+            let modalWindow = await SalmonWindow.createWindow("Image Viewer", htmlText);
             modalWindow.modal.style.resize = "both";
             controller.setStage(modalWindow);
             setTimeout(() => {

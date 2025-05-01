@@ -64,7 +64,7 @@ export class MediaPlayerController {
         fetch(MediaPlayerController.modalURL).then(async (response) => {
             let htmlText = await response.text();
             let controller = new MediaPlayerController();
-            let modalWindow = await SalmonWindow.createModal("Media Player", htmlText);
+            let modalWindow = await SalmonWindow.createWindow("Media Player", htmlText);
             controller.setStage(modalWindow);
             setTimeout(() => {
                 controller.load(fileViewModel);

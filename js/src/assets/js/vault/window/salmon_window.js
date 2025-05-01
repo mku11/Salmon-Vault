@@ -42,7 +42,7 @@ export class SalmonWindow {
     isDraggable;
     isDismissable;
     isDismissableOutside;
-
+	isModal = false;
 	
     getRoot() {
         return this.root;
@@ -69,6 +69,10 @@ export class SalmonWindow {
     }
 
     static async createModal(title, content) {
+		return createWindow(title, content, true);
+    }
+
+	static async createWindow(title, content, isModal = false) {
         return new Promise((resolve, reject) => {
             fetch(SalmonWindow.modalUrl).then(async (response) => {
                 let docBody = document.getElementsByTagName("body")[0];
@@ -77,6 +81,7 @@ export class SalmonWindow {
                 div.innerHTML = await response.text();
                 docBody.appendChild(div);
                 let window = new SalmonWindow(content, div);
+				window.isModal = isModal;
                 window.setTitle(title);
                 resolve(window);
             });
@@ -174,7 +179,8 @@ export class SalmonWindow {
         this.modal.style.display = "block";
         SalmonWindow.zIndex += 2;
         this.modal.style.zIndex = SalmonWindow.zIndex;
-        this.disableSiblings(true);
+		if(this.isModal)
+	        this.disableSiblings(true);
         visibleWindows.add(this);
         if(this.onShow != null)
             this.onShow();
@@ -182,7 +188,8 @@ export class SalmonWindow {
 
     hide() {
         this.modal.style.display = "none";
-        this.disableSiblings(false);
+		if(this.isModal)
+	        this.disableSiblings(false);
         this.modal.parentElement.parentElement.removeChild(this.modal.parentElement);
         SalmonWindow.zIndex -= 2;
         visibleWindows.delete(this);
