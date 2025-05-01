@@ -228,6 +228,7 @@ export class MainController {
     setupTable() {
         this.setContextMenu();
         this.fileItemList.onItemDoubleClicked = async (index) => this.onOpenItem(index);
+        this.fileItemList.onItemMouseEntered = async (index) => this.onItemMouseEntered(index);
         this.fileItemList.addSelectedChangeListener(() => {
             this.onSelectedItems(this.fileItemList.getSelectedItems());
         });
@@ -248,6 +249,15 @@ export class MainController {
     async onOpenItem(selectedItem) {
         try {
             await this.openItem(selectedItem);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    onItemMouseEntered(position) {
+        let vm = this.fileItemList.get(position);
+        try {
+            vm.entered();
         } catch (e) {
             console.error(e);
         }

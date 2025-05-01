@@ -42,13 +42,24 @@ export class Thumbnails {
     static enableCache = true;
     static objectURLs = new Set();
 
-    /// <summary>
-    /// Returns a bitmap thumbnail from an encrypted file
-    /// </summary>
-    /// <param name="salmonFile">The encrypted media file which will be used to get the thumbnail</param>
-    /// <returns></returns>
-    static async getVideoThumbnail(salmonFile) {
-        let position = 5;
+
+    static isAnimationEnabled() {
+        return !Thumbnails.animationStopped;
+    }
+
+    static animationStopped = false;
+
+    static enableAnimation(value) {
+        Thumbnails.animationStopped = !value;
+    }
+
+    /**
+     * Returns a bitmap thumbnail from an encrypted file
+     * @param {AesFile} salmonFile The file
+     * @param {number} position The position in seconds
+     * @returns 
+     */
+    static async getVideoThumbnail(salmonFile, position = 3) {
         let blob = await Thumbnails.getVideoTmpBlob(salmonFile);
         let imageUrl = Thumbnails.createObjectURL(blob);
         return new Promise((resolve, reject) => {
