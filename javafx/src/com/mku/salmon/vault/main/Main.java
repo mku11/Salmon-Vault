@@ -37,7 +37,7 @@ import javafx.stage.Stage;
 public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        HttpSyncClient.setAllowClearTextTraffic(true);
+        HttpSyncClient.setAllowClearTextTraffic(false);
         WindowUtils.setDefaultIconPath(SalmonConfig.icon);
         SalmonDialog.setDefaultStyleSheet(SalmonConfig.css);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/main.fxml"));

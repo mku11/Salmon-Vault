@@ -242,7 +242,7 @@ export class SalmonDialogs {
         SalmonDialog.promptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 ["Web Service URL", "User name", "Password"],
-                ["http://localhost:8080", "user", "password"],
+                ["", "", ""],
                 [false, false, true],
                 (texts) => {
                     SalmonDialog.promptEdit("Create Vault",
@@ -253,7 +253,6 @@ export class SalmonDialogs {
                                                 new Credentials(texts[1], texts[2]));
                                 SalmonDialogs.promptSetPassword((pass) =>
                                 {
-                                    pass = "test";
                                     SalmonVaultManager.getInstance().createVault(dir, pass);
                                 });
                             }, "/tv3", false, false, false, null);
@@ -296,7 +295,7 @@ export class SalmonDialogs {
         SalmonDialog.promptCredentialsEdit("Open HTTP Vault",
                 "Type in the URL for the HTTP Service",
                 ["URL", "User name", "Password"],
-                ["http://localhost/testvault", "user", "password"],
+                ["", "", ""],
                 [false, false, true],
                 (texts) => {
                     let dir;
@@ -307,7 +306,6 @@ export class SalmonDialogs {
                         dir = ServiceLocator.getInstance().resolve(IHttpFileService).getFile(texts[0]);
                     }
                     SalmonDialogs.promptPassword((password) => {
-                        password = "test";
                         SalmonVaultManager.getInstance().openVault(dir, password);
                     });
                 });
@@ -317,7 +315,7 @@ export class SalmonDialogs {
         SalmonDialog.promptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 ["Web Service URL", "User name", "Password"],
-                ["http://localhost:8080", "user", "password"],
+                ["", "", ""],
                 [false, false, true],
                 (texts) => {
                     SalmonDialog.promptEdit("Open Vault",
@@ -327,7 +325,6 @@ export class SalmonDialogs {
                                         .getFile(path, texts[0],
                                                 new Credentials(texts[1], texts[2]));
                                 SalmonDialogs.promptPassword((password) => {
-                                    password = "test";
                                     SalmonVaultManager.getInstance().openVault(dir, password);
                                 });
                             }, "/tv3", false, false, false, null);

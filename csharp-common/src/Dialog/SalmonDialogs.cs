@@ -329,7 +329,7 @@ public class SalmonDialogs
         SalmonDialog.PromptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 new string[] { "Web Service URL", "User name", "Password" },
-                new string[] { "http://192.168.1.4:8080", "user", "password" },
+                new string[] { "", "", "" },
                 new bool[] { false, false, true },
                 (texts) =>
                 {
@@ -342,7 +342,6 @@ public class SalmonDialogs
                                             new Credentials(texts[1], texts[2]));
                             SalmonDialogs.PromptSetPassword((string pass) =>
                             {
-                                pass = "test";
                                 SalmonVaultManager.Instance.CreateVault(dir, pass);
                             });
                         }, "/tv3", false, false, false, null);
@@ -398,7 +397,7 @@ public class SalmonDialogs
         SalmonDialog.PromptCredentialsEdit("Open HTTP Vault",
                 "Type in the URL for the HTTP Service",
                 new string[] { "URL", "User name", "Password" },
-                new string[] { "http://192.168.1.4/testvault", "user", "password" },
+                new string[] { "", "", "" },
                 new bool[] { false, false, true },
                 (texts) =>
                 {
@@ -414,7 +413,6 @@ public class SalmonDialogs
                     }
                     SalmonDialogs.PromptPassword((password) =>
                     {
-                        password = "test";
                         SalmonVaultManager.Instance.OpenVault(dir, password);
                     });
                 });
@@ -425,7 +423,7 @@ public class SalmonDialogs
         SalmonDialog.PromptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 new string[] { "Web Service URL", "User name", "Password" },
-                new string[] { "http://192.168.1.4:8080", "user", "password" },
+                new string[] { "", "", "" },
                 new bool[] { false, false, true },
                 (texts) =>
                 {
@@ -438,7 +436,6 @@ public class SalmonDialogs
                                                         new Credentials(texts[1], texts[2]));
                         SalmonDialogs.PromptPassword((password) =>
                         {
-                            password = "test";
                             SalmonVaultManager.Instance.OpenVault(dir, password);
                         });
                     }, "/tv3", false, false, false, null);

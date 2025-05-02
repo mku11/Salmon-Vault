@@ -9,7 +9,7 @@
 		<ApplicationIcon>logo_48x48.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>false</ImplicitUsings>
-		<Version>3.0.1</Version>
+		<Version>3.0.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>

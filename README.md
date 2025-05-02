@@ -6,7 +6,7 @@ Salmon Vault works on Android, Windows, Linux, and MacOS devices.
 Powered by [Salmon](https://github.com/mku11/Salmon-AES-CTR) encryption library.
 
 [![License: MIT](https://img.shields.io/github/license/mku11/Salmon-Vault.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.1.1-blue)](https://mku11.github.io/Salmon-Vault/downloads.html)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue)](https://mku11.github.io/Salmon-Vault/downloads.html)
 [![GitHub Releases](https://img.shields.io/github/downloads/mku11/Salmon-Vault/latest/total?logo=github)](https://github.com/mku11/Salmon-Vault/releases)
 
 ![alt text](https://github.com/mku11/Salmon-Vault/blob/main/screenshots/Screenshot.png)  

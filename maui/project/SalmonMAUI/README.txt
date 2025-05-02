@@ -1,5 +1,5 @@
 Salmon Vault - MAUI
-version: 2.0.0
+version: 3.0.0
 project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 
@@ -19,6 +19,10 @@ license: MIT License: https://github.com/hey-red/MimeTypesMap/blob/master/LICENS
 Xamarin AndroidX Bindings
 project: https://github.com/xamarin/AndroidX
 license: MIT License https://github.com/xamarin/AndroidX/blob/main/LICENSE.md
+
+NOTE:
+The MAUI .NET Salmon Vault app is deprecated and might not be maintained in the future.
+Use the WPF for Windows and Android .NET Salmon Vault apps instead.
 
 Build
 To build the app you will need:  

@@ -281,7 +281,7 @@ public class SalmonDialogs {
         SalmonDialog.promptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 new String[]{"Web Service URL", "User name", "Password"},
-                new String[]{"http://192.168.1.4:8080", "user", "password"},
+                new String[]{"", "", ""},
                 new boolean[]{false, false, true},
                 (texts) -> {
                     SalmonDialog.promptEdit("Create Vault",
@@ -339,7 +339,7 @@ public class SalmonDialogs {
         SalmonDialog.promptCredentialsEdit("Open HTTP Vault",
                 "Type in the URL for the HTTP Service",
                 new String[]{"URL", "User name", "Password"},
-                new String[]{"http://192.168.1.4/testvault", "user", "password"},
+                new String[]{"", "", ""},
                 new boolean[]{false, false, true},
                 (texts) -> {
                     IFile dir;
@@ -350,7 +350,6 @@ public class SalmonDialogs {
                         dir = ServiceLocator.getInstance().resolve(IHttpFileService.class).getFile(texts[0]);
                     }
                     SalmonDialogs.promptPassword((password) -> {
-                        password = "test";
                         SalmonVaultManager.getInstance().openVault(dir, password);
                     });
                 });
@@ -360,7 +359,7 @@ public class SalmonDialogs {
         SalmonDialog.promptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 new String[]{"Web Service URL", "User name", "Password"},
-                new String[]{"http://192.168.1.4:8080", "user", "password"},
+                new String[]{"", "", ""},
                 new boolean[]{false, false, true},
                 (texts) -> {
                     SalmonDialog.promptEdit("Open Vault",

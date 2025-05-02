@@ -123,7 +123,7 @@ public class SalmonActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        HttpSyncClient.setAllowClearTextTraffic(true);
+        HttpSyncClient.setAllowClearTextTraffic(false);
         setupServices();
         setupWindow();
         setContentView(R.layout.main);

@@ -1,5 +1,5 @@
 Salmon Vault - Javascript
-version: 3.0.1
+version: 3.0.0
 project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 

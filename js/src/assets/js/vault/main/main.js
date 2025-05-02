@@ -29,7 +29,7 @@ import { HttpSyncClient } from "../../lib/salmon-fs/fs/file/http_sync_client.js"
 
 addEventListener("load", (e) => {
     console.log("Starting Salmon Vault");
-    HttpSyncClient.setAllowClearTextTraffic(true); // use only for demo and testing purposes
+    HttpSyncClient.setAllowClearTextTraffic(false); // use only for demo and testing purposes
     WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
     window.mainController = new MainController();
     window.mainController.initialize();

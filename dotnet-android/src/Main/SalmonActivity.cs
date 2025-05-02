@@ -95,7 +95,7 @@ public class SalmonActivity : AppCompatActivity
     protected override void OnCreate(Android.OS.Bundle bundle)
     {
         base.OnCreate(bundle);
-        HttpSyncClient.AllowClearTextTraffic = true;
+        HttpSyncClient.AllowClearTextTraffic = false;
         SetupServices();
         SetupWindow();
         SetContentView(Resource.Layout.main);

@@ -1,5 +1,5 @@
 Salmon Vault - .Net Android
-version: 2.0.0
+version: 3.0.0
 project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 

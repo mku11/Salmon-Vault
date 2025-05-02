@@ -5,13 +5,13 @@
 		<OutputType>Exe</OutputType>
 		<ImplicitUsings>false</ImplicitUsings>
 		<ApplicationId>com.mku.salmon.vault.net.android</ApplicationId>
-		<ApplicationVersion>301</ApplicationVersion>
-		<ApplicationDisplayVersion>3.0.1</ApplicationDisplayVersion>
+		<ApplicationVersion>300</ApplicationVersion>
+		<ApplicationDisplayVersion>3.0.0</ApplicationDisplayVersion>
 		<!-- WORKAROUND: ListeneableFuture see: https://github.com/dotnet/maui/issues/6022
     and: https://github.com/xamarin/AndroidX/issues/535 -->
 		<XamarinGoogleGuavaListenableFutureOptOut>true</XamarinGoogleGuavaListenableFutureOptOut>
 		<SalmonVersion>3.0.1</SalmonVersion>
-		<Version>$(SalmonVersion)</Version>
+		<Version>$(ApplicationVersion)</Version>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
