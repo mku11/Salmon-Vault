@@ -40,7 +40,7 @@ public class SalmonContentViewer implements IPropertyNotifier {
     private static final String URL = "https://localhost/";
     private static final int BUFFERS = 4;
     private static final int BUFFER_SIZE = 4 * 1024 * 1024;
-    private static final int THREADS = 4;
+    private static final int THREADS = 1;
     private static final int BACK_OFFSET = 256 * 1024;
     private final IWebBrowserService webBrowserService;
     private InputStream stream;
