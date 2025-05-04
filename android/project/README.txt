@@ -4,9 +4,12 @@ project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 
 Open source projects included:
-TinyAES
-project: https://github.com/kokke/tiny-AES-c
-license: The Unlicense https://github.com/kokke/tiny-AES-c/blob/master/unlicense.txt
+Salmon-AES-CTR
+license: MIT License
+project: https://github.com/mku11/Salmon-AES-CTR
+
+uxwing icons
+Home: https://uxwing.com
 
 Build:
 To build the app you will need:
