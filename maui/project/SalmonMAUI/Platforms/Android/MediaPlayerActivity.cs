@@ -70,7 +70,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     private SurfaceView mSurfaceView;
     private SeekBar mSeekBar;
     private MediaPlayer mediaPlayer;
-    private SalmonMediaDataSource source;
+    private AesMediaDataSource source;
     private RelativeLayout mSeekBarLayout;
     private RelativeLayout mTitleLayout;
     private TextView mTitle;
@@ -194,9 +194,23 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     protected void LoadContent(SalmonFile file)
     {
         mTitle.Text = file.BaseName;
-        source = new SalmonMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
-        mediaPlayer.SetDataSource(source);
-        mediaPlayer.PrepareAsync();
+		if (FileUtils.IsAudio(file.Name)) {
+			ShowSeekBar(true);
+		}
+        Task.Run(() =>
+        {
+            try
+            {
+                source = new AesMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
+                mediaPlayer.SetDataSource(source);
+                mediaPlayer.PrepareAsync();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+                Toast.MakeText(this, "Error: " + e.Message, ToastLength.Long).Show();
+            }
+        });
     }
 
     private class MediaPlayerTimerTask : TimerTask
@@ -395,16 +409,24 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     {
         if (mSeekBarLayout.Visibility == ViewStates.Gone)
         {
-            mTitleLayout.Visibility = ViewStates.Visible;
-            mSeekBarLayout.Visibility = ViewStates.Visible;
+            ShowSeekBar(true);
         }
         else
         {
+            ShowSeekBar(false);
+        }
+    }
+
+    private void ShowSeekBar(bool visible)
+    {
+        if (visible) {
+            mTitleLayout.Visibility = ViewStates.Visible;
+            mSeekBarLayout.Visibility = ViewStates.Visible;
+        } else {
             mTitleLayout.Visibility = ViewStates.Gone;
             mSeekBarLayout.Visibility = ViewStates.Gone;
         }
     }
-
     public void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
     {
 
