@@ -24,34 +24,26 @@ SOFTWARE.
 */
 
 import com.mku.salmon.vault.config.SalmonConfig;
-import com.mku.salmon.vault.model.SalmonImageViewer;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.salmonfs.handler.AesStreamHandler;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.MenuBar;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ContentViewerController {
-    private static final int ENC_BUFFER_SIZE = 128 * 1024;
 
     public WebView webView;
     private Stage stage;
@@ -67,7 +59,7 @@ public class ContentViewerController {
         this.stage = stage;
     }
 
-    private static double imageViewMargin = 64;
+    private static final double imageViewMargin = 64;
     private static final Executor executor = Executors.newSingleThreadExecutor();
 
     public static void openContentViewer(SalmonFileViewModel file, Stage owner) throws IOException {
@@ -116,7 +108,6 @@ public class ContentViewerController {
                         "<source src='" + url + "' type='video/mp4'>" +
                         "</video>" +
                         "</body></html>");
-//                webEngine.load(url);
             });
         } catch (Exception e) {
             e.printStackTrace();
