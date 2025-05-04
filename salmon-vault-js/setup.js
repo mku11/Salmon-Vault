@@ -4,7 +4,7 @@ import { SalmonDialog } from "./assets/js/vault/dialog/salmon_dialog.js";
 import { WindowUtils } from "./assets/js/vault/utils/window_utils.js";
 import { SalmonConfig } from "./assets/js/vault/config/salmon_config.js";
 import { ServiceLocator } from "./assets/js/common/services/service_locator.js";
-import { IFileRemoteService } from "./assets/js/common/services/ifile_remote_service.js";
+import { IHttpFileService } from "./assets/js/common/services/ihttp_file_service.js";
 import { SalmonVaultManager } from "./assets/js/common/model/salmon_vault_manager.js";
 
 const DEBUG = false;
@@ -29,7 +29,7 @@ document.salmonStartUp = async function() {
 	// any initializing code you want goes here
 	let urlRemote = "https://mku11.github.io/Salmon-Vault/vault";	
 	let url = urlRemote;
-	let dir = ServiceLocator.getInstance().resolve(IFileRemoteService).getFile(url);
+	let dir = ServiceLocator.getInstance().resolve(IHttpFileService).getFile(url);
 	let password = "test";
 	await SalmonVaultManager.getInstance().openVault(dir, password);
 }
