@@ -70,7 +70,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/YYYY");
     private Mode mode = Mode.SINGLE_SELECT;
     private static readonly IExecutorService executor = Executors.NewFixedThreadPool(TASK_THREADS);
-    private static readonly ExecutorService animationExecutor = Executors.NewSingleThreadExecutor();
+    private static readonly IExecutorService animationExecutor = Executors.NewSingleThreadExecutor();
     public event EventHandler OnCacheCleared;
     public event PropertyChangedEventHandler PropertyChanged;
     private ViewHolder animationViewHolder;
@@ -81,7 +81,6 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         this.inflater = LayoutInflater.From(activity);
         this.itemClicked = itemClicked;
         this.activity = activity;
-        CreateThread();
     }
 
     public HashSet<AesFile> GetSelectedFiles()
@@ -111,16 +110,16 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
     public void SetMultiSelect(bool value, bool clear = true)
     {
-        List<int> files = new List<>();
+        List<int> files = new List<int>();
         int i = 0;
-        for (AesFile file : items) {
+        foreach (AesFile file in items) {
             if (SelectedFiles.Contains(file))
                 files.Add(i);
             i++;
         }
         if (clear) {
             SelectedFiles.Clear();
-            for (int pos : files)
+            foreach (int pos in files)
                 NotifyItemChanged(pos);
         }
         mode = value ? Mode.MULTI_SELECT : Mode.SINGLE_SELECT;
