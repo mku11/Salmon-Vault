@@ -12,18 +12,20 @@
         <element id="library" level="project" name="Gradle: org.apache.pdfbox:jbig2-imageio:3.0.4" />
         <element id="library" level="project" name="Gradle: org.jcodec:jcodec-javase:0.2.5" />
         <element id="library" level="project" name="Gradle: org.jcodec:jcodec:0.2.5" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-base:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-base:linux:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-controls:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-controls:linux:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-fxml:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-fxml:linux:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-graphics:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-graphics:linux:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-media:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-media:linux:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-swing:17.0.2" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-swing:linux:17.0.2" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-base:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-base:linux:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-controls:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-controls:linux:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-fxml:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-fxml:linux:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-graphics:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-graphics:linux:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-media:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-media:linux:17.0.15" />
+		<element id="library" level="project" name="Gradle: org.openjfx:javafx-web:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-web:linux:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-swing:17.0.15" />
+        <element id="library" level="project" name="Gradle: org.openjfx:javafx-swing:linux:17.0.15" />
         <element id="library" level="project" name="Gradle: com.github.pcorless.icepdf:icepdf-core:7.2.4_P01" />
         <element id="library" level="project" name="Gradle: com.github.pcorless.icepdf:icepdf-viewer:7.2.4_P01" />
         <element id="library" level="project" name="Gradle: org.apache.pdfbox:fontbox:3.0.3" />
@@ -33,9 +35,6 @@
       <element id="directory" name="salmon">
         <element id="library" level="project" name="Gradle: com.mku.salmon:salmon-core:3.0.1" />
         <element id="library" level="project" name="Gradle: com.mku.salmon:salmon-fs:3.0.1" />
-      </element>
-      <element id="directory" name="javafx">
-        <element id="dir-copy" path="$PROJECT_DIR$/../../../../../tools/javafx-sdk-17.0.10" />
       </element>
       <element id="archive" name="salmon-vault.main.jar">
         <element id="module-output" name="salmon-vault.main" />

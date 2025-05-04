@@ -32,7 +32,8 @@ import java.util.concurrent.Executors;
 
 public class WindowUtils {
     private static String iconPath;
-    private static Executor executor = Executors.newCachedThreadPool();
+    private static final Executor executor = Executors.newCachedThreadPool();
+    private static final String os = System.getProperty("os.name").toUpperCase();
 
     public static void runOnMainThread(Runnable runnable) {
         Platform.runLater(runnable);
@@ -57,5 +58,17 @@ public class WindowUtils {
         InputStream logo = WindowUtils.class.getClassLoader().getResourceAsStream(iconPath);
         Image icon = new Image(logo);
         return icon;
+    }
+
+    public static boolean isWindows() {
+        return os.startsWith("WINDOWS");
+    }
+
+    public static boolean isLinux() {
+        return os.startsWith("LINUX");
+    }
+
+    public static boolean isMacOS() {
+        return os.startsWith("MAC");
     }
 }

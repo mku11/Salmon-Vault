@@ -57,6 +57,8 @@ import javafx.stage.Stage;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -64,6 +66,8 @@ import java.util.stream.Collectors;
 public class MainController {
     private static final long MAX_TEXT_FILE = 1 * 1024 * 1024;
     private static final int THREADS = 1;
+    private static final Executor executor = Executors.newSingleThreadExecutor();
+
     @FXML
     public final ObservableList<SalmonFileViewModel> fileItemList = FXCollections.observableArrayList();
 
@@ -73,6 +77,7 @@ public class MainController {
 
     @FXML
     private final SimpleStringProperty status = new SimpleStringProperty();
+    private boolean useContentViewer;
 
     @FXML
     public SimpleStringProperty statusProperty() {
@@ -611,7 +616,10 @@ public class MainController {
         SalmonFileViewModel vm = getViewModel(file);
         try {
             if (FileUtils.isVideo(file.getName())) {
-                startMediaPlayer(vm);
+                if(useContentViewer)
+                    startContentViewer(vm);
+                else
+                    startMediaPlayer(vm);
                 return true;
             } else if (FileUtils.isAudio(file.getName())) {
                 startMediaPlayer(vm);
@@ -636,6 +644,11 @@ public class MainController {
     }
 
     private void promptOpenExternalApp(AesFile file, String msg) {
+        if (!Desktop.isDesktopSupported()) {
+            SalmonDialog.promptDialog("Information", "Sharing is not supported in this platform, " +
+                    "export and re-import the file manually");
+            return;
+        }
         SalmonDialog.promptDialog("Open External", (msg != null ? msg + " " : "")
                         + "Press Ok to export the file temporarily and " +
                         "open it with an external app. \n",
@@ -650,7 +663,9 @@ public class MainController {
 
     private void openWith(AesFile salmonFile) {
         SalmonDialogs.promptShare("Export and Share File", SalmonVaultManager.REQUEST_EXPORT_DIR, (sharedDir) -> {
-            openWith(salmonFile, sharedDir);
+            executor.execute(() -> {
+                openWith(salmonFile, sharedDir);
+            });
         });
     }
 
@@ -661,24 +676,21 @@ public class MainController {
         IFile[] sharedFiles = new IFile[1];
         manager.exportFiles(new AesFile[]{salmonFile}, sharedDir, false, (files) ->
         {
-            WindowUtils.runOnMainThread(() -> {
-                try {
-                    IFile sharedFile = files[0];
-                    sharedFiles[0] = sharedFile;
-                    String os = System.getProperty("os.name").toUpperCase();
-                    if (os.startsWith("WINDOWS")) { // for windows we let the user choose the app
-                        Runtime.getRuntime().exec("rundll32.exe SHELL32.DLL,OpenAs_RunDLL " + sharedFile.getPath());
-                    } else {
-                        if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-                            Desktop.getDesktop().edit(new File(sharedFile.getPath()));
-                        } else if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-                            Desktop.getDesktop().open(new File(sharedFile.getPath()));
-                        }
+            try {
+                IFile sharedFile = files[0];
+                sharedFiles[0] = sharedFile;
+                if (WindowUtils.isWindows()) { // for windows we let the user choose the app
+                    Runtime.getRuntime().exec("rundll32.exe SHELL32.DLL,OpenAs_RunDLL " + sharedFile.getPath());
+                } else {
+                    if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+                        Desktop.getDesktop().edit(new File(sharedFile.getPath()));
+                    } else if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                        Desktop.getDesktop().open(new File(sharedFile.getPath()));
                     }
-                } catch (Exception e) {
-                    new SalmonDialog(Alert.AlertType.ERROR, "Could not launch external app: " + e).show();
                 }
-            });
+            } catch (Exception e) {
+                new SalmonDialog(Alert.AlertType.ERROR, "Could not launch external app: " + e).show();
+            }
         });
         SalmonDialog.promptDialog("Open External",
                 "You will be soon prompted to open the file with an app.\n" +
@@ -784,6 +796,16 @@ public class MainController {
         WindowUtils.runOnMainThread(() -> {
             try {
                 MediaPlayerController.openMediaPlayer(item, stage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void startContentViewer(SalmonFileViewModel item) {
+        WindowUtils.runOnMainThread(() -> {
+            try {
+                ContentViewerController.openContentViewer(item, stage);
             } catch (IOException e) {
                 e.printStackTrace();
             }

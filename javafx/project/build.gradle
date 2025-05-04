@@ -80,30 +80,34 @@ dependencies {
     implementation 'org.jcodec:jcodec:0.2.5'
     implementation 'org.jcodec:jcodec-javase:0.2.5'
 
-    implementation 'org.openjfx:javafx-base:17.0.2'
-    implementation 'org.openjfx:javafx-base:17.0.2:win'
-    implementation 'org.openjfx:javafx-base:17.0.2:mac'
-    implementation 'org.openjfx:javafx-base:17.0.2:linux'
-    implementation 'org.openjfx:javafx-graphics:17.0.2'
-    implementation 'org.openjfx:javafx-graphics:17.0.2:win'
-    implementation 'org.openjfx:javafx-graphics:17.0.2:mac'
-    implementation 'org.openjfx:javafx-graphics:17.0.2:linux'
-    implementation 'org.openjfx:javafx-media:17.0.2'
-    implementation 'org.openjfx:javafx-media:17.0.2:win'
-    implementation 'org.openjfx:javafx-media:17.0.2:mac'
-    implementation 'org.openjfx:javafx-media:17.0.2:linux'
-    implementation 'org.openjfx:javafx-fxml:17.0.2'
-    implementation 'org.openjfx:javafx-fxml:17.0.2:win'
-    implementation 'org.openjfx:javafx-fxml:17.0.2:mac'
-    implementation 'org.openjfx:javafx-fxml:17.0.2:linux'
-    implementation 'org.openjfx:javafx-swing:17.0.2'
-    implementation 'org.openjfx:javafx-swing:17.0.2:win'
-    implementation 'org.openjfx:javafx-swing:17.0.2:mac'
-    implementation 'org.openjfx:javafx-swing:17.0.2:linux'
-    implementation 'org.openjfx:javafx-controls:17.0.2'
-    implementation 'org.openjfx:javafx-controls:17.0.2:win'
-    implementation 'org.openjfx:javafx-controls:17.0.2:mac'
-    implementation 'org.openjfx:javafx-controls:17.0.2:linux'
+    implementation 'org.openjfx:javafx-base:17.0.15'
+    implementation 'org.openjfx:javafx-base:17.0.15:win'
+    implementation 'org.openjfx:javafx-base:17.0.15:mac'
+    implementation 'org.openjfx:javafx-base:17.0.15:linux'
+    implementation 'org.openjfx:javafx-graphics:17.0.15'
+    implementation 'org.openjfx:javafx-graphics:17.0.15:win'
+    implementation 'org.openjfx:javafx-graphics:17.0.15:mac'
+    implementation 'org.openjfx:javafx-graphics:17.0.15:linux'
+    implementation 'org.openjfx:javafx-media:17.0.15'
+    implementation 'org.openjfx:javafx-media:17.0.15:win'
+    implementation 'org.openjfx:javafx-media:17.0.15:mac'
+    implementation 'org.openjfx:javafx-media:17.0.15:linux'
+    implementation 'org.openjfx:javafx-web:17.0.15'
+    implementation 'org.openjfx:javafx-web:17.0.15:win'
+    implementation 'org.openjfx:javafx-web:17.0.15:mac'
+    implementation 'org.openjfx:javafx-web:17.0.15:linux'
+    implementation 'org.openjfx:javafx-fxml:17.0.15'
+    implementation 'org.openjfx:javafx-fxml:17.0.15:win'
+    implementation 'org.openjfx:javafx-fxml:17.0.15:mac'
+    implementation 'org.openjfx:javafx-fxml:17.0.15:linux'
+    implementation 'org.openjfx:javafx-swing:17.0.15'
+    implementation 'org.openjfx:javafx-swing:17.0.15:win'
+    implementation 'org.openjfx:javafx-swing:17.0.15:mac'
+    implementation 'org.openjfx:javafx-swing:17.0.15:linux'
+    implementation 'org.openjfx:javafx-controls:17.0.15'
+    implementation 'org.openjfx:javafx-controls:17.0.15:win'
+    implementation 'org.openjfx:javafx-controls:17.0.15:mac'
+    implementation 'org.openjfx:javafx-controls:17.0.15:linux'
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
@@ -116,7 +120,7 @@ test {
 ext {
     javaMainClass = "com.mku.salmon.vault.main.Main"
     // change this to the javafx lib path
-    javaFxLib = "D:\\tools\\javafx-sdk-17.0.10\\lib"
+    javaFxLib = "D:\\tools\\openjfx-17.0.15_windows-x64_bin-sdk\\javafx-sdk-17.0.15\\lib"
 }
 
 // To run the app execute runApp instead of run task
@@ -126,7 +130,7 @@ task runApp(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = javaMainClass
     systemProperty "java.library.path", "build/libs/natives/lib"
-    jvmArgs = ["--module-path", javaFxLib, "--add-modules=javafx.controls,javafx.swing,javafx.fxml,javafx.media,javafx.graphics"]
+    jvmArgs = ["--module-path", javaFxLib, "--add-modules=javafx.controls,javafx.swing,javafx.fxml,javafx.media,javafx.graphics,javafx.web"]
 }
 
 // run the unzipNative task first
