@@ -205,6 +205,9 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     private void LoadContent(AesFile file)
     {
         mTitle.Text = file.Name;
+        if (FileUtils.isAudio(file.getName())) {
+            showSeekBar(true);
+        }
         Task.Run(() =>
         {
             try
@@ -450,11 +453,21 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     {
         if (mSeekBarLayout.Visibility == ViewStates.Gone)
         {
-            mTitleLayout.Visibility = ViewStates.Visible;
-            mSeekBarLayout.Visibility = ViewStates.Visible;
+            ShowSeekBar(true);
         }
         else
         {
+            ShowSeekBar(false);
+        }
+    }
+
+
+    private void ShowSeekBar(bool visible)
+    {
+        if (visible) {
+            mTitleLayout.Visibility = ViewStates.Visible;
+            mSeekBarLayout.Visibility = ViewStates.Visible;
+        } else {
             mTitleLayout.Visibility = ViewStates.Gone;
             mSeekBarLayout.Visibility = ViewStates.Gone;
         }
