@@ -2,7 +2,7 @@
 
 # Salmon Vault
 Secure all your personal files in Salmon Vault with AES-256 encryption.  
-Salmon Vault works on Android, Windows, Linux, and MacOS devices.  
+Salmon Vault works on Android, Windows, Linux, MacOS, and most popular browsers (limited).  
 Powered by [Salmon](https://github.com/mku11/Salmon-AES-CTR) encryption library.
 
 [![License: MIT](https://img.shields.io/github/license/mku11/Salmon-Vault.svg)](LICENSE)

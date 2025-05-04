@@ -13,10 +13,6 @@ chmod u+x start.sh
 Then run start.sh to start Salmon Vault
 
 Open source projects included:
-TinyAES
-project: https://github.com/kokke/tiny-AES-c
-license: The Unlicense https://github.com/kokke/tiny-AES-c/blob/master/unlicense.txt
-
 Java Native Access
 project: https://github.com/java-native-access/jna
 license: Apache-2.0 https://github.com/java-native-access/jna/blob/master/LICENSE
@@ -24,6 +20,14 @@ license: Apache-2.0 https://github.com/java-native-access/jna/blob/master/LICENS
 JavaFX
 project: https://github.com/openjdk/jfx
 license: GPLv2.0 https://github.com/openjdk/jfx/blob/master/LICENSE
+
+jcodec
+project: https://github.com/jcodec/jcodec
+license: BSD-2-Clause License
+
+Apache PDFBox
+project: https://pdfbox.apache.org
+license: Apache 2.0 License
 
 Icons:
 "uxwing icons - https://uxwing.com\n\n" +
