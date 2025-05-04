@@ -74,7 +74,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public static final int REQUEST_EXPORT_AUTH_FILE = 1005;
     public static final int REQUEST_IMPORT_FOLDER = 1006;
 
-    private static ExecutorService executor = Executors.newFixedThreadPool(2);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(2);
 
     private String sequencerDefaultDirPath = SalmonConfig.getPrivateDir() + File.separator + SEQUENCER_DIR_NAME;
     private HashSet<BiConsumer<Object, String>> observers = new HashSet<>();
