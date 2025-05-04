@@ -59,7 +59,7 @@ public class TextEditorActivity extends AppCompatActivity {
     private SalmonTextEditor textEditor;
     private EditText editText;
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private SearchView searchView;
     private String searchString = "";
 
