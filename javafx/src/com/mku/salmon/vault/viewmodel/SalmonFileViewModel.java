@@ -61,7 +61,7 @@ public class SalmonFileViewModel {
 
     private AesFile salmonFile;
 
-    private Executor executor = Executors.newFixedThreadPool(BACKGROUND_THREADS);
+    private static final Executor executor = Executors.newFixedThreadPool(BACKGROUND_THREADS);
 
     public SalmonFileViewModel(AesFile salmonFile) {
         this.salmonFile = salmonFile;
