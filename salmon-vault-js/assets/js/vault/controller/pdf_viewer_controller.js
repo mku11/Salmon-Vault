@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Max Kas
+Copyright (c) 2025 Max Kas
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,6 @@ SOFTWARE.
 
 
 import { SalmonWindow } from "../window/salmon_window.js";
-import { SalmonImageViewer } from "../../common/model/salmon_image_viewer.js";
 import { Binding } from "../../common/binding/binding.js";
 import { ObjectProperty } from "../../common/binding/object_property.js";
 import { BooleanProperty } from "../../common/binding/boolean_property.js";
@@ -33,9 +32,9 @@ import { SalmonConfig } from "../config/salmon_config.js";
 import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
 
-export class ImageViewerController {
-    static modalURL = "image-viewer.html";
-    image;
+export class PdfViewerController {
+    static modalURL = "pdf-viewer.html";
+    iframe;
     modalWindow;
     viewer;
     progressVisibility;
@@ -47,16 +46,16 @@ export class ImageViewerController {
 
     setStage(modalWindow) {
         this.modalWindow = modalWindow;
-        this.image = Binding.bind(this.modalWindow.getRoot(), 'image-viewer-image', 'src', new ObjectProperty());
-        this.progressVisibility = Binding.bind(this.modalWindow.getRoot(), 'media-progress', 'display', new BooleanProperty());
+        this.iframe = Binding.bind(this.modalWindow.getRoot(), 'pdf-viewer-iframe', 'src', new ObjectProperty());
+        this.progressVisibility = Binding.bind(this.modalWindow.getRoot(), 'pdf-progress', 'display', new BooleanProperty());
     }
 
-    static openImageViewer(fileViewModel, owner) {
-        fetch(ImageViewerController.modalURL).then(async (response) => {
+    static openPdfViewer(fileViewModel, owner) {
+        fetch(PdfViewerController.modalURL).then(async (response) => {
             let htmlText = await response.text();
-            let controller = new ImageViewerController();
-            let modalWindow = await SalmonWindow.createWindow("Image Viewer", htmlText);
-            modalWindow.modal.style.resize = "both";
+            let controller = new PdfViewerController();
+            let modalWindow = await SalmonWindow.createWindow("PDF Viewer", htmlText);
+            modalWindow.modal.style.resize = "none";
             controller.setStage(modalWindow);
             setTimeout(() => {
                 controller.load(fileViewModel);
@@ -68,18 +67,15 @@ export class ImageViewerController {
     }
 
     async load(fileViewModel) {
-        if (this.viewer == null)
-            this.viewer = new SalmonImageViewer();
         try {
-            this.viewer.load(fileViewModel.getSalmonFile());
             let stream = await fileViewModel.getSalmonFile().getInputStream();
             let ms = new MemoryStream();
             await stream.copyTo(ms);
             await stream.close();
-            let blob = new Blob([ms.toArray().buffer]);
-            await ms.close();            
+            let blob = new Blob([ms.toArray().buffer], {type: "application/pdf"});
+            await ms.close();          
             this.url = URL.createObjectURL(blob);
-            this.image.set(this.url);
+            this.iframe.set(this.url);
         } catch (e) {
             console.error(e);
         }

@@ -396,6 +396,13 @@ export class File {
     reset() {
     }
     /**
+     * Get the credentials
+     * @return The credentials
+     */
+    getCredentials() {
+        return null;
+    }
+    /**
      * Returns a string representation of this object
      * @returns {string} The string
      */

@@ -26,22 +26,40 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _HttpFile_instances, _HttpFile_getResponse, _HttpFile_checkStatus, _HttpFile_setDefaultHeaders;
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var _HttpFile_instances, _HttpFile_filePath, _HttpFile_response, _HttpFile_credentials, _HttpFile_getResponse, _HttpFile_checkStatus, _HttpFile_setServiceAuth, _HttpFile_setDefaultHeaders;
 import { HttpFileStream } from '../streams/http_file_stream.js';
 import { IOException } from '../../../salmon-core/streams/io_exception.js';
 import { MemoryStream } from '../../../salmon-core/streams/memory_stream.js';
+import { HttpSyncClient } from './http_sync_client.js';
+import { Base64Utils } from '../../../salmon-core/salmon/encode/base64_utils.js';
 /**
  * Salmon RealFile implementation for Javascript.
  */
 export class HttpFile {
     /**
+     * Get the user credentials
+     * @return The credentials
+     */
+    getCredentials() {
+        return __classPrivateFieldGet(this, _HttpFile_credentials, "f");
+    }
+    /**
      * Instantiate a real file represented by the filepath provided.
      * @param {string} path The filepath.
      */
-    constructor(path) {
+    constructor(path, credentials = null) {
         _HttpFile_instances.add(this);
-        this.response = null;
-        this.filePath = path;
+        _HttpFile_filePath.set(this, void 0);
+        _HttpFile_response.set(this, null);
+        _HttpFile_credentials.set(this, null);
+        __classPrivateFieldSet(this, _HttpFile_filePath, path, "f");
+        __classPrivateFieldSet(this, _HttpFile_credentials, credentials, "f");
     }
     /**
      * Create a directory under this directory.
@@ -79,23 +97,23 @@ export class HttpFile {
      * @returns {string} The path
      */
     getPath() {
-        return this.filePath;
+        return __classPrivateFieldGet(this, _HttpFile_filePath, "f");
     }
     /**
      * Get the absolute path on the physical disk. For javascript this is the same as the filepath.
      * @returns {string} The absolute path.
      */
     getDisplayPath() {
-        return this.filePath;
+        return __classPrivateFieldGet(this, _HttpFile_filePath, "f");
     }
     /**
      * Get the name of this file or directory.
      * @returns {string} The name of this file or directory.
      */
     getName() {
-        if (this.filePath == null)
+        if (__classPrivateFieldGet(this, _HttpFile_filePath, "f") == null)
             throw new Error("Filepath is not assigned");
-        let nFilePath = this.filePath;
+        let nFilePath = __classPrivateFieldGet(this, _HttpFile_filePath, "f");
         if (nFilePath.endsWith("/"))
             nFilePath = nFilePath.substring(0, nFilePath.length - 1);
         let basename = nFilePath.split(HttpFile.separator).pop();
@@ -128,11 +146,11 @@ export class HttpFile {
      * @returns {Promise<IFile>} The parent directory.
      */
     async getParent() {
-        let path = this.filePath;
+        let path = __classPrivateFieldGet(this, _HttpFile_filePath, "f");
         if (path.endsWith(HttpFile.separator))
             path = path.slice(0, -1);
         let parentFilePath = path.substring(0, path.lastIndexOf(HttpFile.separator));
-        return new HttpFile(parentFilePath);
+        return new HttpFile(parentFilePath, __classPrivateFieldGet(this, _HttpFile_credentials, "f"));
     }
     /**
      * True if this is a directory.
@@ -216,7 +234,7 @@ export class HttpFile {
                 if (filename.includes("%")) {
                     filename = decodeURIComponent(filename);
                 }
-                let file = new HttpFile(this.filePath + HttpFile.separator + filename);
+                let file = new HttpFile(__classPrivateFieldGet(this, _HttpFile_filePath, "f") + HttpFile.separator + filename, __classPrivateFieldGet(this, _HttpFile_credentials, "f"));
                 files.push(file);
             }
             return files;
@@ -250,7 +268,7 @@ export class HttpFile {
     async getChild(filename) {
         if (await this.isFile())
             return null;
-        let child = new HttpFile(this.filePath + HttpFile.separator + filename);
+        let child = new HttpFile(__classPrivateFieldGet(this, _HttpFile_filePath, "f") + HttpFile.separator + filename, __classPrivateFieldGet(this, _HttpFile_credentials, "f"));
         return child;
     }
     /**
@@ -272,28 +290,33 @@ export class HttpFile {
      * Reset cached properties
      */
     reset() {
-        this.response = null;
+        __classPrivateFieldSet(this, _HttpFile_response, null, "f");
     }
     /**
      * Returns a string representation of this object
      * @returns {string} The string
      */
     toString() {
-        return this.filePath;
+        return __classPrivateFieldGet(this, _HttpFile_filePath, "f");
     }
 }
-_HttpFile_instances = new WeakSet(), _HttpFile_getResponse = async function _HttpFile_getResponse() {
-    if (this.response == null) {
+_HttpFile_filePath = new WeakMap(), _HttpFile_response = new WeakMap(), _HttpFile_credentials = new WeakMap(), _HttpFile_instances = new WeakSet(), _HttpFile_getResponse = async function _HttpFile_getResponse() {
+    if (__classPrivateFieldGet(this, _HttpFile_response, "f") == null) {
         let headers = new Headers();
         __classPrivateFieldGet(this, _HttpFile_instances, "m", _HttpFile_setDefaultHeaders).call(this, headers);
-        this.response = (await fetch(this.filePath, { method: 'HEAD', headers: headers }));
-        await __classPrivateFieldGet(this, _HttpFile_instances, "m", _HttpFile_checkStatus).call(this, this.response, 200);
+        __classPrivateFieldGet(this, _HttpFile_instances, "m", _HttpFile_setServiceAuth).call(this, headers);
+        __classPrivateFieldSet(this, _HttpFile_response, await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _HttpFile_filePath, "f"), { method: 'HEAD', headers: headers }), "f");
+        await __classPrivateFieldGet(this, _HttpFile_instances, "m", _HttpFile_checkStatus).call(this, __classPrivateFieldGet(this, _HttpFile_response, "f"), 200);
     }
-    return this.response;
+    return __classPrivateFieldGet(this, _HttpFile_response, "f");
 }, _HttpFile_checkStatus = async function _HttpFile_checkStatus(httpResponse, status) {
     if (httpResponse.status != status)
         throw new IOException(httpResponse.status
             + " " + httpResponse.statusText);
+}, _HttpFile_setServiceAuth = function _HttpFile_setServiceAuth(headers) {
+    if (!__classPrivateFieldGet(this, _HttpFile_credentials, "f"))
+        return;
+    headers.append('Authorization', 'Basic ' + Base64Utils.getBase64().encode(new TextEncoder().encode(__classPrivateFieldGet(this, _HttpFile_credentials, "f").getServiceUser() + ":" + __classPrivateFieldGet(this, _HttpFile_credentials, "f").getServicePassword())));
 }, _HttpFile_setDefaultHeaders = function _HttpFile_setDefaultHeaders(headers) {
     headers.append("Cache", "no-store");
     headers.append("Connection", "close");

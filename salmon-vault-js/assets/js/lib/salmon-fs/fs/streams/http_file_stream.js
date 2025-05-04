@@ -21,20 +21,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var _HttpFileStream_instances, _a, _HttpFileStream_position, _HttpFileStream_end_position, _HttpFileStream_buffer, _HttpFileStream_bufferPosition, _HttpFileStream_stream, _HttpFileStream_reader, _HttpFileStream_closed, _HttpFileStream_getStream, _HttpFileStream_getReader, _HttpFileStream_checkStatus, _HttpFileStream_setDefaultHeaders;
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _HttpFileStream_instances, _a, _HttpFileStream_file, _HttpFileStream_position, _HttpFileStream_end_position, _HttpFileStream_buffer, _HttpFileStream_bufferPosition, _HttpFileStream_stream, _HttpFileStream_reader, _HttpFileStream_closed, _HttpFileStream_getStream, _HttpFileStream_getReader, _HttpFileStream_checkStatus, _HttpFileStream_setServiceAuth, _HttpFileStream_setDefaultHeaders;
 import { IOException } from "../../../salmon-core/streams/io_exception.js";
 import { RandomAccessStream, SeekOrigin } from "../../../salmon-core/streams/random_access_stream.js";
+import { Base64Utils } from '../../../salmon-core/salmon/encode/base64_utils.js';
+import { HttpSyncClient } from '../file/http_sync_client.js';
 /**
  * An advanced file stream implementation for remote HTTP files.
  * This class can be used for random file access of remote files.
@@ -50,6 +52,10 @@ export class HttpFileStream extends RandomAccessStream {
     constructor(file, mode) {
         super();
         _HttpFileStream_instances.add(this);
+        /**
+         * The HTTP file associated with this stream.
+         */
+        _HttpFileStream_file.set(this, void 0);
         _HttpFileStream_position.set(this, 0);
         _HttpFileStream_end_position.set(this, 0);
         // fetch will response will download the whole contents internally
@@ -59,7 +65,7 @@ export class HttpFileStream extends RandomAccessStream {
         _HttpFileStream_stream.set(this, null);
         _HttpFileStream_reader.set(this, null);
         _HttpFileStream_closed.set(this, false);
-        this.file = file;
+        __classPrivateFieldSet(this, _HttpFileStream_file, file, "f");
         if (mode == "rw") {
             throw new Error("Unsupported Operation, readonly filesystem");
         }
@@ -90,7 +96,7 @@ export class HttpFileStream extends RandomAccessStream {
      * @returns {Promise<number>} The length
      */
     async getLength() {
-        return await this.file.getLength();
+        return await __classPrivateFieldGet(this, _HttpFileStream_file, "f").getLength();
     }
     /**
      * Get the current position of the stream.
@@ -137,7 +143,7 @@ export class HttpFileStream extends RandomAccessStream {
             }
             __classPrivateFieldSet(this, _HttpFileStream_position, __classPrivateFieldGet(this, _HttpFileStream_position, "f") + bytesRead, "f");
         }
-        if (bytesRead < count && __classPrivateFieldGet(this, _HttpFileStream_position, "f") == __classPrivateFieldGet(this, _HttpFileStream_end_position, "f") + 1 && __classPrivateFieldGet(this, _HttpFileStream_position, "f") < await this.file.getLength()) {
+        if (bytesRead < count && __classPrivateFieldGet(this, _HttpFileStream_position, "f") == __classPrivateFieldGet(this, _HttpFileStream_end_position, "f") + 1 && __classPrivateFieldGet(this, _HttpFileStream_position, "f") < await __classPrivateFieldGet(this, _HttpFileStream_file, "f").getLength()) {
             await this.reset();
         }
         let reader = await __classPrivateFieldGet(this, _HttpFileStream_instances, "m", _HttpFileStream_getReader).call(this);
@@ -186,7 +192,7 @@ export class HttpFileStream extends RandomAccessStream {
         else if (origin == SeekOrigin.Current)
             pos += offset;
         else if (origin == SeekOrigin.End)
-            pos = await this.file.getLength() - offset;
+            pos = await __classPrivateFieldGet(this, _HttpFileStream_file, "f").getLength() - offset;
         await this.setPosition(pos);
         return __classPrivateFieldGet(this, _HttpFileStream_position, "f");
     }
@@ -221,12 +227,13 @@ export class HttpFileStream extends RandomAccessStream {
         __classPrivateFieldSet(this, _HttpFileStream_bufferPosition, 0, "f");
     }
 }
-_a = HttpFileStream, _HttpFileStream_position = new WeakMap(), _HttpFileStream_end_position = new WeakMap(), _HttpFileStream_buffer = new WeakMap(), _HttpFileStream_bufferPosition = new WeakMap(), _HttpFileStream_stream = new WeakMap(), _HttpFileStream_reader = new WeakMap(), _HttpFileStream_closed = new WeakMap(), _HttpFileStream_instances = new WeakSet(), _HttpFileStream_getStream = async function _HttpFileStream_getStream() {
+_a = HttpFileStream, _HttpFileStream_file = new WeakMap(), _HttpFileStream_position = new WeakMap(), _HttpFileStream_end_position = new WeakMap(), _HttpFileStream_buffer = new WeakMap(), _HttpFileStream_bufferPosition = new WeakMap(), _HttpFileStream_stream = new WeakMap(), _HttpFileStream_reader = new WeakMap(), _HttpFileStream_closed = new WeakMap(), _HttpFileStream_instances = new WeakSet(), _HttpFileStream_getStream = async function _HttpFileStream_getStream() {
     if (__classPrivateFieldGet(this, _HttpFileStream_closed, "f"))
         throw new IOException("Stream is closed");
     if (__classPrivateFieldGet(this, _HttpFileStream_stream, "f") == null) {
         let headers = new Headers();
         __classPrivateFieldGet(this, _HttpFileStream_instances, "m", _HttpFileStream_setDefaultHeaders).call(this, headers);
+        __classPrivateFieldGet(this, _HttpFileStream_instances, "m", _HttpFileStream_setServiceAuth).call(this, headers);
         let end = await this.getLength() - 1;
         let requestLength = _a.MAX_LEN_PER_REQUEST;
         if (end == -1 || end >= __classPrivateFieldGet(this, _HttpFileStream_position, "f") + requestLength) {
@@ -237,7 +244,7 @@ _a = HttpFileStream, _HttpFileStream_position = new WeakMap(), _HttpFileStream_e
         // or it's a full request but we don't know the end
         if (__classPrivateFieldGet(this, _HttpFileStream_position, "f") > 0 || end == _a.MAX_LEN_PER_REQUEST - 1)
             headers.append("Range", "bytes=" + __classPrivateFieldGet(this, _HttpFileStream_position, "f") + "-" + end);
-        let httpResponse = await fetch(this.file.getPath(), { cache: "no-store", headers: headers });
+        let httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _HttpFileStream_file, "f").getPath(), { cache: "no-store", headers: headers });
         await __classPrivateFieldGet(this, _HttpFileStream_instances, "m", _HttpFileStream_checkStatus).call(this, httpResponse, new Set([200, 206]));
         __classPrivateFieldSet(this, _HttpFileStream_stream, httpResponse.body, "f");
         __classPrivateFieldSet(this, _HttpFileStream_end_position, end, "f");
@@ -255,6 +262,11 @@ _a = HttpFileStream, _HttpFileStream_position = new WeakMap(), _HttpFileStream_e
         throw new IOException(httpResponse.status
             + " " + httpResponse.statusText);
     }
+}, _HttpFileStream_setServiceAuth = function _HttpFileStream_setServiceAuth(headers) {
+    let credentials = __classPrivateFieldGet(this, _HttpFileStream_file, "f").getCredentials();
+    if (!credentials)
+        return;
+    headers.append('Authorization', 'Basic ' + Base64Utils.getBase64().encode(new TextEncoder().encode(credentials.getServiceUser() + ":" + credentials.getServicePassword())));
 }, _HttpFileStream_setDefaultHeaders = function _HttpFileStream_setDefaultHeaders(headers) {
     headers.append("Cache", "no-store");
     headers.append("Connection", "close");

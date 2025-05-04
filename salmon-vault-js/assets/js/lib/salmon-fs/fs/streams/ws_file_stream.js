@@ -32,11 +32,12 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _WSFileStream_instances, _a, _WSFileStream_PATH, _WSFileStream_POSITION, _WSFileStream_LENGTH, _WSFileStream_canWrite, _WSFileStream_getWriter, _WSFileStream_setServiceAuth, _WSFileStream_checkStatus, _WSFileStream_setDefaultHeaders;
+var _WSFileStream_instances, _a, _WSFileStream_PATH, _WSFileStream_POSITION, _WSFileStream_LENGTH, _WSFileStream_file, _WSFileStream_canWrite, _WSFileStream_getWriter, _WSFileStream_setServiceAuth, _WSFileStream_checkStatus, _WSFileStream_setDefaultHeaders;
 import { IOException } from "../../../salmon-core/streams/io_exception.js";
-import { Base64 } from '../../../salmon-core/convert/base64.js';
 import { MemoryStream } from '../../../salmon-core/streams/memory_stream.js';
 import { RandomAccessStream, SeekOrigin } from "../../../salmon-core/streams/random_access_stream.js";
+import { Base64Utils } from '../../../salmon-core/salmon/encode/base64_utils.js';
+import { HttpSyncClient } from '../file/http_sync_client.js';
 /**
  * File stream implementation for Web Service files.
  * This class can be used for random file access of remote files.
@@ -52,6 +53,10 @@ export class WSFileStream extends RandomAccessStream {
     constructor(file, mode) {
         super();
         _WSFileStream_instances.add(this);
+        /**
+         * The web service file associated with this stream.
+         */
+        _WSFileStream_file.set(this, void 0);
         _WSFileStream_canWrite.set(this, false);
         this.position = 0;
         this.end_position = 0;
@@ -62,7 +67,7 @@ export class WSFileStream extends RandomAccessStream {
         this.reader = null;
         this.writer = null;
         this.closed = false;
-        this.file = file;
+        __classPrivateFieldSet(this, _WSFileStream_file, file, "f");
         __classPrivateFieldSet(this, _WSFileStream_canWrite, mode == "rw", "f");
     }
     async getInputStream() {
@@ -77,8 +82,8 @@ export class WSFileStream extends RandomAccessStream {
                 end = this.position + _a.MAX_LEN_PER_REQUEST - 1;
             }
             let httpResponse = null;
-            httpResponse = await fetch(this.file.getServicePath() + "/api/get"
-                + "?" + __classPrivateFieldGet(_a, _a, "f", _WSFileStream_PATH) + "=" + encodeURIComponent(this.file.getPath())
+            httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFileStream_file, "f").getServicePath() + "/api/get"
+                + "?" + __classPrivateFieldGet(_a, _a, "f", _WSFileStream_PATH) + "=" + encodeURIComponent(__classPrivateFieldGet(this, _WSFileStream_file, "f").getPath())
                 + "&" + __classPrivateFieldGet(_a, _a, "f", _WSFileStream_POSITION) + "=" + this.position.toString(), { method: 'GET', headers: headers });
             await __classPrivateFieldGet(this, _WSFileStream_instances, "m", _WSFileStream_checkStatus).call(this, httpResponse, this.position > 0 ? 206 : 200);
             this.readStream = httpResponse.body;
@@ -101,7 +106,7 @@ export class WSFileStream extends RandomAccessStream {
             let startPosition = await this.getPosition();
             const boundary = "*******";
             let header = "--" + boundary + "\r\n";
-            header += "Content-Disposition: form-data; name=\"file\"; filename=\"" + this.file.getName() + "\"\r\n";
+            header += "Content-Disposition: form-data; name=\"file\"; filename=\"" + __classPrivateFieldGet(this, _WSFileStream_file, "f").getName() + "\"\r\n";
             header += "\r\n";
             let headerData = new TextEncoder().encode(header);
             let footer = "\r\n--" + boundary + "--";
@@ -120,8 +125,8 @@ export class WSFileStream extends RandomAccessStream {
                 __classPrivateFieldGet(sstream, _WSFileStream_instances, "m", _WSFileStream_setServiceAuth).call(sstream, headers);
                 let httpResponse = null;
                 let data = body.toArray();
-                httpResponse = await fetch(sstream.file.getServicePath() + "/api/upload"
-                    + "?" + __classPrivateFieldGet(_a, _a, "f", _WSFileStream_PATH) + "=" + encodeURIComponent(sstream.file.getPath())
+                httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(sstream, _WSFileStream_file, "f").getServicePath() + "/api/upload"
+                    + "?" + __classPrivateFieldGet(_a, _a, "f", _WSFileStream_PATH) + "=" + encodeURIComponent(__classPrivateFieldGet(sstream, _WSFileStream_file, "f").getPath())
                     + "&" + __classPrivateFieldGet(_a, _a, "f", _WSFileStream_POSITION) + "=" + startPosition.toString(), { method: 'POST', body: new Blob([data]), headers: headers });
                 await __classPrivateFieldGet(sstream, _WSFileStream_instances, "m", _WSFileStream_checkStatus).call(sstream, httpResponse, startPosition > 0 ? 206 : 200);
                 body = new MemoryStream();
@@ -175,7 +180,7 @@ export class WSFileStream extends RandomAccessStream {
      * @returns {Promise<number>} The length
      */
     async getLength() {
-        return await this.file.getLength();
+        return await __classPrivateFieldGet(this, _WSFileStream_file, "f").getLength();
     }
     /**
      * Get the current position of the stream.
@@ -205,10 +210,10 @@ export class WSFileStream extends RandomAccessStream {
         __classPrivateFieldGet(this, _WSFileStream_instances, "m", _WSFileStream_setDefaultHeaders).call(this, headers);
         __classPrivateFieldGet(this, _WSFileStream_instances, "m", _WSFileStream_setServiceAuth).call(this, headers);
         let params = new URLSearchParams();
-        params.append(__classPrivateFieldGet(_a, _a, "f", _WSFileStream_PATH), this.file.getPath());
+        params.append(__classPrivateFieldGet(_a, _a, "f", _WSFileStream_PATH), __classPrivateFieldGet(this, _WSFileStream_file, "f").getPath());
         params.append(__classPrivateFieldGet(_a, _a, "f", _WSFileStream_LENGTH), value.toString());
         let httpResponse = null;
-        httpResponse = await fetch(this.file.getServicePath() + "/api/setLength", { method: 'PUT', body: params, headers: headers });
+        httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFileStream_file, "f").getServicePath() + "/api/setLength", { method: 'PUT', body: params, headers: headers });
         await __classPrivateFieldGet(this, _WSFileStream_instances, "m", _WSFileStream_checkStatus).call(this, httpResponse, 200);
         await this.reset();
     }
@@ -230,7 +235,7 @@ export class WSFileStream extends RandomAccessStream {
             }
             this.position += bytesRead;
         }
-        if (bytesRead < count && this.position == this.end_position + 1 && this.position < await this.file.getLength()) {
+        if (bytesRead < count && this.position == this.end_position + 1 && this.position < await __classPrivateFieldGet(this, _WSFileStream_file, "f").getLength()) {
             await this.reset();
         }
         let reader = await this.getReader();
@@ -281,7 +286,7 @@ export class WSFileStream extends RandomAccessStream {
         else if (origin == SeekOrigin.Current)
             pos += offset;
         else if (origin == SeekOrigin.End)
-            pos = await this.file.getLength() - offset;
+            pos = await __classPrivateFieldGet(this, _WSFileStream_file, "f").getLength() - offset;
         await this.setPosition(pos);
         return this.position;
     }
@@ -321,19 +326,19 @@ export class WSFileStream extends RandomAccessStream {
         this.writeStream = null;
         this.buffer = null;
         this.bufferPosition = 0;
-        this.file.reset();
+        __classPrivateFieldGet(this, _WSFileStream_file, "f").reset();
     }
 }
-_a = WSFileStream, _WSFileStream_canWrite = new WeakMap(), _WSFileStream_instances = new WeakSet(), _WSFileStream_getWriter = async function _WSFileStream_getWriter() {
+_a = WSFileStream, _WSFileStream_file = new WeakMap(), _WSFileStream_canWrite = new WeakMap(), _WSFileStream_instances = new WeakSet(), _WSFileStream_getWriter = async function _WSFileStream_getWriter() {
     if (this.writer == null) {
         this.writer = (await this.getOutputStream()).getWriter();
     }
     return this.writer;
 }, _WSFileStream_setServiceAuth = function _WSFileStream_setServiceAuth(headers) {
-    var _b, _c;
-    if (!this.file.getCredentials())
+    let credentials = __classPrivateFieldGet(this, _WSFileStream_file, "f").getCredentials();
+    if (!credentials)
         return;
-    headers.append('Authorization', 'Basic ' + new Base64().encode(new TextEncoder().encode(((_b = this.file.getCredentials()) === null || _b === void 0 ? void 0 : _b.getServiceUser()) + ":" + ((_c = this.file.getCredentials()) === null || _c === void 0 ? void 0 : _c.getServicePassword()))));
+    headers.append('Authorization', 'Basic ' + Base64Utils.getBase64().encode(new TextEncoder().encode(credentials.getServiceUser() + ":" + credentials.getServicePassword())));
 }, _WSFileStream_checkStatus = async function _WSFileStream_checkStatus(httpResponse, status) {
     if (httpResponse.status != status)
         throw new IOException(httpResponse.status

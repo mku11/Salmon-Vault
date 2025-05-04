@@ -33,6 +33,7 @@ export class ObservableList {
     onSelectionChanged = [];
     onItemClicked = null;
     onItemDoubleClicked = null;
+    onItemMouseEntered = null;
     contextMenu = {};
     getContextItemTitle = null;
 
@@ -69,12 +70,12 @@ export class ObservableList {
         this.getContextItemTitle = contextItemTitleCallable;
     }
 
-    async onClicked(event, index) {
+    onClicked(event, index) {
         if(this.onItemClicked != null)
             this.onItemClicked(index);
     }
 
-    async onSetSelected(index, value) {
+    onSetSelected(index, value) {
         let item = this.#list[index];
         if(value) {
             this.selected.add(item);
@@ -110,6 +111,11 @@ export class ObservableList {
             this.onItemDoubleClicked(index);
     }
 
+    async onMouseEntered(event, index) {
+        if(this.onItemMouseEntered != null)
+            this.onItemMouseEntered(index);
+    }
+
     async itemPropertyChanged(owner, propertyName, self) {
         let value = owner[propertyName];
         let index = self.#list.indexOf(owner);
@@ -141,6 +147,7 @@ export class ObservableList {
             if(item instanceof IPropertyNotifier)
                 item.unobservePropertyChanges(this.itemPropertyChanged);
         }
+        this.selected.clear();
         this.#list.length = 0;
         this.lastSelection = -1;
         Binding.setValue(this, null);
@@ -159,6 +166,7 @@ export class ObservableList {
         let index = this.#list.indexOf(value);
         if(index >= 0)
             this.#list.splice(index, 1);
+        this.selected.remove(value);
     }
 
     length() {
@@ -167,5 +175,9 @@ export class ObservableList {
 
     getLastSelection() {
         return this.lastSelection;
+    }
+
+    bringIntoView(index) {
+        Binding.bringIntoView(this, index);
     }
 }

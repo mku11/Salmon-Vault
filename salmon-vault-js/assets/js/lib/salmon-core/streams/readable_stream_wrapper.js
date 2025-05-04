@@ -52,11 +52,91 @@ export async function fillBufferPart(cacheBuffer, start, offset, length, stream)
     }
     return totalBytesRead;
 }
-/***
+/**
  * ReadableStream wrapper for RandomAccessStream.
  * Use this class to wrap any RandomAccessStream to a JavaScript ReadableStream to use with 3rd party libraries.
  */
 export class ReadableStreamWrapper {
+    /**
+     * Set the source stream
+     * @param {RandomAccessStream} stream The stream
+     */
+    setStream(stream) {
+        __classPrivateFieldSet(this, _ReadableStreamWrapper_stream, stream, "f");
+    }
+    /**
+     * Get the source stream
+     * @returns {RandomAccessStream} The source stream
+     */
+    getStream() {
+        return __classPrivateFieldGet(this, _ReadableStreamWrapper_stream, "f");
+    }
+    /**
+     * Get the back offset
+     * @returns {number} The back offset
+     */
+    getBackOffset() {
+        return __classPrivateFieldGet(this, _ReadableStreamWrapper_backOffset, "f");
+    }
+    /**
+     * Set the back offset
+     * @param backOffset The back offset
+     */
+    setBackOffset(backOffset) {
+        __classPrivateFieldSet(this, _ReadableStreamWrapper_backOffset, backOffset, "f");
+    }
+    /**
+     * Get the total size of the stream
+     * @returns The total size
+     */
+    getTotalSize() {
+        return __classPrivateFieldGet(this, _ReadableStreamWrapper_totalSize, "f");
+    }
+    /**
+     * Set the total size of the stream
+     * @param {number} totalSize The total size of the stream
+     */
+    setTotalSize(totalSize) {
+        __classPrivateFieldSet(this, _ReadableStreamWrapper_totalSize, totalSize, "f");
+    }
+    /**
+     * Set the align size
+     * @param {number} alignSize The align size
+     */
+    setAlignSize(alignSize) {
+        __classPrivateFieldSet(this, _ReadableStreamWrapper_alignSize, alignSize, "f");
+    }
+    /**
+     * Get the buffer size
+     * @returns {number} The buffer size
+     */
+    getBufferSize() {
+        return __classPrivateFieldGet(this, _ReadableStreamWrapper_bufferSize, "f");
+    }
+    /**
+     * Set the buffer size
+     * @param {number} bufferSize The buffer size
+     */
+    setBufferSize(bufferSize) {
+        __classPrivateFieldSet(this, _ReadableStreamWrapper_bufferSize, bufferSize, "f");
+    }
+    /**
+     * Get the buffer count
+     * @returns {number} The buffer count
+     */
+    getBufferCount() {
+        return __classPrivateFieldGet(this, _ReadableStreamWrapper_buffersCount, "f");
+    }
+    /**
+     * Set the buffer count
+     * @param {number} buffersCount The buffer count
+     */
+    setBufferCount(buffersCount) {
+        __classPrivateFieldSet(this, _ReadableStreamWrapper_buffersCount, buffersCount, "f");
+    }
+    /**
+     * Construct a wrapper do not use directly, use createReadableStream() instead.
+     */
     constructor() {
         _ReadableStreamWrapper_instances.add(this);
         _ReadableStreamWrapper_buffers.set(this, null);
@@ -70,52 +150,25 @@ export class ReadableStreamWrapper {
         _ReadableStreamWrapper_alignSize.set(this, 0);
         /**
          * We reuse the least recently used buffer. Since the buffer count is relative
-         * small (see {@link #MAX_BUFFERS}) there is no need for a fast-access lru queue
+         * small there is no need for a fast-access lru queue
          * so a simple linked list of keeping the indexes is adequately fast.
          */
         this.lruBuffersIndex = [];
         _ReadableStreamWrapper_positionStart.set(this, 0);
         _ReadableStreamWrapper_positionEnd.set(this, 0);
-        this.closed = Promise.resolve(undefined);
-    }
-    setStream(stream) {
-        __classPrivateFieldSet(this, _ReadableStreamWrapper_stream, stream, "f");
-    }
-    getStream() {
-        return __classPrivateFieldGet(this, _ReadableStreamWrapper_stream, "f");
-    }
-    getBackOffset() {
-        return __classPrivateFieldGet(this, _ReadableStreamWrapper_backOffset, "f");
-    }
-    setBackOffset(backOffset) {
-        __classPrivateFieldSet(this, _ReadableStreamWrapper_backOffset, backOffset, "f");
-    }
-    getTotalSize() {
-        return __classPrivateFieldGet(this, _ReadableStreamWrapper_totalSize, "f");
-    }
-    setTotalSize(totalSize) {
-        __classPrivateFieldSet(this, _ReadableStreamWrapper_totalSize, totalSize, "f");
-    }
-    setAlignSize(alignSize) {
-        __classPrivateFieldSet(this, _ReadableStreamWrapper_alignSize, alignSize, "f");
-    }
-    getBufferSize() {
-        return __classPrivateFieldGet(this, _ReadableStreamWrapper_bufferSize, "f");
-    }
-    setBufferSize(bufferSize) {
-        __classPrivateFieldSet(this, _ReadableStreamWrapper_bufferSize, bufferSize, "f");
-    }
-    getBufferCount() {
-        return __classPrivateFieldGet(this, _ReadableStreamWrapper_buffersCount, "f");
-    }
-    setBufferCount(buffersCount) {
-        __classPrivateFieldSet(this, _ReadableStreamWrapper_buffersCount, buffersCount, "f");
     }
     /**
-     * Creates an ReadableStreamWrapper from a RandomAccessStream.
-     * @param {RandomAccessStream | null} stream The stream that you want to wrap.
+     * Creates a native ReadableStream from a RandomAccessStream
+     *
+     * @param {RandomAccessStream} stream   The source stream.
+     * @param {number} buffersCount Number of buffers to use.
+     * @param {Uint8Array} bufferSize   The length of each buffer.
+     * @param {number} backOffset   The backwards offset. Some media libraries might
+     * request data rewinding the stream just a few bytes backwards. This ensures those bytes
+     * are included so we don't reset the stream.
+     * @param {number} alignSize      The align size. Set to a positive number to override the stream aligned size.
      */
-    static createReadableStream(stream, buffersCount = ReadableStreamWrapper.DEFAULT_BUFFERS, bufferSize = ReadableStreamWrapper.DEFAULT_BUFFER_SIZE, backOffset = ReadableStreamWrapper.DEFAULT_BACK_OFFSET, alignSize = 0) {
+    static createReadableStream(stream, buffersCount = 1, bufferSize = 524288, backOffset = 32768, alignSize = 0) {
         let readableStreamWrapper = new ReadableStreamWrapper();
         __classPrivateFieldSet(readableStreamWrapper, _ReadableStreamWrapper_stream, stream, "f");
         __classPrivateFieldSet(readableStreamWrapper, _ReadableStreamWrapper_buffersCount, buffersCount, "f");
@@ -144,9 +197,6 @@ export class ReadableStreamWrapper {
                 if (bytesRead <= 0) {
                     controller.close();
                 }
-            },
-            async cancel(reason) {
-                await streamWrapper.cancel(reason);
             }
         });
         let streamGetReader = readableStream.getReader;
@@ -169,6 +219,9 @@ export class ReadableStreamWrapper {
             }
             await streamWrapper.reset();
         };
+        readableStream.cancel = async function (reason) {
+            await streamWrapper.cancel(reason);
+        };
         readableStream.skip = async function (position) {
             return await streamWrapper.skip(position);
         };
@@ -182,6 +235,9 @@ export class ReadableStreamWrapper {
             await streamWrapper.setPositionEnd(position);
         };
         __classPrivateFieldSet(streamWrapper, _ReadableStreamWrapper_readableStream, readableStream, "f");
+        readableStream.getStreamWrapper = function () {
+            return streamWrapper;
+        };
         return readableStream;
     }
     async initialize() {
@@ -258,6 +314,10 @@ export class ReadableStreamWrapper {
     }
     /**
      * Reads and decrypts the contents of an encrypted file
+     * @param {Uint8Array} buffer The buffer
+     * @param {number} offset The offset
+     * @param {number} count The count
+     * @returns {Promise<number>} The bytes read
      */
     async read(buffer, offset, count) {
         if (__classPrivateFieldGet(this, _ReadableStreamWrapper_buffers, "f") == null)
@@ -309,6 +369,7 @@ export class ReadableStreamWrapper {
      * @param { Buffer } cacheBuffer The cache buffer that will store the decrypted contents
      * @param { number } startPosition The start position
      * @param { number } length      The length of the data requested
+     * @returns {Promise<number>} The bytes read
      */
     async fillBuffer(cacheBuffer, startPosition, length) {
         let bytesRead;
@@ -430,9 +491,11 @@ async function _ReadableStreamWrapper_closeStream() {
         await __classPrivateFieldGet(this, _ReadableStreamWrapper_stream, "f").close();
     __classPrivateFieldSet(this, _ReadableStreamWrapper_stream, null, "f");
 };
-// Default cache buffer should be high enough for some mpeg videos to work
-// the cache buffers should be aligned to the SalmonFile chunk size for efficiency
-ReadableStreamWrapper.DEFAULT_BUFFER_SIZE = 512 * 1024;
+/**
+ * Default cache buffer should be high enough for some mpeg videos to work
+ * the cache buffers should be aligned to the SalmonFile chunk size for efficiency
+ */
+ReadableStreamWrapper.DEFAULT_BUFFER_SIZE = 524288;
 /**
  * The default buffer count
  */

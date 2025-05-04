@@ -29,12 +29,12 @@ import { AesFile } from "../../file/aes_file.js";
  */
 export class AesFileImporterWorker extends FileImporterWorker {
     async getTargetFile(params) {
-        let realFile = await FileUtils.getInstance(params.importedFileClassType, params.importedFileHandle);
-        let targetFile = new AesFile(realFile);
-        targetFile.setAllowOverwrite(true);
-        targetFile.setEncryptionKey(params.key);
-        await targetFile.setApplyIntegrity(params.integrity, params.hash_key, params.chunk_size);
-        return targetFile;
+        let realTargetFile = await FileUtils.getInstance(params.realTargetFileType, params.realTargetFileHandle, params.realTargetServicePath, params.realTargetServiceUser, params.realTargetServicePassword);
+        let encTargetFile = new AesFile(realTargetFile);
+        encTargetFile.setAllowOverwrite(true);
+        encTargetFile.setEncryptionKey(params.key);
+        await encTargetFile.setApplyIntegrity(params.integrity, params.hash_key, params.chunk_size);
+        return encTargetFile;
     }
 }
 let worker = new AesFileImporterWorker();

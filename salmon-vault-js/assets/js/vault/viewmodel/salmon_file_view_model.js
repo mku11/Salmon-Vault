@@ -29,8 +29,12 @@ import { Thumbnails } from "../image/thumbnails.js";
 
 export class SalmonFileViewModel extends IPropertyNotifier {
     static #IMAGE_SIZE = 48;
+    static THUMBNAIL_MAX_STEPS = 10;
+    static VIDEO_THUMBNAIL_MSECS = 3000;
 
-    // static formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
+    animate = false;
+    static animationViewModel = null;
+
     salmonFile;
     observers = {};
     getObservers() {
@@ -199,5 +203,65 @@ export class SalmonFileViewModel extends IPropertyNotifier {
     async rename(newValue) {
         await this.salmonFile.rename(newValue);
         this.name = await this.salmonFile.getName();
+    }
+    
+    async checkAndStartAnimation() {
+        if (SalmonFileViewModel.animationViewModel != this || !SalmonFileViewModel.animationViewModel.animate) {
+            SalmonFileViewModel.resetAnimation();
+            SalmonFileViewModel.animationViewModel = this;
+            SalmonFileViewModel.animationViewModel.animate = true;
+            if (await this.getExtText() === "mp4") {
+                this.animateVideo();
+            }
+        }
+    }
+
+    animateVideo() {
+        setTimeout(async () => {
+            if (!Thumbnails.isAnimationEnabled())
+                return;
+            let i = 0;
+            try {
+                while (SalmonFileViewModel.animationViewModel == this && SalmonFileViewModel.animationViewModel.animate) {
+                    i++;
+                    i %= SalmonFileViewModel.THUMBNAIL_MAX_STEPS;
+                    try {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    } catch (e) {
+                        throw e;
+                    }
+                    let image = null;
+                    try {
+                        image = await Thumbnails.getVideoThumbnail(this.salmonFile,
+                                (i + 1) * SalmonFileViewModel.VIDEO_THUMBNAIL_MSECS / 1000.0);
+                        image = await Thumbnails.resize(image, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                    if (image == null)
+                        continue;
+                    setTimeout(async () => {
+                        if (SalmonFileViewModel.animationViewModel == this && SalmonFileViewModel.animationViewModel.animate)
+                            this.image = image;
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    }
+
+    static resetAnimation() {
+        if (SalmonFileViewModel.animationViewModel != null)
+            SalmonFileViewModel.animationViewModel.animate = false;
+        SalmonFileViewModel.animationViewModel = null;
+    }
+
+    entered() {
+        try {
+            this.checkAndStartAnimation();
+        } catch (e) {
+            throw e;
+        }
     }
 }

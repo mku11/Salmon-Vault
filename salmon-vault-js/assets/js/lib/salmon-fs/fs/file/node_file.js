@@ -106,14 +106,14 @@ export class NodeFile {
         return false;
     }
     /**
-     * Get the path of this file. For java this is the same as the absolute filepath.
+     * Get the path of this file. For node.js this is the same as the absolute filepath.
      * @returns {string} The path
      */
     getPath() {
         return __classPrivateFieldGet(this, _NodeFile_filePath, "f");
     }
     /**
-     * Get the display path on the physical disk. For java this is the same as the filepath.
+     * Get the display path on the physical disk. For node.js this is the same as the filepath.
      * @returns {string} The display path.
      */
     getDisplayPath() {
@@ -287,6 +287,13 @@ export class NodeFile {
      * Reset cached properties
      */
     reset() {
+    }
+    /**
+     * Get the user credentials
+     * @return The credentials
+     */
+    getCredentials() {
+        return null;
     }
     /**
      * Returns a string representation of this object

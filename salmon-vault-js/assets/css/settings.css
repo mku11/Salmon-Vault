@@ -12,10 +12,14 @@
 }
 
 .settings-section {
-  padding: 4pt;
+  padding: 8pt;
 }
 
 .settings-row {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  justify-content: space-between;
   padding: 2pt;
 }
 

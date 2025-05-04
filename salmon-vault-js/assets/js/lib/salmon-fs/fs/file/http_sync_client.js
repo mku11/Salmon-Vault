@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Max Kas
+Copyright (c) 2025 Max Kas
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,71 +32,47 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var _Buffer_data, _Buffer_startPos, _Buffer_count;
+var _a, _HttpSyncClient_allowClearTextTraffic;
 /**
- * Buffer that can be used for buffered streams.
+ * Http client
  */
-export class Buffer {
+export class HttpSyncClient {
     /**
-     * Get the data
+     * Check if clear text traffic (HTTP) is allowed, otherwise you need to use secure HTTPS protocols.
+     * Clear text traffic should ONLY be used for testing purposes.
      *
-     * @returns {Uint8Array} The data
+     * @return True if allow clear text traffic
      */
-    getData() {
-        return __classPrivateFieldGet(this, _Buffer_data, "f");
+    static getAllowClearTextTraffic() {
+        return __classPrivateFieldGet(_a, _a, "f", _HttpSyncClient_allowClearTextTraffic);
     }
     /**
-     * Set the data
-     *
-     * @param {Uint8Array} data The data
+     * Set to true to allow clear text traffic (HTTP), otherwise you need to use secure HTTPS protocols.
+     * Clear text traffic should ONLY be used for testing purposes.
+     * @param allow True to allow clear text traffic.
      */
-    setData(data) {
-        __classPrivateFieldSet(this, _Buffer_data, data, "f");
+    static setAllowClearTextTraffic(allow) {
+        __classPrivateFieldSet(_a, _a, allow, "f", _HttpSyncClient_allowClearTextTraffic);
     }
     /**
-     * Get the start position
-     *
-     * @returns {number} The start position
+     * Get a response from a url
+     * @param urlPath The url
+     * @return The response
+     * @throws Error if error with IO
      */
-    getStartPos() {
-        return __classPrivateFieldGet(this, _Buffer_startPos, "f");
-    }
-    /**
-     * Set the start position
-     *
-     * @param {number} startPos The start position
-     */
-    setStartPos(startPos) {
-        __classPrivateFieldSet(this, _Buffer_startPos, startPos, "f");
-    }
-    /**
-     * Get the data count
-     *
-     * @returns {number} The data count
-     */
-    getCount() {
-        return __classPrivateFieldGet(this, _Buffer_count, "f");
-    }
-    setCount(count) {
-        __classPrivateFieldSet(this, _Buffer_count, count, "f");
-    }
-    /**
-     * Instantiate a cache buffer.
-     *
-     * @param {Uint8Array} bufferSize The buffer size
-     */
-    constructor(bufferSize) {
-        _Buffer_data.set(this, void 0);
-        _Buffer_startPos.set(this, 0);
-        _Buffer_count.set(this, 0);
-        __classPrivateFieldSet(this, _Buffer_data, new Uint8Array(bufferSize), "f");
-    }
-    /**
-     * Clear the buffer.
-     */
-    clear() {
-        if (__classPrivateFieldGet(this, _Buffer_data, "f"))
-            __classPrivateFieldGet(this, _Buffer_data, "f").fill(0);
+    static async getResponse(urlpath, init) {
+        let url = new URL(urlpath);
+		//FIXME: protocol property includes a trailing semicolon
+        if (url.protocol !== "https:" && !__classPrivateFieldGet(_a, _a, "f", _HttpSyncClient_allowClearTextTraffic))
+            throw new Error("Clear text traffic should only be used for testing purpores, " +
+                "use HttpSyncClient.setAllowClearTextTraffic() to override");
+        if (url.hostname == null || url.hostname.length == 0)
+            throw new Error("Malformed URL or unknown service, check the path");
+        return await fetch(url, init);
     }
 }
-_Buffer_data = new WeakMap(), _Buffer_startPos = new WeakMap(), _Buffer_count = new WeakMap();
+_a = HttpSyncClient;
+// static getResponse(arg0: string, arg1: RequestInit): Response | PromiseLike<Response | null> | null {
+//     throw new Error("Method not implemented.");
+// }
+_HttpSyncClient_allowClearTextTraffic = { value: false };

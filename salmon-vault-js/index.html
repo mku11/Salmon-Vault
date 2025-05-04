@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="pragma" content="no-store" />
     <link rel="shortcut icon" href="./favicon.ico">
     <title>Salmon Vault</title>
     <link rel="stylesheet" type="text/css" href="assets/css/navbar.css">
@@ -11,6 +12,7 @@
     <link rel="stylesheet" type="text/css" href="assets/css/modal.css">
     <link rel="stylesheet" type="text/css" href="assets/css/dialog.css">
     <link rel="stylesheet" type="text/css" href="assets/css/image-viewer.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/pdf-viewer.css">
     <link rel="stylesheet" type="text/css" href="assets/css/text-editor.css">
     <link rel="stylesheet" type="text/css" href="assets/css/media-player.css">
     <link rel="stylesheet" type="text/css" href="assets/css/settings.css">
@@ -77,6 +79,10 @@
                     <a href="javascript:mainController.onNewFolder()">
                         <img class="menu-item-image" src="assets/images/common-res/icons/add_folder_small.png"/>
                         New Folder
+                    </a>
+                    <a href="javascript:mainController.onNewFile()">
+                        <img class="menu-item-image" src="assets/images/common-res/icons/add_file_small.png"/>
+                        New File
                     </a>
                     <a href="javascript:mainController.onCopy()">
                         <img class="menu-item-image" src="assets/images/common-res/icons/copy_file_small.png"/>

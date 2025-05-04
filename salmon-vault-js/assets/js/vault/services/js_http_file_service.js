@@ -22,7 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-export class IFileRemoteService
-{
-    getFile(path, isDirectory){}
+import { IHttpFileService } from "../../common/services/ihttp_file_service.js";
+import { HttpFile } from "../../lib/salmon-fs/fs/file/http_file.js";
+
+export class JsHttpFileService extends IHttpFileService {
+    constructor() {
+        super();
+    }
+
+    getFile(filepath, credentials = null) {
+        return new HttpFile(filepath, credentials);
+    }
 }

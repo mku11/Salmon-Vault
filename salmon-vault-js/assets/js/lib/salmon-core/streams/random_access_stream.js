@@ -59,6 +59,10 @@ export class RandomAccessStream {
         }
         await stream.flush();
     }
+    /**
+     * Wrap to a JavaScript ReadableStream to use with 3rd party libraries.
+     * @returns The ReadableStream
+     */
     async asReadStream() {
         return ReadableStreamWrapper.createReadableStream(this);
     }

@@ -21,9 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+import { HttpSyncClient } from "../../fs/file/http_sync_client.js";
 import { AesFile } from "../file/aes_file.js";
 import { fillBufferPart } from "../../../salmon-core/streams/readable_stream_wrapper.js";
 import { Buffer } from "../../../salmon-core/streams/buffer.js";
+import { FileUtils } from "../../fs/drive/utils/file_utils.js";
 let stream = null;
 let cacheBuffer = null;
 let stopped = [false];
@@ -44,28 +46,14 @@ async function close() {
     if (cacheBuffer)
         cacheBuffer.clear();
 }
-async function getInstance(type, param) {
-    switch (type) {
-        case 'NodeFile':
-            const { NodeFile } = await import("../../fs/file/node_file.js");
-            return new NodeFile(param);
-        case 'HttpFile':
-            const { HttpFile } = await import("../../fs/file/http_file.js");
-            return new HttpFile(param);
-        case 'File':
-            const { File } = await import("../../fs/file/file.js");
-            return new File(param);
-        case 'WSFile':
-            throw new Error("Multithreading for Web Service files is not supported");
-    }
-    throw new Error("Unknown class type");
-}
 async function startRead(event) {
     try {
         let params = typeof process === 'object' ? event : event.data;
+        if (params.allowClearTextTraffic)
+            HttpSyncClient.setAllowClearTextTraffic(true);
         let chunkBytesRead = 0;
         if (stream == null) {
-            let realFile = await getInstance(params.readFileClassType, params.fileToReadHandle);
+            let realFile = await FileUtils.getInstance(params.readFileClassType, params.fileToReadHandle, params.servicePath, params.serviceUser, params.servicePassword);
             let fileToExport = new AesFile(realFile);
             fileToExport.setEncryptionKey(params.key);
             await fileToExport.setVerifyIntegrity(params.integrity, params.hash_key);

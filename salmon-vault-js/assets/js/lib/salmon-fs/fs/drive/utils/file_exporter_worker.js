@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+import { HttpSyncClient } from "../../file/http_sync_client.js";
 import { exportFilePart } from "./file_exporter_helper.js";
 import { FileUtils } from "./file_utils.js";
 /**
@@ -44,7 +45,7 @@ export class FileExporterWorker {
      * @returns {Promise<IFile>} The target file
      */
     async getTargetFile(params) {
-        return await FileUtils.getInstance(params.exportedFileClassType, params.exportedFileHandle);
+        return await FileUtils.getInstance(params.realTargetFileType, params.realTargetFileHandle, params.realTargetServicePath, params.realTargetServiceUser, params.realTargetServicePassword);
     }
     async receive(worker, event) {
         if (event.message = 'start')
@@ -58,6 +59,8 @@ export class FileExporterWorker {
     async startExport(event) {
         try {
             let params = typeof process === 'object' ? event : event.data;
+            if (params.allowClearTextTraffic)
+                HttpSyncClient.setAllowClearTextTraffic(true);
             let onProgressChanged = async function (position, length) {
                 let msg = { message: 'progress', index: params.index, position: position, length: length };
                 if (typeof process === 'object') {

@@ -110,6 +110,8 @@ export class MemoryStream extends RandomAccessStream {
      * @param {number} value The new position of the stream.
      */
     async setPosition(value) {
+        if (value > __classPrivateFieldGet(this, _MemoryStream_length, "f"))
+            __classPrivateFieldGet(this, _MemoryStream_instances, "m", _MemoryStream_checkAndResize).call(this, value);
         __classPrivateFieldSet(this, _MemoryStream_position, value, "f");
     }
     /**
@@ -167,8 +169,6 @@ export class MemoryStream extends RandomAccessStream {
         else if (origin === SeekOrigin.End) {
             nPos = (__classPrivateFieldGet(this, _MemoryStream_bytes, "f").length - offset);
         }
-        if (nPos > __classPrivateFieldGet(this, _MemoryStream_length, "f"))
-            __classPrivateFieldGet(this, _MemoryStream_instances, "m", _MemoryStream_checkAndResize).call(this, nPos);
         await this.setPosition(nPos);
         return await this.getPosition();
     }

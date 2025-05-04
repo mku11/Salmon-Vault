@@ -112,7 +112,6 @@ export class SalmonSettings {
 
     static AuthType = {
         User: { name: 'User', ordinal: 0 },
-        Service: { name: 'Service', ordinal: 1 }
     }
 
     sequencerAuthType = SalmonSettings.DEFAULT_AUTH_TYPE;
@@ -155,6 +154,19 @@ export class SalmonSettings {
         this.settingsService.setLastImportDir(value);
     }
 
+    static DEFAULT_LAST_EXPORT_DIR = null;
+    static LAST_EXPORT_DIR_KEY = "LAST_EXPORT_DIR_KEY";
+    lastExportDir = SalmonSettings.DEFAULT_LAST_EXPORT_DIR;
+
+    getLastExportDir() {
+        return this.lastExportDir;
+    }
+
+    setLastExportDir(value) {
+        this.lastExportDir = value;
+        this.settingsService.setLastExportDir(value);
+    }
+
     static instance = null;
 
     static getInstance() {
@@ -178,5 +190,6 @@ export class SalmonSettings {
         this.sequencerAuthType = SalmonSettings.AuthType[this.settingsService.getSequenceAuthType()];
         this.deleteAfterImport = this.settingsService.getDeleteAfterImport();
         this.lastImportDir = this.settingsService.getLastImportDir();
+        this.lastExportDir = this.settingsService.getLastExportDir();
     }
 }

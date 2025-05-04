@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+import { HttpSyncClient } from "../../file/http_sync_client.js";
 import { importFilePart } from "./file_importer_helper.js";
 import { FileUtils } from "./file_utils.js";
 /**
@@ -36,7 +37,7 @@ export class FileImporterWorker {
      * @returns {Promise<IFile>} The source file
      */
     async getSourceFile(params) {
-        return await FileUtils.getInstance(params.importFileClassType, params.fileToImportHandle);
+        return await FileUtils.getInstance(params.realSourceFileType, params.realSourceFileHandle, params.realSourceServicePath, params.realSourceServiceUser, params.realSourceServicePassword);
     }
     /**
      * Override to specify the target file.
@@ -63,6 +64,8 @@ export class FileImporterWorker {
     async startImport(event) {
         try {
             let params = typeof process === 'object' ? event : event.data;
+            if (params.allowClearTextTraffic)
+                HttpSyncClient.setAllowClearTextTraffic(true);
             let onProgressChanged = async function (position, length) {
                 let msg = { message: 'progress', index: params.index, position: position, length: length };
                 if (typeof process === 'object') {

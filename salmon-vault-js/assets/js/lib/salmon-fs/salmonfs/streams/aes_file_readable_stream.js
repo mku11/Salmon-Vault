@@ -38,14 +38,19 @@ import { ReadableStreamWrapper, fillBufferPart } from "../../../salmon-core/stre
 import { IntegrityException } from "../../../salmon-core/salmon/integrity/integrity_exception.js";
 import { AuthException } from "../auth/auth_exception.js";
 import { Generator } from "../../../salmon-core/salmon/generator.js";
+import { HttpSyncClient } from "../../fs/file/http_sync_client.js";
+import { FileUtils } from "../../fs/drive/utils/file_utils.js";
 /**
  * ReadableStream wrapper for seeking and reading an encrypted AesFile.
  * This class provides a seekable source with parallel streams and cached buffers
  * for performance.
  */
 export class AesFileReadableStream extends ReadableStreamWrapper {
+    /**
+     * Construct a wrapper do not use directly, use createFileReadableStream() instead.
+     */
     constructor() {
-        super(...arguments);
+        super();
         _AesFileReadableStream_instances.add(this);
         _AesFileReadableStream_workerPath.set(this, './lib/salmon-fs/salmonfs/streams/aes_file_readable_stream_worker.js');
         _AesFileReadableStream_aesFile.set(this, null);
@@ -57,14 +62,14 @@ export class AesFileReadableStream extends ReadableStreamWrapper {
      * Creates a seekable stream from an encrypted file source
      *
      * @param {AesFile} aesFile   The source file.
-     * @param {Uint8Array} buffersCount Number of buffers to use.
+     * @param {number} buffersCount Number of buffers to use.
      * @param {Uint8Array} bufferSize   The length of each buffer.
-     * @param {number} threads      The number of threads/streams to source the file in parallel.
-     * @param {number} backOffset   The back offset.  Negative offset for the buffers. Some stream consumers might request data right before
-     * the last request. We provide this offset so we don't make multiple requests for filling
-     * the buffers ending up with too much overlapping data.
+     * @param {number} threads      The number of threads/streams to read the file in parallel.
+     * @param {number} backOffset   The backwards offset. Some media libraries might
+     * request data rewinding the stream just a few bytes backwards. This ensures those bytes
+     * are included so we don't reset the stream.
      */
-    static createFileReadableStream(aesFile, buffersCount = ReadableStreamWrapper.DEFAULT_BUFFERS, bufferSize = ReadableStreamWrapper.DEFAULT_BUFFER_SIZE, threads = 1, backOffset = ReadableStreamWrapper.DEFAULT_BACK_OFFSET) {
+    static createFileReadableStream(aesFile, buffersCount = 1, bufferSize = 524288, threads = 1, backOffset = 32768) {
         let fileReadableStream = new _a();
         fileReadableStream.setBufferCount(buffersCount);
         fileReadableStream.setBufferSize(bufferSize);
@@ -91,10 +96,6 @@ export class AesFileReadableStream extends ReadableStreamWrapper {
             __classPrivateFieldSet(this, _AesFileReadableStream_threads, __classPrivateFieldGet(_a, _a, "f", _AesFileReadableStream_DEFAULT_THREADS), "f");
         if ((__classPrivateFieldGet(this, _AesFileReadableStream_threads, "f") & (__classPrivateFieldGet(this, _AesFileReadableStream_threads, "f") - 1)) != 0)
             throw new Error("Threads needs to be a power of 2 (ie 1,2,4,8)");
-        if (__classPrivateFieldGet(this, _AesFileReadableStream_threads, "f") > 1 && __classPrivateFieldGet(this, _AesFileReadableStream_aesFile, "f").getRealFile().constructor.name === 'WSFile') {
-            console.log("Multithreading for web service files is not supported, setting single thread");
-            __classPrivateFieldSet(this, _AesFileReadableStream_threads, 1, "f");
-        }
         if (__classPrivateFieldGet(this, _AesFileReadableStream_threads, "f") == 1)
             this.setStream(await __classPrivateFieldGet(this, _AesFileReadableStream_aesFile, "f").getInputStream());
         await this.setPositionEnd(this.getTotalSize() - 1);
@@ -124,9 +125,11 @@ export class AesFileReadableStream extends ReadableStreamWrapper {
      */
     async cancel(reason) {
         for (let i = 0; i < __classPrivateFieldGet(this, _AesFileReadableStream_workers, "f").length; i++) {
-            __classPrivateFieldGet(this, _AesFileReadableStream_workers, "f")[i].postMessage({ message: 'close' });
-            __classPrivateFieldGet(this, _AesFileReadableStream_workers, "f")[i].terminate();
-            __classPrivateFieldGet(this, _AesFileReadableStream_workers, "f")[i] = null;
+            if (__classPrivateFieldGet(this, _AesFileReadableStream_workers, "f")[i]) {
+                __classPrivateFieldGet(this, _AesFileReadableStream_workers, "f")[i].postMessage({ message: 'close' });
+                __classPrivateFieldGet(this, _AesFileReadableStream_workers, "f")[i].terminate();
+                __classPrivateFieldGet(this, _AesFileReadableStream_workers, "f")[i] = null;
+            }
         }
         await super.cancel(reason);
     }
@@ -166,7 +169,11 @@ async function _AesFileReadableStream_fillBufferMulti(cacheBuffer, startPosition
         __classPrivateFieldGet(this, _AesFileReadableStream_promises, "f").push(new Promise(async (resolve, reject) => {
             if (__classPrivateFieldGet(this, _AesFileReadableStream_aesFile, "f") == null)
                 throw new Error("File is missing");
-            let fileToReadHandle = await __classPrivateFieldGet(this, _AesFileReadableStream_aesFile, "f").getRealFile().getPath();
+            let realFile = __classPrivateFieldGet(this, _AesFileReadableStream_aesFile, "f").getRealFile();
+            let readFileClassType = realFile.constructor.name;
+            let fileToReadHandle = await realFile.getPath();
+            let servicePath = await FileUtils.getServicePath(realFile);
+            let credentials = realFile.getCredentials();
             if (typeof process !== 'object') {
                 if (__classPrivateFieldGet(this, _AesFileReadableStream_workers, "f")[i] == null)
                     __classPrivateFieldGet(this, _AesFileReadableStream_workers, "f")[i] = new Worker(this.getWorkerPath(), { type: 'module' });
@@ -210,13 +217,17 @@ async function _AesFileReadableStream_fillBufferMulti(cacheBuffer, startPosition
                 index: i,
                 startPosition: startPosition,
                 fileToReadHandle: fileToReadHandle,
-                readFileClassType: __classPrivateFieldGet(this, _AesFileReadableStream_aesFile, "f").getRealFile().constructor.name,
+                readFileClassType: readFileClassType,
                 start: start, length: length,
                 key: __classPrivateFieldGet(this, _AesFileReadableStream_aesFile, "f").getEncryptionKey(),
                 integrity: __classPrivateFieldGet(this, _AesFileReadableStream_aesFile, "f").isIntegrityEnabled(),
                 hash_key: __classPrivateFieldGet(this, _AesFileReadableStream_aesFile, "f").getHashKey(),
                 chunk_size: __classPrivateFieldGet(this, _AesFileReadableStream_aesFile, "f").getRequestedChunkSize(),
-                cacheBufferSize: this.getBufferSize()
+                cacheBufferSize: this.getBufferSize(),
+                allowClearTextTraffic: HttpSyncClient.getAllowClearTextTraffic(),
+                servicePath: servicePath,
+                serviceUser: credentials === null || credentials === void 0 ? void 0 : credentials.getServiceUser(),
+                servicePassword: credentials === null || credentials === void 0 ? void 0 : credentials.getServicePassword()
             });
         }));
     }

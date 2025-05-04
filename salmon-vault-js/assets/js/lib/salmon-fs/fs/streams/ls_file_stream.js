@@ -32,10 +32,10 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _LocalStorageFileStream_file, _LocalStorageFileStream_stream, _LocalStorageFileStream_canWrite, _LocalStorageFileStream_base64;
+var _LocalStorageFileStream_file, _LocalStorageFileStream_stream, _LocalStorageFileStream_canWrite;
 import { MemoryStream } from "../../../salmon-core/streams/memory_stream.js";
 import { RandomAccessStream } from "../../../salmon-core/streams/random_access_stream.js";
-import { Base64 } from "../../../salmon-core/convert/base64.js";
+import { Base64Utils } from '../../../salmon-core/salmon/encode/base64_utils.js';
 /**
  * An advanced file stream implementation for localStorage files.
  * This class can be used to read and write small file in localStorage.
@@ -51,14 +51,12 @@ export class LocalStorageFileStream extends RandomAccessStream {
     constructor(file, mode) {
         super();
         /**
-         * The java file associated with this stream.
+         * The virtual local storage file associated with this stream.
          */
         _LocalStorageFileStream_file.set(this, void 0);
         _LocalStorageFileStream_stream.set(this, void 0);
         _LocalStorageFileStream_canWrite.set(this, false);
-        _LocalStorageFileStream_base64.set(this, void 0);
         __classPrivateFieldSet(this, _LocalStorageFileStream_file, file, "f");
-        __classPrivateFieldSet(this, _LocalStorageFileStream_base64, new Base64(), "f");
         if (mode == "rw") {
             __classPrivateFieldSet(this, _LocalStorageFileStream_canWrite, true, "f");
             __classPrivateFieldSet(this, _LocalStorageFileStream_stream, new MemoryStream(), "f");
@@ -67,7 +65,7 @@ export class LocalStorageFileStream extends RandomAccessStream {
             let contents = localStorage.getItem(__classPrivateFieldGet(this, _LocalStorageFileStream_file, "f").getDisplayPath());
             if (contents == null)
                 contents = "";
-            __classPrivateFieldSet(this, _LocalStorageFileStream_stream, new MemoryStream(__classPrivateFieldGet(this, _LocalStorageFileStream_base64, "f").decode(contents)), "f");
+            __classPrivateFieldSet(this, _LocalStorageFileStream_stream, new MemoryStream(Base64Utils.getBase64().decode(contents)), "f");
         }
     }
     /**
@@ -158,7 +156,7 @@ export class LocalStorageFileStream extends RandomAccessStream {
      * Flush the buffers to the associated file.
      */
     async flush() {
-        let contents = __classPrivateFieldGet(this, _LocalStorageFileStream_base64, "f").encode(__classPrivateFieldGet(this, _LocalStorageFileStream_stream, "f").toArray());
+        let contents = Base64Utils.getBase64().encode(__classPrivateFieldGet(this, _LocalStorageFileStream_stream, "f").toArray());
         let key = __classPrivateFieldGet(this, _LocalStorageFileStream_file, "f").getDisplayPath();
         localStorage.setItem(key, contents);
     }
@@ -171,4 +169,4 @@ export class LocalStorageFileStream extends RandomAccessStream {
         await __classPrivateFieldGet(this, _LocalStorageFileStream_stream, "f").close();
     }
 }
-_LocalStorageFileStream_file = new WeakMap(), _LocalStorageFileStream_stream = new WeakMap(), _LocalStorageFileStream_canWrite = new WeakMap(), _LocalStorageFileStream_base64 = new WeakMap();
+_LocalStorageFileStream_file = new WeakMap(), _LocalStorageFileStream_stream = new WeakMap(), _LocalStorageFileStream_canWrite = new WeakMap();

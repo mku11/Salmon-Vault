@@ -28,16 +28,22 @@ import { SalmonSettings } from "../../common/model/salmon_settings.js";
 import { AesFileCommander } from "../../lib/salmon-fs/salmonfs/drive/utils/aes_file_commander.js";
 import { autoRenameFile as SalmonFileAutoRename } from "../../lib/salmon-fs/salmonfs/file/aes_file.js";
 import { AesDrive } from "../../lib/salmon-fs/salmonfs/drive/aes_drive.js";
+import { AesFile } from "../../lib/salmon-fs/salmonfs/file/aes_file.js";
 import { SalmonDialog } from "../../vault/dialog/salmon_dialog.js";
 import { SalmonDialogs } from "../dialog/salmon_dialogs.js";
 import { autoRenameFile as IRealFileAutoRename } from "../../lib/salmon-fs/fs/file/ifile.js";
 import { File } from "../../lib/salmon-fs/fs/file/file.js";
+import { HttpFile } from "../../lib/salmon-fs/fs/file/http_file.js";
+import { WSFile } from "../../lib/salmon-fs/fs/file/ws_file.js";
 import { Drive } from "../../lib/salmon-fs/salmonfs/drive/drive.js";
+import { HttpDrive } from "../../lib/salmon-fs/salmonfs/drive/http_drive.js";
+import { WSDrive } from "../../lib/salmon-fs/salmonfs/drive/ws_drive.js";
 import { LocalStorageFile } from "../../lib/salmon-fs/fs/file/ls_file.js";
 import { FileSequencer } from "../../lib/salmon-fs/salmonfs/sequence/file_sequencer.js";
 import { SequenceSerializer } from "../../lib/salmon-core/salmon/sequence/sequence_serializer.js";
 import { ByteUtils } from "../../common/utils/byte_utils.js";
 import { BatchCopyOptions, BatchDeleteOptions, BatchExportOptions, BatchImportOptions } from "../../lib/salmon-fs/fs/drive/utils/file_commander.js";
+import { SearchOptions } from "../../lib/salmon-fs/fs/drive/utils/file_searcher.js";
 
 export class SalmonVaultManager extends IPropertyNotifier {
     static SEQUENCER_DIR_NAME = ".salmon";
@@ -84,10 +90,15 @@ export class SalmonVaultManager extends IPropertyNotifier {
 
     openListItem = null;
     updateListItem = null;
+    onFileItemRemoved = null;
     onFileItemAdded = null;
     sequencer = null;
     static instance = null;
 
+    /**
+     * Get the instance
+     * @returns {SalmonVaultManager} The vault manager
+     */
     static getInstance() {
         if (SalmonVaultManager.instance == null) {
             SalmonVaultManager.instance = new SalmonVaultManager();
@@ -239,7 +250,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     async initialize() {
-        
+
     }
 
     onOpenItem(selectedItem) {
@@ -265,8 +276,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     copySelectedFiles() {
-        if(this.selectedFiles.size == 0)
-            return;
+        if (this.isJobRunning())
+            throw new Error("Another Job is Running");
         this.fileManagerMode = SalmonVaultManager.Mode.Copy;
         this.copyFiles = Array.from(this.selectedFiles);
         this.setTaskRunning(true, false);
@@ -274,8 +285,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     cutSelectedFiles() {
-        if(this.selectedFiles.size == 0)
-            return;
+        if (this.isJobRunning())
+            throw new Error("Another Job is Running");
         this.fileManagerMode = SalmonVaultManager.Mode.Move;
         this.copyFiles = Array.from(this.selectedFiles);
         this.setTaskRunning(true, false);
@@ -294,12 +305,12 @@ export class SalmonVaultManager extends IPropertyNotifier {
             return;
         if (this.drive == null)
             return;
-            setTimeout(async () => {
-                if (this.fileManagerMode != SalmonVaultManager.Mode.Search)
-                    this.salmonFiles = await this.currDir.listFiles();
-                let selectedFile = this.selectedFiles.size > 1 ? this.selectedFiles.values().next().value : null;
-                this.populateFileList(selectedFile);
-            });
+        setTimeout(async () => {
+            if (this.fileManagerMode != SalmonVaultManager.Mode.Search)
+                this.salmonFiles = await this.currDir.listFiles();
+            let selectedFile = this.selectedFiles.size > 0 ? this.selectedFiles.values().next().value : null;
+            this.populateFileList(selectedFile);
+        });
     }
 
     checkFileSearcher() {
@@ -370,20 +381,44 @@ export class SalmonVaultManager extends IPropertyNotifier {
         this.setStatus(msg != null ? msg : "");
     }
 
+    /**
+     * Open vault
+     * @param {IFile} dir 
+     * @param {string} password 
+     * @returns 
+     */
     async openVault(dir, password) {
         if (dir == null)
             return;
 
         try {
+            this.propertyChanged(this, "taskRunning");
             this.closeVault();
-            this.drive = await AesDrive.openDrive(dir, Drive, password, this.sequencer);
+            this.drive = await AesDrive.openDrive(dir, this.getDriveClassType(dir), password, this.sequencer);
             this.currDir = await this.drive.getRoot();
-            SalmonSettings.getInstance().setVaultLocation(dir.getDisplayPath());
+            await this.refresh();
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Could not open vault: " + e);
+            SalmonDialog.promptDialog("Error", "Could not open vault: " + e.message + ". " +
+                (e.getCause && e.getCause() != null ? e.getCause().getMessage() : ""));
+        } finally {
+            this.propertyChanged(this, "taskComplete");
         }
-        await this.refresh();
+    }
+
+    /**
+     * 
+     * @param {IFile} vaultDir The vault dir
+     * @returns The drive class type
+     */
+    getDriveClassType(vaultDir) {
+		if(vaultDir instanceof File)
+            return Drive;
+        else if (vaultDir instanceof HttpFile)
+            return HttpDrive;
+        else if (vaultDir instanceof WSFile)
+            return WSDrive;
+        throw new RuntimeException("Unknown drive type");
     }
 
     deleteSelectedFiles() {
@@ -424,7 +459,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
                     this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
                     this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
                 };
-                deleteOptions.onFailed =  (file, ex) => {
+                deleteOptions.onFailed = (file, ex) => {
                     failedFiles.push(file);
                     exception = ex;
                 };
@@ -437,9 +472,10 @@ export class SalmonVaultManager extends IPropertyNotifier {
             }
             if (this.fileCommander.areJobsStopped())
                 this.setTaskMessage("Delete Stopped");
-            else if (failedFiles.length > 0)
+            else if (failedFiles.length > 0) {
+                console.error(exception);
                 SalmonDialog.promptDialog("Delete", "Some files failed: " + exception);
-            else
+            } else
                 this.setTaskMessage("Delete Complete");
             this.setFileProgress(1);
             this.setFilesProgress(1);
@@ -507,12 +543,13 @@ export class SalmonVaultManager extends IPropertyNotifier {
         });
     }
 
-    async exportSelectedFiles(deleteSource) {
+    async exportSelectedFiles(exportDir, deleteSource) {
         if (this.drive == null)
             return;
-        await this.exportFiles(Array.from(this.selectedFiles), async (files) => {
-            await this.refresh();
-        }, deleteSource);
+        await this.exportFiles(Array.from(this.selectedFiles), exportDir, deleteSource,
+            async (files) => {
+                await this.refresh();
+            });
         this.clearSelectedFiles();
     }
 
@@ -530,8 +567,10 @@ export class SalmonVaultManager extends IPropertyNotifier {
             this.currDir = null;
             this.clearCopiedFiles();
             this.setPathText("");
-            if (this.drive != null)
+            if (this.drive != null) {
                 this.drive.close();
+                this.drive = null;
+            }
         } catch (ex) {
             console.error(ex);
         }
@@ -583,7 +622,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
         if (currentFile == null)
             return null;
         for (let file of this.fileItemList) {
-            if (file.getRealFile().getPath() == currentFile.getRealFile().getPath()) {
+            if (file.getRealFile().getDisplayPath() == currentFile.getRealFile().getDisplayPath()) {
                 this.selectedFiles.clear();
                 this.selectedFiles.add(file);
                 return file;
@@ -596,10 +635,86 @@ export class SalmonVaultManager extends IPropertyNotifier {
         return this.observers;
     }
 
+    /**
+     * Rename the file
+     * @param {AesFile} file The file
+     * @param {string} newFilename The new file name
+     */
     async renameFile(file, newFilename) {
-        if(await file.getName() == newFilename)
+        if (await file.getName() == newFilename)
             return;
-        await this.fileCommander.renameFile(file, newFilename);
+        try {
+            await this.fileCommander.renameFile(file, newFilename);
+            //FIXME: IFile is not reporting the correct length after rename
+            // so we reset here
+            file.getRealFile().reset();
+            await SalmonVaultManager.getInstance().updateListItem(file);
+        } catch (e) {
+            console.error(e);
+            SalmonDialog.promptDialog("Error", "Could not rename file: " + e.message);
+        }
+    }
+
+    /**
+     * Create a directory
+     * @param {string} folderName 
+     */
+    async createDirectory(folderName) {
+        let file = null;
+        try {
+            file = await SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName);
+        } catch (exception) {
+            console.error(exception);
+            if (!SalmonVaultManager.getInstance().handleException(exception)) {
+                SalmonDialog.promptDialog("Error", "Could not create folder: " + exception.message);
+            }
+        } finally {
+            if(file != null)
+                this.setSelectedFiles(new Set([file]));
+            await this.refresh();
+        }
+    }
+
+    /**
+     * Create a file
+     * @param {string} fileName 
+     */
+    async createFile(fileName) {
+        let stream = null;
+        let file = null;
+        try {
+            file = await SalmonVaultManager.getInstance().getCurrDir().createFile(fileName);
+            await file.setApplyIntegrity(true);
+            stream = await file.getOutputStream();
+            await stream.write(new Uint8Array(new TextEncoder().encode("\n"), 0, 1));
+            await stream.flush();
+        } catch (exception) {
+            console.error(exception);
+            if (!SalmonVaultManager.getInstance().handleException(exception)) {
+                SalmonDialog.promptDialog("Error", "Could not create file: " + exception.message);
+            }
+        } finally {
+            try {
+                await stream.close();
+            } catch (e) {
+                throw e;
+            }
+            if(file != null)
+                this.setSelectedFiles(new Set([file]));
+            await this.refresh();
+        }
+    }
+
+    async setPassword(pass) {
+        try {
+            this.propertyChanged(this, "taskRunning");
+            await SalmonVaultManager.getInstance().getDrive().setPassword(pass);
+            SalmonDialog.promptDialog("Password changed");
+        } catch (e) {
+            SalmonDialog.promptDialog("Could not change password: " + e.message);
+        } finally {
+            this.propertyChanged(this, "taskComplete");
+        }
     }
 
     static Mode = {
@@ -609,7 +724,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
         Move: 'Move'
     }
 
-    exportFiles(items, onFinished, deleteSource) {
+    exportFiles(items, exportDir, deleteSource, onFinished) {
         setTimeout(async () => {
             this.setFileProgress(0);
             this.setFilesProgress(0);
@@ -619,7 +734,6 @@ export class SalmonVaultManager extends IPropertyNotifier {
             let processedFiles = [-1];
             let files = null;
             let failedFiles = [];
-            let exportDir = await this.getExportDir();
             try {
                 let exportOptions = new BatchExportOptions();
                 exportOptions.deleteSource = deleteSource;
@@ -656,7 +770,6 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 SalmonDialog.promptDialog("Export", "Some files failed: " + exception);
             else if (files != null) {
                 this.setTaskMessage("Export Complete");
-                SalmonDialog.promptDialog("Export", "Files Exported To: " + exportDir.getDisplayPath());
             }
             this.setFileProgress(1);
             this.setFilesProgress(1);
@@ -665,7 +778,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
         });
     }
 
-    importFiles(fileNames, importDir, deleteSource, onFinished) {
+    importFiles(files, importDir, deleteSource, onFinished, autoRename = true) {
         setTimeout(async () => {
             this.setFileProgress(0);
             this.setFilesProgress(0);
@@ -673,11 +786,12 @@ export class SalmonVaultManager extends IPropertyNotifier {
 
             let exception = null;
             let processedFiles = [-1];
-            let files = null;
+            let aesFiles = null;
             let failedFiles = [];
             try {
                 let importOptions = new BatchImportOptions();
-                importOptions.autoRename = IRealFileAutoRename;
+                if(autoRename)
+                    importOptions.autoRename = IRealFileAutoRename;
                 importOptions.deleteSource = deleteSource;
                 importOptions.integrity = true;
                 importOptions.onProgressChanged = async (taskProgress) => {
@@ -698,8 +812,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
                     failedFiles.push(file);
                     exception = ex;
                 };
-                files = await this.fileCommander.importFiles(fileNames, importDir, importOptions);
-                onFinished(files);
+                aesFiles = await this.fileCommander.importFiles(files, importDir, importOptions);
+                onFinished(aesFiles);
             } catch (e) {
                 console.error(e);
                 if (!this.handleException(e)) {
@@ -710,7 +824,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 this.setTaskMessage("Import Stopped");
             else if (failedFiles.length > 0)
                 SalmonDialog.promptDialog("Import", "Some files failed: " + exception);
-            else if (files != null)
+            else if (aesFiles != null)
                 this.setTaskMessage("Import Complete");
             this.setFileProgress(1);
             this.setFilesProgress(1);
@@ -730,16 +844,17 @@ export class SalmonVaultManager extends IPropertyNotifier {
             this.setFileProgress(0);
             this.setFilesProgress(0);
             try {
-                if (await this.currDir.getPath() != null)
-                    this.setPathText(await this.currDir.getPath() + "?search=" + this.searchTerm);
+                this.salmonFiles = [];
+                this.populateFileList(null);
             } catch (e) {
                 console.error(e);
             }
-            this.salmonFiles = [];
-            this.populateFileList(null);
+            
             this.setTaskRunning(true);
             this.setStatus("Searching");
-            this.salmonFiles = await this.fileCommander.search(this.currDir, value, any, (salmonFile) => {
+            let searchOptions = new SearchOptions();
+            searchOptions.anyTerm = any;
+            searchOptions.onResultFound = (salmonFile) => {
                 let position = 0;
                 for (let file of this.fileItemList) {
                     if (salmonFile.getTag() != null &&
@@ -753,7 +868,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 } catch (e) {
                     console.error(e);
                 }
-            }, null);
+            };
+            this.salmonFiles = await this.fileCommander.search(this.currDir, value, searchOptions);
             if (!this.fileCommander.isFileSearcherStopped())
                 this.setStatus("Search Complete");
             else
@@ -762,11 +878,29 @@ export class SalmonVaultManager extends IPropertyNotifier {
         });
     }
 
+    /**
+     * 
+     * @param {IFile} dir The vault directory
+     * @param {string} password The password
+     */
     async createVault(dir, password) {
-        this.drive = await AesDrive.createDrive(dir, Drive, password, this.sequencer);
-        this.currDir = await this.drive.getRoot();
-        SalmonSettings.getInstance().setVaultLocation(dir.getDisplayPath());
-        await this.refresh();
+        try {
+            this.propertyChanged(this, "taskRunning");
+            if (!(dir instanceof HttpFile) && !(await dir.exists())) {
+                await dir.mkdir();
+            }
+            this.closeVault();
+            this.drive = await AesDrive.createDrive(dir, this.getDriveClassType(dir), password, this.sequencer);
+            this.currDir = await this.drive.getRoot();
+            await this.refresh();
+            SalmonDialog.promptDialog("Action", "Vault created, you can start importing your files");
+        } catch (e) {
+            console.error(e);
+            SalmonDialog.promptDialog("Error", "Could not create vault: " + e.message + ". " +
+                (e.getCause && e.getCause() != null ? e.getCause().getMessage() : ""));
+        } finally {
+            this.propertyChanged(this, "taskComplete");
+        }
     }
 
     clearCopiedFiles() {
@@ -778,15 +912,19 @@ export class SalmonVaultManager extends IPropertyNotifier {
 
     async getFileProperties(item) {
         let fileChunkSize = await item.getFileChunkSize();
-        return "Name: " + await item.getName() + "\n" +
+        let props = "Name: " + await item.getName() + "\n" +
             "Path: " + await item.getPath() + "\n" +
             (!await item.isDirectory() ? ("Size: " + ByteUtils.getBytes(await item.getLength(), 2)
                 + " (" + await item.getLength() + " bytes)") : "Items: " + (await item.listFiles()).length) + "\n" +
             "Encrypted name: " + item.getRealFile().getName() + "\n" +
             "Encrypted path: " + item.getRealFile().getDisplayPath() + "\n" +
             (!await item.isDirectory() ? "Encrypted size: " + ByteUtils.getBytes(item.getRealFile().getLength(), 2)
-                + " (" + await item.getRealFile().getLength() + " bytes)" : "") + "\n" +
-            "Integrity chunk size: " + (fileChunkSize == 0 ? "None" : fileChunkSize) + "\n";
+                + " (" + await item.getRealFile().getLength() + " bytes)" : "") + "\n";
+            if (item.isFile()) {
+                props += "Integrity enabled: " + (fileChunkSize > 0 ? "Yes" : "No") + "\n" +
+                (fileChunkSize > 0 ? "Integrity chunk size: " + fileChunkSize + " bytes" : "") + "\n";
+            }
+            return props;
     }
 
     async canGoBack() {

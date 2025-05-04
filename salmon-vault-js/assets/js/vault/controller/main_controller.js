@@ -32,9 +32,11 @@ import { ServiceLocator } from "../../common/services/service_locator.js";
 import { ISettingsService } from "../../common/services/isettings_service.js";
 import { JsSettingsService } from "../services/js_settings_service.js";
 import { IFileService } from "../../common/services/ifile_service.js";
-import { IFileRemoteService } from "../../common/services/ifile_remote_service.js";
+import { IHttpFileService } from "../../common/services/ihttp_file_service.js";
+import { IWSFileService } from "../../common/services/iws_file_service.js";
 import { JsFileService } from "../services/js_file_service.js";
-import { JsFileRemoteService } from "../services/js_file_remote_service.js";
+import { JsHttpFileService } from "../services/js_http_file_service.js";
+import { JsWSFileService } from "../services/js_ws_file_service.js";
 import { IFileDialogService } from "../../common/services/ifile_dialog_service.js";
 import { JsFileDialogService } from "../services/js_file_dialog_service.js";
 import { IWebBrowserService } from "../../common/services/iweb_browser_service.js";
@@ -51,14 +53,13 @@ import { ImageViewerController } from "./image_viewer_controller.js";
 import { TextEditorController } from "./text_editor_controller.js";
 import { SettingsController } from "./settings_controller.js";
 import { MediaPlayerController } from "./media_player_controller.js";
-import { Thumbnails } from "../image/thumbnails.js";
+import { PdfViewerController } from "./pdf_viewer_controller.js";
 
 export class MainController {
     static MAX_TEXT_FILE = 1 * 1024 * 1024;
     static THREADS = 1;
 
     fileItemList = Binding.bind(document, 'table', 'tbody', new ObservableList());
-    table;
     status = Binding.bind(document, 'status', 'innerText', new StringProperty());
     path = Binding.bind(document, 'path', 'value', new StringProperty());
     progressVisibility = Binding.bind(document, 'progress-layout-container', 'display', new BooleanProperty());
@@ -72,7 +73,7 @@ export class MainController {
     manager;
 
     constructor() {
-
+        
     }
     
     setPath(value) {
@@ -228,6 +229,7 @@ export class MainController {
     setupTable() {
         this.setContextMenu();
         this.fileItemList.onItemDoubleClicked = async (index) => this.onOpenItem(index);
+        this.fileItemList.onItemMouseEntered = async (index) => this.onItemMouseEntered(index);
         this.fileItemList.addSelectedChangeListener(() => {
             this.onSelectedItems(this.fileItemList.getSelectedItems());
         });
@@ -253,6 +255,15 @@ export class MainController {
         }
     }
 
+    onItemMouseEntered(position) {
+        let vm = this.fileItemList.get(position);
+        try {
+            vm.entered();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     onShow() {
         setTimeout(() => {
             this.manager.initialize();
@@ -273,23 +284,19 @@ export class MainController {
     }
 
     onExport() {
-        try {
-            this.manager.exportSelectedFiles(false);
-        } catch (e) {
-            SalmonDialog.promptDialog("Error", "Could not export files: " + e);
-        }
+        SalmonDialogs.promptExportFolder("Export Files", SalmonVaultManager.REQUEST_EXPORT_DIR, false);
     }
 
     onExportAndDelete() {
-        try {
-            this.manager.exportSelectedFiles(true);
-        } catch (e) {
-            SalmonDialog.promptDialog("Error", "Could not export and delete files: + e");
-        }
+        SalmonDialogs.promptExportFolder("Export Files and Delete", SalmonVaultManager.REQUEST_EXPORT_DIR, true);
     }
 
     onNewFolder() {
         SalmonDialogs.promptNewFolder();
+    }
+
+    onNewFile() {
+        SalmonDialogs.promptNewFile();
     }
 
     onCopy() {
@@ -365,13 +372,11 @@ export class MainController {
             for (let i = 0; i < this.fileItemList.size(); i++) {
                 let viewModel = this.fileItemList.get(i);
                 if (viewModel == vm) {
-                    let finalIndex = index;
                     setTimeout(() => {
                         try {
                             // TODO:
-                            // this.fileItemList.select(finalIndex);
-                            // this.table.scrollTo(table.selectionModelProperty().get().getSelectedIndex());
-                            // this.table.requestFocus();
+                            this.fileItemList.select(vm);
+                            this.fileItemList.bringIntoView(index);
                         } catch (ex) {
                             console.error(ex);
                         }
@@ -389,7 +394,8 @@ export class MainController {
         try {
             ServiceLocator.getInstance().register(ISettingsService, new JsSettingsService());
             ServiceLocator.getInstance().register(IFileService, new JsFileService());
-            ServiceLocator.getInstance().register(IFileRemoteService, new JsFileRemoteService());
+            ServiceLocator.getInstance().register(IHttpFileService, new JsHttpFileService());
+            ServiceLocator.getInstance().register(IWSFileService, new JsWSFileService());
             ServiceLocator.getInstance().register(IFileDialogService, new JsFileDialogService());
             ServiceLocator.getInstance().register(IWebBrowserService, new JsBrowserService());
             ServiceLocator.getInstance().register(IKeyboardService, new JsKeyboardService());
@@ -483,6 +489,9 @@ export class MainController {
             } else if (FileUtils.isText(await file.getName())) {
                 self.startTextEditor(vm);
                 return true;
+            } else if (FileUtils.isPdf(await file.getName())) {
+                self.startPdfViewer(vm);
+                return true;
             }
         } catch (ex) {
             console.error(ex);
@@ -514,6 +523,14 @@ export class MainController {
     startMediaPlayer(item) {
         try {
             MediaPlayerController.openMediaPlayer(item, window);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    startPdfViewer(item) {
+        try {
+            PdfViewerController.openPdfViewer(item, window);
         } catch (e) {
             console.error(e);
         }

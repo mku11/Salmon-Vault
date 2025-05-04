@@ -28,10 +28,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import { ReadableStreamWrapper } from "../../../salmon-core/streams/readable_stream_wrapper.js";
-import { File } from "../../fs/file/file.js";
-import { HttpFile } from "../../fs/file/http_file.js";
+import { HttpSyncClient } from "../../fs/file/http_sync_client.js";
 import { AesFile } from "../file/aes_file.js";
 import { AesFileReadableStream } from "../streams/aes_file_readable_stream.js";
+import { FileUtils } from "../../fs/drive/utils/file_utils.js";
 export class AesServiceWorker {
     constructor() {
         _AesServiceWorker_instances.add(this);
@@ -45,15 +45,6 @@ export class AesServiceWorker {
                 position = parseInt(range.split("=")[1].split("-")[0]);
         }
         return position;
-    }
-    async getFile(type, param) {
-        switch (type) {
-            case 'HttpFile':
-                return new HttpFile(param);
-            case 'File':
-                return new File(param);
-        }
-        throw new Error("Unknown class type");
     }
     registerRequest(path, params) {
         this.requests[path] = params;
@@ -86,7 +77,9 @@ export class AesServiceWorker {
 _a = AesServiceWorker, _AesServiceWorker_instances = new WeakSet(), _AesServiceWorker_getResponse = async function _AesServiceWorker_getResponse(request) {
     let position = this.getPosition(request.headers);
     let params = this.requests[request.url];
-    let file = await this.getFile(params.fileClass, params.fileHandle);
+    if (params.allowClearTextTraffic)
+        HttpSyncClient.setAllowClearTextTraffic(true);
+    let file = await FileUtils.getInstance(params.fileClass, params.fileHandle, params.servicePath, params.serviceUser, params.servicePassword);
     let aesFile = new AesFile(file);
     aesFile.setEncryptionKey(params.key);
     await aesFile.setVerifyIntegrity(params.integrity, params.hash_key);

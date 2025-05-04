@@ -68,7 +68,7 @@ export class TextEditorController {
             let htmlText = await response.text();
             let controller = new TextEditorController();
             window.textEditorController = controller;
-            let modalWindow = await SalmonWindow.createModal("Text Editor", htmlText);
+            let modalWindow = await SalmonWindow.createWindow("Text Editor", htmlText);
             controller.setStage(modalWindow);
             WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
             modalWindow.onClose = () => controller.onClose(this);

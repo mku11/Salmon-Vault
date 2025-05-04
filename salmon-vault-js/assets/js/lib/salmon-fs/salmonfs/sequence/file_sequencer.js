@@ -65,7 +65,7 @@ export class FileSequencer {
             let parent = await __classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f").getParent();
             if (parent == null)
                 throw new Error("Could not get parent");
-            await parent.createFile(__classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f").getName());
+            __classPrivateFieldSet(this, _FileSequencer_sequenceFile, await parent.createFile(__classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f").getName()), "f");
             await this.saveSequenceFile(new Map());
         }
     }

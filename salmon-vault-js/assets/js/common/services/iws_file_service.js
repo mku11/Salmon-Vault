@@ -21,16 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
-import { IFileRemoteService } from "../../common/services/ifile_remote_service.js";
-import { HttpFile } from "../../lib/salmon-fs/fs/file/http_file.js";
-
-export class JsFileRemoteService extends IFileRemoteService {
-    constructor() {
-        super();
-    }
-
-    getFile(filepath, isDirectory = false) {
-        return new HttpFile(filepath);
-    }
+export class IWSFileService {
+    getFile(filepath, servicePath, credentials) {}
 }

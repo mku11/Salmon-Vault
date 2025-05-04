@@ -103,6 +103,12 @@ export class Binding {
                 obj.key = key;
             } else
                 throw new Error("Can only bind ObservableList to select options");
+        } else if (el.tagName.toLowerCase() === 'iframe' && elementField === 'src') {
+            if (obj instanceof ObjectProperty) {
+                Binding.#bindings[key] = objBinding;
+                obj.key = key;
+            } else
+                throw new Error("Can only bind ObjectProperty to iframe src");
         } else {
             throw new Error("Could not bind element: " + name);
         }
@@ -217,6 +223,10 @@ export class Binding {
                 trow.classList.add("tr-row-selected");
                 obj.onSetSelected(index, true);
                 obj.onDoubleClicked(event, index);
+            }
+            row.onmouseenter = (event) => {
+                let trow = tbody.childNodes[index];
+                obj.onMouseEntered(event, index);
             }
             for (let i = 0; i < th.length; i++) {
                 let column = th[i];
@@ -391,5 +401,12 @@ export class Binding {
         let binding = Binding.getBinding(obj);
         let el = Binding.getElement(binding.root, binding.name);
         return document.activeElement == el;
+    }
+
+    static bringIntoView(obj, index) {
+        let binding = Binding.getBinding(obj);
+        let el = Binding.getElement(binding.root, binding.name);
+        var rows = el.rows;
+        rows[index].scrollIntoView({behavior: 'smooth', block: 'center'});
     }
 }

@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Max Kas
+Copyright (c) 2025 Max Kas
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,71 +32,35 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var _Buffer_data, _Buffer_startPos, _Buffer_count;
+var _Credentials_serviceUser, _Credentials_servicePassword;
 /**
- * Buffer that can be used for buffered streams.
+ * Credentials
  */
-export class Buffer {
+export class Credentials {
     /**
-     * Get the data
-     *
-     * @returns {Uint8Array} The data
+     * Get the user name
+     * @returns {string} The user name
      */
-    getData() {
-        return __classPrivateFieldGet(this, _Buffer_data, "f");
+    getServiceUser() {
+        return __classPrivateFieldGet(this, _Credentials_serviceUser, "f");
     }
     /**
-     * Set the data
-     *
-     * @param {Uint8Array} data The data
+     * Get the password
+     * @returns {string} The password
      */
-    setData(data) {
-        __classPrivateFieldSet(this, _Buffer_data, data, "f");
+    getServicePassword() {
+        return __classPrivateFieldGet(this, _Credentials_servicePassword, "f");
     }
     /**
-     * Get the start position
-     *
-     * @returns {number} The start position
+     * Construct a credentials object.
+     * @param {string} serviceUser The user name
+     * @param {string} servicePassword The password
      */
-    getStartPos() {
-        return __classPrivateFieldGet(this, _Buffer_startPos, "f");
-    }
-    /**
-     * Set the start position
-     *
-     * @param {number} startPos The start position
-     */
-    setStartPos(startPos) {
-        __classPrivateFieldSet(this, _Buffer_startPos, startPos, "f");
-    }
-    /**
-     * Get the data count
-     *
-     * @returns {number} The data count
-     */
-    getCount() {
-        return __classPrivateFieldGet(this, _Buffer_count, "f");
-    }
-    setCount(count) {
-        __classPrivateFieldSet(this, _Buffer_count, count, "f");
-    }
-    /**
-     * Instantiate a cache buffer.
-     *
-     * @param {Uint8Array} bufferSize The buffer size
-     */
-    constructor(bufferSize) {
-        _Buffer_data.set(this, void 0);
-        _Buffer_startPos.set(this, 0);
-        _Buffer_count.set(this, 0);
-        __classPrivateFieldSet(this, _Buffer_data, new Uint8Array(bufferSize), "f");
-    }
-    /**
-     * Clear the buffer.
-     */
-    clear() {
-        if (__classPrivateFieldGet(this, _Buffer_data, "f"))
-            __classPrivateFieldGet(this, _Buffer_data, "f").fill(0);
+    constructor(serviceUser, servicePassword) {
+        _Credentials_serviceUser.set(this, void 0);
+        _Credentials_servicePassword.set(this, void 0);
+        __classPrivateFieldSet(this, _Credentials_serviceUser, serviceUser, "f");
+        __classPrivateFieldSet(this, _Credentials_servicePassword, servicePassword, "f");
     }
 }
-_Buffer_data = new WeakMap(), _Buffer_startPos = new WeakMap(), _Buffer_count = new WeakMap();
+_Credentials_serviceUser = new WeakMap(), _Credentials_servicePassword = new WeakMap();

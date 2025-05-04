@@ -21,9 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+import { HttpSyncClient } from "../../../fs/file/http_sync_client.js";
 import { IntegrityException } from "../../../../salmon-core/salmon/integrity/integrity_exception.js";
 import { AuthException } from "../../auth/auth_exception.js";
 import { FileImporter } from "../../../fs/drive/utils/file_importer.js";
+import { FileUtils } from "../../../fs/drive/utils/file_utils.js";
 /**
  * Imports files to a drive.
  * Make sure you use setWorkerPath() with the correct worker script.
@@ -61,11 +63,8 @@ export class AesFileImporter extends FileImporter {
     async getMinimumPartSize(sourceFile, targetFile) {
         // we force the whole content to use 1 thread if:
         if (
-        // we are in the browser andthe target is a local file (chromes crswap clash between writers)
-        (targetFile.getRealFile().constructor.name === 'File' && typeof process !== 'object')
-            // or Web Service files (require passing the credentials)
-            || targetFile.getRealFile().constructor.name == 'WSFile'
-            || sourceFile.constructor.name === 'WSFile)') {
+        // we are in the browser and the target is a local file (chromes crswap clash between writers)
+        targetFile.getRealFile().constructor.name === 'File' && typeof process !== 'object') {
             return await sourceFile.getLength();
         }
         return await targetFile.getMinimumPartSize();
@@ -100,9 +99,16 @@ export class AesFileImporter extends FileImporter {
      * @returns {any} The message to be sent to the worker
      */
     async getWorkerMessage(index, sourceFile, targetFile, runningThreads, partSize, fileSize, bufferSize, integrity) {
-        let importedFile = targetFile;
-        let fileToImportHandle = await sourceFile.getPath();
-        let importedFileHandle = await importedFile.getRealFile().getPath();
+        let realSourceFileHandle = await sourceFile.getPath();
+        let realSourceFileType = sourceFile.constructor.name;
+        let realSourceServicePath = await FileUtils.getServicePath(sourceFile);
+        let realSourceFileCredentials = sourceFile.getCredentials();
+        let targetFileToImport = targetFile;
+        let realTargetFile = targetFileToImport.getRealFile();
+        let realTargetFileHandle = await realTargetFile.getPath();
+        let realTargetFileType = realTargetFile.constructor.name;
+        let realTargetServicePath = await FileUtils.getServicePath(realTargetFile);
+        let realTargetFileCredentials = realTargetFile.getCredentials();
         let start = partSize * index;
         let length;
         if (index == runningThreads - 1)
@@ -112,16 +118,23 @@ export class AesFileImporter extends FileImporter {
         return {
             message: 'start',
             index: index,
-            fileToImportHandle: fileToImportHandle,
-            importFileClassType: sourceFile.constructor.name,
+            realSourceFileHandle: realSourceFileHandle,
+            realSourceFileType: realSourceFileType,
+            realSourceServicePath: realSourceServicePath,
+            realSourceServiceUser: realSourceFileCredentials === null || realSourceFileCredentials === void 0 ? void 0 : realSourceFileCredentials.getServiceUser(),
+            realSourceServicePassword: realSourceFileCredentials === null || realSourceFileCredentials === void 0 ? void 0 : realSourceFileCredentials.getServicePassword(),
+            realTargetFileHandle: realTargetFileHandle,
+            realTargetFileType: realTargetFileType,
+            realTargetServicePath: realTargetServicePath,
+            realTargetServiceUser: realTargetFileCredentials === null || realTargetFileCredentials === void 0 ? void 0 : realTargetFileCredentials.getServiceUser(),
+            realTargetServicePassword: realTargetFileCredentials === null || realTargetFileCredentials === void 0 ? void 0 : realTargetFileCredentials.getServicePassword(),
             start: start, length: length,
-            importedFileHandle: importedFileHandle,
-            importedFileClassType: importedFile.getRealFile().constructor.name,
-            key: importedFile.getEncryptionKey(),
+            key: targetFileToImport.getEncryptionKey(),
             integrity: integrity,
-            hash_key: importedFile.getHashKey(),
-            chunk_size: importedFile.getRequestedChunkSize(),
-            bufferSize: bufferSize
+            hash_key: targetFileToImport.getHashKey(),
+            chunk_size: targetFileToImport.getRequestedChunkSize(),
+            bufferSize: bufferSize,
+            allowClearTextTraffic: HttpSyncClient.getAllowClearTextTraffic()
         };
     }
 }

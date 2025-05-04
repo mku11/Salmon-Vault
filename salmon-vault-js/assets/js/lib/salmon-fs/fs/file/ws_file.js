@@ -32,11 +32,12 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var _WSFile_instances, _a, _WSFile_PATH, _WSFile_DEST_DIR, _WSFile_FILENAME, _WSFile_filePath, _WSFile_servicePath, _WSFile_credentials, _WSFile_getResponse, _WSFile_getChildPath, _WSFile_setServiceAuth, _WSFile_checkStatus, _WSFile_setDefaultHeaders, _Credentials_serviceUser, _Credentials_servicePassword;
-import { Base64 } from '../../../salmon-core/convert/base64.js';
+var _WSFile_instances, _a, _WSFile_PATH, _WSFile_DEST_DIR, _WSFile_FILENAME, _WSFile_filePath, _WSFile_servicePath, _WSFile_credentials, _WSFile_getResponse, _WSFile_getChildPath, _WSFile_setServiceAuth, _WSFile_checkStatus, _WSFile_setDefaultHeaders;
 import { CopyOptions, MoveOptions } from './ifile.js';
 import { WSFileStream } from '../streams/ws_file_stream.js';
 import { IOException } from '../../../salmon-core/streams/io_exception.js';
+import { HttpSyncClient } from './http_sync_client.js';
+import { Base64Utils } from '../../../salmon-core/salmon/encode/base64_utils.js';
 /**
  * Salmon RealFile implementation for Web Service files.
  */
@@ -50,13 +51,6 @@ export class WSFile {
      */
     getCredentials() {
         return __classPrivateFieldGet(this, _WSFile_credentials, "f");
-    }
-    /**
-     * Set the web service credentials
-     * @param {Credentials} credentials The credentials
-     */
-    setCredentials(credentials) {
-        __classPrivateFieldSet(this, _WSFile_credentials, credentials, "f");
     }
     /**
      * Instantiate a real file represented by the filepath provided.
@@ -85,8 +79,7 @@ export class WSFile {
         __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setServiceAuth).call(this, headers);
         let params = new URLSearchParams();
         params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_PATH), nDirPath);
-        let httpResponse = null;
-        httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/mkdir", { method: 'POST', body: params, headers: headers }));
+        let httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/mkdir", { method: 'POST', body: params, headers: headers });
         await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
         let dir = new _a(nDirPath, __classPrivateFieldGet(this, _WSFile_servicePath, "f"), __classPrivateFieldGet(this, _WSFile_credentials, "f"));
         return dir;
@@ -104,8 +97,7 @@ export class WSFile {
         __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setServiceAuth).call(this, headers);
         let params = new URLSearchParams();
         params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_PATH), nFilePath);
-        let httpResponse = null;
-        httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/create", { method: 'POST', body: params, headers: headers }));
+        let httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/create", { method: 'POST', body: params, headers: headers });
         await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
         let nFile = new _a(nFilePath, __classPrivateFieldGet(this, _WSFile_servicePath, "f"), __classPrivateFieldGet(this, _WSFile_credentials, "f"));
         return nFile;
@@ -123,8 +115,7 @@ export class WSFile {
                 __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setServiceAuth).call(this, headers);
                 let params = new URLSearchParams();
                 params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_PATH), file.getPath());
-                let httpResponse = null;
-                httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/delete", { method: 'DELETE', body: params, headers: headers }));
+                let httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/delete", { method: 'DELETE', body: params, headers: headers });
                 await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
             }
         }
@@ -133,8 +124,7 @@ export class WSFile {
         __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setServiceAuth).call(this, headers);
         let params = new URLSearchParams();
         params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_PATH), __classPrivateFieldGet(this, _WSFile_filePath, "f"));
-        let httpResponse = null;
-        httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/delete", { method: 'DELETE', body: params, headers: headers }));
+        let httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/delete", { method: 'DELETE', body: params, headers: headers });
         await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
         this.reset();
         return true;
@@ -248,9 +238,8 @@ export class WSFile {
             let headers = new Headers();
             __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setDefaultHeaders).call(this, headers);
             __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setServiceAuth).call(this, headers);
-            let httpResponse = null;
-            httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/list"
-                + "?" + __classPrivateFieldGet(_a, _a, "f", _WSFile_PATH) + "=" + encodeURIComponent(this.getPath()), { method: 'GET', headers: headers }));
+            let httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/list"
+                + "?" + __classPrivateFieldGet(_a, _a, "f", _WSFile_PATH) + "=" + encodeURIComponent(this.getPath()), { method: 'GET', headers: headers });
             await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
             let res = (await httpResponse.json()).length;
             return res;
@@ -266,9 +255,8 @@ export class WSFile {
             let headers = new Headers();
             __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setDefaultHeaders).call(this, headers);
             __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setServiceAuth).call(this, headers);
-            let httpResponse = null;
-            httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/list"
-                + "?" + __classPrivateFieldGet(_a, _a, "f", _WSFile_PATH) + "=" + encodeURIComponent(this.getPath()), { method: 'GET', headers: headers }));
+            let httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/list"
+                + "?" + __classPrivateFieldGet(_a, _a, "f", _WSFile_PATH) + "=" + encodeURIComponent(this.getPath()), { method: 'GET', headers: headers });
             await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
             let realFiles = [];
             let realDirs = [];
@@ -311,7 +299,7 @@ export class WSFile {
             params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_DEST_DIR), newDir.getPath());
             params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_FILENAME), newName);
             let httpResponse = null;
-            httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/move", { method: 'PUT', body: params, headers: headers }));
+            httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/move", { method: 'PUT', body: params, headers: headers });
             await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
             newFile = new _a((await httpResponse.json()).path, __classPrivateFieldGet(this, _WSFile_servicePath, "f"), __classPrivateFieldGet(this, _WSFile_credentials, "f"));
             this.reset();
@@ -345,8 +333,7 @@ export class WSFile {
             params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_PATH), __classPrivateFieldGet(this, _WSFile_filePath, "f"));
             params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_DEST_DIR), newDir.getPath());
             params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_FILENAME), newName);
-            let httpResponse = null;
-            httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/copy", { method: 'POST', body: params, headers: headers }));
+            let httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/copy", { method: 'POST', body: params, headers: headers });
             await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
             newFile = new _a((await httpResponse.json()).path, __classPrivateFieldGet(this, _WSFile_servicePath, "f"), __classPrivateFieldGet(this, _WSFile_credentials, "f"));
             this.reset();
@@ -378,8 +365,7 @@ export class WSFile {
         let params = new URLSearchParams();
         params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_PATH), __classPrivateFieldGet(this, _WSFile_filePath, "f"));
         params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_FILENAME), newFilename);
-        let httpResponse = null;
-        httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/rename", { method: 'PUT', body: params, headers: headers }));
+        let httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/rename", { method: 'PUT', body: params, headers: headers });
         await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
         return true;
     }
@@ -394,8 +380,7 @@ export class WSFile {
         __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setServiceAuth).call(this, headers);
         let params = new URLSearchParams();
         params.append(__classPrivateFieldGet(_a, _a, "f", _WSFile_PATH), __classPrivateFieldGet(this, _WSFile_filePath, "f"));
-        let httpResponse = null;
-        httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/mkdir", { method: 'POST', body: params, headers: headers }));
+        let httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/mkdir", { method: 'POST', body: params, headers: headers });
         await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
         return true;
     }
@@ -419,8 +404,8 @@ _a = WSFile, _WSFile_filePath = new WeakMap(), _WSFile_servicePath = new WeakMap
         __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setDefaultHeaders).call(this, headers);
         __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_setServiceAuth).call(this, headers);
         let httpResponse = null;
-        httpResponse = (await fetch(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/info"
-            + "?" + __classPrivateFieldGet(_a, _a, "f", _WSFile_PATH) + "=" + encodeURIComponent(this.getPath()), { method: 'GET', headers: headers }));
+        httpResponse = await HttpSyncClient.getResponse(__classPrivateFieldGet(this, _WSFile_servicePath, "f") + "/api/info"
+            + "?" + __classPrivateFieldGet(_a, _a, "f", _WSFile_PATH) + "=" + encodeURIComponent(this.getPath()), { method: 'GET', headers: headers });
         await __classPrivateFieldGet(this, _WSFile_instances, "m", _WSFile_checkStatus).call(this, httpResponse, 200);
         this.response = await httpResponse.json();
     }
@@ -434,7 +419,7 @@ _a = WSFile, _WSFile_filePath = new WeakMap(), _WSFile_servicePath = new WeakMap
 }, _WSFile_setServiceAuth = function _WSFile_setServiceAuth(headers) {
     if (!__classPrivateFieldGet(this, _WSFile_credentials, "f"))
         return;
-    headers.append('Authorization', 'Basic ' + new Base64().encode(new TextEncoder().encode(__classPrivateFieldGet(this, _WSFile_credentials, "f").getServiceUser() + ":" + __classPrivateFieldGet(this, _WSFile_credentials, "f").getServicePassword())));
+    headers.append('Authorization', 'Basic ' + Base64Utils.getBase64().encode(new TextEncoder().encode(__classPrivateFieldGet(this, _WSFile_credentials, "f").getServiceUser() + ":" + __classPrivateFieldGet(this, _WSFile_credentials, "f").getServicePassword())));
 }, _WSFile_checkStatus = async function _WSFile_checkStatus(httpResponse, status) {
     if (httpResponse.status != status)
         throw new IOException(httpResponse.status
@@ -451,31 +436,3 @@ _WSFile_FILENAME = { value: "filename" };
  * The directory separator
  */
 WSFile.separator = "/";
-export class Credentials {
-    /**
-     * Get the user name
-     * @returns {string} The user name
-     */
-    getServiceUser() {
-        return __classPrivateFieldGet(this, _Credentials_serviceUser, "f");
-    }
-    /**
-     * Get the password
-     * @returns {string} The password
-     */
-    getServicePassword() {
-        return __classPrivateFieldGet(this, _Credentials_servicePassword, "f");
-    }
-    /**
-     * Construct a credentials object.
-     * @param {string} serviceUser The user name
-     * @param {string} servicePassword The password
-     */
-    constructor(serviceUser, servicePassword) {
-        _Credentials_serviceUser.set(this, void 0);
-        _Credentials_servicePassword.set(this, void 0);
-        __classPrivateFieldSet(this, _Credentials_serviceUser, serviceUser, "f");
-        __classPrivateFieldSet(this, _Credentials_servicePassword, servicePassword, "f");
-    }
-}
-_Credentials_serviceUser = new WeakMap(), _Credentials_servicePassword = new WeakMap();

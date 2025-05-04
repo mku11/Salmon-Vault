@@ -32,7 +32,7 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var _AesStream_instances, _a, _AesStream_header, _AesStream_encryptionMode, _AesStream_format, _AesStream_allowRangeWrite, _AesStream_failSilently, _AesStream_baseStream, _AesStream_providerType, _AesStream_transformer, _AesStream_integrity, _AesStream_bufferSize, _AesStream_key, _AesStream_nonce, _AesStream_hashKey, _AesStream_chunkSize, _AesStream_enableIntegrity, _AesStream_init, _AesStream_getOrCreateHeader, _AesStream_initTransformer, _AesStream_initStream, _AesStream_initIntegrity, _AesStream_getHeaderLength, _AesStream_setVirtualPosition, _AesStream_closeStreams, _AesStream_readFromStream, _AesStream_getAlignedOffset, _AesStream_getNormalizedBufferSize, _AesStream_readBufferData, _AesStream_readStreamData, _AesStream_writeToBuffer, _AesStream_writeToStream, _AesStream_stripSignatures;
+var _AesStream_instances, _a, _AesStream_header, _AesStream_encryptionMode, _AesStream_format, _AesStream_allowRangeWrite, _AesStream_failSilently, _AesStream_baseStream, _AesStream_providerType, _AesStream_transformer, _AesStream_integrity, _AesStream_key, _AesStream_nonce, _AesStream_hashKey, _AesStream_chunkSize, _AesStream_enableIntegrity, _AesStream_init, _AesStream_getOrCreateHeader, _AesStream_initTransformer, _AesStream_initStream, _AesStream_initIntegrity, _AesStream_getHeaderLength, _AesStream_setVirtualPosition, _AesStream_closeStreams, _AesStream_readFromStream, _AesStream_getAlignedOffset, _AesStream_getNormalizedBufferSize, _AesStream_readBufferData, _AesStream_readStreamData, _AesStream_writeToBuffer, _AesStream_writeToStream, _AesStream_stripSignatures;
 import { IOException } from "../../streams/io_exception.js";
 import { RandomAccessStream, SeekOrigin } from "../../streams/random_access_stream.js";
 import { ReadableStreamWrapper } from "../../streams/readable_stream_wrapper.js";
@@ -148,10 +148,6 @@ export class AesStream extends RandomAccessStream {
          * The integrity to use for hash signature creation and validation.
          */
         _AesStream_integrity.set(this, new Integrity(false, null, 0, new HmacSHA256Provider(), Generator.HASH_RESULT_LENGTH));
-        /**
-         * Internal buffer size by default should be aligned to the integrity for better performance
-         */
-        _AesStream_bufferSize.set(this, Integrity.DEFAULT_CHUNK_SIZE);
         _AesStream_key.set(this, void 0);
         _AesStream_nonce.set(this, void 0);
         _AesStream_hashKey.set(this, void 0);
@@ -509,23 +505,8 @@ export class AesStream extends RandomAccessStream {
     getTransformer() {
         return __classPrivateFieldGet(this, _AesStream_transformer, "f");
     }
-    /**
-     * Get the internal buffer size.
-     * @returns {number} The buffer size.
-     */
-    getBufferSize() {
-        return __classPrivateFieldGet(this, _AesStream_bufferSize, "f");
-    }
-    /**
-     * Set the internal buffer size.
-     *
-     * @param {number} bufferSize The new buffer size.
-     */
-    setBufferSize(bufferSize) {
-        __classPrivateFieldSet(this, _AesStream_bufferSize, bufferSize, "f");
-    }
 }
-_a = AesStream, _AesStream_header = new WeakMap(), _AesStream_encryptionMode = new WeakMap(), _AesStream_format = new WeakMap(), _AesStream_allowRangeWrite = new WeakMap(), _AesStream_failSilently = new WeakMap(), _AesStream_baseStream = new WeakMap(), _AesStream_transformer = new WeakMap(), _AesStream_integrity = new WeakMap(), _AesStream_bufferSize = new WeakMap(), _AesStream_key = new WeakMap(), _AesStream_nonce = new WeakMap(), _AesStream_hashKey = new WeakMap(), _AesStream_chunkSize = new WeakMap(), _AesStream_enableIntegrity = new WeakMap(), _AesStream_instances = new WeakSet(), _AesStream_init = 
+_a = AesStream, _AesStream_header = new WeakMap(), _AesStream_encryptionMode = new WeakMap(), _AesStream_format = new WeakMap(), _AesStream_allowRangeWrite = new WeakMap(), _AesStream_failSilently = new WeakMap(), _AesStream_baseStream = new WeakMap(), _AesStream_transformer = new WeakMap(), _AesStream_integrity = new WeakMap(), _AesStream_key = new WeakMap(), _AesStream_nonce = new WeakMap(), _AesStream_hashKey = new WeakMap(), _AesStream_chunkSize = new WeakMap(), _AesStream_enableIntegrity = new WeakMap(), _AesStream_instances = new WeakSet(), _AesStream_init = 
 /**
  * Initialize the salmon stream.
  */

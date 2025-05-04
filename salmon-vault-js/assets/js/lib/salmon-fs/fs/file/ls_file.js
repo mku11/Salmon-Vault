@@ -80,14 +80,14 @@ export class LocalStorageFile {
         return localStorage.getItem(__classPrivateFieldGet(this, _LocalStorageFile_filePath, "f")) != null;
     }
     /**
-     * Get the path of this file. For java this is the same as the absolute filepath.
+     * Get the path of this file. For local storage this is the same as the absolute filepath.
      * @returns {string}  The file path
      */
     getPath() {
         return __classPrivateFieldGet(this, _LocalStorageFile_filePath, "f");
     }
     /**
-     * Get the display path on the physical disk. For java this is the same as the filepath.
+     * Get the display path on the physical disk. For local storage this is the same as the filepath.
      * @returns {string} The display path.
      */
     getDisplayPath() {
@@ -223,6 +223,13 @@ export class LocalStorageFile {
      * Reset cached properties
      */
     reset() {
+    }
+    /**
+     * Get the credentials
+     * @return The credentials
+     */
+    getCredentials() {
+        return null;
     }
     /**
      * Returns a string representation of this object

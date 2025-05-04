@@ -22,8 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import { IntegrityException } from "../../../../salmon-core/salmon/integrity/integrity_exception.js";
+import { HttpSyncClient } from "../../../fs/file/http_sync_client.js";
 import { FileExporter } from "../../../fs/drive/utils/file_exporter.js";
 import { AuthException } from "../../auth/auth_exception.js";
+import { FileUtils } from "../../../fs/drive/utils/file_utils.js";
 /**
  * Exports files from a drive.
  * Make sure you use setWorkerPath() with the correct worker script.
@@ -43,11 +45,8 @@ export class AesFileExporter extends FileExporter {
     async getMinimumPartSize(sourceFile, targetFile) {
         // we force the whole content to use 1 thread if:
         if (
-        // we are in the browser andthe target is a local file (chromes crswap clash between writers)
-        (targetFile.constructor.name === 'File' && typeof process !== 'object')
-            // or Web Service files (require passing the credentials)
-            || sourceFile.getRealFile().constructor.name == 'WSFile'
-            || targetFile.constructor.name === 'WSFile)') {
+        // we are in the browser and the target is a local file (chromes crswap clash between writers)
+        targetFile.constructor.name === 'File' && typeof process !== 'object') {
             return await sourceFile.getLength();
         }
         return await sourceFile.getMinimumPartSize();
@@ -90,9 +89,16 @@ export class AesFileExporter extends FileExporter {
      * @returns {any} The message to be sent to the worker
      */
     async getWorkerMessage(index, sourceFile, targetFile, runningThreads, partSize, fileSize, bufferSize, integrity) {
-        let fileToExport = sourceFile;
-        let fileToExportHandle = await fileToExport.getRealFile().getPath();
-        let exportedFileHandle = await targetFile.getPath();
+        let sourceFileToExport = sourceFile;
+        let realSourceFile = sourceFileToExport.getRealFile();
+        let realSourceFileHandle = await realSourceFile.getPath();
+        let realSourceFileType = realSourceFile.constructor.name;
+        let realSourceServicePath = await FileUtils.getServicePath(realSourceFile);
+        let realSourceFileCredentials = realSourceFile.getCredentials();
+        let realTargetFileHandle = await targetFile.getPath();
+        let realTargetFileType = targetFile.constructor.name;
+        let realTargetServicePath = await FileUtils.getServicePath(targetFile);
+        let realTargetFileCredentials = targetFile.getCredentials();
         let start = partSize * index;
         let length;
         if (index == runningThreads - 1)
@@ -102,16 +108,23 @@ export class AesFileExporter extends FileExporter {
         return {
             message: 'start',
             index: index,
-            fileToExportHandle: fileToExportHandle,
-            exportFileClassType: fileToExport.getRealFile().constructor.name,
+            realSourceFileHandle: realSourceFileHandle,
+            realSourceFileType: realSourceFileType,
+            realSourceServicePath: realSourceServicePath,
+            realSourceServiceUser: realSourceFileCredentials === null || realSourceFileCredentials === void 0 ? void 0 : realSourceFileCredentials.getServiceUser(),
+            realSourceServicePassword: realSourceFileCredentials === null || realSourceFileCredentials === void 0 ? void 0 : realSourceFileCredentials.getServicePassword(),
+            realTargetFileHandle: realTargetFileHandle,
+            realTargetFileType: realTargetFileType,
+            realTargetServicePath: realTargetServicePath,
+            realTargetServiceUser: realTargetFileCredentials === null || realTargetFileCredentials === void 0 ? void 0 : realTargetFileCredentials.getServiceUser(),
+            realTargetServicePassword: realTargetFileCredentials === null || realTargetFileCredentials === void 0 ? void 0 : realTargetFileCredentials.getServicePassword(),
             start: start, length: length,
-            exportedFileHandle: exportedFileHandle,
-            exportedFileClassType: targetFile.constructor.name,
-            key: fileToExport.getEncryptionKey(),
+            key: sourceFileToExport.getEncryptionKey(),
             integrity: integrity,
-            hash_key: fileToExport.getHashKey(),
-            chunk_size: fileToExport.getRequestedChunkSize(),
-            bufferSize: bufferSize
+            hash_key: sourceFileToExport.getHashKey(),
+            chunk_size: sourceFileToExport.getRequestedChunkSize(),
+            bufferSize: bufferSize,
+            allowClearTextTraffic: HttpSyncClient.getAllowClearTextTraffic()
         };
     }
 }
