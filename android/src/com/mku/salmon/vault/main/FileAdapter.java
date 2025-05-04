@@ -57,6 +57,7 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -129,11 +130,20 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     }
 
     public void setMultiSelect(boolean value, boolean clear) {
-        if (clear)
+        ArrayList<Integer> files = new ArrayList<>();
+        int i = 0;
+        for (AesFile file : items) {
+            if (selectedFiles.contains(file))
+                files.add(i);
+            i++;
+        }
+        if (clear) {
             selectedFiles.clear();
+            for (int pos : files)
+                notifyItemChanged(pos);
+        }
         mode = value ? Mode.MULTI_SELECT : Mode.SINGLE_SELECT;
         propertyChanged(this, "SelectedFiles");
-        notifyDataSetChanged();
     }
 
     public void stop() {
@@ -288,7 +298,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                         continue;
                     Bitmap finalBitmap = bitmap;
                     activity.runOnUiThread(() -> {
-                        if(animationViewHolder == viewHolder && animationViewHolder.animate)
+                        if (animationViewHolder == viewHolder && animationViewHolder.animate)
                             updateThumbnailIcon(viewHolder, finalBitmap);
                     });
                 }
@@ -453,7 +463,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
             itemView.setOnClickListener((View view) ->
             {
-                if(super.getLayoutPosition() >= items.size())
+                if (super.getLayoutPosition() >= items.size())
                     return;
                 AesFile salmonFile = items.get(super.getLayoutPosition());
                 if (mode == Mode.MULTI_SELECT) {
@@ -492,7 +502,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     }
 
     public synchronized void resetAnimation() {
-        if(animationViewHolder != null)
+        if (animationViewHolder != null)
             animationViewHolder.animate = false;
         animationViewHolder = null;
     }
