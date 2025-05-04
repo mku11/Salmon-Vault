@@ -71,7 +71,7 @@ public class WebViewerActivity extends AppCompatActivity {
     private TextView mTitle;
     private final Object swipeObj = new Object();
 
-    private ExecutorService executor = Executors.newFixedThreadPool(2);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(2);
 
     public static void setContentFiles(int position, AesFile[] salmonFiles) {
         pos = position;
