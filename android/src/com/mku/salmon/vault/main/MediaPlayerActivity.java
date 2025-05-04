@@ -41,6 +41,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.mku.android.salmonfs.media.AesMediaDataSource;
+import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.file.AesFile;
@@ -91,7 +92,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     private boolean looping;
     private float speed = 1.0f;
     private int old_x = 0;
-    private ExecutorService executor = Executors.newFixedThreadPool(2);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(2);
 
     public static void setMediaFiles(int position, AesFile[] mediaFiles) {
         pos = position;
@@ -189,6 +190,9 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
 
     protected void loadContent(AesFile file) throws Exception {
         mTitle.setText(file.getName());
+        if (FileUtils.isAudio(file.getName())) {
+            showSeekBar(true);
+        }
         executor.submit(() -> {
             try {
                 source = new AesMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
@@ -380,6 +384,14 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
 
     private void toggleSeekBar() {
         if (mSeekBarLayout.getVisibility() == View.GONE) {
+            showSeekBar(true);
+        } else {
+            showSeekBar(false);
+        }
+    }
+
+    private void showSeekBar(boolean visible) {
+        if (visible) {
             mTitleLayout.setVisibility(View.VISIBLE);
             mSeekBarLayout.setVisibility(View.VISIBLE);
         } else {
