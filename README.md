@@ -41,16 +41,6 @@ Salmon Vault app is offered on several different platforms:
 [**Live Web Demo**](https://mku11.github.io/Salmon-Vault/demo.html)    
 Demo Vault contents are licensed under [Content License](https://mku11.github.io/Salmon-Vault/vault/content_license.txt) Copyright by Blender Foundation | www.bigbuckbunny.org  
 
-## Specifications
-* AES-256 encryption 
-* HMAC SHA-256 authentication.
-* SHA-256 Text password key derivation.
-* Fast hardware encryption with Salmon AES-NI native subroutines.
-* Fallback encryption with TinyAES.
-* Protected nonce sequencer (Android only).
-* Protected nonce sequencer with SHA256 checksum anti-tampering (Windows only).
-* Protected account sequencer service (Optional / Windows only).
-
 ---
 
 ### Limitations
