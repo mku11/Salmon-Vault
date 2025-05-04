@@ -87,12 +87,14 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     private LinkedHashSet<AesFile> selectedFiles = new LinkedHashSet<>();
     private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     private Mode mode = Mode.SINGLE_SELECT;
-    private ExecutorService executor;
+    private static final ExecutorService executor = Executors.newFixedThreadPool(TASK_THREADS);
+    private static final ExecutorService animationExecutor = Executors.newSingleThreadExecutor();
+
+
     private Runnable onCacheCleared;
     private HashSet<BiConsumer<Object, String>> observers = new HashSet<>();
 
     private ViewHolder animationViewHolder;
-    private ExecutorService animationExecutor;
 
     public void setOnCacheCleared(Runnable onCacheCleared) {
         this.onCacheCleared = onCacheCleared;
@@ -103,7 +105,6 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         this.inflater = LayoutInflater.from(activity);
         this.itemClicked = itemClicked;
         this.activity = activity;
-        createThread();
     }
 
     public LinkedHashSet<AesFile> getSelectedFiles() {
@@ -132,17 +133,12 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             selectedFiles.clear();
         mode = value ? Mode.MULTI_SELECT : Mode.SINGLE_SELECT;
         propertyChanged(this, "SelectedFiles");
+        notifyDataSetChanged();
     }
 
     public void stop() {
         tasks.clear();
         unobservePropertyChanges();
-        executor.shutdownNow();
-    }
-
-    private void createThread() {
-        executor = Executors.newFixedThreadPool(TASK_THREADS);
-        animationExecutor = Executors.newSingleThreadExecutor();
     }
 
     @Override
