@@ -30,8 +30,6 @@
         <element id="library" level="project" name="Gradle: org.openjfx:javafx-graphics:win:17.0.15" />
         <element id="library" level="project" name="Gradle: org.openjfx:javafx-media:17.0.15" />
         <element id="library" level="project" name="Gradle: org.openjfx:javafx-media:win:17.0.15" />
-		<element id="library" level="project" name="Gradle: org.openjfx:javafx-web:17.0.15" />
-        <element id="library" level="project" name="Gradle: org.openjfx:javafx-web:win:17.0.15" />
         <element id="library" level="project" name="Gradle: org.openjfx:javafx-swing:17.0.15" />
         <element id="library" level="project" name="Gradle: org.openjfx:javafx-swing:win:17.0.15" />
         <element id="library" level="project" name="Gradle: com.github.pcorless.icepdf:icepdf-core:7.2.4_P01" />
