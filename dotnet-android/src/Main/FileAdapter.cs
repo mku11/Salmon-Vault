@@ -111,11 +111,20 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
     public void SetMultiSelect(bool value, bool clear = true)
     {
-        if (clear)
+        List<int> files = new List<>();
+        int i = 0;
+        for (AesFile file : items) {
+            if (SelectedFiles.Contains(file))
+                files.Add(i);
+            i++;
+        }
+        if (clear) {
             SelectedFiles.Clear();
+            for (int pos : files)
+                NotifyItemChanged(pos);
+        }
         mode = value ? Mode.MULTI_SELECT : Mode.SINGLE_SELECT;
         PropertyChanged(this, new PropertyChangedEventArgs("SelectedFiles"));
-		NotifyDataSetChanged();
     }
 
     public void Stop()
