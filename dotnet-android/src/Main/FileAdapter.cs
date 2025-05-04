@@ -69,7 +69,8 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     public HashSet<AesFile> SelectedFiles { get; } = new HashSet<AesFile>();
     private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/YYYY");
     private Mode mode = Mode.SINGLE_SELECT;
-    private IExecutorService executor;
+    private static readonly IExecutorService executor = Executors.NewFixedThreadPool(TASK_THREADS);
+    private static readonly ExecutorService animationExecutor = Executors.NewSingleThreadExecutor();
     public event EventHandler OnCacheCleared;
     public event PropertyChangedEventHandler PropertyChanged;
     private ViewHolder animationViewHolder;
@@ -114,17 +115,12 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
             SelectedFiles.Clear();
         mode = value ? Mode.MULTI_SELECT : Mode.SINGLE_SELECT;
         PropertyChanged(this, new PropertyChangedEventArgs("SelectedFiles"));
+		NotifyDataSetChanged();
     }
 
     public void Stop()
     {
         tasks.Clear();
-        executor.ShutdownNow();
-    }
-
-    private void CreateThread()
-    {
-        executor = Executors.NewFixedThreadPool(TASK_THREADS);
     }
 
     public override int ItemCount => items.Count;
@@ -276,7 +272,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
     private void AnimateVideo(ViewHolder viewHolder)
     {
-        executor.Submit(new Runnable(() =>
+        animationExecutor.Submit(new Runnable(() =>
         {
             int i = 0;
             Java.IO.File tmpFile = null;
