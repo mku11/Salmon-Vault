@@ -218,9 +218,17 @@ public class Thumbnails {
                         bufferedImage.getHeight(),
                         BufferedImage.TYPE_INT_ARGB_PRE);
                 Graphics g = nimage.getGraphics();
-                Color tintColor = getFileColorFromExtension(ext);
-                addImage(g, bufferedImage, tintColor);
-                addText(g, ext, bufferedImage.getWidth() / 2, bufferedImage.getHeight() / 2);
+                // FIXME: issue with Linux and rendering the tint color
+                if (WindowUtils.isLinux()) {
+                    addImage(g, bufferedImage, null);
+                    addText(g, ext, bufferedImage.getWidth() / 2,
+                            bufferedImage.getHeight() / 2, Color.BLACK);
+                } else {
+                    Color tintColor = getFileColorFromExtension(ext);
+                    addImage(g, bufferedImage, tintColor);
+                    addText(g, ext, bufferedImage.getWidth() / 2,
+                            bufferedImage.getHeight() / 2, Color.WHITE);
+                }
                 g.dispose();
                 image = SwingFXUtils.toFXImage(nimage, null);
             } catch (Exception ex) {
@@ -233,14 +241,16 @@ public class Thumbnails {
     }
 
     private static void addImage(Graphics g, BufferedImage bufferedImage, Color tintColor) {
-        g.setXORMode(tintColor);
+        if(tintColor != null)
+            g.setXORMode(tintColor);
         g.drawImage(bufferedImage, 0, 0, null);
         // reset the tint
-        g.setXORMode(Color.decode("#00000000"));
+        if(tintColor != null)
+            g.setXORMode(Color.decode("#00000000"));
     }
 
-    private static void addText(Graphics g, String text, int width, int height) {
-        g.setColor(Color.WHITE);
+    private static void addText(Graphics g, String text, int width, int height, Color color) {
+        g.setColor(color);
         g.setFont(new Font("Arial", Font.PLAIN, 128));
         FontMetrics fontMetrics = g.getFontMetrics();
         int textWidth = fontMetrics.stringWidth(text);
