@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 
 public class WindowUtils
 {
-    private static Executor executor = Executors.newCachedThreadPool();
+    private static final Executor executor = Executors.newCachedThreadPool();
 
     public static Activity getUiActivity() {
         return uiActivity;
