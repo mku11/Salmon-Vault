@@ -1,5 +1,3 @@
-![alt text](https://github.com/mku11/Salmon-Vault/blob/main/common/common-res/icons/logo_128x128.png)
-
 # Salmon Vault
 Secure all your personal files in Salmon Vault with AES-256 encryption.  
 Encrypt your passwords, text, images, audio, video, pdf, and other files in Salmon Vault.
