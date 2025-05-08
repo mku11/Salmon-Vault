@@ -35,7 +35,7 @@ Salmon Vault app is offered on several different platforms:
 * .NET Android 23+ (deprecated)  
 * .NET MAUI (Android/Windows 10+ deprecated)  
 
-[**Downloads**](https://mku11.github.io/Salmon-Vault/downloads.html)
+[**Downloads**](https://github.com/mku11/Salmon-Vault/releases)
 
 ![alt text](https://github.com/mku11/Salmon-Vault/blob/main/screenshots/Screenshot.png)  
 [**Live Web Demo**](https://mku11.github.io/Salmon-Vault/demo.html)    
