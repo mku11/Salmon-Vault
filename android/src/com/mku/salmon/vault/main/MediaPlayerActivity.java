@@ -242,18 +242,22 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     }
 
     private void fitToWindow() {
-        RelativeLayout parent = (RelativeLayout) mSurfaceView.getParent();
-        if (parent.getWidth() == 0 || parent.getHeight() == 0)
-            return;
-        ViewGroup.LayoutParams layoutParams = mSurfaceView.getLayoutParams();
-        if (mediaPlayer.getVideoWidth() / (float) mediaPlayer.getVideoHeight() > parent.getWidth() / (float) parent.getHeight()) {
-            layoutParams.width = parent.getWidth();
-            layoutParams.height = (int) (parent.getWidth() / (float) mediaPlayer.getVideoWidth() * mediaPlayer.getVideoHeight());
-        } else {
-            layoutParams.height = parent.getHeight();
-            layoutParams.width = (int) (parent.getHeight() / (float) mediaPlayer.getVideoHeight() * mediaPlayer.getVideoWidth());
-        }
-        mSurfaceView.setLayoutParams(layoutParams);
+		try {
+			RelativeLayout parent = (RelativeLayout) mSurfaceView.getParent();
+			if (parent.getWidth() == 0 || parent.getHeight() == 0)
+				return;
+			ViewGroup.LayoutParams layoutParams = mSurfaceView.getLayoutParams();
+			if (mediaPlayer.getVideoWidth() / (float) mediaPlayer.getVideoHeight() > parent.getWidth() / (float) parent.getHeight()) {
+				layoutParams.width = parent.getWidth();
+				layoutParams.height = (int) (parent.getWidth() / (float) mediaPlayer.getVideoWidth() * mediaPlayer.getVideoHeight());
+			} else {
+				layoutParams.height = parent.getHeight();
+				layoutParams.width = (int) (parent.getHeight() / (float) mediaPlayer.getVideoHeight() * mediaPlayer.getVideoWidth());
+			}
+			mSurfaceView.setLayoutParams(layoutParams);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
     }
 
     @Override
