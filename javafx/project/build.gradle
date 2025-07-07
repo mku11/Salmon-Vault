@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.mku.salmon.vault'
-version '3.0.0'
+version '3.0.1'
 
 repositories {
     maven {
@@ -20,7 +20,7 @@ repositories {
 
 ext {
     junitVersion = '5.9.1'
-    salmonLibVersion = '3.0.1'
+    salmonLibVersion = '3.0.2'
 }
 
 sourceCompatibility = '11'

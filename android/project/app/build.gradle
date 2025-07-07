@@ -15,7 +15,7 @@ repositories {
 }
 
 ext {
-    salmonLibVersion = '3.0.1'
+    salmonLibVersion = '3.0.2'
 }
 
 android {
