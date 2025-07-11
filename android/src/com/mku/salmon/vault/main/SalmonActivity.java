@@ -392,8 +392,8 @@ public class SalmonActivity extends AppCompatActivity {
         }
 
         // Operations
-        if (!manager.isJobRunning() && (manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
-                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Move)) {
+        if (!manager.isJobRunning() && (manager.getOperationMode() == SalmonVaultManager.OperationMode.Copy
+                || manager.getOperationMode() == SalmonVaultManager.OperationMode.Move)) {
             menu.add(5, ActionType.PASTE.ordinal(), 0, getResources().getString(R.string.Paste))
                     .setIcon(R.drawable.file_paste_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
@@ -403,8 +403,8 @@ public class SalmonActivity extends AppCompatActivity {
         }
         if (manager.isJobRunning()
                 || adapter.getSelectedFiles().size() > 0
-                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
-                || manager.getFileManagerMode() == SalmonVaultManager.Mode.Move) {
+                || manager.getOperationMode() == SalmonVaultManager.OperationMode.Copy
+                || manager.getOperationMode() == SalmonVaultManager.OperationMode.Move) {
             menu.add(5, ActionType.STOP.ordinal(), 0, getResources().getString(R.string.Cancel))
                     .setIcon(R.drawable.cancel_small)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
@@ -416,8 +416,8 @@ public class SalmonActivity extends AppCompatActivity {
         if (manager.getDrive() != null) {
             if (adapter.getMode() != FileAdapter.Mode.MULTI_SELECT
                     && !manager.isJobRunning()) {
-                if (manager.getFileManagerMode() != SalmonVaultManager.Mode.Copy
-                        && manager.getFileManagerMode() != SalmonVaultManager.Mode.Move) {
+                if (manager.getOperationMode() != SalmonVaultManager.OperationMode.Copy
+                        && manager.getOperationMode() != SalmonVaultManager.OperationMode.Move) {
                     menu.add(5, ActionType.IMPORT_FILES.ordinal(), 0, getResources().getString(R.string.ImportFiles))
                             .setIcon(R.drawable.import_file_small)
                             .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);

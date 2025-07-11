@@ -247,9 +247,14 @@ public class SalmonVaultManager implements IPropertyNotifier {
     private AesFile[] salmonFiles;
     private String searchTerm;
     private Mode fileManagerMode = Mode.Browse;
+    private OperationMode operationMode = OperationMode.None;
 
     public Mode getFileManagerMode() {
         return fileManagerMode;
+    }
+
+    public OperationMode getOperationMode() {
+        return operationMode;
     }
 
     protected SalmonVaultManager() {
@@ -286,6 +291,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void stopOperation() {
         fileCommander.cancel();
         fileManagerMode = Mode.Browse;
+        operationMode = OperationMode.None;
         clearSelectedFiles();
         clearCopiedFiles();
         fileProgress = 0;
@@ -297,7 +303,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void copySelectedFiles() {
         if (isJobRunning())
             throw new RuntimeException("Another Job is Running");
-        fileManagerMode = Mode.Copy;
+        operationMode = OperationMode.Copy;
         copyFiles = selectedFiles.toArray(new AesFile[0]);
         setTaskRunning(true, false);
         setTaskMessage(copyFiles.length + " Items selected for copy");
@@ -306,7 +312,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void cutSelectedFiles() {
         if (isJobRunning())
             throw new RuntimeException("Another Job is Running");
-        fileManagerMode = Mode.Move;
+        operationMode = OperationMode.Move;
         copyFiles = selectedFiles.toArray(new AesFile[0]);
         setTaskRunning(true, false);
         setTaskMessage(copyFiles.length + " Items selected for move");
@@ -395,7 +401,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void pasteSelected() {
         if (isJobRunning())
             throw new RuntimeException("Another Job is Running");
-        copySelectedFiles(fileManagerMode == Mode.Move);
+        copySelectedFiles(operationMode == OperationMode.Move);
     }
 
     public void setTaskRunning(boolean value) {
@@ -514,6 +520,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             refresh();
             copyFiles = null;
             fileManagerMode = Mode.Browse;
+            operationMode = OperationMode.None;
         });
     }
 
@@ -577,6 +584,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             refresh();
             copyFiles = null;
             fileManagerMode = Mode.Browse;
+            operationMode = OperationMode.None;
         });
     }
 
@@ -687,7 +695,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 WindowUtils.runOnMainThread(() -> {
                     SalmonVaultManager.getInstance().updateListItem.accept(file);
                 });
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 SalmonDialog.promptDialog("Error", "Could not rename file: " + e.getMessage());
             }
@@ -765,7 +773,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public enum Mode {
-        Browse, Search, Copy, Move
+        Browse, Search
+    }
+
+    public enum OperationMode {
+        None, Copy, Move
     }
 
     public void exportFiles(AesFile[] items, IFile exportDir, boolean deleteSource, Consumer<IFile[]> onFinished) {
@@ -973,6 +985,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void clearCopiedFiles() {
         copyFiles = null;
         fileManagerMode = Mode.Browse;
+        operationMode = OperationMode.None;
         setTaskRunning(false, false);
         setTaskMessage("");
     }
