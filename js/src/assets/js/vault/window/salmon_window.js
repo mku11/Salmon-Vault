@@ -69,7 +69,7 @@ export class SalmonWindow {
     }
 
     static async createModal(title, content) {
-		return createWindow(title, content, true);
+		return SalmonWindow.createWindow(title, content, true);
     }
 
 	static async createWindow(title, content, isModal = false) {
