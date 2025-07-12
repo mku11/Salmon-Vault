@@ -73,6 +73,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public static final int REQUEST_IMPORT_AUTH_FILE = 1004;
     public static final int REQUEST_EXPORT_AUTH_FILE = 1005;
     public static final int REQUEST_IMPORT_FOLDER = 1006;
+    public static final long PROGRESS_TIME_INTERVAL = 500; // ms
 
     private static final ExecutorService executor = Executors.newFixedThreadPool(2);
 
@@ -103,6 +104,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public Consumer<AesFile> updateListItem;
     public BiConsumer<Integer, AesFile> onFileItemRemoved;
     public BiConsumer<Integer, AesFile> onFileItemAdded;
+
+    private long lastTimeProgress = 0;
 
     protected static SalmonVaultManager instance;
     private INonceSequencer sequencer = null;
@@ -481,19 +484,22 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 FileCommander.BatchDeleteOptions deleteOptions = new FileCommander.BatchDeleteOptions();
                 deleteOptions.onProgressChanged = (taskProgress) ->
                 {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
-                            if (taskProgress.getProcessedBytes() != taskProgress.getTotalBytes()) {
-                                setTaskMessage("Deleting: " + taskProgress.getFile().getName()
-                                        + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    try {
+                        if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+                            setTaskMessage("Deleting: " + taskProgress.getFile().getName()
+                                            + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
+                            processedFiles[0] = taskProgress.getProcessedFiles();
                         }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
+
+                        long ctime = System.currentTimeMillis();
+                        if (ctime - lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                            lastTimeProgress = ctime;
+                            setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
+                            setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
-                    setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
                 };
                 deleteOptions.onFailed = (file, ex) ->
                 {
@@ -545,17 +551,23 @@ public class SalmonVaultManager implements IPropertyNotifier {
             copyOptions.move = move;
             copyOptions.onProgressChanged = (taskProgress) ->
             {
-                if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                    try {
+                try {
+                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                         setTaskMessage(action + ": " + taskProgress.getFile().getName()
-                                + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                                + " " + (taskProgress.getProcessedFiles() + 1)
+                                + "/" + taskProgress.getTotalFiles());
+                        processedFiles[0] = taskProgress.getProcessedFiles();
                     }
-                    processedFiles[0] = taskProgress.getProcessedFiles();
+
+                    long ctime = System.currentTimeMillis();
+                    if (ctime - lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                        lastTimeProgress = ctime;
+                        setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
+                        setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
-                setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
             };
             copyOptions.onFailed = (file, ex) ->
             {
@@ -800,18 +812,24 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 exportOptions.autoRename = IFile.autoRename;
                 exportOptions.onProgressChanged = (taskProgress) ->
                 {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
+                    try {
+                        if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                             setTaskMessage("Exporting: " + taskProgress.getFile().getName()
-                                    + " " + (taskProgress.getProcessedFiles() + 1)
-                                    + "/" + taskProgress.getTotalFiles());
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                                        + " " + (taskProgress.getProcessedFiles() + 1)
+                                        + "/" + taskProgress.getTotalFiles());
+
+                            processedFiles[0] = taskProgress.getProcessedFiles();
                         }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
+
+                        long ctime = System.currentTimeMillis();
+                        if (ctime - lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                            lastTimeProgress = ctime;
+                            setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
+                            setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
-                    setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
                 };
                 exportOptions.onFailed = (file, ex) ->
                 {
@@ -867,17 +885,23 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 importOptions.integrity = true;
                 importOptions.onProgressChanged = (taskProgress) ->
                 {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
+                    try {
+                        if (processedFiles[0] < taskProgress.getProcessedFiles()) {
                             setTaskMessage("Importing: " + taskProgress.getFile().getName()
-                                    + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                                    + " " + (taskProgress.getProcessedFiles() + 1)
+                                    + "/" + taskProgress.getTotalFiles());
+                            processedFiles[0] = taskProgress.getProcessedFiles();
                         }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
+
+                        long ctime = System.currentTimeMillis();
+                        if (ctime - lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                            lastTimeProgress = ctime;
+                            setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
+                            setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
-                    setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
                 };
                 importOptions.onFailed = (file, ex) ->
                 {
