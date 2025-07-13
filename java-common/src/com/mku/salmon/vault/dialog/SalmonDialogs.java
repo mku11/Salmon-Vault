@@ -395,6 +395,7 @@ public class SalmonDialogs {
                                     SalmonVaultManager.getInstance().refresh();
                                 });
                     } catch (Exception e) {
+                        e.printStackTrace();
                         SalmonDialog.promptDialog("Error", "Could not import files: " + e);
                     }
                 }, requestCode);
@@ -473,7 +474,6 @@ public class SalmonDialogs {
                                 SalmonDialog.promptDialog("Error: " + exception.getMessage());
                             }
                         }
-
                     }, currentFilename, true, false, false, null);
         } catch (Exception exception) {
             exception.printStackTrace();
