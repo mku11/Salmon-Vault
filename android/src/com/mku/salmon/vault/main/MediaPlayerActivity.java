@@ -23,7 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import android.content.Context;
 import android.content.res.Configuration;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -92,6 +94,17 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     private boolean looping;
     private float speed = 1.0f;
     private int old_x = 0;
+    private int old_y = 0;
+    private static final int thresholdSeek = 30;
+    private static final int thresholdVolume = 30;
+    private GestureMode gestMode = GestureMode.NONE;
+    private AudioManager audioManager;
+    private int currVolume;
+
+    private enum GestureMode {
+        SEEK, VOLUME, BRIGHTNESS, NONE
+    }
+
     private static final ExecutorService executor = Executors.newFixedThreadPool(2);
 
     public static void setMediaFiles(int position, AesFile[] mediaFiles) {
@@ -209,16 +222,20 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         @Override
         public void run() {
             try {
-                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-                    mSeekBar.setProgress((int) (mediaPlayer.getCurrentPosition() / (float) mediaPlayer.getDuration() * 100));
-                    mTime.setText(getTime(mediaPlayer.getCurrentPosition()));
-                    mTotalTime.setText(getTime(mediaPlayer.getDuration()));
-                } else {
-                    mTime.setText("");
-                    mTotalTime.setText("");
-                }
+                updateTimeControls();
             } catch (Exception ignored) {
             }
+        }
+    }
+
+    private void updateTimeControls() {
+        if (mediaPlayer != null) {
+            mSeekBar.setProgress((int) (mediaPlayer.getCurrentPosition() / (float) mediaPlayer.getDuration() * 100));
+            mTime.setText(getTime(mediaPlayer.getCurrentPosition()));
+            mTotalTime.setText(getTime(mediaPlayer.getDuration()));
+        } else {
+            mTime.setText("");
+            mTotalTime.setText("");
         }
     }
 
@@ -418,14 +435,76 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     }
 
     private void onFingerMove(MotionEvent motionevent) {
+
+        int screenWidth = getWindowManager().getDefaultDisplay().getWidth();
+
         int x_delta = (int) motionevent.getX() - old_x;
+        int y_delta = (int) motionevent.getY() - old_y;
+
         if (motionevent.getAction() == MotionEvent.ACTION_DOWN) {
             old_x = (int) motionevent.getX();
+            old_y = (int) motionevent.getY();
+            currVolume = this.getVolume();
+            gestMode = GestureMode.NONE;
         } else if (motionevent.getAction() == MotionEvent.ACTION_UP) {
-            if (Math.abs(x_delta) > THRESHOLD_SEEK) {
+            if (Math.abs(x_delta) > thresholdSeek
+                    && (gestMode == GestureMode.SEEK)) {
                 onSwipe(x_delta);
             }
+        } else if (motionevent.getAction() == MotionEvent.ACTION_MOVE) {
+            if (Math.abs(x_delta) > thresholdSeek
+                    && (gestMode == GestureMode.SEEK || gestMode == GestureMode.NONE)) {
+                gestMode = GestureMode.SEEK;
+            } else if (Math.abs(y_delta) > thresholdVolume && motionevent.getX() > screenWidth / 2f
+                    && (gestMode == GestureMode.VOLUME || gestMode == GestureMode.NONE)) {
+                gestMode = GestureMode.VOLUME;
+                onVolume(-1 * y_delta);
+            }
         }
+    }
+
+    private void onVolume(int y_delta) {
+        int maxVolume = this.getMaxVolume();
+        int pos = currVolume + y_delta / 50;
+        if (pos <= maxVolume && pos >= 0) {
+            this.setVolume(pos);
+            getAudioManager().adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_SAME,
+                    AudioManager.FLAG_SHOW_UI);
+        }
+    }
+
+
+    public void setVolume(int vol) {
+        try {
+            getAudioManager().setStreamVolume(AudioManager.STREAM_MUSIC, vol, 0);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public int getMaxVolume() {
+        try {
+            return getAudioManager().getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int getVolume() {
+        try {
+            return getAudioManager().getStreamVolume(AudioManager.STREAM_MUSIC);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return 0;
+    }
+
+    public AudioManager getAudioManager() {
+        if (audioManager == null) {
+            audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        }
+        return audioManager;
     }
 
     private void onSwipe(int interval) {
@@ -438,7 +517,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     public void seekDelta(int i) {
         int pos = mediaPlayer.getCurrentPosition() + i;
         mediaPlayer.seekTo(pos);
-
+        updateTimeControls();
     }
 
     private class OnSeekBarChangeListener implements SeekBar.OnSeekBarChangeListener {
