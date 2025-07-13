@@ -396,7 +396,9 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
         if (ext.equals("mp4")) {
             bitmap = Thumbnails.getVideoThumbnail(tmpFile, VIDEO_THUMBNAIL_MSECS * (step + 1), delete);
-        } else if (ext.equals("png") || ext.equals("jpg") || ext.equals("bmp") || ext.equals("webp") || ext.equals("gif")) {
+        } else if (ext.equals("png") || ext.equals("jpg") || ext.equals("jpeg")
+                || ext.equals("bmp") || ext.equals("webp") || ext.equals("gif")
+                || ext.equals("gifv")) {
             bitmap = Thumbnails.getImageThumbnail(salmonFile);
         }
         checkCacheSize();
