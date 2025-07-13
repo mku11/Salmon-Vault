@@ -30,15 +30,12 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
-import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
@@ -52,7 +49,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.mku.android.fs.file.AndroidFile;
 import com.mku.android.fs.file.AndroidFileSystem;
-import com.mku.android.salmonfs.drive.AndroidDrive;
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.fs.file.HttpSyncClient;
 import com.mku.fs.file.IFile;
@@ -80,7 +76,6 @@ import com.mku.salmon.vault.services.ISettingsService;
 import com.mku.salmon.vault.services.IWSFileService;
 import com.mku.salmon.vault.services.IWebBrowserService;
 import com.mku.salmon.vault.services.ServiceLocator;
-import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.auth.AuthException;
 import com.mku.salmonfs.drive.AesDrive;
@@ -88,13 +83,9 @@ import com.mku.salmonfs.drive.utils.AesFileComparators;
 import com.mku.salmonfs.file.AesFile;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -223,7 +214,7 @@ public class SalmonActivity extends AppCompatActivity {
             } else if (propertyName.equals("taskComplete")) {
                 progressBar.hide();
             } else if (propertyName.equals("FileItemList")) {
-                UpdateFileAdapter();
+                updateFileAdapter();
                 adapter.selectAll(false);
                 adapter.setMultiSelect(false);
             } else if (propertyName.equals("CurrentItem")) {
@@ -284,7 +275,7 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    private void UpdateFileAdapter() {
+    private void updateFileAdapter() {
         adapter.resetAnimation();
         fileItemList.clear();
         if (manager.getFileItemList() != null) {
