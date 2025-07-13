@@ -706,12 +706,18 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void renameFile(AesFile file, String newFilename) {
+        renameFile(file, newFilename);
+    }
+
+    public void renameFile(AesFile file, String newFilename, Consumer<AesFile> onRenamed) {
         executor.execute(() -> {
             try {
                 fileCommander.renameFile(file, newFilename);
                 //FIXME: IFile is not reporting the correct length after rename
                 // so we reset here
                 file.getRealFile().reset();
+                if(onRenamed != null)
+                    onRenamed.accept(file);
                 WindowUtils.runOnMainThread(() -> {
                     SalmonVaultManager.getInstance().updateListItem.accept(file);
                 });
