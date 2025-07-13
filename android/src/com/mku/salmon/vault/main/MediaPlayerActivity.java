@@ -60,7 +60,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     private static final int MEDIA_BUFFERS = 2;
 
     // make sure we use a large enough buffer for the MediaDataSource since some videos stall
-    private static final int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    private static final int MEDIA_BUFFER_SIZE = 8 * 1024 * 1024;
 
     private static final int MEDIA_BACKOFFSET = 256 * 1024;
 
