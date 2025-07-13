@@ -336,7 +336,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
             return;
         executor.execute(() ->
         {
-            salmonFiles = currDir.listFiles();
+            if(fileManagerMode == Mode.Browse) {
+                salmonFiles = currDir.listFiles();
+            }
             AesFile selectedFile = selectedFiles.size() > 0 ? selectedFiles.iterator().next() : null;
             populateFileList(selectedFile);
         });
@@ -507,6 +509,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
                     exception[0] = ex;
                 };
                 fileCommander.deleteFiles(files, deleteOptions);
+                if (fileManagerMode == Mode.Search) {
+                    List<AesFile> nFiles = new ArrayList<>(List.of(files));
+                    fileItemList.removeAll(nFiles);
+                    salmonFiles = fileItemList.toArray(new AesFile[0]);
+                }
             } catch (Exception e) {
                 if (!fileCommander.areJobsStopped()) {
                     e.printStackTrace();
@@ -525,7 +532,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
             setTaskRunning(false);
             refresh();
             copyFiles = null;
-            fileManagerMode = Mode.Browse;
             operationMode = OperationMode.None;
         });
     }
@@ -535,6 +541,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
             return;
         if (isJobRunning())
             throw new RuntimeException("Another job is running");
+        if (fileManagerMode != Mode.Browse)
+            throw new RuntimeException("Navigate to a folder before pasting");
         executor.execute(() ->
         {
             setFileProgress(0);
