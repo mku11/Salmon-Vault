@@ -869,7 +869,9 @@ public class SalmonActivity extends AppCompatActivity {
         List<AesFile> salmonFiles = new ArrayList<>();
         int pos = 0;
         int i = 0;
-        for (AesFile file : fileItemList) {
+        // copy the current file list to prevent concurrent modification exceptions
+        List<AesFile> fileList = new ArrayList<>(fileItemList);
+        for (AesFile file : fileList) {
             String filename;
             try {
                 filename = file.getName();
