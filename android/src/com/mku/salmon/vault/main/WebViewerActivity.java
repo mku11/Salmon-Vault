@@ -43,6 +43,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.integrity.IntegrityException;
+import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.InputStreamWrapper;
 import com.mku.salmon.streams.AesStream;
@@ -99,7 +100,7 @@ public class WebViewerActivity extends AppCompatActivity {
         String ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
         String mimeType = null;
         try {
-            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+            mimeType = MimeUtils.getMimeTypeFromExtension(ext);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
