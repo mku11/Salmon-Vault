@@ -706,7 +706,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void renameFile(AesFile file, String newFilename) {
-        renameFile(file, newFilename);
+        renameFile(file, newFilename, null);
     }
 
     public void renameFile(AesFile file, String newFilename, Consumer<AesFile> onRenamed) {
