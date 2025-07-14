@@ -986,6 +986,12 @@ public class SalmonVaultManager implements IPropertyNotifier {
                     e.printStackTrace();
                 }
             };
+            searchOptions.onSearchEvent = (event) -> {
+                if(event == FileSearcher.SearchEvent.SearchingIndex)
+                    setStatus("Searching Index");
+                else if(event == FileSearcher.SearchEvent.SearchingFiles)
+                    setStatus("Searching Files");
+            };
             IVirtualFile[] files = fileCommander.search(currDir, value, searchOptions);
             this.salmonFiles = new AesFile[files.length];
             for (int i = 0; i < files.length; i++)
