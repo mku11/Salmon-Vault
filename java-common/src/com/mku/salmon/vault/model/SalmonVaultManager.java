@@ -358,7 +358,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         {
             selectedFiles.clear();
             try {
-                if (fileManagerMode == Mode.Search)
+                if (fileManagerMode == Mode.Search && searchTerm != null)
                     setPathText(currDir.getPath() + "?search=" + searchTerm);
                 else
                     setPathText(currDir.getPath());
@@ -1001,6 +1001,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             else
                 setStatus("Search Stopped");
             setTaskRunning(false);
+            searchTerm = null;
         });
     }
 
