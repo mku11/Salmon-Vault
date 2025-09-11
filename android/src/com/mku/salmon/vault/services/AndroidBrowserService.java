@@ -72,14 +72,14 @@ public class AndroidBrowserService implements IWebBrowserService
         private String mimeType;
         private String url;
         private long contentLength;
-        private Function<Long, InputStream> GetStream;
+        private Function<Long, InputStream> getStream;
 
-        public SalmonWebViewClient(String url, String mimeType, long contentLength, Function<Long, InputStream> GetStream)
+        public SalmonWebViewClient(String url, String mimeType, long contentLength, Function<Long, InputStream> getStream)
         {
             this.url = url;
             this.mimeType = mimeType;
             this.contentLength = contentLength;
-            this.GetStream = GetStream;
+            this.getStream = getStream;
         }
 
         @Override
@@ -93,7 +93,7 @@ public class AndroidBrowserService implements IWebBrowserService
             }
 
             // Android WebView doesn't support partial content
-            InputStream decStream = GetStream.apply(0L);
+            InputStream decStream = getStream.apply(0L);
             HashMap<String, String> responseHeaders = new HashMap<>();
             responseHeaders.put("Content-Length", contentLength + "");
             responseHeaders.put("Content-Type",  mimeType);
