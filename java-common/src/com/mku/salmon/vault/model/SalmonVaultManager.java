@@ -293,10 +293,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public void stopOperation() {
         fileCommander.cancel();
-        fileManagerMode = Mode.Browse;
         operationMode = OperationMode.None;
-        clearSelectedFiles();
-        clearCopiedFiles();
+        if(fileManagerMode != Mode.Search) {
+            clearSelectedFiles();
+            clearCopiedFiles();
+        }
         fileProgress = 0;
         filesProgress = 0;
         setTaskRunning(false);
