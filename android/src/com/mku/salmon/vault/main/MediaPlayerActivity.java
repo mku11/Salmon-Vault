@@ -45,6 +45,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.mku.android.salmonfs.media.AesMediaDataSource;
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.android.R;
+import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.file.AesFile;
 
@@ -203,7 +204,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
 
     protected void loadContent(AesFile file) throws Exception {
         mTitle.setText(file.getName());
-        if (FileUtils.isAudio(file.getName())) {
+        if (MimeUtils.isAudio(file.getName())) {
             showSeekBar(true);
         }
         executor.submit(() -> {

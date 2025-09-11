@@ -229,7 +229,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                 Bitmap bitmap = null;
                 try {
                     java.io.File tmpFile = null;
-                    if (ext.equals("mp4"))
+                    if (ext.equals("mp4") || ext.equals("gifv") || ext.equals("webm"))
                         tmpFile = Thumbnails.getVideoTmpFile(viewHolder.salmonFile);
                     bitmap = getFileThumbnail(viewHolder.salmonFile, 0, tmpFile, true);
                 } catch (Exception e) {
@@ -256,7 +256,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                         resetAnimation();
                         animationViewHolder = viewHolder;
                         animationViewHolder.animate = true;
-                        if (ext.equals("mp4")) {
+                        if (ext.equals("mp4") || ext.equals("gifv") || ext.equals("webm")) {
                             animateVideo(viewHolder);
                         } else {
                             return false;
@@ -394,11 +394,10 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                                     boolean delete) throws Exception {
         Bitmap bitmap = null;
         String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
-        if (ext.equals("mp4")) {
+        if (ext.equals("mp4") || ext.equals("gifv") || ext.equals("webm")) {
             bitmap = Thumbnails.getVideoThumbnail(tmpFile, VIDEO_THUMBNAIL_MSECS * (step + 1), delete);
         } else if (ext.equals("png") || ext.equals("jpg") || ext.equals("jpeg")
-                || ext.equals("bmp") || ext.equals("webp") || ext.equals("gif")
-                || ext.equals("gifv")) {
+                || ext.equals("bmp") || ext.equals("webp") || ext.equals("gif")) {
             bitmap = Thumbnails.getImageThumbnail(salmonFile);
         }
         checkCacheSize();

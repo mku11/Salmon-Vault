@@ -177,7 +177,7 @@ public class SalmonFileViewModel {
             resetAnimation();
             animationViewModel = this;
             animationViewModel.animate = true;
-            if (getExtText().equals("mp4")) {
+            if (getExtText().equals("mp4") || getExtText().equals("gifv") || getExtText().equals("webm")) {
                 animateVideo();
             }
         }

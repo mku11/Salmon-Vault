@@ -25,11 +25,29 @@ SOFTWARE.
 
 import android.webkit.MimeTypeMap;
 
+import com.mku.fs.drive.utils.FileUtils;
+
 public class MimeUtils
 {
     public static String getMimeTypeFromExtension(String ext) {
         if(ext.toLowerCase().equals("bmp"))
             return "image/bmp";
+        if(ext.toLowerCase().equals("gifv"))
+            return "video/mp4";
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+    }
+
+    public static boolean isVideo(String filename) {
+        String ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
+        return FileUtils.isVideo(filename) || ext.equals("webm") || ext.equals("gifv");
+    }
+
+    public static boolean isImage(String filename) {
+        String ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
+        return FileUtils.isImage(filename);
+    }
+
+    public static boolean isAudio(String filename) {
+        return FileUtils.isAudio(filename);
     }
 }

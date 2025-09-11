@@ -76,6 +76,7 @@ import com.mku.salmon.vault.services.ISettingsService;
 import com.mku.salmon.vault.services.IWSFileService;
 import com.mku.salmon.vault.services.IWebBrowserService;
 import com.mku.salmon.vault.services.ServiceLocator;
+import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.auth.AuthException;
 import com.mku.salmonfs.drive.AesDrive;
@@ -836,10 +837,11 @@ public class SalmonActivity extends AppCompatActivity {
 
     public boolean openListItem(AesFile file) {
         try {
-            if (FileUtils.isVideo(file.getName()) || FileUtils.isAudio(file.getName())) {
+            if (MimeUtils.isVideo(file.getName())
+                    || MimeUtils.isAudio(file.getName())) {
                 startMediaPlayer(fileItemList.indexOf(file));
                 return true;
-            } else if (FileUtils.isImage(file.getName())) {
+            } else if (MimeUtils.isImage(file.getName())) {
                 startWebViewer(fileItemList.indexOf(file));
                 return true;
             } else if (FileUtils.isText(file.getName())) {
@@ -876,7 +878,7 @@ public class SalmonActivity extends AppCompatActivity {
             String filename;
             try {
                 filename = file.getName();
-                if (FileUtils.isVideo(filename) || FileUtils.isAudio(filename)) {
+                if (MimeUtils.isVideo(filename) || MimeUtils.isAudio(filename)) {
                     salmonFiles.add(file);
                 }
                 if (i == position)
@@ -923,7 +925,7 @@ public class SalmonActivity extends AppCompatActivity {
                 try {
                     String listFilename = listFile.getName();
                     if (i != position &&
-                            ((FileUtils.isImage(filename) && FileUtils.isImage(listFilename))
+                            ((MimeUtils.isImage(filename) && MimeUtils.isImage(listFilename))
                                     || (FileUtils.isText(filename) && FileUtils.isText(listFilename)))) {
                         salmonFiles.add(listFile);
                     }
