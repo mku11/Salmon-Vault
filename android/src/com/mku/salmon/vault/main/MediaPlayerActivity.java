@@ -135,7 +135,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     }
 
     protected void playNext() {
-        if (pos <= videos.length) {
+        if (pos < videos.length-1) {
             pos++;
             loadContentAsync();
         }
@@ -219,25 +219,41 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         });
     }
 
-    private class MediaPlayerTimerTask extends TimerTask {
+    private class Timer extends Thread {
+        private boolean quit = false;
+
         @Override
         public void run() {
-            try {
+            while (!quit) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
+                }
                 updateTimeControls();
-            } catch (Exception ignored) {
             }
+        }
+
+        public void cancel() {
+            quit = true;
+            interrupt();
         }
     }
 
     private void updateTimeControls() {
-        if (mediaPlayer != null) {
-            mSeekBar.setProgress((int) (mediaPlayer.getCurrentPosition() / (float) mediaPlayer.getDuration() * 100));
-            mTime.setText(getTime(mediaPlayer.getCurrentPosition()));
-            mTotalTime.setText(getTime(mediaPlayer.getDuration()));
-        } else {
-            mTime.setText("");
-            mTotalTime.setText("");
-        }
+        WindowUtils.runOnMainThread(() -> {
+            try {
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                    mSeekBar.setProgress((int) (mediaPlayer.getCurrentPosition() / (float) mediaPlayer.getDuration() * 100));
+                    mTime.setText(getTime(mediaPlayer.getCurrentPosition()));
+                    mTotalTime.setText(getTime(mediaPlayer.getDuration()));
+                } else {
+                    mTime.setText("");
+                    mTotalTime.setText("");
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
     }
 
     private String getTime(int time) {
@@ -260,22 +276,22 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     }
 
     private void fitToWindow() {
-		try {
-			RelativeLayout parent = (RelativeLayout) mSurfaceView.getParent();
-			if (parent.getWidth() == 0 || parent.getHeight() == 0)
-				return;
-			ViewGroup.LayoutParams layoutParams = mSurfaceView.getLayoutParams();
-			if (mediaPlayer.getVideoWidth() / (float) mediaPlayer.getVideoHeight() > parent.getWidth() / (float) parent.getHeight()) {
-				layoutParams.width = parent.getWidth();
-				layoutParams.height = (int) (parent.getWidth() / (float) mediaPlayer.getVideoWidth() * mediaPlayer.getVideoHeight());
-			} else {
-				layoutParams.height = parent.getHeight();
-				layoutParams.width = (int) (parent.getHeight() / (float) mediaPlayer.getVideoHeight() * mediaPlayer.getVideoWidth());
-			}
-			mSurfaceView.setLayoutParams(layoutParams);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
+        try {
+            RelativeLayout parent = (RelativeLayout) mSurfaceView.getParent();
+            if (parent.getWidth() == 0 || parent.getHeight() == 0)
+                return;
+            ViewGroup.LayoutParams layoutParams = mSurfaceView.getLayoutParams();
+            if (mediaPlayer.getVideoWidth() / (float) mediaPlayer.getVideoHeight() > parent.getWidth() / (float) parent.getHeight()) {
+                layoutParams.width = parent.getWidth();
+                layoutParams.height = (int) (parent.getWidth() / (float) mediaPlayer.getVideoWidth() * mediaPlayer.getVideoHeight());
+            } else {
+                layoutParams.height = parent.getHeight();
+                layoutParams.width = (int) (parent.getHeight() / (float) mediaPlayer.getVideoHeight() * mediaPlayer.getVideoWidth());
+            }
+            mSurfaceView.setLayoutParams(layoutParams);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override
@@ -318,9 +334,8 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         if (timer != null) {
             timer.cancel();
         }
-        TimerTask timerTask = new MediaPlayerTimerTask();
         timer = new Timer();
-        timer.schedule(timerTask, 1000, 1000);
+        timer.start();
         updateControls();
     }
 
