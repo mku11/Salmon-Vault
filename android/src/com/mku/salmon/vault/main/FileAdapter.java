@@ -390,6 +390,14 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         onCacheCleared.run();
     }
 
+    public void removeCache(AesFile file) {
+        if (bitmapCache.containsKey(file)) {
+            if(bitmapCache.get(file) != null)
+                cacheSize -= bitmapCache.get(file).getAllocationByteCount();
+            bitmapCache.remove(file);
+        }
+    }
+
     private Bitmap getFileThumbnail(AesFile salmonFile, int step, java.io.File tmpFile,
                                     boolean delete) throws Exception {
         Bitmap bitmap = null;
@@ -506,5 +514,13 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         if (animationViewHolder != null)
             animationViewHolder.animate = false;
         animationViewHolder = null;
+    }
+
+    public void notifyItemChanged(int position, boolean clearCache) {
+        if(clearCache) {
+            AesFile salmonFile = items.get(position);
+            removeCache(salmonFile);
+        }
+        super.notifyItemChanged(position);
     }
 }

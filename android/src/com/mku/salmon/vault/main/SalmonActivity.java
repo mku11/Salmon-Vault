@@ -204,7 +204,7 @@ public class SalmonActivity extends AppCompatActivity {
     private void updateListItem(AesFile file) {
         int index = fileItemList.indexOf(file);
         if (index >= 0)
-            adapter.notifyItemChanged(index);
+            adapter.notifyItemChanged(index, true);
     }
 
     private void manager_PropertyChanged(Object owner, String propertyName) {
