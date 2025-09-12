@@ -390,10 +390,8 @@ public class SalmonDialogs {
                         if (parent != null && parent.getPath() != null)
                             SalmonSettings.getInstance().setLastImportDir(parent.getPath());
                         SalmonVaultManager.getInstance().importFiles(filesToImport,
-                                SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (AesFile[] importedFiles) ->
-                                {
-                                    SalmonVaultManager.getInstance().refresh();
-                                });
+                                SalmonVaultManager.getInstance().getCurrDir(),
+                                SalmonSettings.getInstance().isDeleteAfterImport(), null);
                     } catch (Exception e) {
                         e.printStackTrace();
                         SalmonDialog.promptDialog("Error", "Could not import files: " + e);
@@ -419,10 +417,8 @@ public class SalmonDialogs {
                             SalmonSettings.getInstance().setLastImportDir(folder.getPath());
                         }
                         SalmonVaultManager.getInstance().importFiles(new IFile[]{folder},
-                                SalmonVaultManager.getInstance().getCurrDir(), SalmonSettings.getInstance().isDeleteAfterImport(), (AesFile[] importedFiles) ->
-                                {
-                                    SalmonVaultManager.getInstance().refresh();
-                                });
+                                SalmonVaultManager.getInstance().getCurrDir(),
+                                SalmonSettings.getInstance().isDeleteAfterImport(), null);
                     } catch (Exception e) {
                         SalmonDialog.promptDialog("Error", "Could not import folder: " + e);
                     }

@@ -86,6 +86,8 @@ import com.mku.salmonfs.file.AesFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -220,6 +222,20 @@ public class SalmonActivity extends AppCompatActivity {
                 adapter.setMultiSelect(false);
             } else if (propertyName.equals("CurrentItem")) {
                 selectItem(manager.getCurrentItem());
+            } else if (propertyName.equals("SelectedFiles")) {
+                if(adapter.getSelectedFiles() != null) {
+                    List<Integer> selectedIndexes = new ArrayList<>();
+                    for(int i=0; i<fileItemList.size(); i++) {
+                        if(adapter.getSelectedFiles().contains(fileItemList.get(i)))
+                            selectedIndexes.add(i);
+                        if(manager.getSelectedFiles().contains(fileItemList.get(i)))
+                            selectedIndexes.add(i);
+                    }
+                    adapter.getSelectedFiles().clear();
+                    adapter.getSelectedFiles().addAll(manager.getSelectedFiles());
+                    for(int idx : selectedIndexes)
+                        adapter.notifyItemChanged(idx);
+                }
             } else if (propertyName.equals("Status")) {
                 statusText.setText(manager.getStatus());
             } else if (propertyName.equals("IsJobRunning")) {
@@ -268,7 +284,7 @@ public class SalmonActivity extends AppCompatActivity {
     }
 
     private void Adapter_PropertyChanged(Object owner, String propertyName) {
-        if (propertyName == "SelectedFiles") {
+        if (propertyName.equals("SelectedFiles")) {
             manager.getSelectedFiles().clear();
             for (AesFile file : adapter.getSelectedFiles())
                 manager.getSelectedFiles().add(file);
@@ -288,19 +304,41 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    private void fileItemRemoved(int position, AesFile file) {
+    private void fileItemRemoved(final int position, AesFile file) {
         WindowUtils.runOnMainThread(() ->
         {
-            fileItemList.remove(position);
-            adapter.notifyItemRemoved(position);
+            int pos = position;
+            if(pos == -1) {
+                for(int i=0; i<fileItemList.size(); i++) {
+                    if (fileItemList.get(i).getRealPath().equals(file.getRealPath())) {
+                        pos = i;
+                        break;
+                    }
+                }
+            }
+            if(pos >=0) {
+                fileItemList.remove(pos);
+                adapter.notifyItemRemoved(pos);
+            }
         });
     }
 
     private void fileItemAdded(int position, AesFile file) {
         WindowUtils.runOnMainThread(() ->
         {
-            fileItemList.add(position, file);
-            adapter.notifyItemInserted(position);
+            int pos = position;
+            if(pos == -1) {
+                for(int i=0; i<fileItemList.size(); i++) {
+                    if (fileItemList.get(i).getRealPath().equals(file.getRealPath())) {
+                        pos = i;
+                        break;
+                    }
+                }
+            }
+            if(pos >=0) {
+                fileItemList.add(position, file);
+                adapter.notifyItemInserted(position);
+            }
         });
     }
 
@@ -688,7 +726,7 @@ public class SalmonActivity extends AppCompatActivity {
 
     private void exportSelectedFiles(boolean deleteSource) {
         try {
-            manager.setSelectedFiles(adapter.getSelectedFiles());
+            manager.setSelectedFiles((HashSet<AesFile>) adapter.getSelectedFiles().clone());
             SalmonDialogs.promptExportFolder("Select folder to export to",
                     SalmonVaultManager.REQUEST_EXPORT_DIR, deleteSource);
         } catch (AuthException e) {

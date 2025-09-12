@@ -248,8 +248,6 @@ public class SalmonFileProvider extends DocumentsProvider {
                                                 return;
                                             importedAesFiles[0].rename(finalFilename);
                                             file.delete();
-                                            if (getManager().getDrive() != null)
-                                                getManager().refresh();
                                         } catch (Exception ex) {
                                             ex.printStackTrace();
                                             throw new RuntimeException("Could not reimport file: " + ex.getMessage());

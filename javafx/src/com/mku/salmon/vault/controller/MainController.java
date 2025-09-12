@@ -211,7 +211,7 @@ public class MainController {
             } else {
                 cancelVisibility.setValue(manager.isJobRunning());
             }
-        } else if (propertyName == "IsJobRunning") {
+        } else if (propertyName.equals("IsJobRunning")) {
             WindowUtils.runOnMainThread(() ->
             {
                 if (manager.getFileManagerMode() != SalmonVaultManager.Mode.Search) {

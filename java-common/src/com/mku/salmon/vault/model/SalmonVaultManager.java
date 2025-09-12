@@ -483,6 +483,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             Exception[] exception = new Exception[]{null};
             int[] processedFiles = new int[]{-1};
             List<AesFile> failedFiles = new ArrayList<>();
+            List<IVirtualFile> deletedFiles = new ArrayList<>();
             try {
                 FileCommander.BatchDeleteOptions deleteOptions = new FileCommander.BatchDeleteOptions();
                 deleteOptions.onProgressChanged = (taskProgress) ->
@@ -499,6 +500,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
                             lastTimeProgress = ctime;
                             setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
                             setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
+                        }
+                        if (taskProgress.getProcessedBytes() == taskProgress.getTotalBytes()) {
+                            deletedFiles.add(taskProgress.getFile());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -528,10 +532,23 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 SalmonDialog.promptDialog("Delete", "Some files failed: " + exception[0].getMessage());
             } else
                 setTaskMessage("Delete Complete");
+            if(deletedFiles.size() < 20) {
+                for (IVirtualFile deletedFile : deletedFiles) {
+                    onFileItemRemoved.accept(-1, (AesFile) deletedFile);
+                }
+            } else {
+                try {
+                    if (drive != null && files[0] != null && files[0].getParent() != null
+                            && currDir.getPath().equals(files[0].getParent().getPath())) {
+                        refresh();
+                    }
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
             setFileProgress(1);
             setFilesProgress(1);
             setTaskRunning(false);
-            refresh();
             copyFiles = null;
             operationMode = OperationMode.None;
         });
@@ -614,9 +631,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
             return;
         exportFiles(selectedFiles.toArray(new AesFile[0]), exportDir, deleteSource, (files) ->
         {
-            refresh();
+            clearSelectedFiles();
         });
-        clearSelectedFiles();
     }
 
     private void clearSelectedFiles() {
@@ -820,6 +836,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             int[] processedFiles = new int[]{-1};
             IFile[] files = null;
             List<AesFile> failedFiles = new ArrayList<>();
+            List<IVirtualFile> exportedFiles = new ArrayList<>();
             try {
                 FileCommander.BatchExportOptions exportOptions = new FileCommander.BatchExportOptions();
                 exportOptions.deleteSource = deleteSource;
@@ -841,6 +858,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
                             lastTimeProgress = ctime;
                             setFileProgress(taskProgress.getProcessedBytes() / (double) taskProgress.getTotalBytes());
                             setFilesProgress(taskProgress.getProcessedFiles() / (double) taskProgress.getTotalFiles());
+                        }
+                        if (taskProgress.getProcessedBytes() == taskProgress.getTotalBytes()) {
+                            exportedFiles.add(taskProgress.getFile());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -868,7 +888,22 @@ public class SalmonVaultManager implements IPropertyNotifier {
             setFileProgress(1);
             setFilesProgress(1);
             setTaskRunning(false);
-            refresh();
+            if(deleteSource) {
+                if (exportedFiles.size() < 20) {
+                    for (IVirtualFile deletedFile : exportedFiles) {
+                        onFileItemRemoved.accept(-1, (AesFile) deletedFile);
+                    }
+                } else {
+                    try {
+                        if (drive != null && items[0] != null && items[0].getParent() != null
+                                && currDir.getRealPath().equals(items[0].getParent().getRealPath())) {
+                            refresh();
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
         });
     }
 
@@ -942,7 +977,12 @@ public class SalmonVaultManager implements IPropertyNotifier {
             setFileProgress(1);
             setFilesProgress(1);
             setTaskRunning(false);
-            refresh();
+            try {
+                if (drive != null && currDir.getRealPath().equals(importDir.getRealPath()))
+                    refresh();
+            } catch(Exception ex) {
+                ex.printStackTrace();
+            }
         });
     }
 
