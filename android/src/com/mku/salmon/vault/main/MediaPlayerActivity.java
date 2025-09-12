@@ -416,7 +416,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     }
 
     private void resize(int delay) {
-        new Handler(Looper.getMainLooper()).postDelayed(this::fitToWindow, delay);
+        WindowUtils.runOnMainThread(()->fitToWindow(), delay);
     }
 
     private void toggleSeekBar() {
