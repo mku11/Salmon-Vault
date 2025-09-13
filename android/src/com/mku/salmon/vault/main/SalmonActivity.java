@@ -232,7 +232,11 @@ public class SalmonActivity extends AppCompatActivity {
                             selectedIndexes.add(i);
                     }
                     adapter.getSelectedFiles().clear();
-                    adapter.getSelectedFiles().addAll(manager.getSelectedFiles());
+                    if(manager.getSelectedFiles().size() > 0) {
+                        adapter.getSelectedFiles().addAll(manager.getSelectedFiles());
+                    } else {
+                        adapter.setMultiSelect(false);
+                    }
                     for(int idx : selectedIndexes)
                         adapter.notifyItemChanged(idx);
                 }
