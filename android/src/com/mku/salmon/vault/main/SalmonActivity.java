@@ -945,7 +945,7 @@ public class SalmonActivity extends AppCompatActivity {
 
     private void startTextViewer(AesFile salmonFile) {
         try {
-            if (salmonFile.getLength() > 1 * 1024 * 1024) {
+            if (salmonFile.getLength() > 5 * 1024 * 1024) {
                 Toast.makeText(this, "File too large", Toast.LENGTH_LONG).show();
                 return;
             }
