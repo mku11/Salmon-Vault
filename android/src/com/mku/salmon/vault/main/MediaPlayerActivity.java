@@ -46,12 +46,11 @@ import com.mku.android.salmonfs.media.AesMediaDataSource;
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.utils.MimeUtils;
+import com.mku.salmon.vault.utils.Timer;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.file.AesFile;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -219,26 +218,6 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         });
     }
 
-    private class Timer extends Thread {
-        private boolean quit = false;
-
-        @Override
-        public void run() {
-            while (!quit) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {
-                }
-                updateTimeControls();
-            }
-        }
-
-        public void cancel() {
-            quit = true;
-            interrupt();
-        }
-    }
-
     private void updateTimeControls() {
         WindowUtils.runOnMainThread(() -> {
             try {
@@ -334,7 +313,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         if (timer != null) {
             timer.cancel();
         }
-        timer = new Timer();
+        timer = new Timer(()->updateTimeControls(), 1000);
         timer.start();
         updateControls();
     }
