@@ -54,7 +54,7 @@ import { TextEditorController } from "./text_editor_controller.js";
 import { SettingsController } from "./settings_controller.js";
 import { MediaPlayerController } from "./media_player_controller.js";
 import { PdfViewerController } from "./pdf_viewer_controller.js";
-import { MimeUtils } from "../../common/utils/mime_utils.js";
+import { MimeUtils } from "../../vault/utils/mime_utils.js";
 
 export class MainController {
     static MAX_TEXT_FILE = 1 * 1024 * 1024;
