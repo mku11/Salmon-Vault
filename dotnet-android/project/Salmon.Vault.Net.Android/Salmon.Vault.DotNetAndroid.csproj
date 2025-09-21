@@ -58,6 +58,7 @@
 			<Link>Utils\WindowUtils.cs</Link>
 		</Compile>
 		<Compile Include="..\..\src\Utils\URLUtils.cs" Link="Utils\URLUtils.cs" />
+		<Compile Include="..\..\src\Utils\MimeUtils.cs" Link="Utils\MimeUtils.cs" />
 		<Compile Include="..\..\src\Provider\SalmonFileProvider.cs">
 			<Link>Provider\SalmonFileProvider.cs</Link>
 		</Compile>

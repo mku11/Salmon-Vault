@@ -698,7 +698,7 @@ public class SalmonActivity : AppCompatActivity
             }
             sharedFile.DeleteOnExit();
             string ext = FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
-            string mimeType = MimeTypeMap.Singleton.GetMimeTypeFromExtension(ext);
+            string mimeType = MimeUtils.GetMimeTypeFromExtension(ext);
             Android.Net.Uri uri = FileProvider.GetUriForFile(this, SalmonConfig.FILE_PROVIDER, sharedFile);
             ShareCompat.IntentBuilder builder = ShareCompat.IntentBuilder.From(this).SetType(mimeType);
 

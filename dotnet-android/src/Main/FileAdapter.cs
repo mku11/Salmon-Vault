@@ -226,7 +226,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                 try
                 {
                     Java.IO.File tmpFile = null;
-                    if (ext.Equals("mp4"))
+                    if (MimeUtils.IsVideo(filename))
                         tmpFile = Thumbnails.GetVideoTmpFile(viewHolder.salmonFile);
                     bitmap = GetFileThumbnail(viewHolder.salmonFile, 0, tmpFile, true);
                 }
@@ -259,7 +259,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                     ResetAnimation();
                     animationViewHolder = viewHolder;
                     animationViewHolder.animate = true;
-                    if (ext.Equals("mp4"))
+                    if (MimeUtils.IsVideo(filename))
                     {
                         AnimateVideo(viewHolder);
                     }
@@ -435,11 +435,11 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     {
         Bitmap bitmap = null;
         string ext = FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
-        if (ext.Equals("mp4"))
+        if (MimeUtils.IsVideo(salmonFile.Name))
         {
             bitmap = Thumbnails.GetVideoThumbnail(tmpFile, VIDEO_THUMBNAIL_MSECS * (step + 1), delete);
         }
-        else if (ext.Equals("png") || ext.Equals("jpg") || ext.Equals("bmp") || ext.Equals("webp") || ext.Equals("gif"))
+        else if (MimeUtils.IsImage(salmonFile.Name))
         {
             bitmap = Thumbnails.GetImageThumbnail(salmonFile);
         }
