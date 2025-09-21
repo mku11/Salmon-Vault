@@ -205,8 +205,8 @@ public class MainController {
             WindowUtils.runOnMainThread(() -> status.setValue(manager.getStatus()));
             if (manager.isJobRunning()
                     || table.getSelectionModel().getSelectedCells().size() > 0
-                    || manager.getFileManagerMode() == SalmonVaultManager.Mode.Copy
-                    || manager.getFileManagerMode() == SalmonVaultManager.Mode.Move) {
+                    || manager.getOperationMode() == SalmonVaultManager.OperationMode.Copy
+                    || manager.getOperationMode() == SalmonVaultManager.OperationMode.Move) {
                 cancelVisibility.setValue(true);
             } else {
                 cancelVisibility.setValue(manager.isJobRunning());
