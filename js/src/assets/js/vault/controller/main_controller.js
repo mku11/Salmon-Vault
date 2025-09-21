@@ -54,6 +54,7 @@ import { TextEditorController } from "./text_editor_controller.js";
 import { SettingsController } from "./settings_controller.js";
 import { MediaPlayerController } from "./media_player_controller.js";
 import { PdfViewerController } from "./pdf_viewer_controller.js";
+import { MimeUtils } from "../../common/utils/mime_utils.js";
 
 export class MainController {
     static MAX_TEXT_FILE = 1 * 1024 * 1024;
@@ -477,13 +478,13 @@ export class MainController {
     async OpenListItem(file, self) {
         let vm = self.getViewModel(file);
         try {
-            if (FileUtils.isVideo(await file.getName())) {
+            if (MimeUtils.isVideo(await file.getName())) {
                 self.startMediaPlayer(vm);
                 return true;
-            } else if (FileUtils.isAudio(await file.getName())) {
+            } else if (MimeUtils.isAudio(await file.getName())) {
                 self.startMediaPlayer(vm);
                 return true;
-            } else if (FileUtils.isImage(await file.getName())) {
+            } else if (MimeUtils.isImage(await file.getName())) {
                 self.startImageViewer(vm);
                 return true;
             } else if (FileUtils.isText(await file.getName())) {
