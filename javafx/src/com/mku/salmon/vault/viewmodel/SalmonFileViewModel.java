@@ -26,6 +26,7 @@ SOFTWARE.
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.utils.ByteUtils;
+import com.mku.salmon.vault.utils.MimeUtils;
 
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.file.AesFile;
@@ -177,7 +178,7 @@ public class SalmonFileViewModel {
             resetAnimation();
             animationViewModel = this;
             animationViewModel.animate = true;
-            if (getExtText().equals("mp4") || getExtText().equals("gifv") || getExtText().equals("webm")) {
+            if (MimeUtils.isVideo(salmonFile.getName())) {
                 animateVideo();
             }
         }

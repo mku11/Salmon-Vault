@@ -28,6 +28,7 @@ import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.streams.AesStream;
 import com.mku.salmon.vault.io.AesSeekableByteChannel;
 import com.mku.salmon.vault.utils.WindowUtils;
+import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.InputStreamWrapper;
 import com.mku.streams.MemoryStream;
@@ -193,7 +194,7 @@ public class Thumbnails {
         executor.execute(() -> {
             try {
                 ThumbnailTask task1 = tasks.take();
-                if (FileUtils.isVideo(task1.file.getName()))
+                if (MimeUtils.isVideo(task1.file.getName()))
                     videoThumbExecutor.execute(() -> {
                         generateThumbnail(task1);
                     });
@@ -262,7 +263,7 @@ public class Thumbnails {
         Image image = null;
         try {
             if (task.file.isFile()
-                    && (FileUtils.isImage(task.file.getName()) || FileUtils.isVideo(task.file.getName()))) {
+                    && (MimeUtils.isImage(task.file.getName()) || MimeUtils.isVideo(task.file.getName()))) {
                 image = Thumbnails.fromFile(task.file);
             }
             if (image == null)
@@ -302,7 +303,7 @@ public class Thumbnails {
         Image image = null;
         try {
             String ext = FileUtils.getExtensionFromFileName(file.getName()).toLowerCase();
-            if (FileUtils.isImage(file.getName())) {
+            if (MimeUtils.isImage(file.getName())) {
                 if (ext.equals("gif") && file.getLength() > TMP_GIF_THUMB_MAX_SIZE)
                     stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(file, TMP_GIF_THUMB_MAX_SIZE)), BUFFER_SIZE);
                 else
