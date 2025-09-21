@@ -247,6 +247,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     private AesFile[] salmonFiles;
     private string searchTerm;
     public Mode FileManagerMode { get; private set; } = Mode.Browse;
+	public OperationMode FileManagerOperationMode = OperationMode.None;
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -293,6 +294,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         fileCommander.Cancel();
         FileManagerMode = Mode.Browse;
+		FileManagerOperationMode = OperationMode.None;
         ClearSelectedFiles();
         ClearCopiedFiles();
         FileProgress = 0;
@@ -305,7 +307,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         if (IsJobRunning)
             throw new Exception("Another Job is Running");
-        FileManagerMode = Mode.Copy;
+        FileManagerOperationMode = OperationMode.Copy;
         copyFiles = SelectedFiles.ToArray();
         SetTaskRunning(true, false);
         SetTaskMessage(copyFiles.Length + " Items selected for copy");
@@ -315,7 +317,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         if (IsJobRunning)
             throw new Exception("Another Job is Running");
-        FileManagerMode = Mode.Move;
+        FileManagerOperationMode = OperationMode.Move;
         copyFiles = SelectedFiles.ToArray();
         SetTaskRunning(true, false);
         SetTaskMessage(copyFiles.Length + " Items selected for move");
@@ -420,7 +422,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         if (IsJobRunning)
             throw new Exception("Another Job is Running");
-        CopySelectedFiles(FileManagerMode == Mode.Move);
+        CopySelectedFiles(FileManagerOperationMode == Mode.Move);
     }
 
     public void SetTaskRunning(bool value, bool progress = true)
@@ -553,6 +555,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             SetTaskRunning(false);
             copyFiles = null;
             FileManagerMode = Mode.Browse;
+			FileManagerOperationMode = OperationMode.None;
         });
     }
 
@@ -624,6 +627,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             Refresh();
             copyFiles = null;
             FileManagerMode = Mode.Browse;
+			FileManagerOperationMode = OperationMode.None;
         });
     }
 
@@ -847,9 +851,13 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public enum Mode
     {
-        Browse, Search, Copy, Move
+        Browse, Search
     }
 
+    public enum OperationMode {
+        None, Copy, Move
+    }
+	
     public void ExportFiles(AesFile[] items, IFile exportDir, bool deleteSource, Action<IFile[]> OnFinished)
     {
         if (IsJobRunning)
@@ -1073,6 +1081,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         copyFiles = null;
         FileManagerMode = Mode.Browse;
+		FileManagerOperationMode = OperationMode.None;
         SetTaskRunning(false, false);
         SetTaskMessage("");
     }

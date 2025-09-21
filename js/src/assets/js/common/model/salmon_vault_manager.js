@@ -237,9 +237,14 @@ export class SalmonVaultManager extends IPropertyNotifier {
     salmonFiles;
     searchTerm;
     fileManagerMode = SalmonVaultManager.Mode.Browse;
+	fileManagerOperationMode = SalmonVaultManager.Mode.Browse;
 
     getFileManagerMode() {
         return this.fileManagerMode;
+    }
+	
+	getFileManagerOperationMode() {
+        return this.fileManagerOperationMode;
     }
 
     constructor() {
@@ -272,13 +277,14 @@ export class SalmonVaultManager extends IPropertyNotifier {
     stopOperation() {
         this.fileCommander.cancel();
         this.fileManagerMode = SalmonVaultManager.Mode.Browse;
+		this.fileManagerOperationMode = SalmonVaultManager.OperationMode.None;
         this.setTaskRunning(false);
     }
 
     copySelectedFiles() {
         if (this.isJobRunning())
             throw new Error("Another Job is Running");
-        this.fileManagerMode = SalmonVaultManager.Mode.Copy;
+        this.fileManagerOperationMode = SalmonVaultManager.OperationMode.Copy;
         this.copyFiles = Array.from(this.selectedFiles);
         this.setTaskRunning(true, false);
         this.setTaskMessage(this.copyFiles.length + " Items selected for copy");
@@ -287,7 +293,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     cutSelectedFiles() {
         if (this.isJobRunning())
             throw new Error("Another Job is Running");
-        this.fileManagerMode = SalmonVaultManager.Mode.Move;
+        this.fileManagerOperationMode = SalmonVaultManager.OperationMode.Move;
         this.copyFiles = Array.from(this.selectedFiles);
         this.setTaskRunning(true, false);
         this.setTaskMessage(this.copyFiles.length + " Items selected for move");
@@ -369,7 +375,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     pasteSelected() {
-        this.#copySelectedFiles(this.fileManagerMode == SalmonVaultManager.Mode.Move);
+        this.#copySelectedFiles(this.fileManagerOperationMode == SalmonVaultManager.OperationMode.Move);
     }
 
     setTaskRunning(value, progress = true) {
@@ -483,6 +489,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
             this.setTaskRunning(false);
             this.copyFiles = null;
             this.fileManagerMode = SalmonVaultManager.Mode.Browse;
+			this.fileManagerOperationMode = SalmonVaultManager.OperationMode.None;
         });
     }
 
@@ -540,6 +547,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
             await this.refresh();
             this.copyFiles = null;
             this.fileManagerMode = SalmonVaultManager.Mode.Browse;
+			this.fileManagerOperationMode = SalmonVaultManager.OperationMode.None;
         });
     }
 
@@ -719,7 +727,11 @@ export class SalmonVaultManager extends IPropertyNotifier {
 
     static Mode = {
         Browse: 'Browse',
-        Search: 'Search',
+        Search: 'Search'
+    }
+	
+	static OperationMode = {
+        None: 'None',
         Copy: 'Copy',
         Move: 'Move'
     }
@@ -906,6 +918,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     clearCopiedFiles() {
         this.copyFiles = null;
         this.fileManagerMode = SalmonVaultManager.Mode.Browse;
+		this.fileManagerOperationMode = SalmonVaultManager.OperationMode.None;
         this.setTaskRunning(false, false);
         this.setTaskMessage("");
     }

@@ -423,8 +423,8 @@ public class SalmonActivity : AppCompatActivity
         }
 
         // Operations
-        if (!manager.IsJobRunning && (manager.FileManagerMode == SalmonVaultManager.Mode.Copy
-                || manager.FileManagerMode == SalmonVaultManager.Mode.Move))
+        if (!manager.IsJobRunning && (manager.FileManagerOperationMode == SalmonVaultManager.OperationMode.Copy
+                || manager.FileManagerOperationMode == SalmonVaultManager.OperationMode.Move))
         {
             menu.Add(5, ActionType.PASTE.Ordinal(), 0, Resources.GetString(Resource.String.Paste))
                     .SetIcon(Resource.Drawable.file_paste_small)
@@ -435,8 +435,8 @@ public class SalmonActivity : AppCompatActivity
         }
         if (manager.IsJobRunning
                 || adapter.SelectedFiles.Count > 0
-                || manager.FileManagerMode == SalmonVaultManager.Mode.Copy
-                || manager.FileManagerMode == SalmonVaultManager.Mode.Move)
+                || manager.FileManagerOperationMode == SalmonVaultManager.OperationMode.Copy
+                || manager.FileManagerOperationMode == SalmonVaultManager.OperationMode.Move)
         {
             menu.Add(5, ActionType.STOP.Ordinal(), 0, Resources.GetString(Resource.String.Cancel))
                     .SetIcon(Resource.Drawable.cancel_small)
@@ -451,8 +451,8 @@ public class SalmonActivity : AppCompatActivity
             if (adapter.GetMode() != FileAdapter.Mode.MULTI_SELECT
                     && !manager.IsJobRunning)
             {
-                if (manager.FileManagerMode != SalmonVaultManager.Mode.Copy
-                        && manager.FileManagerMode != SalmonVaultManager.Mode.Move)
+                if (manager.FileManagerOperationMode != SalmonVaultManager.OperationMode.Copy
+                        && manager.FileManagerOperationMode != SalmonVaultManager.OperationMode.Move)
                 {
                     menu.Add(5, ActionType.IMPORT_FILES.Ordinal(), 0, Resources.GetString(Resource.String.ImportFiles))
                             .SetIcon(Resource.Drawable.import_file_small)
