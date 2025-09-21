@@ -61,7 +61,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     public static readonly int REQUEST_IMPORT_AUTH_FILE = 1004;
     public static readonly int REQUEST_EXPORT_AUTH_FILE = 1005;
     public static readonly int REQUEST_IMPORT_FOLDER = 1006;
-	public static final long PROGRESS_TIME_INTERVAL = 500; // ms
+	public static readonly long PROGRESS_TIME_INTERVAL = 500; // ms
 
     public bool PromptExitOnBack { get; set; }
 
@@ -426,7 +426,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         if (IsJobRunning)
             throw new Exception("Another Job is Running");
-        CopySelectedFiles(FileManagerOperationMode == Mode.Move);
+        CopySelectedFiles(FileManagerOperationMode == OperationMode.Move);
     }
 
     public void SetTaskRunning(bool value, bool progress = true)
