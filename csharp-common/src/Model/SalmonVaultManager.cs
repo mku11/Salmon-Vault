@@ -340,9 +340,11 @@ public class SalmonVaultManager : INotifyPropertyChanged
             return;
         Task.Run(() =>
         {
-            if (FileManagerMode != Mode.Search)
+			if(FileManagerMode == Mode.Browse) {
                 salmonFiles = CurrDir.ListFiles();
-            PopulateFileList(SelectedFiles.FirstOrDefault((AesFile)null));
+            }
+			AesFile selectedFile = SelectedFiles.FirstOrDefault((AesFile)null);
+            PopulateFileList(selectedFile);
         });
     }
 
@@ -537,6 +539,11 @@ public class SalmonVaultManager : INotifyPropertyChanged
                     exception = ex;
                 };
                 fileCommander.DeleteFiles(files, deleteOptions);
+				if (FileManagerMode == Mode.Search) {
+					foreach(AesFile nFile in files)
+						FileItemList.Remove(nFile);
+                    salmonFiles = FileItemList.ToArray();
+                }
             }
             catch (Exception e)
             {
@@ -557,7 +564,6 @@ public class SalmonVaultManager : INotifyPropertyChanged
             Refresh();
             SetTaskRunning(false);
             copyFiles = null;
-            FileManagerMode = Mode.Browse;
 			FileManagerOperationMode = OperationMode.None;
         });
     }
@@ -568,6 +574,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
             return;
         if (IsJobRunning)
             throw new Exception("Another Job is Running");
+	    if (FileManagerMode != Mode.Browse)
+            throw new Exception("Navigate to a folder before pasting");
         ThreadPool.QueueUserWorkItem(state =>
         {
             FileProgress = 0;
