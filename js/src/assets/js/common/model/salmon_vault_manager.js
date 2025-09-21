@@ -58,6 +58,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     static REQUEST_EXPORT_DIR = 1003;
     static REQUEST_IMPORT_AUTH_FILE = 1004;
     static REQUEST_EXPORT_AUTH_FILE = 1005;
+	static PROGRESS_TIME_INTERVAL = 500; // ms
 
     sequencerDefaultDirPath = SalmonConfig.getPrivateDir() + File.separator + SalmonVaultManager.SEQUENCER_DIR_NAME;
     observers = {};
@@ -92,6 +93,9 @@ export class SalmonVaultManager extends IPropertyNotifier {
     updateListItem = null;
     onFileItemRemoved = null;
     onFileItemAdded = null;
+	
+	lastTimeProgress = 0;
+	
     sequencer = null;
     static instance = null;
 
@@ -451,19 +455,21 @@ export class SalmonVaultManager extends IPropertyNotifier {
             try {
                 let deleteOptions = new BatchDeleteOptions();
                 deleteOptions.onProgressChanged = async (taskProgress) => {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
-                            if (taskProgress.getProcessedBytes() != taskProgress.getTotalBytes()) {
-                                this.setTaskMessage("Deleting: " + await taskProgress.getFile().getName()
-                                    + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                            }
-                        } catch (e) {
-                            console.error(e);
+                    try {
+                        if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+                            this.setTaskMessage("Deleting: " + taskProgress.getFile().getName()
+                                            + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
+                            processedFiles[0] = taskProgress.getProcessedFiles();
                         }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
+                        ctime = Date.Now();
+                        if (ctime - this.lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                            this.lastTimeProgress = ctime;
+                            this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
+							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+                        }
+                    } catch (ex) {
+                        console.error(ex);
                     }
-                    this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
-                    this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
                 };
                 deleteOptions.onFailed = (file, ex) => {
                     failedFiles.push(file);
@@ -511,17 +517,23 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 copyOptions.move = move;
                 copyOptions.autoRenameFolders = true;
                 copyOptions.onProgressChanged = async (taskProgress) => {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
-                            this.setTaskMessage(action + ": " + await taskProgress.getFile().getName()
-                                + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                        } catch (e) {
-                            console.error(e);
-                        }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
-                    }
-                    this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
-                    this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+                    try {
+						if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+							this.setTaskMessage(action + ": " + taskProgress.getFile().getName()
+									+ " " + (taskProgress.getProcessedFiles() + 1)
+									+ "/" + taskProgress.getTotalFiles());
+							processedFiles[0] = taskProgress.getProcessedFiles();
+						}
+
+						ctime = Date.Now();
+						if (ctime - this.lastTimeProgress > SalmonVaultManager.PROGRESS_TIME_INTERVAL) {
+							this.lastTimeProgress = ctime;
+							this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
+							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+						}
+					} catch (ex) {
+						console.error(ex);
+					}
                 };
                 copyOptions.onFailed = (file, ex) => {
                     this.handleThrowException(ex);
@@ -752,18 +764,24 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 exportOptions.integrity = true;
                 exportOptions.autoRenameFile = IRealFileAutoRename;
                 exportOptions.onProgressChanged = async (taskProgress) => {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
-                            this.setTaskMessage("Exporting: " + await taskProgress.getFile().getName()
-                                + " " + (taskProgress.getProcessedFiles() + 1)
-                                + "/" + taskProgress.getTotalFiles());
-                        } catch (e) {
-                            console.error(e);
+                    try {
+                        if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+                            this.setTaskMessage("Exporting: " + taskProgress.getFile().getName()
+                                        + " " + (taskProgress.getProcessedFiles() + 1)
+                                        + "/" + taskProgress.getTotalFiles());
+
+                            processedFiles[0] = taskProgress.getProcessedFiles();
                         }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
+
+                        ctime = Date.Now();
+                        if (ctime - this.lastTimeProgress > SalmonVaultManager.PROGRESS_TIME_INTERVAL) {
+                            this.lastTimeProgress = ctime;
+                            this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
+							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+                        }
+                    } catch (ex) {
+                        console.error(ex);
                     }
-                    this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
-                    this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
                 };
                 exportOptions.onFailed = (file, ex) => {
                     failedFiles.push(file);
@@ -807,17 +825,23 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 importOptions.deleteSource = deleteSource;
                 importOptions.integrity = true;
                 importOptions.onProgressChanged = async (taskProgress) => {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
-                            this.setTaskMessage("Importing: " + await taskProgress.getFile().getName()
-                                + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                        } catch (e) {
-                            console.error(e);
+                    try {
+                        if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+                            this.setTaskMessage("Importing: " + taskProgress.getFile().getName()
+                                    + " " + (taskProgress.getProcessedFiles() + 1)
+                                    + "/" + taskProgress.getTotalFiles());
+                            processedFiles[0] = taskProgress.getProcessedFiles();
                         }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
+
+                        ctime = Date.Now();
+                        if (ctime - this.lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                            this.lastTimeProgress = ctime;
+                            this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
+							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+                        }
+                    } catch (ex) {
+                        console.error(ex);
                     }
-                    this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
-                    this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
                 };
                 importOptions.onFailed = (file, ex) => {
                     this.handleThrowException(ex);

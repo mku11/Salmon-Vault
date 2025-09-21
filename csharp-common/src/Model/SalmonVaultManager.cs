@@ -24,6 +24,7 @@ SOFTWARE.
 
 using Mku.FS.Drive.Utils;
 using Mku.FS.File;
+using Mku.Time;
 using Mku.Salmon.Sequence;
 using Mku.SalmonFS.Drive;
 using Mku.SalmonFS.Drive.Utils;
@@ -60,6 +61,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
     public static readonly int REQUEST_IMPORT_AUTH_FILE = 1004;
     public static readonly int REQUEST_EXPORT_AUTH_FILE = 1005;
     public static readonly int REQUEST_IMPORT_FOLDER = 1006;
+	public static final long PROGRESS_TIME_INTERVAL = 500; // ms
 
     public bool PromptExitOnBack { get; set; }
 
@@ -81,6 +83,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public delegate void OnFileItemAddedToList(int position, AesFile file);
     public OnFileItemAddedToList OnFileItemAdded;
+	
+	private long lastTimeProgress = 0;
 
     protected static SalmonVaultManager _instance;
     public static SalmonVaultManager Instance
@@ -510,23 +514,22 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 FileCommander.BatchDeleteOptions deleteOptions = new FileCommander.BatchDeleteOptions();
                 deleteOptions.onProgressChanged = (taskProgress) =>
                 {
-                    if (processedFiles[0] < taskProgress.ProcessedFiles)
-                    {
-                        try
-                        {
-                            if (taskProgress.ProcessedBytes != taskProgress.TotalBytes)
-                            {
-                                SetTaskMessage("Deleting: " + taskProgress.File.Name
-                                    + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
-                            }
+					try {
+						if (processedFiles[0] < taskProgress.ProcessedFiles) {
+                            SetTaskMessage("Deleting: " + taskProgress.File.Name
+                                            + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
+                            processedFiles[0] = taskProgress.ProcessedFiles;
                         }
-                        catch (Exception e)
-                        {
+
+						long ctime = Time.CurrentTimeMillis();
+                        if (ctime - lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                            lastTimeProgress = ctime;
+                            FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
+							FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
                         }
-                        processedFiles[0] = taskProgress.ProcessedFiles;
-                    }
-                    FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
-                    FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
+					} catch (Exception ex) {
+						Console.Error.WriteLine(ex);
+					}
                 };
                 deleteOptions.onFailed = (file, ex) =>
                 {
@@ -582,20 +585,23 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 copyOptions.onProgressChanged =
                     (taskProgress) =>
                     {
-                        if (processedFiles[0] < taskProgress.ProcessedFiles)
-                        {
-                            try
-                            {
-                                SetTaskMessage(action + ": " + taskProgress.File.Name
-                                    + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
-                            }
-                            catch (Exception e)
-                            {
-                            }
-                            processedFiles[0] = taskProgress.ProcessedFiles;
-                        }
-                        FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
-                        FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
+                        try {
+							if (processedFiles[0] < taskProgress.ProcessedFiles) {
+								SetTaskMessage(action + ": " + taskProgress.File.Name
+										+ " " + (taskProgress.ProcessedFiles + 1)
+										+ "/" + taskProgress.TotalFiles);
+								processedFiles[0] = taskProgress.ProcessedFiles;
+							}
+
+							long ctime = Time.CurrentTimeMillis();
+							if (ctime - lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+								lastTimeProgress = ctime;
+								FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
+								FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
+							}
+						} catch (Exception ex) {
+							Console.Error.WriteLine(ex);
+						}
                     };
                 copyOptions.autoRename = AesFile.AutoRename;
                 copyOptions.autoRenameFolders = true;
@@ -880,20 +886,25 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 exportOptions.autoRename = IFile.AutoRename;
                 exportOptions.onProgressChanged = (taskProgress) =>
                 {
-                    if (processedFiles[0] < taskProgress.ProcessedFiles)
-                    {
-                        try
-                        {
+                    try {
+                        if (processedFiles[0] < taskProgress.ProcessedFiles) {
                             SetTaskMessage("Exporting: " + taskProgress.File.Name
-                                + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
+                                        + " " + (taskProgress.ProcessedFiles + 1)
+                                        + "/" + taskProgress.TotalFiles);
+
+                            processedFiles[0] = taskProgress.ProcessedFiles;
                         }
-                        catch (Exception e)
-                        {
+
+                        long ctime = Time.CurrentTimeMillis();
+                        if (ctime - lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                            lastTimeProgress = ctime;
+                            
+							FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
+							FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
                         }
-                        processedFiles[0] = taskProgress.ProcessedFiles;
+                    } catch (Exception ex) {
+                        Console.Error.WriteLine(ex);
                     }
-                    FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
-                    FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
                 };
                 exportOptions.onFailed = (file, ex) =>
                 {
@@ -949,20 +960,23 @@ public class SalmonVaultManager : INotifyPropertyChanged
                     importOptions.autoRename = IFile.AutoRename;
                 importOptions.onProgressChanged = (taskProgress) =>
                 {
-                    if (processedFiles[0] < taskProgress.ProcessedFiles)
-                    {
-                        try
-                        {
+                    try {
+                        if (processedFiles[0] < taskProgress.ProcessedFiles) {
                             SetTaskMessage("Importing: " + taskProgress.File.Name
-                                + " " + (taskProgress.ProcessedFiles + 1) + "/" + taskProgress.TotalFiles);
+                                    + " " + (taskProgress.ProcessedFiles + 1)
+                                    + "/" + taskProgress.TotalFiles);
+                            processedFiles[0] = taskProgress.ProcessedFiles;
                         }
-                        catch (Exception e)
-                        {
+
+                        long ctime = Time.CurrentTimeMillis();
+                        if (ctime - lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                            lastTimeProgress = ctime;
+                            FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
+							FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
                         }
-                        processedFiles[0] = taskProgress.ProcessedFiles;
+                    } catch (Exception ex) {
+                        Console.Error.WriteLine(ex);
                     }
-                    FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
-                    FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
                 };
                 importOptions.onFailed = (file, ex) =>
                 {
