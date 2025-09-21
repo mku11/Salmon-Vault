@@ -478,10 +478,9 @@ export class SalmonVaultManager extends IPropertyNotifier {
                     exception = ex;
                 };
                 await this.fileCommander.deleteFiles(files, deleteOptions);
-				if (fileManagerMode == Mode.Search) {
-                    // List<AesFile> nFiles = new ArrayList<>(List.of(files));
-                    // fileItemList.removeAll(nFiles);
-                    // salmonFiles = fileItemList.toArray(new AesFile[0]);
+				if (this.fileManagerMode == Mode.Search) {
+					//TODO: remove files from fileItemList array and salmonFiles array
+					// see: java common impl
                 }
             } catch (e) {
                 if (!this.fileCommander.areJobsStopped()) {
