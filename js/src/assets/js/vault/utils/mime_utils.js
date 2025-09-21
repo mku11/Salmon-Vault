@@ -25,11 +25,11 @@ import { FileUtils } from "../../lib/salmon-fs/fs/drive/utils/file_utils.js";
 
 export class MimeUtils {	
 	static isVideo(filename) {
-        let ext = FileUtils.GetExtensionFromFileName(filename).ToLower();
-        return FileUtils.IsVideo(filename) || ext.Equals("webm") || ext.Equals("gifv");
+        let ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
+        return FileUtils.isVideo(filename) || ext == "webm" || ext == "gifv";
     }
 
-    public static bool IsImage(string filename) {
+    static isImage(filename) {
         return FileUtils.isImage(filename);
     }
 
