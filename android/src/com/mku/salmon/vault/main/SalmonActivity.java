@@ -675,7 +675,7 @@ public class SalmonActivity extends AppCompatActivity {
             }
             sharedFile.deleteOnExit();
             String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
-            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+            String mimeType = MimeUtils.getMimeTypeFromExtension(ext);
             android.net.Uri uri = FileProvider.getUriForFile(this, SalmonConfig.FILE_PROVIDER, sharedFile);
             ShareCompat.IntentBuilder builder = ShareCompat.IntentBuilder.from(this).setType(mimeType);
 

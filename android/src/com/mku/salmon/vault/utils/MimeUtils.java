@@ -43,7 +43,6 @@ public class MimeUtils
     }
 
     public static boolean isImage(String filename) {
-        String ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
         return FileUtils.isImage(filename);
     }
 

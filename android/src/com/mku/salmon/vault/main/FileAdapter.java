@@ -44,6 +44,7 @@ import androidx.arch.core.util.Function;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mku.fs.drive.utils.FileUtils;
+import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.func.BiConsumer;
 import com.mku.salmon.vault.android.R;
 import com.mku.convert.BitConverter;
@@ -229,7 +230,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                 Bitmap bitmap = null;
                 try {
                     java.io.File tmpFile = null;
-                    if (ext.equals("mp4") || ext.equals("gifv") || ext.equals("webm"))
+                    if (MimeUtils.isVideo(filename))
                         tmpFile = Thumbnails.getVideoTmpFile(viewHolder.salmonFile);
                     bitmap = getFileThumbnail(viewHolder.salmonFile, 0, tmpFile, true);
                 } catch (Exception e) {
@@ -256,7 +257,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                         resetAnimation();
                         animationViewHolder = viewHolder;
                         animationViewHolder.animate = true;
-                        if (ext.equals("mp4") || ext.equals("gifv") || ext.equals("webm")) {
+                        if (MimeUtils.isVideo(filename)) {
                             animateVideo(viewHolder);
                         } else {
                             return false;
@@ -402,10 +403,9 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                                     boolean delete) throws Exception {
         Bitmap bitmap = null;
         String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
-        if (ext.equals("mp4") || ext.equals("gifv") || ext.equals("webm")) {
+        if (MimeUtils.isVideo(salmonFile.getName())) {
             bitmap = Thumbnails.getVideoThumbnail(tmpFile, VIDEO_THUMBNAIL_MSECS * (step + 1), delete);
-        } else if (ext.equals("png") || ext.equals("jpg") || ext.equals("jpeg")
-                || ext.equals("bmp") || ext.equals("webp") || ext.equals("gif")) {
+        } else if (MimeUtils.isImage(salmonFile.getName())) {
             bitmap = Thumbnails.getImageThumbnail(salmonFile);
         }
         checkCacheSize();
