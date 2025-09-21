@@ -49,7 +49,7 @@ xcuserdata
 *.exe
 node_modules
 
-js/src/assets/js
+js/src/assets/js/lib
 js/project/app_package
 
 *.log
