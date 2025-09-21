@@ -30,7 +30,7 @@ namespace Salmon.Vault.MAUI.WinUI;
 
 public class WinFileService: IFileService
 {
-    public IFile GetFile(string filepath)
+    public IFile GetFile(string filepath, bool isDirectory)
     {
         return new File(filepath);
     }
