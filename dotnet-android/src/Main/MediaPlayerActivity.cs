@@ -275,21 +275,25 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
 
     private void FitToWindow()
     {
-        RelativeLayout parent = (RelativeLayout)mSurfaceView.Parent;
-        if (parent.Width == 0 || parent.Height == 0)
-            return;
-        ViewGroup.LayoutParams layoutParams = mSurfaceView.LayoutParameters;
-        if (mediaPlayer.VideoWidth / (float)mediaPlayer.VideoHeight > parent.Width / (float)parent.Height)
-        {
-            layoutParams.Width = parent.Width;
-            layoutParams.Height = (int)(parent.Width / (float)mediaPlayer.VideoWidth * mediaPlayer.VideoHeight);
-        }
-        else
-        {
-            layoutParams.Height = parent.Height;
-            layoutParams.Width = (int)(parent.Height / (float)mediaPlayer.VideoHeight * mediaPlayer.VideoWidth);
-        }
-        mSurfaceView.LayoutParameters = layoutParams;
+		try {
+			RelativeLayout parent = (RelativeLayout)mSurfaceView.Parent;
+			if (parent.Width == 0 || parent.Height == 0)
+				return;
+			ViewGroup.LayoutParams layoutParams = mSurfaceView.LayoutParameters;
+			if (mediaPlayer.VideoWidth / (float)mediaPlayer.VideoHeight > parent.Width / (float)parent.Height)
+			{
+				layoutParams.Width = parent.Width;
+				layoutParams.Height = (int)(parent.Width / (float)mediaPlayer.VideoWidth * mediaPlayer.VideoHeight);
+			}
+			else
+			{
+				layoutParams.Height = parent.Height;
+				layoutParams.Width = (int)(parent.Height / (float)mediaPlayer.VideoHeight * mediaPlayer.VideoWidth);
+			}
+			mSurfaceView.LayoutParameters = layoutParams;
+		} catch (Exception ex) {
+			Console.Error.WriteLine(ex);
+		}
     }
 
     override
