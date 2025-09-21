@@ -428,7 +428,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
             return HttpDrive;
         else if (vaultDir instanceof WSFile)
             return WSDrive;
-        throw new RuntimeException("Unknown drive type");
+        throw new Error("Unknown drive type");
     }
 
     deleteSelectedFiles() {
@@ -444,6 +444,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     deleteFiles(files) {
         if (files == null)
             return;
+		if (isJobRunning())
+            throw new Error("Another job is running");
         setTimeout(async () => {
             this.setFileProgress(0);
             this.setFilesProgress(0);
@@ -457,12 +459,12 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 deleteOptions.onProgressChanged = async (taskProgress) => {
                     try {
                         if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                            this.setTaskMessage("Deleting: " + taskProgress.getFile().getName()
+                            this.setTaskMessage("Deleting: " + await taskProgress.getFile().getName()
                                             + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
                             processedFiles[0] = taskProgress.getProcessedFiles();
                         }
-                        ctime = Date.Now();
-                        if (ctime - this.lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                        let ctime = Date.now();
+                        if (ctime - this.lastTimeProgress > SalmonVaultManager.PROGRESS_TIME_INTERVAL) {
                             this.lastTimeProgress = ctime;
                             this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
 							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
@@ -476,6 +478,11 @@ export class SalmonVaultManager extends IPropertyNotifier {
                     exception = ex;
                 };
                 await this.fileCommander.deleteFiles(files, deleteOptions);
+				if (fileManagerMode == Mode.Search) {
+                    // List<AesFile> nFiles = new ArrayList<>(List.of(files));
+                    // fileItemList.removeAll(nFiles);
+                    // salmonFiles = fileItemList.toArray(new AesFile[0]);
+                }
             } catch (e) {
                 if (!this.fileCommander.areJobsStopped()) {
                     console.error(e);
@@ -502,6 +509,10 @@ export class SalmonVaultManager extends IPropertyNotifier {
     #copyFiles(files, dir, move) {
         if (files == null)
             return;
+		if (isJobRunning())
+            throw new Error("Another job is running");
+        if (fileManagerMode != Mode.Browse)
+            throw new Error("Navigate to a folder before pasting");
         setTimeout(async () => {
             this.setFileProgress(0);
             this.setFilesProgress(0);
@@ -519,13 +530,13 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 copyOptions.onProgressChanged = async (taskProgress) => {
                     try {
 						if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-							this.setTaskMessage(action + ": " + taskProgress.getFile().getName()
+							this.setTaskMessage(action + ": " + await taskProgress.getFile().getName()
 									+ " " + (taskProgress.getProcessedFiles() + 1)
 									+ "/" + taskProgress.getTotalFiles());
 							processedFiles[0] = taskProgress.getProcessedFiles();
 						}
 
-						ctime = Date.Now();
+						let ctime = Date.now();
 						if (ctime - this.lastTimeProgress > SalmonVaultManager.PROGRESS_TIME_INTERVAL) {
 							this.lastTimeProgress = ctime;
 							this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
@@ -766,14 +777,14 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 exportOptions.onProgressChanged = async (taskProgress) => {
                     try {
                         if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                            this.setTaskMessage("Exporting: " + taskProgress.getFile().getName()
+                            this.setTaskMessage("Exporting: " + await taskProgress.getFile().getName()
                                         + " " + (taskProgress.getProcessedFiles() + 1)
                                         + "/" + taskProgress.getTotalFiles());
 
                             processedFiles[0] = taskProgress.getProcessedFiles();
                         }
 
-                        ctime = Date.Now();
+                        let ctime = Date.now();
                         if (ctime - this.lastTimeProgress > SalmonVaultManager.PROGRESS_TIME_INTERVAL) {
                             this.lastTimeProgress = ctime;
                             this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
@@ -827,14 +838,14 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 importOptions.onProgressChanged = async (taskProgress) => {
                     try {
                         if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                            this.setTaskMessage("Importing: " + taskProgress.getFile().getName()
+                            this.setTaskMessage("Importing: " + await taskProgress.getFile().getName()
                                     + " " + (taskProgress.getProcessedFiles() + 1)
                                     + "/" + taskProgress.getTotalFiles());
                             processedFiles[0] = taskProgress.getProcessedFiles();
                         }
 
-                        ctime = Date.Now();
-                        if (ctime - this.lastTimeProgress > PROGRESS_TIME_INTERVAL) {
+                        let ctime = Date.now();
+                        if (ctime - this.lastTimeProgress > SalmonVaultManager.PROGRESS_TIME_INTERVAL) {
                             this.lastTimeProgress = ctime;
                             this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
 							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
