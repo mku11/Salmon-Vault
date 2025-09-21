@@ -171,7 +171,7 @@ public class Thumbnails
         name = item.GetAesFile().Name;
         
         BitmapImage bitmapImage;
-        if (isDirectory || !FileUtils.IsImage(name))
+        if (isDirectory || !MimeUtils.IsImage(name))
         {
             WindowUtils.RunOnMainThread(() =>
             {
@@ -324,7 +324,7 @@ public class Thumbnails
 
     public static Color GetTintColor(AesFile salmonFile)
     {
-        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.Name))
+        if (!salmonFile.IsFile || MimeUtils.IsImage(salmonFile.Name))
             return Colors.Transparent;
 
         SHA256 sha256 = SHA256.Create();
@@ -337,7 +337,7 @@ public class Thumbnails
 
     public static string GetExt(AesFile salmonFile)
     {
-        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.Name))
+        if (!salmonFile.IsFile || MimeUtils.IsImage(salmonFile.Name))
             return "";
         return FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
     }

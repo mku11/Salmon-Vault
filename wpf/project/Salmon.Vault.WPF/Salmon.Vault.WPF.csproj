@@ -23,6 +23,7 @@
 
 		<Compile Include="..\..\src\Image\Thumbnails.cs" Link="Image\Thumbnails.cs" />
 		<Compile Include="..\..\src\Utils\URLUtils.cs" Link="Utils\URLUtils.cs" />
+		<Compile Include="..\..\src\Utils\MimeUtils.cs" Link="Utils\MimeUtils.cs" />
 		<Compile Include="..\..\src\Utils\WindowUtils.cs" Link="Utils\WindowUtils.cs" />
 		<Compile Include="..\..\src\ViewModel\ImageViewerViewModel.cs" Link="ViewModel\ImageViewerViewModel.cs" />
 		<Compile Include="..\..\src\ViewModel\MainViewModel.cs" Link="ViewModel\MainViewModel.cs" />

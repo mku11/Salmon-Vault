@@ -451,7 +451,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         try
         {
-            if (FileUtils.IsVideo(file.Name) || FileUtils.IsAudio(file.Name))
+            if (MimeUtils.IsVideo(file.Name) || MimeUtils.IsAudio(file.Name))
             {
                 if (!SalmonConfig.USE_CONTENT_VIEWER && MediaPlayerViewModel.HasFFMPEG())
                     StartMediaPlayer(vm);
@@ -459,7 +459,7 @@ public class MainViewModel : INotifyPropertyChanged
                     StartContentViewer(vm);
                 return true;
             }
-            else if (FileUtils.IsImage(file.Name))
+            else if (MimeUtils.IsImage(file.Name))
             {
                 if (!SalmonConfig.USE_CONTENT_VIEWER)
                     StartImageViewer(vm);
@@ -725,8 +725,8 @@ public class MainViewModel : INotifyPropertyChanged
         }
         if (manager.IsJobRunning
         || selectedItems.Count > 0
-        || manager.FileManagerMode == SalmonVaultManager.Mode.Copy
-        || manager.FileManagerMode == SalmonVaultManager.Mode.Move)
+        || manager.FileManagerOperationMode == SalmonVaultManager.OperationMode.Copy
+        || manager.FileManagerOperationMode == SalmonVaultManager.OperationMode.Move)
         {
             StopVisibility = true;
         }
