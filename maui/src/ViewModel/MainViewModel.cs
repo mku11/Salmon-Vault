@@ -439,7 +439,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         try
         {
-            if (FileUtils.IsVideo(file.Name) || FileUtils.IsAudio(file.Name))
+            if (MimeUtils.IsVideo(file.Name) || MimeUtils.IsAudio(file.Name))
             {
 #if ANDROID
                     // we can only use the android webview for small content like images
@@ -451,7 +451,7 @@ public class MainViewModel : INotifyPropertyChanged
                 return true;
 #endif
             }
-            else if (FileUtils.IsImage(file.Name))
+            else if (MimeUtils.IsImage(file.Name))
             {
                 StartContentViewer(vm);
                 return true;

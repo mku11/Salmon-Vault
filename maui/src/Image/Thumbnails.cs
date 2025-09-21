@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 using Mku.Salmon.Streams;
+using Salmon.Vault.Utils;
 using System.Collections.Concurrent;
 using IImage = Microsoft.Maui.Graphics.IImage;
 using System.Text;
@@ -147,7 +148,7 @@ public class Thumbnails
         AesFileAttrQueue.UpdatePropertyAsync(() =>
         {
             ImageSource bitmapImage = null;
-            if (item.GetSalmonFile().IsDirectory || !FileUtils.IsImage(item.GetSalmonFile().Name))
+            if (item.GetSalmonFile().IsDirectory || !MimeUtils.IsImage(item.GetSalmonFile().Name))
             {
                 bitmapImage = GetIcon(item.GetSalmonFile());
             }
@@ -300,7 +301,7 @@ public class Thumbnails
 
     public static Color GetTintColor(AesFile item)
     {
-        if (!item.IsFile || FileUtils.IsImage(item.Name))
+        if (!item.IsFile || MimeUtils.IsImage(item.Name))
             return Colors.Transparent;
         SHA256 sha256 = SHA256.Create();
         string ext = GetExt(item);
@@ -311,7 +312,7 @@ public class Thumbnails
 
     public static string GetExt(AesFile salmonFile)
     {
-        if (!salmonFile.IsFile || FileUtils.IsImage(salmonFile.Name))
+        if (!salmonFile.IsFile || MimeUtils.IsImage(salmonFile.Name))
             return "";
         return FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
     }
