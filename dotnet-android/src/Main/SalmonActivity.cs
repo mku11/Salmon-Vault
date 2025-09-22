@@ -196,7 +196,7 @@ public class SalmonActivity : AppCompatActivity
     {
         int index = fileItemList.IndexOf(file);
         if (index >= 0)
-            adapter.NotifyItemChanged(index);
+            adapter.NotifyItemChanged(index, true);
     }
 
     private void Manager_PropertyChanged(object sender, PropertyChangedEventArgs e)

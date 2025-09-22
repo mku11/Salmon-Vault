@@ -430,6 +430,14 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         OnCacheCleared(this, new EventArgs());
     }
 
+    public void RemoveCache(AesFile file) {
+        if (bitmapCache.ContainsKey(file)) {
+            if(bitmapCache[file] != null)
+                cacheSize -= bitmapCache[file].GetAllocationByteCount();
+            bitmapCache.Remove(file);
+        }
+    }
+	
     private Bitmap GetFileThumbnail(AesFile salmonFile, int step, Java.IO.File tmpFile,
                                     bool delete)
     {
@@ -560,5 +568,14 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         if (animationViewHolder != null)
             animationViewHolder.animate = false;
         animationViewHolder = null;
+    }
+		
+	override
+    public void NotifyItemChanged(int position, boolean clearCache) {
+        if(clearCache) {
+            AesFile salmonFile = items[position];
+            RemoveCache(salmonFile);
+        }
+        super.NotifyItemChanged(position);
     }
 }
