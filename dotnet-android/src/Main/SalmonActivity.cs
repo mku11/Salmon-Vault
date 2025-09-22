@@ -173,10 +173,6 @@ public class SalmonActivity : AppCompatActivity
     {
         try
         {
-
-            NativeTransformer.NativeProxy = new AndroidNativeProxy();
-            AndroidFileSystem.Initialize(this.ApplicationContext);
-
             manager = (SalmonAndroidVaultManager)CreateVaultManager();
             manager.PromptExitOnBack = true;
             manager.OpenListItem = OpenListItem;
@@ -1136,7 +1132,7 @@ public class SalmonActivity : AppCompatActivity
 
     protected SalmonVaultManager CreateVaultManager()
     {
-        NativeTransformer.NativeProxy = new AndroidNativeProxy();
+        AesNativeTransformer.NativeProxy = new AndroidNativeProxy();
         AndroidFileSystem.Initialize(this);
         return SalmonAndroidVaultManager.Instance;
     }
