@@ -71,8 +71,8 @@ export class ImageViewerController {
         if (this.viewer == null)
             this.viewer = new SalmonImageViewer();
         try {
-            this.viewer.load(fileViewModel.getSalmonFile());
-            let stream = await fileViewModel.getSalmonFile().getInputStream();
+            this.viewer.load(fileViewModel.getAesFile());
+            let stream = await fileViewModel.getAesFile().getInputStream();
             let ms = new MemoryStream();
             await stream.copyTo(ms);
             await stream.close();

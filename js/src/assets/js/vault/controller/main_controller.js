@@ -172,8 +172,35 @@ export class MainController {
         return false;
     }
 
+    
+    fileItemRemoved(position, file, self) {
+		let pos = position;
+        if(pos == -1) {
+            for(let i=0; i<this.fileItemList.length(); i++) {
+                if (this.fileItemList.get(i).getAesFile().getRealPath() == file.getRealPath()) {
+                    pos = i;
+                    break;
+                }
+            }
+        }
+        if(pos >=0) {
+            self.fileItemList.removeAt(pos);
+        }
+    }
+
     fileItemAdded(position, file, self) {
-        self.fileItemList.add(position, new SalmonFileViewModel(file));
+		let pos = position;
+        if(pos == -1) {
+            for(let i=0; i<this.fileItemList.length(); i++) {
+                if (this.fileItemList.get(i).getAesFile().getRealPath() == file.getRealPath()) {
+                    pos = i;
+                    break;
+                }
+            }
+        }
+        if(pos >=0) {
+            self.fileItemList.add(pos, new SalmonFileViewModel(file));
+        }
     }
 
     async updateListItem(file, self) {
@@ -219,7 +246,7 @@ export class MainController {
     onSelectedItems(selectedItems) {
         this.manager.getSelectedFiles().clear();
         for (let item of selectedItems) {
-            this.manager.getSelectedFiles().add(item.getSalmonFile());
+            this.manager.getSelectedFiles().add(item.getAesFile());
         }
     }
 
@@ -410,6 +437,7 @@ export class MainController {
             this.manager.observePropertyChanges(this.managerPropertyChanged, this);
             this.manager.updateListItem = (file) => this.updateListItem(file, this);
             this.manager.onFileItemAdded = (position, file) => this.fileItemAdded(position, file, this);
+            this.manager.onFileItemRemoved = (position, file) => this.fileItemRemoved(position, file, this);
             let currentExportDir = this.manager.getExportDir;
             this.manager.getExportDir = async ()=>  {
                 return new Promise(async (resolve, reject)=> {
@@ -449,7 +477,7 @@ export class MainController {
             callback: async () => this.onDelete() };
         contextMenu["Rename"] = { name: "Rename", 
             icon: "assets/images/common-res/icons/rename_small.png", 
-            callback: async () => SalmonDialogs.promptRenameFile(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
+            callback: async () => SalmonDialogs.promptRenameFile(this.fileItemList.getSelectedItems()[0].getAesFile()) };
         contextMenu["Export"] = { name: "Export (Ctrl-E)", 
             icon: "assets/images/common-res/icons/export_file_small.png", 
             callback: async () => this.onExport() };
@@ -458,18 +486,18 @@ export class MainController {
             callback: async () => this.onExportAndDelete() };
         contextMenu["Properties"] = { name: "Properties", 
             icon: "assets/images/common-res/icons/info_small.png", 
-            callback: async () => await SalmonDialogs.showProperties(this.fileItemList.getSelectedItems()[0].getSalmonFile()) };
+            callback: async () => await SalmonDialogs.showProperties(this.fileItemList.getSelectedItems()[0].getAesFile()) };
     }
 
     async openItem(position) {
         let selectedFile = this.fileItemList.get(position);
-        await this.manager.openItem(selectedFile.getSalmonFile());
+        await this.manager.openItem(selectedFile.getAesFile());
     }
 
     getViewModel(item) {
         for (let i = 0; i < this.fileItemList.size(); i++) {
             let vm = this.fileItemList.get(i);
-            if (vm.getSalmonFile() == item)
+            if (vm.getAesFile() == item)
                 return vm;
         }
         return null;
@@ -503,7 +531,7 @@ export class MainController {
 
     startTextEditor(item) {
         try {
-            if (item.getSalmonFile().getLength() > MainController.MAX_TEXT_FILE) {
+            if (item.getAesFile().getLength() > MainController.MAX_TEXT_FILE) {
                 new SalmonDialog("File too large").show();
                 return;
             }

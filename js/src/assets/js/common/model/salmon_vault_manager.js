@@ -450,7 +450,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     deleteFiles(files) {
         if (files == null)
             return;
-		if (isJobRunning())
+		if (this.isJobRunning())
             throw new Error("Another job is running");
         setTimeout(async () => {
             this.setFileProgress(0);
@@ -460,13 +460,16 @@ export class SalmonVaultManager extends IPropertyNotifier {
             let exception = null;
             let processedFiles = [-1];
             let failedFiles = [];
+			let deletedFiles = [];
             try {
                 let deleteOptions = new BatchDeleteOptions();
-                deleteOptions.onProgressChanged = async (taskProgress) => {
+                deleteOptions.onProgressChanged = (taskProgress) => {
                     try {
                         if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                            this.setTaskMessage("Deleting: " + await taskProgress.getFile().getName()
+							setTimeout(async ()=>{
+	                            this.setTaskMessage("Deleting: " + await taskProgress.getFile().getName()
                                             + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
+							});
                             processedFiles[0] = taskProgress.getProcessedFiles();
                         }
                         let ctime = Date.now();
@@ -474,6 +477,9 @@ export class SalmonVaultManager extends IPropertyNotifier {
                             this.lastTimeProgress = ctime;
                             this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
 							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+                        }
+						if (taskProgress.getProcessedBytes() == taskProgress.getTotalBytes()) {
+                            deletedFiles.push(taskProgress.getFile());
                         }
                     } catch (ex) {
                         console.error(ex);
@@ -484,9 +490,11 @@ export class SalmonVaultManager extends IPropertyNotifier {
                     exception = ex;
                 };
                 await this.fileCommander.deleteFiles(files, deleteOptions);
-				if (this.fileManagerMode == Mode.Search) {
-					//TODO: remove files from fileItemList array and salmonFiles array
-					// see: java common impl
+				if (this.fileManagerMode == SalmonVaultManager.Mode.Search) {
+					for(let file of files) {
+						this.fileItemList.remove(file);
+					}
+					this.salmonFiles = this.fileItemList.copy();
                 }
             } catch (e) {
                 if (!this.fileCommander.areJobsStopped()) {
@@ -503,7 +511,20 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 this.setTaskMessage("Delete Complete");
             this.setFileProgress(1);
             this.setFilesProgress(1);
-            await this.refresh();
+            if(deletedFiles.length < 20) {
+                for (let deletedFile of deletedFiles) {
+                    this.onFileItemRemoved(-1, deletedFile);
+                }
+            } else {
+                try {
+                    if (this.drive != null && files[0] != null && files[0].getParent() != null
+                            && this.currDir.getPath() == files[0].getParent().getPath()) {
+                        this.refresh();
+                    }
+                } catch(ex) {
+                    console.error(ex);
+                }
+            }
             this.setTaskRunning(false);
             this.copyFiles = null;
             this.fileManagerMode = SalmonVaultManager.Mode.Browse;
@@ -514,9 +535,9 @@ export class SalmonVaultManager extends IPropertyNotifier {
     #copyFiles(files, dir, move) {
         if (files == null)
             return;
-		if (isJobRunning())
+		if (this.isJobRunning())
             throw new Error("Another job is running");
-        if (fileManagerMode != Mode.Browse)
+        if (this.fileManagerMode != SalmonVaultManager.Mode.Browse)
             throw new Error("Navigate to a folder before pasting");
         setTimeout(async () => {
             this.setFileProgress(0);
@@ -532,12 +553,14 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 copyOptions.autoRename = SalmonFileAutoRename;
                 copyOptions.move = move;
                 copyOptions.autoRenameFolders = true;
-                copyOptions.onProgressChanged = async (taskProgress) => {
+                copyOptions.onProgressChanged = (taskProgress) => {
                     try {
 						if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-							this.setTaskMessage(action + ": " + await taskProgress.getFile().getName()
+							setTimeout(async ()=>{
+								this.setTaskMessage(action + ": " + await taskProgress.getFile().getName()
 									+ " " + (taskProgress.getProcessedFiles() + 1)
 									+ "/" + taskProgress.getTotalFiles());
+							});
 							processedFiles[0] = taskProgress.getProcessedFiles();
 						}
 
@@ -765,6 +788,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     exportFiles(items, exportDir, deleteSource, onFinished) {
+		if (this.isJobRunning())
+            throw new Error("Another job is running");
         setTimeout(async () => {
             this.setFileProgress(0);
             this.setFilesProgress(0);
@@ -779,13 +804,14 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 exportOptions.deleteSource = deleteSource;
                 exportOptions.integrity = true;
                 exportOptions.autoRenameFile = IRealFileAutoRename;
-                exportOptions.onProgressChanged = async (taskProgress) => {
+                exportOptions.onProgressChanged = (taskProgress) => {
                     try {
                         if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                            this.setTaskMessage("Exporting: " + await taskProgress.getFile().getName()
+							setTimeout(async ()=>{
+	                            this.setTaskMessage("Exporting: " + await taskProgress.getFile().getName()
                                         + " " + (taskProgress.getProcessedFiles() + 1)
                                         + "/" + taskProgress.getTotalFiles());
-
+							});
                             processedFiles[0] = taskProgress.getProcessedFiles();
                         }
 
@@ -825,6 +851,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     importFiles(files, importDir, deleteSource, onFinished, autoRename = true) {
+		if (this.isJobRunning())
+            throw new Error("Another job is running");
         setTimeout(async () => {
             this.setFileProgress(0);
             this.setFilesProgress(0);
@@ -840,12 +868,14 @@ export class SalmonVaultManager extends IPropertyNotifier {
                     importOptions.autoRename = IRealFileAutoRename;
                 importOptions.deleteSource = deleteSource;
                 importOptions.integrity = true;
-                importOptions.onProgressChanged = async (taskProgress) => {
+                importOptions.onProgressChanged = (taskProgress) => {
                     try {
                         if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                            this.setTaskMessage("Importing: " + await taskProgress.getFile().getName()
+							setTimeout(async ()=>{
+	                            this.setTaskMessage("Importing: " + await taskProgress.getFile().getName()
                                     + " " + (taskProgress.getProcessedFiles() + 1)
                                     + "/" + taskProgress.getTotalFiles());
+							});
                             processedFiles[0] = taskProgress.getProcessedFiles();
                         }
 

@@ -68,7 +68,7 @@ export class PdfViewerController {
 
     async load(fileViewModel) {
         try {
-            let stream = await fileViewModel.getSalmonFile().getInputStream();
+            let stream = await fileViewModel.getAesFile().getInputStream();
             let ms = new MemoryStream();
             await stream.copyTo(ms);
             await stream.close();

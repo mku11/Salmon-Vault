@@ -196,7 +196,7 @@ export class SalmonFileViewModel extends IPropertyNotifier {
         }
     }
 
-    getSalmonFile() {
+    getAesFile() {
         return this.salmonFile;
     }
 

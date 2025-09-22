@@ -164,9 +164,16 @@ export class ObservableList {
 
     remove(value) {
         let index = this.#list.indexOf(value);
-        if(index >= 0)
+        this.removeAt(index);
+    }
+
+    removeAt(index) {
+        if(index >= 0) {
+            let item = this.#list[index]
             this.#list.splice(index, 1);
-        this.selected.remove(value);
+            this.selected.delete(item);
+            Binding.removeItem(this, index)
+        }
     }
 
     length() {

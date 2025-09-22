@@ -76,7 +76,7 @@ export class MediaPlayerController {
     }
 
     async load(fileItem) {
-        let file = fileItem.getSalmonFile();
+        let file = fileItem.getAesFile();
         try {
             this.filePath = file.getRealPath();
 			this.url = null;

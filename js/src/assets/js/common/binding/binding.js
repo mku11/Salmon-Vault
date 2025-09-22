@@ -174,11 +174,10 @@ export class Binding {
                     let r = tbody.childNodes[i];
                     r.classList.remove("tr-row-selected");
                 }
-                let trow = tbody.childNodes[index];
                 obj.clearSelectedItems();
-                trow.classList.add("tr-row-selected");
-                obj.onSetSelected(index, true);
-                ContextMenu.showContextMenu(obj.get(index), obj.getContextMenu(), event.clientX, event.clientY, obj);
+                row.classList.add("tr-row-selected");
+                obj.onSetSelected(row.sectionRowIndex, true);
+                ContextMenu.showContextMenu(obj.get(row.sectionRowIndex), obj.getContextMenu(), event.clientX, event.clientY, obj);
                 event.stopPropagation();
                 event.preventDefault();
             };
@@ -190,15 +189,14 @@ export class Binding {
                         r.classList.remove("tr-row-selected");
                     }
                 }
-                let trow = tbody.childNodes[index];
-                if (event.ctrlKey && trow.classList.contains("tr-row-selected")) {
-                    trow.classList.remove("tr-row-selected");
-                    obj.onSetSelected(index, false);
+                if (event.ctrlKey && row.classList.contains("tr-row-selected")) {
+                    row.classList.remove("tr-row-selected");
+                    obj.onSetSelected(row.sectionRowIndex, false);
                 } else {
                     let lastSelection = binding.obj.getLastSelection();
                     if (event.shiftKey && lastSelection >= 0) {
-                        let startSelection = Math.min(index, lastSelection);
-                        let endSelection = Math.max(index, lastSelection);
+                        let startSelection = Math.min(row.sectionRowIndex, lastSelection);
+                        let endSelection = Math.max(row.sectionRowIndex, lastSelection);
                         for (let i = startSelection; i <= endSelection; i++) {
                             let r = tbody.childNodes[i];
                             obj.onSetSelected(i, true);
@@ -208,9 +206,9 @@ export class Binding {
                         if (!event.ctrlKey) {
                             obj.clearSelectedItems();
                         }
-                        obj.onSetSelected(index, true);
+                        obj.onSetSelected(row.sectionRowIndex, true);
                         row.classList.add("tr-row-selected");
-                        obj.onClicked(event, index);
+                        obj.onClicked(event, row.sectionRowIndex);
                     }
                 }
             }
@@ -219,14 +217,12 @@ export class Binding {
                     let r = tbody.childNodes[i];
                     r.classList.remove("tr-row-selected");
                 }
-                let trow = tbody.childNodes[index];
-                trow.classList.add("tr-row-selected");
-                obj.onSetSelected(index, true);
-                obj.onDoubleClicked(event, index);
+                row.classList.add("tr-row-selected");
+                obj.onSetSelected(row.sectionRowIndex, true);
+                obj.onDoubleClicked(event, row.sectionRowIndex);
             }
             row.onmouseenter = (event) => {
-                let trow = tbody.childNodes[index];
-                obj.onMouseEntered(event, index);
+                obj.onMouseEntered(event, row.sectionRowIndex);
             }
             for (let i = 0; i < th.length; i++) {
                 let column = th[i];
@@ -250,8 +246,17 @@ export class Binding {
                         content = "";
                     cell.innerText = content;
                 }
-
             }
+        }
+    }
+
+    static removeItem(obj, index) {
+        let binding = Binding.getBinding(obj);
+        let el = Binding.getElement(binding.root, binding.name);
+        if (binding.field == 'tbody') {
+            let th = el.getElementsByTagName('th');
+            let tbody = el.getElementsByTagName('tbody')[0];
+            tbody.deleteRow(index);
         }
     }
 

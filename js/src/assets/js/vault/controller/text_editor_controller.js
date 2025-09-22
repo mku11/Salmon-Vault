@@ -84,7 +84,7 @@ export class TextEditorController {
         this.item = item;
         let content;
         try {
-            content = await this.getTextContent(this.item.getSalmonFile());
+            content = await this.getTextContent(this.item.getAesFile());
             this.contentArea.set(content);
             this.showTaskMessage("File loaded");
             setTimeout(() => {
@@ -107,9 +107,9 @@ export class TextEditorController {
     }
 
     async onSave() {
-        let oldFile = this.item.getSalmonFile();
+        let oldFile = this.item.getAesFile();
         try {
-            let targetFile = await this.editor.onSave(this.item.getSalmonFile(), this.contentArea.get());
+            let targetFile = await this.editor.onSave(this.item.getAesFile(), this.contentArea.get());
             if(targetFile == null){
                 throw new Error("Could not save file");
             }
