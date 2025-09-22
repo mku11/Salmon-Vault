@@ -255,6 +255,17 @@ export class Thumbnails {
         Thumbnails.clearObjectURL();
     }
 
+    static async removeCache(filePath) {
+        if (filePath in Thumbnails.cache) {
+            if(Thumbnails.cache[filePath] != null) {
+                let image = Thumbnails.cache[filePath];
+                let blob = await fetch(image.src).then(r => r.blob());
+                Thumbnails.cacheSize -= blob.size;
+            }
+            Thumbnails.cache.remove(file);
+        }
+    }
+
     static async getImageThumbnail(file) {
         let stream = null;
         let image = new Image();

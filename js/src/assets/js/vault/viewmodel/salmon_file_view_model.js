@@ -49,18 +49,8 @@ export class SalmonFileViewModel extends IPropertyNotifier {
     #_image = null;
     get image() {
         if (this.#_image == null) {
-            let img = new Image();
-            img.width = SalmonFileViewModel.#IMAGE_SIZE;
-            img.height = SalmonFileViewModel.#IMAGE_SIZE;
             setTimeout(async () => {
-                this.image = await Thumbnails.getIcon(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
-                if (await this.salmonFile.isFile()) {
-                    let ext = FileUtils.getExtensionFromFileName(await this.salmonFile.getName()).toLowerCase();
-                    Thumbnails.addText(this.image, ext);
-                }
-                let imageThumbnail = await Thumbnails.generateThumbnail(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
-                if(imageThumbnail != null)
-                    this.image = imageThumbnail;
+                this.image = await this.getImage();
             });
         }
         return this.#_image;
@@ -159,6 +149,8 @@ export class SalmonFileViewModel extends IPropertyNotifier {
 
     async update() {
         try {
+            Thumbnails.removeCache(this.salmonFile.getRealPath());
+            this.image = await this.getImage();
             this.name = await this.salmonFile.getName();
             this.date = await this.getDateText();
             this.size = await this.getSizeText();
@@ -167,6 +159,18 @@ export class SalmonFileViewModel extends IPropertyNotifier {
         } catch (ex) {
             console.error(ex);
         }
+    }
+
+    async getImage() {
+        let image = await Thumbnails.getIcon(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
+        if (await this.salmonFile.isFile()) {
+            let ext = FileUtils.getExtensionFromFileName(await this.salmonFile.getName()).toLowerCase();
+            Thumbnails.addText(image, ext);
+        }
+        let imageThumbnail = await Thumbnails.generateThumbnail(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
+        if(imageThumbnail != null)
+            image = imageThumbnail;
+        return image;
     }
 
     async getExtText() {
