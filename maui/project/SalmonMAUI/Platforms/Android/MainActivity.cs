@@ -81,7 +81,7 @@ public class MainActivity : MauiAppCompatActivity
                     .SetShowAsAction(ShowAsAction.Never);
         }
 
-        if (SalmonVaultManager.Instance.FileManagerOperationMode == SalmonVaultManager.OpearationMode.Copy
+        if (SalmonVaultManager.Instance.FileManagerOperationMode == SalmonVaultManager.OperationMode.Copy
             || SalmonVaultManager.Instance.FileManagerOperationMode == SalmonVaultManager.OperationMode.Move)
         {
             menu.Add(3, ActionType.PASTE.Ordinal(), 0, Resources.GetString(Resource.String.Paste));
