@@ -222,6 +222,21 @@ public class SalmonActivity : AppCompatActivity
             {
                 SelectItem(manager.CurrentItem);
             }
+			else if (e.PropertyName == "SelectedFiles") {
+                if(adapter.SelectedFiles != null) {
+                    IList<int> selectedIndexes = new List<int>();
+                    for(int i=0; i<fileItemList.Count; i++) {
+                        if(adapter.SelectedFiles.Contains(fileItemList[i]))
+                            selectedIndexes.Add(i);
+                        if(manager.SelectedFiles.Contains(fileItemList[i]))
+                            selectedIndexes.Add(i);
+                    }
+                    adapter.SelectedFiles.Clear();
+                    adapter.SelectedFiles.UnionWith(manager.SelectedFiles);
+                    foreach(int idx in selectedIndexes)
+                        adapter.NotifyItemChanged(idx);
+				}
+			}
             else if (e.PropertyName == "Status")
             {
                 statusText.Text = manager.Status;
@@ -320,8 +335,19 @@ public class SalmonActivity : AppCompatActivity
     {
         WindowUtils.RunOnMainThread(() =>
         {
-            fileItemList.RemoveAt(position);
-            adapter.NotifyItemRemoved(position);
+			int pos = position;
+            if(pos == -1) {
+                for(int i=0; i<fileItemList.Count; i++) {
+                    if (fileItemList[i].RealPath.Equals(file.RealPath)) {
+                        pos = i;
+                        break;
+                    }
+                }
+            }
+            if(pos >=0) {
+                fileItemList.RemoveAt(pos);
+				adapter.NotifyItemRemoved(pos);
+            }
         });
     }
 
@@ -329,8 +355,19 @@ public class SalmonActivity : AppCompatActivity
     {
         WindowUtils.RunOnMainThread(() =>
         {
-            fileItemList.Insert(position, file);
-            adapter.NotifyItemInserted(position);
+            int pos = position;
+            if(pos == -1) {
+                for(int i=0; i<fileItemList.Count; i++) {
+                    if (fileItemList[i].RealPath.Equals(file.RealPath)) {
+                        pos = i;
+                        break;
+                    }
+                }
+            }
+            if(pos >=0) {
+                fileItemList.Insert(pos, file);
+                adapter.NotifyItemInserted(pos);
+            }
         });
     }
 
@@ -758,7 +795,7 @@ public class SalmonActivity : AppCompatActivity
     {
         try
         {
-            manager.SelectedFiles = adapter.SelectedFiles;
+            manager.SelectedFiles = new HashSet<AesFile>(adapter.SelectedFiles);
             SalmonDialogs.PromptExportFolder("Select folder to export to",
                     SalmonVaultManager.REQUEST_EXPORT_DIR, deleteSource);
         }

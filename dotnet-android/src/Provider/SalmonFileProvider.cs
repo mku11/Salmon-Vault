@@ -266,8 +266,6 @@ public class SalmonFileProvider : DocumentsProvider
                             return;
                         importedAesFiles[0].Rename(filename);
                         file.Delete();
-                        if (provider.GetManager().Drive != null)
-                            provider.GetManager().Refresh();
                     }
                     catch (Java.Lang.Exception ex)
                     {

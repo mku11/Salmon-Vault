@@ -433,8 +433,8 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     public void RemoveCache(AesFile file) {
         if (bitmapCache.ContainsKey(file)) {
             if(bitmapCache[file] != null)
-                cacheSize -= bitmapCache[file].GetAllocationByteCount();
-            bitmapCache.Remove(file);
+                cacheSize -= bitmapCache[file].AllocationByteCount;
+            bitmapCache.TryRemove(file, out Bitmap bitmap);
         }
     }
 	
@@ -569,13 +569,12 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
             animationViewHolder.animate = false;
         animationViewHolder = null;
     }
-		
-	override
-    public void NotifyItemChanged(int position, boolean clearCache) {
+
+    public void NotifyItemChanged(int position, bool clearCache) {
         if(clearCache) {
             AesFile salmonFile = items[position];
             RemoveCache(salmonFile);
         }
-        super.NotifyItemChanged(position);
+        base.NotifyItemChanged(position);
     }
 }
