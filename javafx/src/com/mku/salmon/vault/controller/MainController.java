@@ -54,9 +54,10 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -182,10 +183,39 @@ public class MainController {
 
     }
 
+	private void fileItemRemoved(final Integer position, AesFile file) {
+        WindowUtils.runOnMainThread(() ->
+        {
+            int pos = position;
+            if(pos == -1) {
+                for(int i=0; i<fileItemList.size(); i++) {
+                    if (fileItemList.get(i).getAesFile().getRealPath().equals(file.getRealPath())) {
+                        pos = i;
+                        break;
+                    }
+                }
+            }
+            if(pos >=0) {
+                fileItemList.remove(pos);
+            }
+        });
+    }
+	
     private void fileItemAdded(Integer position, AesFile file) {
         WindowUtils.runOnMainThread(() ->
         {
-            fileItemList.add(position, new SalmonFileViewModel(file));
+			int pos = position;
+            if(pos == -1) {
+                for(int i=0; i<fileItemList.size(); i++) {
+                    if (fileItemList.get(i).getAesFile().getRealPath().equals(file.getRealPath())) {
+                        pos = i;
+                        break;
+                    }
+                }
+            }
+            if(pos >=0) {
+				fileItemList.add(pos, new SalmonFileViewModel(file));
+            }
         });
     }
 
@@ -201,6 +231,15 @@ public class MainController {
             Thumbnails.enableAnimation(true);
         } else if (propertyName.equals("CurrentItem")) {
             selectItem(manager.getCurrentItem());
+        } else if (propertyName.equals("SelectedFiles")) {
+			if(table.getSelectionModel().getSelectedItems() != null) {
+                table.getSelectionModel().clearSelection();
+                for(AesFile salmonFile : manager.getSelectedFiles()){
+                    SalmonFileViewModel viewModel = getViewModel(salmonFile);
+                    if(viewModel != null)
+                        table.getSelectionModel().getSelectedItems().add(viewModel);
+                }
+			}
         } else if (propertyName.equals("Status")) {
             WindowUtils.runOnMainThread(() -> status.setValue(manager.getStatus()));
             if (manager.isJobRunning()
@@ -504,6 +543,7 @@ public class MainController {
             manager.openListItem = this::OpenListItem;
             manager.observePropertyChanges(this::managerPropertyChanged);
             manager.updateListItem = this::updateListItem;
+			manager.onFileItemRemoved = this::fileItemRemoved;
             manager.onFileItemAdded = this::fileItemAdded;
 
         } catch (Exception e) {
@@ -587,7 +627,7 @@ public class MainController {
         });
         contextMenu.getItems().add(item);
 
-        Point p = MouseInfo.getPointerInfo().getLocation();
+        java.awt.Point p = java.awt.MouseInfo.getPointerInfo().getLocation();
         contextMenu.show(stage, p.x, p.y);
     }
 
@@ -644,7 +684,7 @@ public class MainController {
     }
 
     private void promptOpenExternalApp(AesFile file, String msg) {
-        if (!Desktop.isDesktopSupported()) {
+        if (!java.awt.Desktop.isDesktopSupported()) {
             SalmonDialog.promptDialog("Information", "Sharing is not supported in this platform, " +
                     "export and re-import the file manually");
             return;
@@ -682,10 +722,10 @@ public class MainController {
                 if (WindowUtils.isWindows()) { // for windows we let the user choose the app
                     Runtime.getRuntime().exec("rundll32.exe SHELL32.DLL,OpenAs_RunDLL " + sharedFile.getPath());
                 } else {
-                    if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-                        Desktop.getDesktop().edit(new File(sharedFile.getPath()));
-                    } else if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-                        Desktop.getDesktop().open(new File(sharedFile.getPath()));
+                    if (java.awt.Desktop.getDesktop().isSupported(java.awt.Desktop.Action.EDIT)) {
+                        java.awt.Desktop.getDesktop().edit(new File(sharedFile.getPath()));
+                    } else if (java.awt.Desktop.getDesktop().isSupported(java.awt.Desktop.Action.OPEN)) {
+                        java.awt.Desktop.getDesktop().open(new File(sharedFile.getPath()));
                     }
                 }
             } catch (Exception e) {
