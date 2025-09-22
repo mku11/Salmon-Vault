@@ -65,7 +65,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class MainController {
-    private static final long MAX_TEXT_FILE = 1 * 1024 * 1024;
+    private static final long MAX_TEXT_FILE = 5 * 1024 * 1024;
     private static final int THREADS = 1;
     private static final Executor executor = Executors.newSingleThreadExecutor();
 
