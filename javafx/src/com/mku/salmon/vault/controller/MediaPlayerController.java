@@ -27,6 +27,7 @@ import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
+import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.salmon.vault.utils.Timer;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
@@ -168,7 +169,7 @@ public class MediaPlayerController {
         Scene scene = new Scene(root);
         stage.setScene(scene);
         WindowUtils.setDefaultIconPath(SalmonConfig.icon);
-        if (FileUtils.isVideo(file.getAesFile().getName())) {
+        if (MimeUtils.isVideo(file.getAesFile().getName())) {
             stage.widthProperty().addListener((observable, oldValue, newValue) -> {
                 controller.mediaView.setFitWidth(newValue.doubleValue()
                         - controller.root.getPadding().getLeft()

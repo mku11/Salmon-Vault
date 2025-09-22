@@ -33,6 +33,7 @@ import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.model.win.SalmonWinVaultManager;
 import com.mku.salmon.vault.services.*;
+import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.utils.FileTypes;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
@@ -655,16 +656,16 @@ public class MainController {
     private boolean OpenListItem(AesFile file) {
         SalmonFileViewModel vm = getViewModel(file);
         try {
-            if (FileUtils.isVideo(file.getName())) {
+            if (MimeUtils.isVideo(file.getName())) {
                 if(useContentViewer)
                     startContentViewer(vm);
                 else
                     startMediaPlayer(vm);
                 return true;
-            } else if (FileUtils.isAudio(file.getName())) {
+            } else if (MimeUtils.isAudio(file.getName())) {
                 startMediaPlayer(vm);
                 return true;
-            } else if (FileUtils.isImage(file.getName())) {
+            } else if (MimeUtils.isImage(file.getName())) {
                 startImageViewer(vm);
                 return true;
             } else if (FileTypes.isPDF(file.getName())) {

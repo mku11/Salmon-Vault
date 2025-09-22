@@ -29,6 +29,7 @@ import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.services.IWebBrowserService;
 import com.mku.salmon.vault.services.ServiceLocator;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
+import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.salmonfs.streams.AesFileInputStream;
 
@@ -84,7 +85,7 @@ public class SalmonContentViewer implements IPropertyNotifier {
         String filename = file.getName();
         String mimeType = null; //= MimeTypesMap.GetMimeType(filename);
         // webview2 buffering with partial content works only with video and audio
-        boolean buffered = FileUtils.isVideo(filename) || FileUtils.isAudio(filename);
+        boolean buffered = MimeUtils.isVideo(filename) || MimeUtils.isAudio(filename);
         String contentPath = "content.dat";
         webBrowserService.setResponse(URL + contentPath, mimeType, file.getLength(), BUFFER_SIZE, buffered, (pos) ->
         {
