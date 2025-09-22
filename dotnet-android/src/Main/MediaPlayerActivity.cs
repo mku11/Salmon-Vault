@@ -35,11 +35,12 @@ using Salmon.Vault.Extensions;
 using System;
 using Button = Android.Widget.Button;
 using ImageButton = Android.Widget.ImageButton;
-using Timer = Java.Util.Timer;
 using View = Android.Views.View;
 using Salmon.Vault.DotNetAndroid;
+using Salmon.Vault.Utils;
 using Mku.SalmonFS.File;
 using Mku.Android.SalmonFS.Media;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Salmon.Vault.Main;
@@ -120,7 +121,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
 
     protected void PlayNext()
     {
-        if (pos <= videos.Length)
+        if (pos < videos.Length - 1)
         {
             pos++;
             LoadContentAsync();
@@ -224,34 +225,64 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         });
     }
 
-    private class MediaPlayerTimerTask : TimerTask
+    private class Timer
     {
-        MediaPlayerActivity activity;
-        public MediaPlayerTimerTask(MediaPlayerActivity activity)
+		private MediaPlayerActivity activity;
+		private Thread thread;
+		private bool quit = false;
+		
+		public Timer(MediaPlayerActivity activity) {
+			this.activity = activity;
+		}
+		
+        public void Start()
         {
-            this.activity = activity;
+			if (thread!=null)
+				return;
+			thread = new Thread(() => {
+				try
+				{
+					while (!quit) {
+						try {
+							Thread.Sleep(1000);
+						} catch (ThreadInterruptedException ignored) {
+							
+						}
+						activity.UpdateTimeControls();
+					}
+				}
+				catch (Exception ignored) { }
+			});
         }
-        override
-        public void Run()
-        {
-            try
-            {
-                if (activity.mediaPlayer != null && activity.mediaPlayer.IsPlaying)
-                {
-                    activity.mSeekBar.Progress = (int)(activity.mediaPlayer.CurrentPosition / (float)activity.mediaPlayer.Duration * 100);
-                    activity.mTime.Text = activity.GetTime(activity.mediaPlayer.CurrentPosition);
-                    activity.mTotalTime.Text = activity.GetTime(activity.mediaPlayer.Duration);
-                }
-                else
-                {
-                    activity.mTime.Text = "";
-                    activity.mTotalTime.Text = "";
-                }
-            }
-            catch (Exception ignored) { }
+		
+		public void Cancel() {
+			if (thread == null)
+				return;
+            quit = true;
+            thread.Interrupt();
         }
     }
 
+    void UpdateTimeControls() {
+        WindowUtils.RunOnMainThread(() => {
+            try {
+                if (mediaPlayer != null && mediaPlayer.IsPlaying)
+                {
+                    mSeekBar.Progress = (int)(mediaPlayer.CurrentPosition / (float)mediaPlayer.Duration * 100);
+                    mTime.Text = GetTime(mediaPlayer.CurrentPosition);
+                    mTotalTime.Text = GetTime(mediaPlayer.Duration);
+                }
+                else
+                {
+                    mTime.Text = "";
+                    mTotalTime.Text = "";
+                }
+            } catch (Exception ex) {
+                Console.Error.WriteLine(ex);
+            }
+        });
+    }
+	
     private string GetTime(int time)
     {
         string secs = ((int)(time / 1000) % 60) + "";
@@ -267,7 +298,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     }
 
     override
-        public void OnConfigurationChanged(Configuration configuration)
+    public void OnConfigurationChanged(Configuration configuration)
     {
         base.OnConfigurationChanged(configuration);
         Resize(1000);
@@ -348,9 +379,8 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         {
             timer.Cancel();
         }
-        TimerTask timerTask = new MediaPlayerTimerTask(this);
-        timer = new Timer();
-        timer.Schedule(timerTask, 1000, 1000);
+        timer = new Timer(this);
+        timer.Start();
         UpdateControls();
     }
 
