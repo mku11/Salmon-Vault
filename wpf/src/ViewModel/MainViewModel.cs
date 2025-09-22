@@ -202,14 +202,54 @@ public class MainViewModel : INotifyPropertyChanged
         manager.OpenListItem = OpenListItem;
         manager.PropertyChanged += Manager_PropertyChanged;
         manager.UpdateListItem = UpdateListItem;
+        manager.OnFileItemRemoved = FileItemRemoved;
         manager.OnFileItemAdded = FileItemAdded;
+    }
+
+
+    private void FileItemRemoved(int position, AesFile file)
+    {
+        WindowUtils.RunOnMainThread(()=>
+        {
+            int pos = position;
+            if (pos == -1)
+            {
+                for (int i = 0; i < FileItemList.Count; i++)
+                {
+                    if (FileItemList[i].GetAesFile().RealPath.Equals(file.RealPath))
+                    {
+                        pos = i;
+                        break;
+                    }
+                }
+            }
+            if (pos >= 0)
+            {
+                FileItemList.RemoveAt(pos);
+            }
+        });
     }
 
     private void FileItemAdded(int position, AesFile file)
     {
         WindowUtils.RunOnMainThread(() =>
         {
-            FileItemList.Insert(position, new SalmonFileViewModel(file));
+            int pos = position;
+            if (pos == -1)
+            {
+                for (int i = 0; i < FileItemList.Count; i++)
+                {
+                    if (FileItemList[i].GetAesFile().RealPath.Equals(file.RealPath))
+                    {
+                        pos = i;
+                        break;
+                    }
+                }
+            }
+            if (pos >= 0)
+            {
+                FileItemList.Insert(position, new SalmonFileViewModel(file));
+            }
         });
     }
 
