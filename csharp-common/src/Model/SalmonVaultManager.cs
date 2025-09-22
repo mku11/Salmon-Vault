@@ -365,7 +365,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             SelectedFiles.Clear();
             try
             {
-                if (FileManagerMode == Mode.Search)
+                if (FileManagerMode == Mode.Search && searchTerm != null)
                     SetPathText(CurrDir.Path + "?search=" + searchTerm);
                 else
                     SetPathText(CurrDir.Path);
@@ -391,6 +391,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             FileItemList = list;
             AesFile currFile = FindCurrentItem(currentFile);
             CurrentItem = currFile;
+			searchTerm = null;
         });
     }
 

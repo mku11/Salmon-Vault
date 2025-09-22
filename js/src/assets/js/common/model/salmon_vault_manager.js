@@ -335,7 +335,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
         setTimeout(async () => {
             this.selectedFiles.clear();
             try {
-                if (this.fileManagerMode == SalmonVaultManager.Mode.Search)
+                if (this.fileManagerMode == SalmonVaultManager.Mode.Search && this.searchTerm != null)
                     this.setPathText(await this.currDir.getPath() + "?search=" + this.searchTerm);
                 else
                     this.setPathText(await this.currDir.getPath());
@@ -921,6 +921,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
             else
                 this.setStatus("Search Stopped");
             this.setTaskRunning(false);
+			this.searchTerm = null;
         });
     }
 
