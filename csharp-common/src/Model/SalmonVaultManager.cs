@@ -513,6 +513,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             Exception exception = null;
             int[] processedFiles = new int[] { -1 };
             List<AesFile> failedFiles = new List<AesFile>();
+			IList<IVirtualFile> deletedFiles = new List<IVirtualFile>();
             try
             {
                 FileCommander.BatchDeleteOptions deleteOptions = new FileCommander.BatchDeleteOptions();
@@ -530,6 +531,9 @@ public class SalmonVaultManager : INotifyPropertyChanged
                             lastTimeProgress = ctime;
                             FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
 							FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
+                        }
+						if (taskProgress.ProcessedBytes == taskProgress.TotalBytes) {
+                            deletedFiles.Add(taskProgress.File);
                         }
 					} catch (Exception ex) {
 						Console.Error.WriteLine(ex);
@@ -561,9 +565,22 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 SalmonDialog.PromptDialog("Delete", "Some files failed: " + exception.Message);
             else
                 SetTaskMessage("Delete Complete");
+			if(deletedFiles.Count < 20) {
+                foreach (IVirtualFile deletedFile in deletedFiles) {
+                    OnFileItemRemoved(-1, (AesFile) deletedFile);
+                }
+            } else {
+                try {
+                    if (Drive != null && files[0] != null && files[0].Parent != null
+                            && CurrDir.Path.Equals(files[0].Parent.Path)) {
+                        Refresh();
+                    }
+                } catch(Exception ex) {
+                    Console.Error.WriteLine(ex);
+                }
+            }
             FileProgress = 1;
             FilesProgress = 1;
-            Refresh();
             SetTaskRunning(false);
             copyFiles = null;
 			FileManagerOperationMode = OperationMode.None;
@@ -653,7 +670,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             return;
         ExportFiles(SelectedFiles.ToArray(), exportDir, deleteSource, (files) =>
         {
-            Refresh();
+            ClearSelectedFiles();
         });
         ClearSelectedFiles();
     }
@@ -888,6 +905,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             int[] processedFiles = new int[] { -1 };
             IFile[] files = null;
             List<AesFile> failedFiles = new List<AesFile>();
+			IList<IVirtualFile> exportedFiles = new List<IVirtualFile>();
             try
             {
                 FileCommander.BatchExportOptions exportOptions = new FileCommander.BatchExportOptions();
@@ -911,6 +929,9 @@ public class SalmonVaultManager : INotifyPropertyChanged
                             
 							FileProgress = taskProgress.ProcessedBytes / (double)taskProgress.TotalBytes;
 							FilesProgress = taskProgress.ProcessedFiles / (double)taskProgress.TotalFiles;
+                        }
+						if (taskProgress.ProcessedBytes == taskProgress.TotalBytes) {
+                            exportedFiles.Add(taskProgress.File);
                         }
                     } catch (Exception ex) {
                         Console.Error.WriteLine(ex);
@@ -941,7 +962,22 @@ public class SalmonVaultManager : INotifyPropertyChanged
             FileProgress = 1;
             FilesProgress = 1;
             SetTaskRunning(false);
-            Refresh();
+            if(deleteSource) {
+                if (exportedFiles.Count < 20) {
+                    foreach (IVirtualFile deletedFile in exportedFiles) {
+                        OnFileItemRemoved(-1, (AesFile) deletedFile);
+                    }
+                } else {
+                    try {
+                        if (Drive != null && items[0] != null && items[0].Parent != null
+                                && CurrDir.RealPath.Equals(items[0].Parent.RealPath)) {
+                            Refresh();
+                        }
+                    } catch (Exception ex) {
+                        Console.Error.WriteLine(ex);
+                    }
+                }
+            }
         });
     }
 
@@ -995,7 +1031,8 @@ public class SalmonVaultManager : INotifyPropertyChanged
                     exception = ex;
                 };
                 aesFiles = fileCommander.ImportFiles(files, importDir, importOptions);
-                OnFinished(aesFiles);
+				if(OnFinished != null)
+					OnFinished(aesFiles);
             }
             catch (Exception e)
             {
@@ -1014,7 +1051,12 @@ public class SalmonVaultManager : INotifyPropertyChanged
             FileProgress = 1;
             FilesProgress = 1;
             SetTaskRunning(false);
-            Refresh();
+            try {
+                if (Drive != null && CurrDir.RealPath.Equals(importDir.RealPath))
+                    Refresh();
+            } catch(Exception ex) {
+                Console.Error.WriteLine(ex);
+            }
         });
     }
 
