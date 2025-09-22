@@ -24,6 +24,7 @@ SOFTWARE.
 
 using Android.App;
 using Mku.Salmon;
+using Mku.SalmonFS.File;
 using Salmon.Vault.MAUI.ANDROID;
 
 namespace Salmon.Vault.Services;
@@ -37,9 +38,9 @@ public class AndroidMediaPlayerService : IMediaPlayerService
         this.activity = activity;
     }
 
-    public void StartMediaPlayer(SalmonFile file)
+    public void StartMediaPlayer(AesFile file)
     {
-        MediaPlayerActivity.SetMediaFiles(0, new SalmonFile[]{file});
+        MediaPlayerActivity.SetMediaFiles(0, new AesFile[]{file});
         activity.StartActivity(new Android.Content.Intent(activity, typeof(MediaPlayerActivity)));
     }
 }

@@ -21,21 +21,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-using Mku.Utils;
 using Mku.Salmon;
 using BitConverter = Mku.Convert.BitConverter;
 using System;
 using System.Collections.Generic;
 using Java.Lang;
 using Android.Provider;
-using Mku.Android.Salmon.Drive;
+using Mku.Android.SalmonFS.Drive;
 using Salmon.Vault.Model;
 using Salmon.Vault.Services;
 using Android.Database;
 using static Android.Provider.DocumentsContract;
 using System.IO;
 using Android.Webkit;
-using Mku.File;
+using Mku.FS.File;
+using File = Mku.FS.File.File;
+using Mku.SalmonFS.Drive;
+using Mku.SalmonFS.File;
+using Mku.FS.Drive.Utils;
 using static Android.OS.ParcelFileDescriptor;
 using Salmon.Vault.MAUI;
 
@@ -72,11 +75,11 @@ public class SalmonFileProvider : DocumentsProvider
             authorizedApps[packageName] = true;
     }
 
-    public static Java.IO.File CreateSharedFile(SalmonFile salmonFile)
+    public static Java.IO.File CreateSharedFile(AesFile salmonFile)
     {
         Java.IO.File sharedFile = ((AndroidDrive)SalmonVaultManager.Instance.Drive)
                 .CopyToSharedFolder(salmonFile);
-        byte[] rand = SalmonGenerator.GetSecureRandomBytes(32);
+        byte[] rand = Generator.GetSecureRandomBytes(32);
         Java.IO.File dir = new Java.IO.File(sharedFile.ParentFile, BitConverter.ToHex(rand));
         if (!dir.Mkdir())
             throw new RuntimeException("Could not create dir");
@@ -112,7 +115,7 @@ public class SalmonFileProvider : DocumentsProvider
 
     private void getRootDocument(MatrixCursor.RowBuilder row)
     {
-        SalmonDrive drive = SalmonVaultManager.Instance.Drive;
+        AesDrive drive = SalmonVaultManager.Instance.Drive;
         row.Add(DocumentsContract.Document.ColumnDocumentId, rootPath);
         row.Add(DocumentsContract.Document.ColumnDisplayName, rootPath);
         row.Add(DocumentsContract.Document.ColumnMimeType,
@@ -133,15 +136,15 @@ public class SalmonFileProvider : DocumentsProvider
         row.Add(DocumentsContract.Document.ColumnIcon, Resource.Drawable.info_small);
     }
 
-    private void getDocument(MatrixCursor.RowBuilder row, SalmonFile file)
+    private void getDocument(MatrixCursor.RowBuilder row, AesFile file)
     {
         row.Add(DocumentsContract.Document.ColumnDocumentId, file.Path);
-        row.Add(DocumentsContract.Document.ColumnDisplayName, file.BaseName);
+        row.Add(DocumentsContract.Document.ColumnDisplayName, file.Name);
         if (file.IsDirectory)
             row.Add(DocumentsContract.Document.ColumnMimeType, DocumentsContract.Document.MimeTypeDir);
         else
         {
-            string ext = FileUtils.GetExtensionFromFileName(file.BaseName).ToLower();
+            string ext = FileUtils.GetExtensionFromFileName(file.Name).ToLower();
             string mimeType = MimeTypeMap.Singleton.GetMimeTypeFromExtension(ext);
             if (mimeType == null)
                 mimeType = "application/octetstream";
@@ -152,7 +155,7 @@ public class SalmonFileProvider : DocumentsProvider
             flags = (int?)DocumentContractFlags.SupportsWrite;
         row.Add(DocumentsContract.Document.ColumnFlags, flags);
         row.Add(DocumentsContract.Document.ColumnSize, file.RealFile.Length);
-        row.Add(DocumentsContract.Document.ColumnLastModified, file.LastDateTimeModified);
+        row.Add(DocumentsContract.Document.ColumnLastModified, file.LastDateModified);
         if (file.IsDirectory)
             row.Add(DocumentsContract.Document.ColumnIcon, Resource.Drawable.folder);
         else
@@ -163,7 +166,7 @@ public class SalmonFileProvider : DocumentsProvider
     {
         setupServices();
         MatrixCursor result = new MatrixCursor(documentProjection);
-        SalmonDrive drive = GetManager().Drive;
+        AesDrive drive = GetManager().Drive;
         MatrixCursor.RowBuilder row = result.NewRow();
         if (drive == null)
         {
@@ -181,7 +184,7 @@ public class SalmonFileProvider : DocumentsProvider
             }
             try
             {
-                SalmonFile file = ParsePath(documentId);
+                AesFile file = ParsePath(documentId);
                 getDocument(row, file);
             }
             catch (IOException e)
@@ -209,9 +212,9 @@ public class SalmonFileProvider : DocumentsProvider
         }
         try
         {
-            SalmonFile dir = ParsePath(parentDocumentId);
-            SalmonFile[] files = dir.ListFiles();
-            foreach (SalmonFile file in files)
+            AesFile dir = ParsePath(parentDocumentId);
+            AesFile[] files = dir.ListFiles();
+            foreach (AesFile file in files)
             {
                 MatrixCursor.RowBuilder row = result.NewRow();
                 getDocument(row, file);
@@ -224,10 +227,10 @@ public class SalmonFileProvider : DocumentsProvider
         return result;
     }
 
-    private SalmonFile ParsePath(string documentId)
+    private AesFile ParsePath(string documentId)
     {
         string[] parts = documentId.Split("/");
-        SalmonFile file = GetManager().Drive.Root;
+        AesFile file = GetManager().Drive.Root;
         for (int i = 1; i < parts.Length; i++)
         {
             if (parts[i] == "")
@@ -239,12 +242,12 @@ public class SalmonFileProvider : DocumentsProvider
 
     class OnCloseListener : Java.Lang.Object, IOnCloseListener
     {
-        SalmonFile file;
+        AesFile file;
         IFile importFile;
         SalmonFileProvider provider;
         string filename;
 
-        public OnCloseListener(SalmonFileProvider provider, SalmonFile file, IFile importFile, string filename)
+        public OnCloseListener(SalmonFileProvider provider, AesFile file, IFile importFile, string filename)
         {
             this.file = file;
             this.importFile = importFile;
@@ -254,9 +257,9 @@ public class SalmonFileProvider : DocumentsProvider
 
         public void OnClose(Java.IO.IOException? ex)
         {
-            SalmonFile parentDir = file.Parent;
+            AesFile parentDir = file.Parent;
             provider.GetManager().ImportFiles(new IFile[] { importFile }, parentDir, false,
-                (SalmonFile[] importedSalmonFiles) =>
+                (AesFile[] importedSalmonFiles) =>
                 {
                     try
                     {
@@ -284,18 +287,18 @@ public class SalmonFileProvider : DocumentsProvider
             return null;
         }
         // TODO: check the CancellationSignal periodically
-        SalmonFile salmonFile;
+        AesFile salmonFile;
         Java.IO.File sharedFile;
         string filename;
         Android.OS.ParcelFileMode accessMode = Android.OS.ParcelFileDescriptor.ParseMode(mode);
         try
         {
             salmonFile = ParsePath(documentId);
-            if (salmonFile.Size > MAX_FILE_SIZE_TO_SHARE)
+            if (salmonFile.Length > MAX_FILE_SIZE_TO_SHARE)
             {
                 throw new RuntimeException(Context.GetString(Resource.String.FileSizeTooLarge));
             }
-            filename = salmonFile.BaseName;
+            filename = salmonFile.Name;
             sharedFile = CreateSharedFile(salmonFile);
         }
         catch (System.Exception e)
@@ -310,8 +313,8 @@ public class SalmonFileProvider : DocumentsProvider
             try
             {
                 Android.OS.Handler handler = new Android.OS.Handler(Context.MainLooper);
-                SalmonFile file = salmonFile;
-                IFile importFile = new DotNetFile(sharedFile.Path);
+                AesFile file = salmonFile;
+                IFile importFile = new File(sharedFile.Path);
                 descriptor = Android.OS.ParcelFileDescriptor.Open(sharedFile, accessMode, handler, new OnCloseListener(this, file, importFile, filename));
             }
             catch (IOException e)

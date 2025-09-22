@@ -31,13 +31,16 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using Java.Util;
-using Mku.Android.Salmon.Media;
+using Mku.Android.SalmonFS.Media;
 using Mku.Salmon;
+using Mku.SalmonFS.File;
+using Salmon.Vault.Utils;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.IO;
 using Button = Android.Widget.Button;
 using ImageButton = Android.Widget.ImageButton;
-using Timer = Java.Util.Timer;
 
 namespace Salmon.Vault.MAUI.ANDROID;
 
@@ -59,7 +62,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
 
     private static readonly int THRESHOLD_SEEK = 30;
 
-    private static SalmonFile[] videos;
+    private static AesFile[] videos;
     private static int pos;
 
     private readonly object swipeObj = new object();
@@ -83,7 +86,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     private float speed = 1.0f;
     private int old_x = 0;
 
-    public static void SetMediaFiles(int position, SalmonFile[] mediaFiles)
+    public static void SetMediaFiles(int position, AesFile[] mediaFiles)
     {
         pos = position;
         videos = mediaFiles;
@@ -191,10 +194,10 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         },500);
     }
 
-    protected void LoadContent(SalmonFile file)
+    protected void LoadContent(AesFile file)
     {
-        mTitle.Text = file.BaseName;
-		if (FileUtils.IsAudio(file.Name)) {
+        mTitle.Text = file.Name;
+		if (MimeUtils.IsAudio(file.Name)) {
 			ShowSeekBar(true);
 		}
         Task.Run(() =>
@@ -213,21 +216,55 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         });
     }
 
-    private class MediaPlayerTimerTask : TimerTask
+        private class Timer
     {
-        MediaPlayerActivity activity;
-        public MediaPlayerTimerTask(MediaPlayerActivity activity)
+		private MediaPlayerActivity activity;
+		private Thread thread;
+		private bool quit = false;
+		
+		public Timer(MediaPlayerActivity activity) {
+			this.activity = activity;
+		}
+		
+        public void Start()
         {
-            this.activity = activity;
+			if (thread!=null)
+				return;
+			thread = new Thread(() => {
+				try
+				{
+					while (!quit) {
+						try {
+							Thread.Sleep(1000);
+						} catch (ThreadInterruptedException ignored) {
+							
+						}
+						activity.UpdateTimeControls();
+					}
+				}
+				catch (Exception ignored) { }
+			});
         }
-        override
-        public void Run()
-        {
-			try {
-				if (activity.mediaPlayer != null && activity.mediaPlayer.IsPlaying)
-					activity.mSeekBar.Progress = (int)(activity.mediaPlayer.CurrentPosition / (float)activity.mediaPlayer.Duration * 100);
-			} catch (Exception ignored) {}
+		
+		public void Cancel() {
+			if (thread == null)
+				return;
+            quit = true;
+            thread.Interrupt();
         }
+    }
+
+    void UpdateTimeControls() {
+        WindowUtils.RunOnMainThread(() => {
+            try {
+                if (mediaPlayer != null && mediaPlayer.IsPlaying)
+                {
+                    mSeekBar.Progress = (int)(mediaPlayer.CurrentPosition / (float)mediaPlayer.Duration * 100);
+                }
+            } catch (Exception ex) {
+                Console.Error.WriteLine(ex);
+            }
+        });
     }
 
     override
@@ -304,9 +341,8 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         {
             timer.Cancel();
         }
-        TimerTask timerTask = new MediaPlayerTimerTask(this);
-        timer = new Timer();
-        timer.Schedule(timerTask, 1000, 1000);
+        timer = new Timer(this);
+        timer.Start();
         UpdateControls();
     }
 

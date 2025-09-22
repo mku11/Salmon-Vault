@@ -1,8 +1,8 @@
 
 using Android.App;
 using AndroidX.DocumentFile.Provider;
-using Mku.Android.File;
-using Mku.File;
+using Mku.Android.FS.File;
+using Mku.FS.File;
 using Salmon.Vault.Services;
 
 namespace Salmon.Vault.MAUI.ANDROID;
@@ -27,10 +27,10 @@ public class AndroidFileService : IFileService
                 docFile = DocumentFile.FromTreeUri(activity, Android.Net.Uri.Parse(filepath));
             else
                 docFile = DocumentFile.FromSingleUri(activity, Android.Net.Uri.Parse(filepath));
-            file = new AndroidFile(docFile, activity);
+            file = new AndroidFile(docFile);
         } else
         {
-            file = new DotNetFile(filepath);
+            file = new File(filepath);
         }
         return file;
     }

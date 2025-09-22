@@ -6,9 +6,9 @@ using Android.OS;
 using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui;
-using Mku.File;
+using Mku.FS.File;
 using Mku.Salmon.Transform;
-using Salmon.Transform;
+using Mku.SalmonFS.Drive;
 using Salmon.Vault.Extensions;
 using Salmon.Vault.Main;
 using Salmon.Vault.Model;
@@ -17,8 +17,9 @@ using Salmon.Vault.View;
 using Salmon.Vault.ViewModel;
 using System;
 using System.Diagnostics;
-using Mku.Android.Salmon.Drive;
-using Mku.Android.File;
+using Mku.Android.SalmonFS.Drive;
+using Mku.Android.FS.File;
+using Mku.Android.Salmon.Transform;
 using Mku.Salmon;
 using Java.Lang;
 
@@ -44,8 +45,8 @@ public class MainActivity : MauiAppCompatActivity
 
     private void SetupServices()
     {
-        SalmonNativeTransformer.NativeProxy = new AndroidNativeProxy();
-        AndroidDrive.Initialize(this.ApplicationContext);
+        AesNativeTransformer.NativeProxy = new AndroidNativeProxy();
+        AndroidFileSystem.Initialize(this.ApplicationContext);
         ServiceLocator.GetInstance().Register(typeof(IFileService), new AndroidFileService(this));
         ServiceLocator.GetInstance().Register(typeof(IFileDialogService), new AndroidFileDialogService(this));
         ServiceLocator.GetInstance().Register(typeof(IWebBrowserService), new AndroidBrowserService());
@@ -80,8 +81,8 @@ public class MainActivity : MauiAppCompatActivity
                     .SetShowAsAction(ShowAsAction.Never);
         }
 
-        if (SalmonVaultManager.Instance.FileManagerMode == SalmonVaultManager.Mode.Copy
-            || SalmonVaultManager.Instance.FileManagerMode == SalmonVaultManager.Mode.Move)
+        if (SalmonVaultManager.Instance.FileManagerOperationMode == SalmonVaultManager.OpearationMode.Copy
+            || SalmonVaultManager.Instance.FileManagerOperationMode == SalmonVaultManager.OperationMode.Move)
         {
             menu.Add(3, ActionType.PASTE.Ordinal(), 0, Resources.GetString(Resource.String.Paste));
         }
@@ -188,7 +189,7 @@ public class MainActivity : MauiAppCompatActivity
             IFile exportAuthFile;
             try
             {
-                exportAuthFile = dir.CreateFile(SalmonDrive.AuthConfigFilename);
+                exportAuthFile = dir.CreateFile(AesDrive.AuthConfigFilename);
             }
             catch (Java.IO.IOException e)
             {
