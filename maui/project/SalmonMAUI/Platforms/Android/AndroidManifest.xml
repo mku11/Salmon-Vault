@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
           package="com.mku.salmon.vault.maui"
@@ -13,8 +13,6 @@
     android:largeHeap="true"
     android:icon="@drawable/logo_128x128"
     android:allowBackup="false">
-  </application>
-
 
 	<provider
             android:name="salmon.vault.provider.SalmonFileProvider"
@@ -26,4 +24,5 @@
 			<action android:name="android.content.action.DOCUMENTS_PROVIDER" />
 		</intent-filter>
 	</provider>
+  </application>
 </manifest>
