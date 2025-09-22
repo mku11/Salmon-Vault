@@ -27,6 +27,7 @@ import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
+import com.mku.salmon.vault.utils.Timer;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import com.mku.salmonfs.file.AesFile;
@@ -98,6 +99,7 @@ public class MediaPlayerController {
     private boolean quit = false;
 
     private final ObjectProperty<Image> image = new SimpleObjectProperty<>(this, "image");
+    private Timer timer;
 
     public final void setImage(Image image) {
         this.image.set(image);
@@ -220,34 +222,26 @@ public class MediaPlayerController {
         }
     }
 
-    private void stopTimer() {
-        quit = true;
-    }
-
-    @SuppressWarnings("BusyWait")
     private void startTimer() {
-        Thread timer = new Thread(() -> {
-            while (!quit) {
-                int progressInt = (int) (mp.getCurrentTime().toMillis() / mp.getTotalDuration().toMillis() * 1000);
-                slider.setValue(progressInt);
-                Date curr = new Date((long) mp.getCurrentTime().toMillis());
-                Date total = new Date((long) mp.getTotalDuration().toMillis());
-                Platform.runLater(() -> {
-                    currtime.setValue(format.format(curr));
-                    totaltime.setValue(format.format(total));
-                });
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        timer = new Timer(()->updateTimeControls(), 1000);
         timer.start();
     }
 
+    private void updateTimeControls() {
+        int progressInt = (int) (mp.getCurrentTime().toMillis() / mp.getTotalDuration().toMillis() * 1000);
+        slider.setValue(progressInt);
+        Date curr = new Date((long) mp.getCurrentTime().toMillis());
+        Date total = new Date((long) mp.getTotalDuration().toMillis());
+        Platform.runLater(() -> {
+            currtime.setValue(format.format(curr));
+            totaltime.setValue(format.format(total));
+        });
+    }
+
     public void onClose() {
-        stopTimer();
+        if (timer != null) {
+            timer.cancel();
+        }
         mp.stop();
         mp.dispose();
         stage.close();
