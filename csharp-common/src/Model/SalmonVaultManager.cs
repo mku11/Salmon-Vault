@@ -297,10 +297,11 @@ public class SalmonVaultManager : INotifyPropertyChanged
     public void StopOperation()
     {
         fileCommander.Cancel();
-        FileManagerMode = Mode.Browse;
 		FileManagerOperationMode = OperationMode.None;
-        ClearSelectedFiles();
-        ClearCopiedFiles();
+		if(fileManagerMode != Mode.Search) {
+            clearSelectedFiles();
+            clearCopiedFiles();
+        }
         FileProgress = 0;
         FilesProgress = 0;
         SetTaskRunning(false);

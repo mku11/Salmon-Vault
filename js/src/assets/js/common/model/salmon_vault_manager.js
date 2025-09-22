@@ -280,9 +280,15 @@ export class SalmonVaultManager extends IPropertyNotifier {
 
     stopOperation() {
         this.fileCommander.cancel();
-        this.fileManagerMode = SalmonVaultManager.Mode.Browse;
 		this.fileManagerOperationMode = SalmonVaultManager.OperationMode.None;
+		if(this.fileManagerMode != Mode.Search) {
+            this.clearSelectedFiles();
+            this.clearCopiedFiles();
+        }
+		this.setFileProgress(0);
+        this.setFilesProgress(0);
         this.setTaskRunning(false);
+        setTaskMessage("");
     }
 
     copySelectedFiles() {
