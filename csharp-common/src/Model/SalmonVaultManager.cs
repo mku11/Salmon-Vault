@@ -298,9 +298,9 @@ public class SalmonVaultManager : INotifyPropertyChanged
     {
         fileCommander.Cancel();
 		FileManagerOperationMode = OperationMode.None;
-		if(fileManagerMode != Mode.Search) {
-            clearSelectedFiles();
-            clearCopiedFiles();
+		if(FileManagerMode != Mode.Search) {
+            ClearSelectedFiles();
+            ClearCopiedFiles();
         }
         FileProgress = 0;
         FilesProgress = 0;
