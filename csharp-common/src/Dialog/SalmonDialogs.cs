@@ -458,10 +458,7 @@ public class SalmonDialogs
                             if (parent != null && parent.Path != null)
                                 SalmonSettings.GetInstance().LastImportDir = parent.Path;
                             SalmonVaultManager.Instance.ImportFiles(filesToImport,
-                                SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (AesFile[] importedFiles) =>
-                                {
-                                    SalmonVaultManager.Instance.Refresh();
-                                });
+                                SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, null);
                         }
                         catch (Exception e)
                         {
@@ -493,10 +490,7 @@ public class SalmonDialogs
                                 SalmonSettings.GetInstance().LastImportDir = folder.Path;
                             }
                             SalmonVaultManager.Instance.ImportFiles(new IFile[] { folder },
-                                SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, (AesFile[] importedFiles) =>
-                                {
-                                    SalmonVaultManager.Instance.Refresh();
-                                });
+                                SalmonVaultManager.Instance.CurrDir, SalmonSettings.GetInstance().DeleteAfterImport, null);
                         }
                         catch (Exception e)
                         {
