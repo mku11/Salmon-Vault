@@ -193,7 +193,7 @@ public class SalmonActivity extends AppCompatActivity {
             manager.updateListItem = this::updateListItem;
             manager.onFileItemRemoved = this::fileItemRemoved;
             manager.onFileItemAdded = this::fileItemAdded;
-            adapter.observePropertyChanges(this::Adapter_PropertyChanged);
+            adapter.observePropertyChanges(this::adapterPropertyChanged);
             WindowUtils.runOnMainThread(() ->
             {
                 manager.initialize();
@@ -287,7 +287,7 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    private void Adapter_PropertyChanged(Object owner, String propertyName) {
+    private void adapterPropertyChanged(Object owner, String propertyName) {
         if (propertyName.equals("SelectedFiles")) {
             manager.getSelectedFiles().clear();
             for (AesFile file : adapter.getSelectedFiles())
@@ -340,8 +340,8 @@ public class SalmonActivity extends AppCompatActivity {
                 }
             }
             if(pos >=0) {
-                fileItemList.add(position, file);
-                adapter.notifyItemInserted(position);
+                fileItemList.add(pos, file);
+                adapter.notifyItemInserted(pos);
             }
         });
     }
