@@ -206,7 +206,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     private void LoadContent(AesFile file)
     {
         mTitle.Text = file.Name;
-        if (Mku.FS.Drive.Utils.FileUtils.IsAudio(file.Name)) {
+        if (MimeUtils.IsAudio(file.Name)) {
             ShowSeekBar(true);
         }
         Task.Run(() =>
