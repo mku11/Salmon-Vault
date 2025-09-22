@@ -117,7 +117,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
 
     protected void PlayNext()
     {
-        if (pos <= videos.Length)
+        if (pos < videos.Length - 1)
         {
             pos++;
             LoadContentAsync();
@@ -216,7 +216,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         });
     }
 
-        private class Timer
+    private class Timer
     {
 		private MediaPlayerActivity activity;
 		private Thread thread;
