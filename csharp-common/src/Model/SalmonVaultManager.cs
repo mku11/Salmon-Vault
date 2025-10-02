@@ -790,7 +790,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
                 file.RealFile.Reset();
                 WindowUtils.RunOnMainThread(() =>
                 {
-                    SalmonVaultManager.Instance.UpdateListItem(file);
+                    UpdateListItem(file);
                 });
             }
             catch (Exception e)
@@ -809,12 +809,12 @@ public class SalmonVaultManager : INotifyPropertyChanged
             AesFile file = null;
             try
             {
-                file = SalmonVaultManager.Instance.CurrDir.CreateDirectory(folderName);
+                file = CurrDir.CreateDirectory(folderName);
             }
             catch (Exception exception)
             {
                 Console.Error.WriteLine(exception);
-                if (!SalmonVaultManager.Instance.HandleException(exception))
+                if (!HandleException(exception))
                 {
                     SalmonDialog.PromptDialog("Error", "Could not create folder: " + exception.Message);
                 }
@@ -823,7 +823,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             {
                 if (file != null)
                     SelectedFiles = new HashSet<AesFile>(new AesFile[] { file });
-                SalmonVaultManager.Instance.Refresh();
+                Refresh();
             }
         });
     }
@@ -836,7 +836,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             AesFile file = null;
             try
             {
-                file = SalmonVaultManager.Instance.CurrDir.CreateFile(fileName);
+                file = CurrDir.CreateFile(fileName);
                 file.SetApplyIntegrity(true);
                 stream = file.GetOutputStream();
                 stream.Write(UTF8Encoding.UTF8.GetBytes("\n"), 0, 1);
@@ -845,7 +845,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             catch (Exception exception)
             {
                 Console.Error.WriteLine(exception);
-                if (!SalmonVaultManager.Instance.HandleException(exception))
+                if (!HandleException(exception))
                 {
                     SalmonDialog.PromptDialog("Error", "Could not create file: " + exception.Message);
                 }
@@ -856,7 +856,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
                     stream.Close();
                 if (file != null)
                     SelectedFiles = new HashSet<AesFile>(new AesFile[] { file });
-                SalmonVaultManager.Instance.Refresh();
+                Refresh();
             }
         });
     }
@@ -868,7 +868,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
             try
             {
                 PropertyChanged(this, new PropertyChangedEventArgs("taskRunning"));
-                SalmonVaultManager.Instance.Drive.SetPassword(pass);
+                Drive.SetPassword(pass);
                 SalmonDialog.PromptDialog("Password changed");
             }
             catch (Exception e)
