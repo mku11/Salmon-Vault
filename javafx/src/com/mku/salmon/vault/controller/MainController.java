@@ -33,10 +33,12 @@ import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.model.win.SalmonWinVaultManager;
 import com.mku.salmon.vault.services.*;
+import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.utils.FileTypes;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
+import com.mku.salmonfs.drive.utils.AesFileComparators;
 import com.mku.salmonfs.file.AesFile;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -54,11 +56,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -184,19 +187,19 @@ public class MainController {
 
     }
 
-	private void fileItemRemoved(final Integer position, AesFile file) {
+    private void fileItemRemoved(final Integer position, AesFile file) {
         WindowUtils.runOnMainThread(() ->
         {
             int pos = position;
-            if(pos == -1) {
-                for(int i=0; i<fileItemList.size(); i++) {
+            if (pos == -1) {
+                for (int i = 0; i < fileItemList.size(); i++) {
                     if (fileItemList.get(i).getAesFile().getRealPath().equals(file.getRealPath())) {
                         pos = i;
                         break;
                     }
                 }
             }
-            if(pos >=0) {
+            if (pos >= 0) {
                 fileItemList.remove(pos);
             }
         });
@@ -205,17 +208,17 @@ public class MainController {
     private void fileItemAdded(Integer position, AesFile file) {
         WindowUtils.runOnMainThread(() ->
         {
-			int pos = position;
-            if(pos == -1) {
-                for(int i=0; i<fileItemList.size(); i++) {
+            int pos = position;
+            if (pos == -1) {
+                for (int i = 0; i < fileItemList.size(); i++) {
                     if (fileItemList.get(i).getAesFile().getRealPath().equals(file.getRealPath())) {
                         pos = i;
                         break;
                     }
                 }
             }
-            if(pos >=0) {
-				fileItemList.add(pos, new SalmonFileViewModel(file));
+            if (pos >= 0) {
+                fileItemList.add(pos, new SalmonFileViewModel(file));
             }
         });
     }
@@ -228,19 +231,22 @@ public class MainController {
 
     private void managerPropertyChanged(Object owner, String propertyName) {
         if (propertyName.equals("FileItemList")) {
-            updateFileViewModels();
-            Thumbnails.enableAnimation(true);
+            WindowUtils.runOnMainThread(() -> {
+                updateFileViewModels();
+                Thumbnails.enableAnimation(true);
+                sortTable();
+            });
         } else if (propertyName.equals("CurrentItem")) {
             selectItem(manager.getCurrentItem());
         } else if (propertyName.equals("SelectedFiles")) {
-			if(table.getSelectionModel().getSelectedItems() != null) {
+            if (table.getSelectionModel().getSelectedItems() != null) {
                 table.getSelectionModel().clearSelection();
-                for(AesFile salmonFile : manager.getSelectedFiles()){
+                for (AesFile salmonFile : manager.getSelectedFiles()) {
                     SalmonFileViewModel viewModel = getViewModel(salmonFile);
-                    if(viewModel != null)
+                    if (viewModel != null)
                         table.getSelectionModel().getSelectedItems().add(viewModel);
                 }
-			}
+            }
         } else if (propertyName.equals("Status")) {
             WindowUtils.runOnMainThread(() -> status.setValue(manager.getStatus()));
             if (manager.isJobRunning()
@@ -271,17 +277,50 @@ public class MainController {
         }
     }
 
-    private void updateFileViewModels() {
-        WindowUtils.runOnMainThread(() -> {
-            if (manager.getFileItemList() == null)
-                fileItemList.clear();
-            else {
-                fileItemList.clear();
-                fileItemList.addAll(manager.getFileItemList().stream()
-                        .map(SalmonFileViewModel::new)
-                        .collect(Collectors.toList()));
+    private void sortTable() {
+        if (table.getSortOrder().size() > 0) {
+            TableColumn<SalmonFileViewModel, ?> sortColumn = table.getSortOrder().get(0);
+            System.out.println(sortColumn.getText() + ", " + sortColumn.getSortType());
+            fileItemList.sort(getComparator(sortColumn.getText(), sortColumn.getSortType()));
+        }
+    }
+
+    private Comparator<? super SalmonFileViewModel> getComparator(String text, TableColumn.SortType sortType) {
+        return (Comparator<SalmonFileViewModel>) (o1, o2) -> {
+            if (text.equals("Name")) {
+                if (sortType == TableColumn.SortType.ASCENDING) {
+                    return AesFileComparators.getFilenameAscComparator().compare(o1.getAesFile(), o2.getAesFile());
+                } else
+                    return AesFileComparators.getFilenameDescComparator().compare(o1.getAesFile(), o2.getAesFile());
+            } else if (text.equals("Date Modified")) {
+                if (sortType == TableColumn.SortType.ASCENDING) {
+                    return AesFileComparators.getDateAscComparator().compare(o1.getAesFile(), o2.getAesFile());
+                } else
+                    return AesFileComparators.getDateDescComparator().compare(o1.getAesFile(), o2.getAesFile());
+            } else if (text.equals("Type")) {
+                if (sortType == TableColumn.SortType.ASCENDING) {
+                    return AesFileComparators.getTypeAscComparator().compare(o1.getAesFile(), o2.getAesFile());
+                } else
+                    return AesFileComparators.getTypeDescComparator().compare(o1.getAesFile(), o2.getAesFile());
+            } else if (text.equals("Size")) {
+                if (sortType == TableColumn.SortType.ASCENDING) {
+                    return AesFileComparators.getSizeAscComparator().compare(o1.getAesFile(), o2.getAesFile());
+                } else
+                    return AesFileComparators.getSizeDescComparator().compare(o1.getAesFile(), o2.getAesFile());
             }
-        });
+            return 0;
+        };
+    }
+
+    private void updateFileViewModels() {
+        if (manager.getFileItemList() == null)
+            fileItemList.clear();
+        else {
+            fileItemList.clear();
+            fileItemList.addAll(manager.getFileItemList().stream()
+                    .map(SalmonFileViewModel::new)
+                    .collect(Collectors.toList()));
+        }
     }
 
     synchronized void onSelectedItems(java.util.List<SalmonFileViewModel> selectedItems) {
@@ -326,33 +365,13 @@ public class MainController {
         table.getSelectionModel().getSelectedCells().addListener((ListChangeListener<TablePosition>) c -> {
             onSelectedItems(table.getSelectionModel().getSelectedItems());
         });
-
-        for(TableColumn<SalmonFileViewModel, ?> col : table.getColumns()) {
-            if (col.getText().equals("Size")) {
-                TableColumn<SalmonFileViewModel, String> sizeColumn = (TableColumn<SalmonFileViewModel, String>) col;
-                setSizeColumnComparator(sizeColumn);
-            }
-        }
-        Platform.runLater(() -> table.requestFocus());
-    }
-
-    private void setSizeColumnComparator(TableColumn<SalmonFileViewModel, String> sizeColumn) {
-        sizeColumn.setComparator((String a, String b)->{
-            String[] partsA = a.split(" ");
-            String[] partsB = b.split(" ");
-            if(partsA[1].equals("items") && partsB[1].equals("items")) {
-                if (Float.parseFloat(partsA[0]) == Float.parseFloat(partsB[0]))
-                    return 0;
-                return Float.parseFloat(partsA[0]) < Float.parseFloat(partsB[0]) ? -1 : 1;
-            }
-            if(partsA[1].equals("items"))
-                return -1;
-            if(partsB[1].equals("items"))
-                return 1;
-            if (Float.parseFloat(partsA[0]) == Float.parseFloat(partsB[0]))
-                return 0;
-            return Float.parseFloat(partsA[0]) < Float.parseFloat(partsB[0]) ? -1 : 1;
+        table.setOnSort((event) -> {
+            // we use custom sorting because tableview is virtualized
+            // thus we only have values for visible items
+            sortTable();
+            event.consume();
         });
+        Platform.runLater(() -> table.requestFocus());
     }
 
     public void onAbout() {
@@ -570,7 +589,7 @@ public class MainController {
             manager.openListItem = this::OpenListItem;
             manager.observePropertyChanges(this::managerPropertyChanged);
             manager.updateListItem = this::updateListItem;
-			manager.onFileItemRemoved = this::fileItemRemoved;
+            manager.onFileItemRemoved = this::fileItemRemoved;
             manager.onFileItemAdded = this::fileItemAdded;
 
         } catch (Exception e) {
@@ -683,7 +702,7 @@ public class MainController {
         SalmonFileViewModel vm = getViewModel(file);
         try {
             if (MimeUtils.isVideo(file.getName())) {
-                if(useContentViewer)
+                if (useContentViewer)
                     startContentViewer(vm);
                 else
                     startMediaPlayer(vm);
