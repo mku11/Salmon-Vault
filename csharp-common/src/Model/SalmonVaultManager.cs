@@ -804,6 +804,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void CreateDirectory(string folderName)
     {
+        ClearSelectedFiles();
         ThreadPool.QueueUserWorkItem(state =>
         {
             AesFile file = null;
@@ -830,6 +831,7 @@ public class SalmonVaultManager : INotifyPropertyChanged
 
     public void CreateFile(string fileName)
     {
+        ClearSelectedFiles();
         ThreadPool.QueueUserWorkItem(state =>
         {
             RandomAccessStream stream = null;
