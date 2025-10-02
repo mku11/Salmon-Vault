@@ -796,7 +796,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 }
                 if (file != null)
                     setSelectedFiles(new HashSet<>(List.of(file)));
-                SalmonVaultManager.getInstance().refresh();
+                refresh();
             }
         });
     }
