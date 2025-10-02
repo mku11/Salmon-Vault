@@ -756,6 +756,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void createDirectory(String folderName) {
+        clearSelectedFiles();
         executor.submit(() -> {
             AesFile file = null;
             try {
@@ -775,6 +776,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public void createFile(String fileName) {
         executor.submit(() -> {
+            clearSelectedFiles();
             RandomAccessStream stream = null;
             AesFile file = null;
             try {
