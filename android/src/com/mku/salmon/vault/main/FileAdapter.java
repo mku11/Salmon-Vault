@@ -71,7 +71,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifier {
     private static final String TAG = FileAdapter.class.getName();
-    private static final int MAX_CACHE_SIZE = 20 * 1024 * 1024;
+    private static final int MAX_CACHE_SIZE = 24 * 1024 * 1024;
     private static final int THUMBNAIL_MAX_STEPS = 10;
     private static final long VIDEO_THUMBNAIL_MSECS = 3000;
     private static final int TASK_THREADS = 1;
@@ -81,7 +81,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     private final LayoutInflater inflater;
     private final Function<Integer, Boolean> itemClicked;
     private final Activity activity;
-    private final LinkedHashMap<AesFile, Bitmap> bitmapCache = new LinkedHashMap<>();
+    private final LinkedHashMap<Integer, Bitmap> bitmapCache = new LinkedHashMap<>();
     // we use a deque and add jobs to the front for better user experience
     private final LinkedBlockingDeque<ViewHolder> tasks = new LinkedBlockingDeque<>();
     private AesFile lastSelected;
@@ -216,13 +216,13 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                 updateFileInfo(viewHolder, filename, finalItems,
                         finalSize, finalDate, isDir);
             });
-
+            int key = getHash(file);
             String ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
             if (viewHolder.salmonFile.isDirectory()) {
                 activity.runOnUiThread(() -> {
                     viewHolder.thumbnail.setImageResource(R.drawable.folder);
                 });
-            } else if (bitmapCache.containsKey(file)) {
+            } else if (bitmapCache.containsKey(key)) {
                 activity.runOnUiThread(() -> {
                     updateIconFromCache(viewHolder, file, ext);
                 });
@@ -331,12 +331,13 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     }
 
     private boolean updateIconFromCache(ViewHolder viewHolder, AesFile file, String ext) {
-        if (bitmapCache.containsKey(file)) {
-            Bitmap bitmap = bitmapCache.get(file);
+        int key = getHash(file);
+        if (bitmapCache.containsKey(key)) {
+            Bitmap bitmap = bitmapCache.get(key);
             if (bitmap == null)
                 updateFileIcon(viewHolder, ext);
             else {
-                updateThumbnailIcon(viewHolder, bitmapCache.get(file));
+                updateThumbnailIcon(viewHolder, bitmapCache.get(key));
             }
             return true;
         }
@@ -374,8 +375,8 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
 
     public void resetCache() {
         int reduceSize = 0;
-        List<AesFile> keysToRemove = new LinkedList<>();
-        for (AesFile key : bitmapCache.keySet()) {
+        List<Integer> keysToRemove = new ArrayList<>();
+        for (int key : bitmapCache.keySet()) {
             Bitmap bitmap = bitmapCache.get(key);
             if (bitmap != null)
                 reduceSize += bitmap.getAllocationByteCount();
@@ -383,7 +384,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                 break;
             keysToRemove.add(key);
         }
-        for (AesFile key : keysToRemove) {
+        for (int key : keysToRemove) {
             Bitmap bitmap = bitmapCache.remove(key);
             if (bitmap != null)
                 cacheSize -= bitmap.getAllocationByteCount();
@@ -392,10 +393,11 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     }
 
     public void removeCache(AesFile file) {
-        if (bitmapCache.containsKey(file)) {
-            if(bitmapCache.get(file) != null)
-                cacheSize -= bitmapCache.get(file).getAllocationByteCount();
-            bitmapCache.remove(file);
+        int key = getHash(file);
+        if (bitmapCache.containsKey(key)) {
+            if(bitmapCache.get(key) != null)
+                cacheSize -= bitmapCache.get(key).getAllocationByteCount();
+            bitmapCache.remove(key);
         }
     }
 
@@ -414,9 +416,14 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     }
 
     private void addBitmapToCache(AesFile file, Bitmap bitmap) {
-        bitmapCache.put(file, bitmap);
+        int key = getHash(file);
+        bitmapCache.put(key, bitmap);
         if (bitmap != null)
             cacheSize += bitmap.getAllocationByteCount();
+    }
+
+    private static int getHash(AesFile file) {
+        return (file.getRealPath() + ":" + file.getLastDateModified()).hashCode();
     }
 
     private void checkCacheSize() {
