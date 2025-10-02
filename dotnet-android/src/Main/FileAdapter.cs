@@ -27,7 +27,6 @@ using AndroidX.RecyclerView.Widget;
 using Salmon.Vault.Utils;
 using Salmon.Vault.Image;
 using Java.Util.Concurrent;
-using System.Collections.Concurrent;
 using Android.Views.Animations;
 using Java.Text;
 using Java.Security;
@@ -45,6 +44,7 @@ using Android.Media;
 using System.Runtime.CompilerServices;
 using Mku.SalmonFS.File;
 using Mku.FS.Drive.Utils;
+using System.Collections.Specialized;
 
 namespace Salmon.Vault.Main;
 
@@ -61,7 +61,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     private LayoutInflater inflater;
     private Func<int, bool> itemClicked;
     private Activity activity;
-    private ConcurrentDictionary<AesFile, Bitmap> bitmapCache = new ConcurrentDictionary<AesFile, Bitmap>();
+    private OrderedDictionary bitmapCache = new OrderedDictionary();
     // we use a deque and add jobs to the front for better user experience
     private LinkedBlockingDeque tasks = new LinkedBlockingDeque();
     private AesFile lastSelected;
@@ -206,6 +206,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                     viewHolder.salmonFile, finalSize, finalDate, isDir);
             });
 
+            string key = GetHash(file);
             string ext = FileUtils.GetExtensionFromFileName(filename).ToLower();
             if (viewHolder.salmonFile.IsDirectory)
             {
@@ -213,7 +214,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                     viewHolder.thumbnail.SetImageResource(Resource.Drawable.folder);
                 });
             }
-            else if (bitmapCache.ContainsKey(file))
+            else if (bitmapCache.Contains(key))
             {
                 activity.RunOnUiThread(() =>
                {
@@ -359,14 +360,15 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
     private bool UpdateIconFromCache(ViewHolder viewHolder, AesFile file, string ext)
     {
-        if (bitmapCache.ContainsKey(file))
+        string key = GetHash(file);
+        if (bitmapCache.Contains(key))
         {
-            Bitmap bitmap = bitmapCache[file];
+            Bitmap bitmap = (Bitmap)bitmapCache[key];
             if (bitmap == null)
                 UpdateFileIcon(viewHolder, ext);
             else
             {
-                UpdateThumbnailIcon(viewHolder, bitmapCache[file]);
+                UpdateThumbnailIcon(viewHolder, (Bitmap)bitmapCache[key]);
             }
             return true;
         }
@@ -411,19 +413,20 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     public void ResetCache()
     {
         int reduceSize = 0;
-        List<AesFile> keysToRemove = new List<AesFile>();
-        foreach (AesFile key in bitmapCache.Keys)
+        List<int> keysToRemove = new List<int>();
+        foreach (int key in bitmapCache.Keys)
         {
-            Bitmap bitmap = bitmapCache[key];
+            Bitmap bitmap = (Bitmap)bitmapCache[key];
             if (bitmap != null)
                 reduceSize += bitmap.AllocationByteCount;
             if (reduceSize >= MAX_CACHE_SIZE / 2)
                 break;
             keysToRemove.Add(key);
         }
-        foreach (AesFile key in keysToRemove)
+        foreach (int key in keysToRemove)
         {
-            bitmapCache.Remove(key, out Bitmap bitmap);
+            Bitmap bitmap = (Bitmap)bitmapCache[key];
+            bitmapCache.Remove(key);
             if (bitmap != null)
                 cacheSize -= bitmap.AllocationByteCount;
         }
@@ -431,10 +434,11 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     }
 
     public void RemoveCache(AesFile file) {
-        if (bitmapCache.ContainsKey(file)) {
-            if(bitmapCache[file] != null)
-                cacheSize -= bitmapCache[file].AllocationByteCount;
-            bitmapCache.TryRemove(file, out Bitmap bitmap);
+        string key = GetHash(file);
+        if (bitmapCache.Contains(key)) {
+            if(bitmapCache[key] != null)
+                cacheSize -= ((Bitmap) bitmapCache[key]).AllocationByteCount;
+            bitmapCache.Remove(key);
         }
     }
 	
@@ -458,9 +462,15 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
 
     private void AddBitmapToCache(AesFile file, Bitmap bitmap)
     {
-        bitmapCache[file] = bitmap;
+        string key = GetHash(file);
+        bitmapCache[key] = bitmap;
         if (bitmap != null)
             cacheSize += bitmap.AllocationByteCount;
+    }
+
+    private static string GetHash(AesFile file)
+    {
+        return (file.RealPath + ":" + file.LastDateModified).GetHashCode().ToString();
     }
 
     private void CheckCacheSize()
