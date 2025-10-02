@@ -51,23 +51,23 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
  * Utility class that generates thumbnails for encrypted salmon files
  */
 public class Thumbnails {
-    private static final String TMP_THUMB_DIR = "tmp";
-    private static final int TMP_VIDEO_THUMB_MAX_SIZE = 3 * 1024 * 1024;
     private static final int TMP_GIF_THUMB_MAX_SIZE = 512 * 1024;
     private static final int BUFFER_SIZE = 256 * 1024;
-    private static final int THUMBNAIL_SIZE = 128;
+    private static final int THUMBNAIL_SIZE = 48;
     private static final long VIDEO_THUMBNAIL_MSECS = 3000;
-
-    private static final int MAX_CACHE_SIZE = 20 * 1024 * 1024;
-    private static final HashMap<AesFile, Image> cache = new HashMap<>();
-    private static int TINT_COLOR_ALPHA = 60;
+    private static final int MAX_CACHE_SIZE = 24 * 1024 * 1024;
+    private static final LinkedHashMap<Integer, Image> cache = new LinkedHashMap<>();
+    private static final int TINT_COLOR_ALPHA = 60;
     private static int cacheSize;
 
 
@@ -108,6 +108,7 @@ public class Thumbnails {
     public static synchronized Image getVideoThumbnail(AesFile salmonFile, double secs) throws Exception {
         if (animationStopped)
             return null;
+        if (1==1) return null;
         AesSeekableByteChannel byteChannel = byteChannels.getOrDefault(salmonFile, null);
         if (byteChannel == null) {
             byteChannel = new AesSeekableByteChannel(salmonFile);
@@ -131,22 +132,23 @@ public class Thumbnails {
         byteChannels.clear();
     }
 
-    /// <summary>
-    /// Create a partial temp file from an encrypted file that will be used to get the thumbnail
-    /// </summary>
-    /// <param name="salmonFile">The encrypted file that will be used to get the temp file</param>
-    /// <returns></returns>
+    /**
+     * Create a partial temp file from an encrypted file that will be used to get the thumbnail
+     * @param salmonFile The encrypted file that will be used to get the temp file
+     * @return
+     */
     private static File getVideoTmpFile(AesFile salmonFile) {
         throw new UnsupportedOperationException();
     }
 
-    /// <summary>
-    /// Return a MemoryStream with the partial unencrypted file contents.
-    /// This will read only the beginning contents of the file since we don't need the whole file.
-    /// </summary>
-    /// <param name="salmonFile">The encrypted file to be used</param>
-    /// <param name="maxSize">The max content length that will be decrypted from the beginning of the file</param>
-    /// <returns></returns>
+    /**
+     * Return a MemoryStream with the partial unencrypted file contents.
+     * This will read only the beginning contents of the file since we don't need the whole file.
+     * @param salmonFile The encrypted file
+     * @param maxSize The max content length that will be decrypted from the beginning of the file
+     * @return The decrypted stream
+     * @throws Exception If there an Exception
+     */
     private static RandomAccessStream getTempStream(AesFile salmonFile, long maxSize) throws Exception {
         MemoryStream ms = new MemoryStream();
         AesStream ins = salmonFile.getInputStream();
@@ -164,17 +166,18 @@ public class Thumbnails {
         return ms;
     }
 
-    /// <summary>
-    /// Create a bitmap from the unencrypted data contents of a media file
-    /// If the file is a gif we get only a certain amount of data from the beginning of the file
-    /// since we don't need to get the whole file.
-    /// </summary>
-    /// <param name="salmonFile"></param>
-    /// <returns></returns>
+    /**
+     * Create a bitmap from the unencrypted data contents of a media file
+     * If the file is a gif we get only a certain amount of data from the beginning of the file
+     * since we don't need to get the whole file.
+     * @param salmonFile The encrypted file
+     * @param imageView The view to insert the generated thumbnail
+     * @return The image generated
+     */
     public static Image generateThumbnail(AesFile salmonFile, ImageView imageView) {
-
-        if (cache.containsKey(salmonFile)) {
-            return cache.get(salmonFile);
+        int key = getHash(salmonFile);
+        if (cache.containsKey(key)) {
+            return cache.get(key);
         }
 
         ThumbnailTask task = null;
@@ -281,20 +284,39 @@ public class Thumbnails {
     private static void addCache(AesFile file, Image image) {
         if (cacheSize > MAX_CACHE_SIZE)
             resetCache();
-        cache.put(file, image);
+        int key = getHash(file);
+        cache.put(key, image);
         cacheSize += image.getWidth() * image.getHeight() * 4;
     }
 
+    private static int getHash(AesFile file) {
+        return (file.getRealPath() + ":" + file.getLastDateModified()).hashCode();
+    }
+
     public static void resetCache() {
-        cacheSize = 0;
-        cache.clear();
+        int reduceSize = 0;
+        List<Integer> keysToRemove = new ArrayList<>();
+        for (int key : cache.keySet()) {
+            Image image = cache.get(key);
+            if (image != null)
+                reduceSize += image.getWidth() * image.getHeight() * 4;
+            if (reduceSize >= MAX_CACHE_SIZE / 2)
+                break;
+            keysToRemove.add(key);
+        }
+        for (int key : keysToRemove) {
+            Image image = cache.remove(key);
+            if (image != null)
+                cacheSize -= image.getWidth() * image.getHeight() * 4;
+        }
     }
 
     public static void resetCache(AesFile file) {
-        if (cache.containsKey(file)) {
-            Image image = cache.get(file);
+        int key = getHash(file);
+        if (cache.containsKey(key)) {
+            Image image = cache.get(key);
             cacheSize -= image.getWidth() * image.getHeight() * 4;
-            cache.remove(file);
+            cache.remove(key);
         }
     }
 
