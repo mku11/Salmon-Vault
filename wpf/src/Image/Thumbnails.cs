@@ -26,7 +26,6 @@ using Mku.Salmon.Streams;
 using Salmon.Vault.ViewModel;
 using Salmon.Vault.Utils;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -40,7 +39,7 @@ using Mku.SalmonFS.File;
 using Mku.FS.Drive.Utils;
 using Mku.FS.File;
 using System.Diagnostics;
-using System.Threading;
+using System.Collections.Specialized;
 
 namespace Salmon.Vault.Image;
 
@@ -53,9 +52,9 @@ public class Thumbnails
     private static readonly int TMP_GIF_THUMB_MAX_SIZE = 512 * 1024;
     private static readonly int BUFFER_SIZE = 256 * 1024;
     private static readonly int THUMBNAIL_SIZE = 128;
-    private static readonly int MAX_CACHE_SIZE = 20 * 1024 * 1024;
+    private static readonly int MAX_CACHE_SIZE = 24 * 1024 * 1024;
 
-    private static readonly ConcurrentDictionary<AesFile, BitmapImage> cache = new ConcurrentDictionary<AesFile, BitmapImage>();
+    private static readonly OrderedDictionary cache = new OrderedDictionary();
     private static int cacheSize;
     private static object _lock = new object();
 
@@ -124,9 +123,10 @@ public class Thumbnails
     /// <returns></returns>
     public static void GenerateThumbnailAsync(SalmonFileViewModel item)
     {
-        if (cache.ContainsKey(item.GetAesFile()))
+        int key = GetHash(item.GetAesFile());
+        if (cache.Contains(item.GetAesFile()))
         {
-            BitmapImage bitmapImage = cache[item.GetAesFile()];
+            BitmapImage bitmapImage = (BitmapImage)cache[key];
             WindowUtils.RunOnMainThread(() =>
             {
                 item.Image = bitmapImage;
@@ -265,22 +265,28 @@ public class Thumbnails
         }
     }
 
+    private static int GetHash(AesFile file)
+    {
+        return (file.RealPath + ":" + file.LastDateModified).GetHashCode();
+    }
+
     public static void ResetCache()
     {
         int reduceSize = 0;
-        List<AesFile> keysToRemove = new List<AesFile>();
-        foreach (AesFile key in cache.Keys)
+        List<int> keysToRemove = new List<int>();
+        foreach (int key in cache.Keys)
         {
-            BitmapImage bitmap = cache[key];
+            BitmapImage bitmap = (BitmapImage)cache[key];
             if (bitmap != null)
                 reduceSize += (int)(bitmap.Width * bitmap.Height * 4);
             if (reduceSize >= MAX_CACHE_SIZE / 2)
                 break;
             keysToRemove.Add(key);
         }
-        foreach (AesFile key in keysToRemove)
+        foreach (int key in keysToRemove)
         {
-            cache.Remove(key, out BitmapImage bitmap);
+            BitmapImage bitmap = (BitmapImage)cache[key];
+            cache.Remove(key);
             if (bitmap != null)
                 cacheSize -= (int)(bitmap.Width * bitmap.Height * 4);
         }
@@ -288,11 +294,11 @@ public class Thumbnails
 
     public static void ResetCache(AesFile file)
     {
-        if (cache.ContainsKey(file))
+        if (cache.Contains(file))
         {
-            BitmapImage image = cache[file];
+            BitmapImage image = (BitmapImage)cache[file];
             cacheSize -= (int)(image.Width * image.Height * 4);
-            cache.Remove(file, out _);
+            cache.Remove(file);
         }
     }
 
