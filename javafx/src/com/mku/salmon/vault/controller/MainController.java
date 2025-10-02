@@ -201,7 +201,7 @@ public class MainController {
             }
         });
     }
-	
+
     private void fileItemAdded(Integer position, AesFile file) {
         WindowUtils.runOnMainThread(() ->
         {
@@ -326,7 +326,33 @@ public class MainController {
         table.getSelectionModel().getSelectedCells().addListener((ListChangeListener<TablePosition>) c -> {
             onSelectedItems(table.getSelectionModel().getSelectedItems());
         });
+
+        for(TableColumn<SalmonFileViewModel, ?> col : table.getColumns()) {
+            if (col.getText().equals("Size")) {
+                TableColumn<SalmonFileViewModel, String> sizeColumn = (TableColumn<SalmonFileViewModel, String>) col;
+                setSizeColumnComparator(sizeColumn);
+            }
+        }
         Platform.runLater(() -> table.requestFocus());
+    }
+
+    private void setSizeColumnComparator(TableColumn<SalmonFileViewModel, String> sizeColumn) {
+        sizeColumn.setComparator((String a, String b)->{
+            String[] partsA = a.split(" ");
+            String[] partsB = b.split(" ");
+            if(partsA[1].equals("items") && partsB[1].equals("items")) {
+                if (Float.parseFloat(partsA[0]) == Float.parseFloat(partsB[0]))
+                    return 0;
+                return Float.parseFloat(partsA[0]) < Float.parseFloat(partsB[0]) ? -1 : 1;
+            }
+            if(partsA[1].equals("items"))
+                return -1;
+            if(partsB[1].equals("items"))
+                return 1;
+            if (Float.parseFloat(partsA[0]) == Float.parseFloat(partsB[0]))
+                return 0;
+            return Float.parseFloat(partsA[0]) < Float.parseFloat(partsB[0]) ? -1 : 1;
+        });
     }
 
     public void onAbout() {
