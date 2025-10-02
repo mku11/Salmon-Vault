@@ -108,7 +108,6 @@ public class Thumbnails {
     public static synchronized Image getVideoThumbnail(AesFile salmonFile, double secs) throws Exception {
         if (animationStopped)
             return null;
-        if (1==1) return null;
         AesSeekableByteChannel byteChannel = byteChannels.getOrDefault(salmonFile, null);
         if (byteChannel == null) {
             byteChannel = new AesSeekableByteChannel(salmonFile);
