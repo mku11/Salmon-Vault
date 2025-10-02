@@ -231,11 +231,9 @@ public class MainController {
 
     private void managerPropertyChanged(Object owner, String propertyName) {
         if (propertyName.equals("FileItemList")) {
-            WindowUtils.runOnMainThread(() -> {
-                updateFileViewModels();
-                Thumbnails.enableAnimation(true);
-                sortTable();
-            });
+            updateFileViewModels();
+            Thumbnails.enableAnimation(true);
+            sortTable();
         } else if (propertyName.equals("CurrentItem")) {
             selectItem(manager.getCurrentItem());
         } else if (propertyName.equals("SelectedFiles")) {
