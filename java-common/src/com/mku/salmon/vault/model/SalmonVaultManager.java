@@ -736,7 +736,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 if(onRenamed != null)
                     onRenamed.accept(file);
                 WindowUtils.runOnMainThread(() -> {
-                    SalmonVaultManager.getInstance().updateListItem.accept(file);
+                    updateListItem.accept(file);
                 });
             } catch (Exception e) {
                 e.printStackTrace();
@@ -760,16 +760,16 @@ public class SalmonVaultManager implements IPropertyNotifier {
         executor.submit(() -> {
             AesFile file = null;
             try {
-                file = SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName);
+                file = getCurrDir().createDirectory(folderName);
             } catch (Exception exception) {
                 exception.printStackTrace();
-                if (!SalmonVaultManager.getInstance().handleException(exception)) {
+                if (!handleException(exception)) {
                     SalmonDialog.promptDialog("Error", "Could not create folder: " + exception.getMessage());
                 }
             } finally {
                 if (file != null)
                     setSelectedFiles(new HashSet<>(List.of(file)));
-                SalmonVaultManager.getInstance().refresh();
+                refresh();
             }
         });
     }
@@ -780,14 +780,14 @@ public class SalmonVaultManager implements IPropertyNotifier {
             RandomAccessStream stream = null;
             AesFile file = null;
             try {
-                file = SalmonVaultManager.getInstance().getCurrDir().createFile(fileName);
+                file = getCurrDir().createFile(fileName);
                 file.setApplyIntegrity(true);
                 stream = file.getOutputStream();
                 stream.write("\n".getBytes(), 0, 1);
                 stream.flush();
             } catch (Exception exception) {
                 exception.printStackTrace();
-                if (!SalmonVaultManager.getInstance().handleException(exception)) {
+                if (!handleException(exception)) {
                     SalmonDialog.promptDialog("Error", "Could not create file: " + exception.getMessage());
                 }
             } finally {
@@ -807,7 +807,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         executor.submit(() -> {
             try {
                 propertyChanged(this, "taskRunning");
-                SalmonVaultManager.getInstance().getDrive().setPassword(pass);
+                getDrive().setPassword(pass);
                 SalmonDialog.promptDialog("Password changed");
             } catch (Exception e) {
                 SalmonDialog.promptDialog("Could not change password: " + e.getMessage());
