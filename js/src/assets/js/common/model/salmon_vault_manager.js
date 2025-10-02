@@ -719,6 +719,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
      * @param {string} folderName 
      */
     async createDirectory(folderName) {
+		this.clearSelectedFiles();
         let file = null;
         try {
             file = await SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName);
@@ -739,6 +740,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
      * @param {string} fileName 
      */
     async createFile(fileName) {
+		this.clearSelectedFiles();
         let stream = null;
         let file = null;
         try {
