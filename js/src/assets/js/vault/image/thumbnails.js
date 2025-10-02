@@ -33,12 +33,12 @@ export class Thumbnails {
     static TMP_VIDEO_THUMB_MAX_SIZE = 3 * 1024 * 1024;
     static TMP_GIF_THUMB_MAX_SIZE = 1 * 1024 * 1024;
     static ENC_BUFFER_SIZE = 512 * 1024;
-    static THUMBNAIL_SIZE = 128;
+    static THUMBNAIL_SIZE = 64;
 
-    static MAX_CACHE_SIZE = 20 * 1024 * 1024;
-    static cache = {};
+    static MAX_CACHE_SIZE = 128 * 1024;
+    static cache = new Map();
     static TINT_COLOR_ALPHA = 127;
-    static cacheSize;
+    static cacheSize = 0;
     static enableCache = true;
     static objectURLs = new Set();
 
@@ -87,11 +87,6 @@ export class Thumbnails {
         });
     }
 
-    /// <summary>
-    /// Create a partial temp file from an encrypted file that will be used to get the thumbnail
-    /// </summary>
-    /// <param name="salmonFile">The encrypted file that will be used to get the temp file</param>
-    /// <returns></returns>
     static async getVideoTmpBlob(salmonFile) {
         let ms = await Thumbnails.getTempStream(salmonFile, Thumbnails.TMP_VIDEO_THUMB_MAX_SIZE);
         let blob = new Blob([ms.toArray().buffer]);
@@ -99,14 +94,6 @@ export class Thumbnails {
         return blob;    
     }
 
-    
-    /// <summary>
-    /// Return a MemoryStream with the partial unencrypted file contents.
-    /// This will read only the beginning contents of the file since we don't need the whole file.
-    /// </summary>
-    /// <param name="salmonFile">The encrypted file to be used</param>
-    /// <param name="maxSize">The max content length that will be decrypted from the beginning of the file</param>
-    /// <returns></returns>
     static async getTempStream(salmonFile, maxSize) {
         let ms = new MemoryStream();
         let ins = await salmonFile.getInputStream();
@@ -124,17 +111,11 @@ export class Thumbnails {
         return ms;
     }
 
-    /// <summary>
-    /// Create a bitmap from the unencrypted data contents of a media file
-    /// If the file is a gif we get only a certain amount of data from the beginning of the file
-    /// since we don't need to get the whole file.
-    /// </summary>
-    /// <param name="salmonFile"></param>
-    /// <returns></returns>
     static async generateThumbnail(salmonFile, width, height) {
         let image = null;
-        if (salmonFile.getRealPath() in Thumbnails.cache) {
-            image = Thumbnails.cache[salmonFile.getRealPath()];
+        let key = await Thumbnails.getHash(salmonFile);
+        if (key in Thumbnails.cache) {
+            image = Thumbnails.cache.get(key);
             if(image.parentElement!=null)
                 image.parentElement.removeChild(image);
             return image;
@@ -152,7 +133,7 @@ export class Thumbnails {
             throw e;
         }
         if(image != null)
-            Thumbnails.addCache(salmonFile.getRealPath(), image);
+            Thumbnails.addCache(salmonFile, image);
         return image;
     }
 
@@ -239,30 +220,50 @@ export class Thumbnails {
         });
     }
 
-    static async addCache(filePath, image) {
+    static async addCache(file, image) {
+        let key = await Thumbnails.getHash(file);
         if (!Thumbnails.enableCache)
             return;
         if (Thumbnails.cacheSize > Thumbnails.MAX_CACHE_SIZE)
             Thumbnails.resetCache();
-        Thumbnails.cache[filePath] = image;
         let blob = await fetch(image.src).then(r => r.blob());
+        Thumbnails.cache.set(key,[image,blob.size]);
         Thumbnails.cacheSize += blob.size;
     }
 
-    static resetCache() {
-        Thumbnails.cacheSize = 0;
-        Thumbnails.cache = {};
-        Thumbnails.clearObjectURL();
+    static async getHash(file) {
+        return (await file.getRealPath() + ":" + await file.getLastDateModified());
     }
 
-    static async removeCache(filePath) {
-        if (filePath in Thumbnails.cache) {
-            if(Thumbnails.cache[filePath] != null) {
-                let image = Thumbnails.cache[filePath];
-                let blob = await fetch(image.src).then(r => r.blob());
-                Thumbnails.cacheSize -= blob.size;
+    static resetCache() {
+        let reduceSize = 0;
+        let keysToRemove = [];
+        for (let key of Thumbnails.cache.keys()) {
+            let [image,size] = Thumbnails.cache.get(key);
+            if (image != null)
+                reduceSize += size;
+            if (reduceSize >= Thumbnails.MAX_CACHE_SIZE / 2)
+                break;
+            keysToRemove.push(key);
+        }
+        for (let key of keysToRemove) {
+            let [image,size] = Thumbnails.cache.get(key);
+            Thumbnails.cache.delete(key);
+            if (image != null)
+                Thumbnails.cacheSize -= size;
+            Thumbnails.clearObjectURL(image.src);
+        }
+        
+    }
+
+    static async removeCache(file) {
+        let key = await Thumbnails.getHash(file);
+        if (key in Thumbnails.cache) {
+            if(Thumbnails.cache.get(key) != null) {
+                let [image,size] = Thumbnails.cache.get(key);
+                Thumbnails.cacheSize -= size;
             }
-            Thumbnails.cache.remove(file);
+            Thumbnails.cache.delete(key);
         }
     }
 
