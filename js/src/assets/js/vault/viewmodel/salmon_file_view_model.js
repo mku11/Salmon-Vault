@@ -149,7 +149,7 @@ export class SalmonFileViewModel extends IPropertyNotifier {
 
     async update() {
         try {
-            Thumbnails.removeCache(this.salmonFile.getRealPath());
+            Thumbnails.removeCache(this.salmonFile);
             this.image = await this.getImage();
             this.name = await this.salmonFile.getName();
             this.date = await this.getDateText();
