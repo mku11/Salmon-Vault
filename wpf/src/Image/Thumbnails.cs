@@ -123,8 +123,8 @@ public class Thumbnails
     /// <returns></returns>
     public static void GenerateThumbnailAsync(SalmonFileViewModel item)
     {
-        int key = GetHash(item.GetAesFile());
-        if (cache.Contains(item.GetAesFile()))
+        string key = GetHash(item.GetAesFile());
+        if (cache.Contains(key))
         {
             BitmapImage bitmapImage = (BitmapImage)cache[key];
             WindowUtils.RunOnMainThread(() =>
@@ -265,16 +265,16 @@ public class Thumbnails
         }
     }
 
-    private static int GetHash(AesFile file)
+    private static string GetHash(AesFile file)
     {
-        return (file.RealPath + ":" + file.LastDateModified).GetHashCode();
+        return (file.RealPath + ":" + file.LastDateModified).GetHashCode().ToString();
     }
 
     public static void ResetCache()
     {
         int reduceSize = 0;
-        List<int> keysToRemove = new List<int>();
-        foreach (int key in cache.Keys)
+        List<string> keysToRemove = new List<string>();
+        foreach (string key in cache.Keys)
         {
             BitmapImage bitmap = (BitmapImage)cache[key];
             if (bitmap != null)
@@ -283,7 +283,7 @@ public class Thumbnails
                 break;
             keysToRemove.Add(key);
         }
-        foreach (int key in keysToRemove)
+        foreach (string key in keysToRemove)
         {
             BitmapImage bitmap = (BitmapImage)cache[key];
             cache.Remove(key);
@@ -294,11 +294,12 @@ public class Thumbnails
 
     public static void ResetCache(AesFile file)
     {
-        if (cache.Contains(file))
+        string key = GetHash(file);
+        if (cache.Contains(key))
         {
-            BitmapImage image = (BitmapImage)cache[file];
+            BitmapImage image = (BitmapImage)cache[key];
             cacheSize -= (int)(image.Width * image.Height * 4);
-            cache.Remove(file);
+            cache.Remove(key);
         }
     }
 
