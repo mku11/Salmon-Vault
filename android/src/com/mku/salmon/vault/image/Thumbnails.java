@@ -32,6 +32,7 @@ import android.provider.MediaStore;
 
 import com.mku.android.salmonfs.media.AesMediaDataSource;
 import com.mku.fs.drive.utils.FileUtils;
+import com.mku.func.Function;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.InputStreamWrapper;
 import com.mku.streams.MemoryStream;
@@ -67,7 +68,11 @@ public class Thumbnails {
      * @param ms
      * @return
      */
-    public static Bitmap getVideoThumbnai(AesFile file, long ms) {
+    public static Bitmap getVideoThumbnail(AesFile file, long ms) {
+        return getVideoThumbnailRetriever(file, ms);
+    }
+
+    public static Bitmap getVideoThumbnailRetriever(AesFile file, long ms) {
         MediaMetadataRetriever retriever = null;
         Bitmap bitmap = null;
         try {

@@ -235,7 +235,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             } else if (viewHolder.salmonFile.isFile()) {
                 Bitmap bitmap = null;
                 try {
-                    bitmap = getFileThumbnail(viewHolder.salmonFile, 0);
+                    bitmap = getFileThumbnail(viewHolder.salmonFile, VIDEO_THUMBNAIL_MSECS);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -261,7 +261,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                         animationViewHolder = viewHolder;
                         animationViewHolder.animate = true;
                         if (MimeUtils.isVideo(filename)) {
-                            animateVideo(viewHolder);
+                            animateVideo(viewHolder, animationViewHolder);
                         } else {
                             return false;
                         }
@@ -274,7 +274,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         }
     }
 
-    private void animateVideo(ViewHolder viewHolder) {
+    protected void animateVideo(ViewHolder viewHolder, ViewHolder animationViewHolder) {
         animationExecutor.submit(() -> {
             int i = 0;
             MediaMetadataRetriever retriever = null;
@@ -343,7 +343,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         return false;
     }
 
-    private void updateThumbnailIcon(ViewHolder viewHolder, Bitmap bitmap) {
+    protected void updateThumbnailIcon(ViewHolder viewHolder, Bitmap bitmap) {
         viewHolder.thumbnail.setImageBitmap(bitmap);
         viewHolder.thumbnail.setColorFilter(null);
         viewHolder.extension.setVisibility(View.GONE);
@@ -400,11 +400,11 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         }
     }
 
-    private Bitmap getFileThumbnail(AesFile salmonFile, int step) throws Exception {
+    protected Bitmap getFileThumbnail(AesFile salmonFile, long ms) throws Exception {
         Bitmap bitmap = null;
         String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
         if (MimeUtils.isVideo(salmonFile.getName())) {
-            bitmap = Thumbnails.getVideoThumbnai(salmonFile, VIDEO_THUMBNAIL_MSECS * (step + 1));
+            bitmap = Thumbnails.getVideoThumbnail(salmonFile, ms);
         } else if (MimeUtils.isImage(salmonFile.getName())) {
             bitmap = Thumbnails.getImageThumbnail(salmonFile);
         }
@@ -413,7 +413,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         return bitmap;
     }
 
-    private void addBitmapToCache(AesFile file, Bitmap bitmap) {
+    protected void addBitmapToCache(AesFile file, Bitmap bitmap) {
         int key = getHash(file);
         bitmapCache.put(key, bitmap);
         if (bitmap != null)
