@@ -30,6 +30,7 @@ import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.provider.MediaStore;
 
+import com.mku.android.salmonfs.media.AesMediaDataSource;
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.InputStreamWrapper;
@@ -51,42 +52,29 @@ public class Thumbnails {
     private static final int TMP_VIDEO_THUMB_MAX_SIZE = 5 * 1024 * 1024;
     private static final int TMP_GIF_THUMB_MAX_SIZE = 512 * 1024;
     private static final int BUFFER_SIZE = 256 * 1024;
+    private static final int MEDIA_BUFFERS = 2;
+    private static final int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    private static final int MEDIA_BACKOFFSET = 256 * 1024;
+    private static final int MEDIA_THREADS = 1;
+
+    private static final int THRESHOLD_SEEK = 30;
+
     private static Random random = new Random(System.currentTimeMillis());
 
     /**
      * Returns a bitmap thumbnail from an encrypted file
-     *
-     * @param salmonFile The encrypted media file which will be used to get the thumbnail
+     * @param file
+     * @param ms
+     * @return
      */
-    public static Bitmap getVideoThumbnail(AesFile salmonFile) throws Exception {
-        java.io.File tmpFile = Thumbnails.getVideoTmpFile(salmonFile);
-        return getVideoThumbnail(tmpFile, 0, true);
-    }
-
-    public static Bitmap getVideoThumbnail(java.io.File file, long ms, boolean delete) {
-        Bitmap bitmap = null;
-        try {
-            if (ms > 0)
-                bitmap = getVideoThumbnailMedia(file, ms);
-            else
-                bitmap = ThumbnailUtils.createVideoThumbnail(file.getPath(), MediaStore.Images.Thumbnails.FULL_SCREEN_KIND);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            if (delete && file != null) {
-                file.delete();
-                file.deleteOnExit();
-            }
-        }
-        return bitmap;
-    }
-
-    public static Bitmap getVideoThumbnailMedia(File file, long ms) {
+    public static Bitmap getVideoThumbnai(AesFile file, long ms) {
         MediaMetadataRetriever retriever = null;
         Bitmap bitmap = null;
         try {
             retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(file.getPath());
+            AesMediaDataSource source = new AesMediaDataSource(file,
+                    MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, MEDIA_THREADS, MEDIA_BACKOFFSET);
+            retriever.setDataSource(source);
             bitmap = retriever.getFrameAtTime(ms * 1000);
         } catch (Exception e) {
             e.printStackTrace();
@@ -101,36 +89,6 @@ public class Thumbnails {
             }
         }
         return bitmap;
-    }
-
-    /**
-     * Create a partial temp file from an encrypted file that will be used to retrieve the thumbnail
-     *
-     * @param salmonFile The encrypted file that will be used to get the temp file
-     */
-    public static java.io.File getVideoTmpFile(AesFile salmonFile) throws Exception {
-        java.io.File tmpDir = new java.io.File(SalmonApplication.getInstance().getApplicationContext().getCacheDir(), TMP_THUMB_DIR);
-        if (!tmpDir.exists())
-            tmpDir.mkdir();
-
-        java.io.File tmpFile = new java.io.File(tmpDir, random.nextInt() + "." + FileUtils.getExtensionFromFileName(salmonFile.getName()));
-        if (tmpFile.exists())
-            tmpFile.delete();
-        tmpFile.createNewFile();
-        java.io.FileOutputStream fileStream = new java.io.FileOutputStream(tmpFile);
-        AesStream ins = salmonFile.getInputStream();
-        byte[] buffer = new byte[BUFFER_SIZE];
-        int bytesRead;
-        long totalBytesRead = 0;
-        while ((bytesRead = ins.read(buffer, 0, buffer.length)) > 0
-                && totalBytesRead < TMP_VIDEO_THUMB_MAX_SIZE) {
-            fileStream.write(buffer, 0, bytesRead);
-            totalBytesRead += bytesRead;
-        }
-        fileStream.flush();
-        fileStream.close();
-        ins.close();
-        return tmpFile;
     }
 
     /**

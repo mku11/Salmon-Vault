@@ -43,6 +43,7 @@ import androidx.annotation.NonNull;
 import androidx.arch.core.util.Function;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.mku.android.salmonfs.media.AesMediaDataSource;
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.func.BiConsumer;
@@ -75,6 +76,11 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     private static final int THUMBNAIL_MAX_STEPS = 10;
     private static final long VIDEO_THUMBNAIL_MSECS = 3000;
     private static final int TASK_THREADS = 1;
+
+    private static final int MEDIA_BUFFERS = 2;
+    private static final int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    private static final int MEDIA_BACKOFFSET = 256 * 1024;
+    private static final int MEDIA_THREADS = 1;
 
     private final boolean displayItems = true;
     private final List<AesFile> items;
@@ -229,10 +235,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             } else if (viewHolder.salmonFile.isFile()) {
                 Bitmap bitmap = null;
                 try {
-                    java.io.File tmpFile = null;
-                    if (MimeUtils.isVideo(filename))
-                        tmpFile = Thumbnails.getVideoTmpFile(viewHolder.salmonFile);
-                    bitmap = getFileThumbnail(viewHolder.salmonFile, 0, tmpFile, true);
+                    bitmap = getFileThumbnail(viewHolder.salmonFile, 0);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -274,12 +277,13 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     private void animateVideo(ViewHolder viewHolder) {
         animationExecutor.submit(() -> {
             int i = 0;
-            java.io.File tmpFile = null;
             MediaMetadataRetriever retriever = null;
+            AesMediaDataSource source = null;
             try {
-                tmpFile = Thumbnails.getVideoTmpFile(viewHolder.salmonFile);
+                source = new AesMediaDataSource(viewHolder.salmonFile,
+                        MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, MEDIA_THREADS, MEDIA_BACKOFFSET);
                 retriever = new MediaMetadataRetriever();
-                retriever.setDataSource(tmpFile.getPath());
+                retriever.setDataSource(source);
                 while (animationViewHolder == viewHolder && animationViewHolder.animate) {
                     i++;
                     i %= THUMBNAIL_MAX_STEPS;
@@ -305,11 +309,6 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
-                if (tmpFile != null) {
-                    tmpFile.delete();
-                    tmpFile.deleteOnExit();
-                }
             }
         });
     }
@@ -401,12 +400,11 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         }
     }
 
-    private Bitmap getFileThumbnail(AesFile salmonFile, int step, java.io.File tmpFile,
-                                    boolean delete) throws Exception {
+    private Bitmap getFileThumbnail(AesFile salmonFile, int step) throws Exception {
         Bitmap bitmap = null;
         String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
         if (MimeUtils.isVideo(salmonFile.getName())) {
-            bitmap = Thumbnails.getVideoThumbnail(tmpFile, VIDEO_THUMBNAIL_MSECS * (step + 1), delete);
+            bitmap = Thumbnails.getVideoThumbnai(salmonFile, VIDEO_THUMBNAIL_MSECS * (step + 1));
         } else if (MimeUtils.isImage(salmonFile.getName())) {
             bitmap = Thumbnails.getImageThumbnail(salmonFile);
         }

@@ -44,6 +44,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.mku.android.salmonfs.media.AesMediaDataSource;
 import com.mku.fs.drive.utils.FileUtils;
+import com.mku.func.Consumer;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.salmon.vault.utils.Timer;
@@ -208,7 +209,17 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         }
         executor.submit(() -> {
             try {
-                source = new AesMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
+                source = new AesMediaDataSource(file,
+                        MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
+                source.setOnError(new Consumer<String>() {
+                    @Override
+                    public void accept(String message) {
+                        WindowUtils.runOnMainThread(()-> {
+                            Toast.makeText(MediaPlayerActivity.this,
+                                    "Error: " + message, Toast.LENGTH_LONG).show();
+                        });
+                    }
+                });
                 mediaPlayer.setDataSource(source);
                 mediaPlayer.prepareAsync();
             } catch (Exception e) {
