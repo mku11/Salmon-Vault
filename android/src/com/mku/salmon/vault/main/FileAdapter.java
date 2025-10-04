@@ -75,7 +75,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     private static final int MAX_CACHE_SIZE = 24 * 1024 * 1024;
     private static final int THUMBNAIL_MAX_STEPS = 10;
     private static final long VIDEO_THUMBNAIL_MSECS = 3000;
-    private static final int TASK_THREADS = 1;
+    private static final int TASK_THREADS = 4;
 
     private static final int MEDIA_BUFFERS = 2;
     private static final int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;

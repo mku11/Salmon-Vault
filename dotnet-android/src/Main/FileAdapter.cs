@@ -55,7 +55,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     private const int MAX_CACHE_SIZE = 20 * 1024 * 1024;
     private static readonly int THUMBNAIL_MAX_STEPS = 10;
     private const long VIDEO_THUMBNAIL_MSECS = 3000;
-    private static readonly int TASK_THREADS = 1;
+    private static readonly int TASK_THREADS = 4;
 	
 	private static readonly int MEDIA_BUFFERS = 2;
     private static readonly int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
