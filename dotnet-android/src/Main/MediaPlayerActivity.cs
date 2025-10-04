@@ -213,7 +213,15 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         {
             try
             {
-                source = new AesMediaDataSource(this, file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
+                source = new AesMediaDataSource(file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
+				source.OnError = (String message) => 
+				{
+                    WindowUtils.RunOnMainThread(() => 
+					{
+						Toast.MakeText(this, 
+							"Error: " + message, ToastLength.Long).Show();
+					});
+                };
                 mediaPlayer.SetDataSource(source);
                 mediaPlayer.PrepareAsync();
             }

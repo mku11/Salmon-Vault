@@ -43,6 +43,7 @@ using Java.Lang;
 using Android.Media;
 using System.Runtime.CompilerServices;
 using Mku.SalmonFS.File;
+using Mku.Android.SalmonFS.Media;
 using Mku.FS.Drive.Utils;
 using System.Collections.Specialized;
 
@@ -55,6 +56,11 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
     private static readonly int THUMBNAIL_MAX_STEPS = 10;
     private const long VIDEO_THUMBNAIL_MSECS = 3000;
     private static readonly int TASK_THREADS = 1;
+	
+	private static readonly int MEDIA_BUFFERS = 2;
+    private static readonly int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    private static readonly int MEDIA_BACKOFFSET = 256 * 1024;
+    private static readonly int MEDIA_THREADS = 1;
 
     private bool displayItems = true;
     private List<AesFile> items;
@@ -226,10 +232,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                 Bitmap bitmap = null;
                 try
                 {
-                    Java.IO.File tmpFile = null;
-                    if (MimeUtils.IsVideo(filename))
-                        tmpFile = Thumbnails.GetVideoTmpFile(viewHolder.salmonFile);
-                    bitmap = GetFileThumbnail(viewHolder.salmonFile, 0, tmpFile, true);
+                    bitmap = GetFileThumbnail(viewHolder.salmonFile, VIDEO_THUMBNAIL_MSECS);
                 }
                 catch (System.Exception e)
                 {
@@ -262,7 +265,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
                     animationViewHolder.animate = true;
                     if (MimeUtils.IsVideo(filename))
                     {
-                        AnimateVideo(viewHolder);
+                        AnimateVideo(viewHolder, animationViewHolder);
                     }
                     else
                     {
@@ -279,18 +282,19 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         }
     }
 
-    private void AnimateVideo(ViewHolder viewHolder)
+    protected void AnimateVideo(ViewHolder viewHolder, ViewHolder animationViewHolder)
     {
         animationExecutor.Submit(new Runnable(() =>
         {
             int i = 0;
-            Java.IO.File tmpFile = null;
             MediaMetadataRetriever retriever = null;
+			AesMediaDataSource source = null;
             try
             {
-                tmpFile = Thumbnails.GetVideoTmpFile(viewHolder.salmonFile);
+				source = new AesMediaDataSource(viewHolder.salmonFile,
+                        MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, MEDIA_THREADS, MEDIA_BACKOFFSET);
                 retriever = new MediaMetadataRetriever();
-                retriever.SetDataSource(tmpFile.Path);
+                retriever.SetDataSource(source);
                 while (animationViewHolder == viewHolder && animationViewHolder.animate)
                 {
                     i++;
@@ -326,14 +330,6 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
             catch (System.Exception e)
             {
                 e.PrintStackTrace();
-            }
-            finally
-            {
-                if (tmpFile != null)
-                {
-                    tmpFile.Delete();
-                    tmpFile.DeleteOnExit();
-                }
             }
         }));
     }
@@ -375,7 +371,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         return false;
     }
 
-    private void UpdateThumbnailIcon(ViewHolder viewHolder, Bitmap bitmap)
+    protected void UpdateThumbnailIcon(ViewHolder viewHolder, Bitmap bitmap)
     {
         viewHolder.thumbnail.SetImageBitmap(bitmap);
         viewHolder.thumbnail.SetColorFilter(null);
@@ -442,14 +438,13 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         }
     }
 	
-    private Bitmap GetFileThumbnail(AesFile salmonFile, int step, Java.IO.File tmpFile,
-                                    bool delete)
+    protected Bitmap GetFileThumbnail(AesFile salmonFile, long ms)
     {
         Bitmap bitmap = null;
         string ext = FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
         if (MimeUtils.IsVideo(salmonFile.Name))
         {
-            bitmap = Thumbnails.GetVideoThumbnail(tmpFile, VIDEO_THUMBNAIL_MSECS * (step + 1), delete);
+            bitmap = Thumbnails.GetVideoThumbnail(salmonFile, ms);
         }
         else if (MimeUtils.IsImage(salmonFile.Name))
         {
@@ -460,7 +455,7 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         return bitmap;
     }
 
-    private void AddBitmapToCache(AesFile file, Bitmap bitmap)
+    protected void AddBitmapToCache(AesFile file, Bitmap bitmap)
     {
         string key = GetHash(file);
         bitmapCache[key] = bitmap;

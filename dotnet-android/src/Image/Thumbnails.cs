@@ -26,6 +26,7 @@ using Android.Media;
 using Android.Provider;
 using Java.IO;
 using Mku.Salmon.Streams;
+using Mku.Android.SalmonFS.Media;
 using Salmon.Vault.Main;
 using System;
 using Mku.SalmonFS.File;
@@ -42,52 +43,28 @@ public class Thumbnails
     private static readonly int TMP_VIDEO_THUMB_MAX_SIZE = 5 * 1024 * 1024;
     private static readonly int TMP_GIF_THUMB_MAX_SIZE = 512 * 1024;
     private static readonly int BUFFER_SIZE = 256 * 1024;
+	private static readonly int MEDIA_BUFFERS = 2;
+    private static readonly int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    private static readonly int MEDIA_BACKOFFSET = 256 * 1024;
+    private static readonly int MEDIA_THREADS = 1;
+	
     private static Random random = new Random(DateTime.Now.Millisecond);
 
-    /**
-     * Returns a bitmap thumbnail from an encrypted file
-     *
-     * @param salmonFile The encrypted media file which will be used to get the thumbnail
-     */
-    public static Bitmap GetVideoThumbnail(AesFile salmonFile)
-    {
-        File tmpFile = Thumbnails.GetVideoTmpFile(salmonFile);
-        return GetVideoThumbnail(tmpFile, 0, true);
+	public static Bitmap GetVideoThumbnail(AesFile file, long ms)
+	{
+        return getVideoThumbnailRetriever(file, ms);
     }
 
-    public static Bitmap GetVideoThumbnail(File file, long ms, bool delete)
-    {
-        Bitmap bitmap = null;
-        try
-        {
-            if (ms > 0)
-                bitmap = GetVideoThumbnailMedia(file, ms);
-            else
-                bitmap = ThumbnailUtils.CreateVideoThumbnail(file.Path, ThumbnailKind.FullScreenKind);
-        }
-        catch (System.Exception ex)
-        {
-            System.Console.Error.WriteLine(ex);
-        }
-        finally
-        {
-            if (delete && file != null)
-            {
-                file.Delete();
-                file.DeleteOnExit();
-            }
-        }
-        return bitmap;
-    }
-
-    public static Bitmap GetVideoThumbnailMedia(File file, long ms)
+    public static Bitmap getVideoThumbnailRetriever(AesFile file, long ms)
     {
         MediaMetadataRetriever retriever = null;
         Bitmap bitmap = null;
         try
         {
             retriever = new MediaMetadataRetriever();
-            retriever.SetDataSource(file.Path);
+			AesMediaDataSource source = new AesMediaDataSource(file,
+                    MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, MEDIA_THREADS, MEDIA_BACKOFFSET);
+            retriever.SetDataSource(source);
             bitmap = retriever.GetFrameAtTime(ms * 1000);
         }
         catch (Exception e)
@@ -109,38 +86,6 @@ public class Thumbnails
             }
         }
         return bitmap;
-    }
-
-    /**
-     * Create a partial temp file from an encrypted file that will be used to retrieve the thumbnail
-     *
-     * @param salmonFile The encrypted file that will be used to get the temp file
-     */
-    public static File GetVideoTmpFile(AesFile salmonFile)
-    {
-        Java.IO.File tmpDir = new Java.IO.File(SalmonApplication.GetInstance().ApplicationContext.CacheDir, TMP_THUMB_DIR);
-        if (!tmpDir.Exists())
-            tmpDir.Mkdir();
-
-        Java.IO.File tmpFile = new Java.IO.File(tmpDir, random.Next() + "." + FileUtils.GetExtensionFromFileName(salmonFile.Name));
-        if (tmpFile.Exists())
-            tmpFile.Delete();
-        tmpFile.CreateNewFile();
-        FileOutputStream fileStream = new FileOutputStream(tmpFile);
-        AesStream ins = salmonFile.GetInputStream();
-        byte[] buffer = new byte[BUFFER_SIZE];
-        int bytesRead;
-        long totalBytesRead = 0;
-        while ((bytesRead = ins.Read(buffer, 0, buffer.Length)) > 0
-                && totalBytesRead < TMP_VIDEO_THUMB_MAX_SIZE)
-        {
-            fileStream.Write(buffer, 0, bytesRead);
-            totalBytesRead += bytesRead;
-        }
-        fileStream.Flush();
-        fileStream.Close();
-        ins.Close();
-        return tmpFile;
     }
 
     /**
