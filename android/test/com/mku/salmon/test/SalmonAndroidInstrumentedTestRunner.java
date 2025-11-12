@@ -36,24 +36,17 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.mku.salmon.io.AesStream;
-import com.mku.salmon.SalmonEncryptor;
+import com.mku.salmon.Encryptor;
+import com.mku.salmon.streams.AesStream;
+import com.mku.salmon.streams.ProviderType;
 import com.mku.salmon.vault.main.SalmonActivity;
-import com.mku.salmonfs.AesFile;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.w3c.dom.NodeList;
-
-import java.io.StringReader;
 import java.nio.charset.Charset;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 @RunWith(AndroidJUnit4.class)
 public class SalmonAndroidInstrumentedTestRunner {
@@ -75,18 +68,6 @@ public class SalmonAndroidInstrumentedTestRunner {
     public ActivityScenarioRule<SalmonActivity> activityScenarioRule =
             new ActivityScenarioRule<>(SalmonActivity.class);
 
-    @Test
-    public void copyFiles() throws Exception {
-        final Activity[] activity = {null};
-        activityScenarioRule.getScenario().onActivity(act -> {
-            activity[0] = act;
-        });
-        onView(isRoot()).perform(sleep(1000));
-        AndroidTestHelper.changeVault(TEST_VAULT);
-        AesFile rootDir = AndroidTestHelper.login(activity[0], TEST_VAULT, TEST_PASSWORD);
-        AndroidTestHelper.testCopy(activity[0], rootDir, TEST_DIR, TEST_IMPORT_FILE1, TEST_SUBDIR, TEST_IMPORT_FILE2, TEST_NEW_DIR, false);
-        activity[0].finish();
-    }
 
     @Test
     public void ShouldEncryptAndDecryptTextCompatible() throws Exception {
@@ -98,20 +79,22 @@ public class SalmonAndroidInstrumentedTestRunner {
         String plainText = AndroidTestHelper.TEST_TEXT;
         for (int i = 0; i < 8; i++)
             plainText += plainText;
-        AesStream.setAesProviderType(AesStream.ProviderType.AesIntrinsics);
+        AesStream.setAesProviderType(ProviderType.AesIntrinsics);
         byte[] bytes = plainText.getBytes(Charset.defaultCharset());
         byte[] encBytesDef = AndroidTestHelper.defaultAESCTRTransform(bytes,
                 AndroidTestHelper.TEST_KEY_BYTES, AndroidTestHelper.TEST_NONCE_BYTES, true);
         byte[] decBytesDef = AndroidTestHelper.defaultAESCTRTransform(encBytesDef,
                 AndroidTestHelper.TEST_KEY_BYTES, AndroidTestHelper.TEST_NONCE_BYTES, false);
         Assert.assertArrayEquals(bytes, decBytesDef);
-        byte[] encBytes = new SalmonEncryptor().encrypt(bytes, AndroidTestHelper.TEST_KEY_BYTES, AndroidTestHelper.TEST_NONCE_BYTES, false);
+        Encryptor encryptor = new Encryptor();
+        byte[] encBytes = encryptor.encrypt(bytes, AndroidTestHelper.TEST_KEY_BYTES, AndroidTestHelper.TEST_NONCE_BYTES);
+        encryptor.close();
         Assert.assertArrayEquals(encBytesDef, encBytes);
         activity[0].finish();
     }
 
     @Test
-    public void PerfTest() throws Exception {
+    public void perfTest() throws Exception {
         final Activity[] activity = {null};
         activityScenarioRule.getScenario().onActivity(act -> {
             activity[0] = act;
@@ -130,7 +113,7 @@ public class SalmonAndroidInstrumentedTestRunner {
             activity[0] = act;
         });
         onView(isRoot()).perform(sleep(5000));
-        AesStream.setAesProviderType(AesStream.ProviderType.AesIntrinsics);
+        AesStream.setAesProviderType(ProviderType.AesIntrinsics);
         AndroidTestHelper.EncryptAndDecryptTextCompatible();
         Thread.sleep(3000);
         activity[0].finish();

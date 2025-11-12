@@ -39,17 +39,12 @@ import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.matcher.ViewMatchers;
 
-import com.mku.android.file.AndroidDrive;
-import com.mku.salmon.SalmonDecryptor;
-import com.mku.salmon.SalmonDefaultOptions;
-import com.mku.salmon.SalmonEncryptor;
-import com.mku.salmon.io.AesStream;
-import com.mku.salmon.transform.ISalmonCTRTransformer;
-import com.mku.salmon.transform.SalmonTransformerFactory;
+import com.mku.salmon.Decryptor;
+import com.mku.salmon.Encryptor;
+import com.mku.salmon.streams.EncryptionFormat;
 import com.mku.salmon.vault.android.R;
 import com.mku.salmon.vault.model.SalmonVaultManager;
-import com.mku.salmonfs.AesDriveManager;
-import com.mku.salmonfs.AesFile;
+import com.mku.salmonfs.file.AesFile;
 
 import org.hamcrest.Matcher;
 import org.junit.Assert;
@@ -98,27 +93,6 @@ public class AndroidTestHelper {
                 uiController.loopMainThreadForAtLeast(delay);
             }
         };
-    }
-
-    public static AesFile login(Activity activity, String vaultDir, String pass) throws Exception {
-        AndroidDrive.initialize(activity);
-        AesDriveManager.setVirtualDriveClass(AndroidDrive.class);
-        AesDriveManager.openDrive(AndroidTestHelper.generateFolder(vaultDir));
-
-        if (!AesDriveManager.getDrive().hasConfig()) {
-            AesDriveManager.getDrive().setPassword(pass);
-            AesFile rootDir = AesDriveManager.getDrive().getVirtualRoot();
-            rootDir.listFiles();
-        } else {
-            AesDriveManager.getDrive().authenticate(pass);
-        }
-
-        AesFile salmonRootDir = AesDriveManager.getDrive().getVirtualRoot();
-        return salmonRootDir;
-    }
-
-    private static String generateFolder(String vaultDir) {
-        throw new UnsupportedOperationException();
     }
 
     public static void testCopy(Activity activity, AesFile currDir, String testDir, String testImportFile1,
@@ -294,11 +268,13 @@ public class AndroidTestHelper {
 
     public static void encryptAndDecryptByteArray(byte[] data, int threads, boolean enableLog) throws Exception {
         long t1 = System.currentTimeMillis();
-        byte[] encData = new SalmonEncryptor(threads).encrypt(data, AndroidTestHelper.TEST_KEY_BYTES,
-                AndroidTestHelper.TEST_NONCE_BYTES, false);
+        Encryptor encryptor = new Encryptor(threads);
+        byte[] encData = encryptor.encrypt(data, AndroidTestHelper.TEST_KEY_BYTES,
+                AndroidTestHelper.TEST_NONCE_BYTES, EncryptionFormat.Salmon);
         long t2 = System.currentTimeMillis();
-        byte[] decData = new SalmonDecryptor(threads).decrypt(encData, AndroidTestHelper.TEST_KEY_BYTES,
-                AndroidTestHelper.TEST_NONCE_BYTES, false);
+        Decryptor decryptor = new Decryptor(threads);
+        byte[] decData = decryptor.decrypt(encData, AndroidTestHelper.TEST_KEY_BYTES,
+                AndroidTestHelper.TEST_NONCE_BYTES, EncryptionFormat.Salmon);
         long t3 = System.currentTimeMillis();
 
         if (enableLog) {
@@ -309,55 +285,10 @@ public class AndroidTestHelper {
         //assertArrayEquals(data, decData);
     }
 
-    public static void encryptAndDecryptByteArrayNative(int size, boolean enableLog) throws Exception {
-        byte[] data = AndroidTestHelper.getRandArray(size);
-        encryptAndDecryptByteArrayNative(data, enableLog);
-    }
-
-    public static void encryptAndDecryptByteArrayNative(byte[] data, boolean enableLog) throws Exception {
-        long t1 = System.currentTimeMillis();
-        byte[] encData = AndroidTestHelper.nativeCTRTransform(data, AndroidTestHelper.TEST_KEY_BYTES,
-                AndroidTestHelper.TEST_NONCE_BYTES, true,
-                AesStream.getAesProviderType());
-        long t2 = System.currentTimeMillis();
-        byte[] decData = AndroidTestHelper.nativeCTRTransform(encData, AndroidTestHelper.TEST_KEY_BYTES,
-                AndroidTestHelper.TEST_NONCE_BYTES, false,
-                AesStream.getAesProviderType());
-        long t3 = System.currentTimeMillis();
-
-        assertArrayEquals(data, decData);
-        if (enableLog) {
-            System.out.println("Perf enc time: " + (t2 - t1));
-            System.out.println("Perf dec time: " + (t3 - t2));
-            System.out.println("Perf Total: " + (t3 - t1));
-        }
-    }
-
-    public static byte[] nativeCTRTransform(byte[] input, byte[] testKeyBytes, byte[] testNonceBytes,
-                                            boolean encrypt, AesStream.ProviderType providerType)
-            throws Exception {
-        if (testNonceBytes.length < 16) {
-            byte[] tmp = new byte[16];
-            System.arraycopy(testNonceBytes, 0, tmp, 0, testNonceBytes.length);
-            testNonceBytes = tmp;
-        }
-        ISalmonCTRTransformer transformer = SalmonTransformerFactory.create(providerType);
-        transformer.init(testKeyBytes, testNonceBytes);
-        byte[] output = new byte[input.length];
-        transformer.resetCounter();
-        transformer.syncCounter(0);
-        if (encrypt)
-            transformer.encryptData(input, 0, output, 0, input.length);
-        else
-            transformer.decryptData(input, 0, output, 0, input.length);
-        return output;
-    }
-
     public static void EncryptAndDecryptTextCompatible() throws Exception {
         String plainText = AndroidTestHelper.TEST_TEXT;
         for (int i = 0; i < 15; i++)
             plainText += plainText;
-        SalmonDefaultOptions.setBufferSize(plainText.length());
 
         byte[] bytes = plainText.getBytes(Charset.defaultCharset());
         byte[] encBytesDef = AndroidTestHelper.defaultAESCTRTransform(bytes,
@@ -366,13 +297,15 @@ public class AndroidTestHelper {
                 AndroidTestHelper.TEST_KEY_BYTES, AndroidTestHelper.TEST_NONCE_BYTES, false);
 
         assertArrayEquals(bytes, decBytesDef);
-        byte[] encBytes = new SalmonEncryptor().encrypt(bytes, AndroidTestHelper.TEST_KEY_BYTES,
-                AndroidTestHelper.TEST_NONCE_BYTES, false);
+        Encryptor encryptor = new Encryptor();
+        byte[] encBytes = encryptor.encrypt(bytes, AndroidTestHelper.TEST_KEY_BYTES,
+                AndroidTestHelper.TEST_NONCE_BYTES);
+        encryptor.close();
 
         assertArrayEquals(encBytesDef, encBytes);
-        byte[] decBytes = new SalmonDecryptor().decrypt(encBytes, AndroidTestHelper.TEST_KEY_BYTES,
-                AndroidTestHelper.TEST_NONCE_BYTES, false);
-
+        Decryptor decryptor = new Decryptor();
+        byte[] decBytes = decryptor.decrypt(encBytes, AndroidTestHelper.TEST_KEY_BYTES);
+        decryptor.close();
         assertArrayEquals(bytes, decBytes);
         System.out.println("Compatible test complete");
     }

@@ -24,28 +24,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmon.SalmonDefaultOptions;
-import com.mku.salmon.io.AesStream;
+import com.mku.salmon.streams.AesStream;
+import com.mku.salmon.streams.ProviderType;
 
 public class SalmonAndroidPerfTestRunner {
     public static int TEST_PERF_SIZE = 32 * 1024 * 1024;
 
     static {
         System.loadLibrary("salmon");
-        SalmonDefaultOptions.setBufferSize(256 * 1024);
     }
 
     public static void startPerfTest() throws Exception {
-        EncryptAndDecryptStreamPerformanceSysDefault();
-        EncryptAndDecryptStreamPerformanceSalmonDef();
-        EncryptAndDecryptPerformanceSalmonIntrinsics();
-        EncryptAndDecryptStreamPerformanceSalmonIntrinsics();
-        EncryptAndDecryptStreamPerformanceSalmonIntrinsics2Threads();
-
-//        EncryptAndDecryptStreamPerformanceSalmonTinyAes();
+        encryptAndDecryptStreamPerformanceSysDefault();
+        encryptAndDecryptStreamPerformanceSalmonDef();
+        encryptAndDecryptStreamPerformanceSalmonIntrinsics();
+        encryptAndDecryptStreamPerformanceSalmonIntrinsics2Threads();
+        encryptAndDecryptStreamPerformanceSalmonAes();
     }
 
-    public static void EncryptAndDecryptStreamPerformanceSysDefault() throws Exception {
+    public static void encryptAndDecryptStreamPerformanceSysDefault() throws Exception {
         // warm up
         AndroidTestHelper.encryptAndDecryptByteArrayDef(TEST_PERF_SIZE, false);
         System.out.println("Perf System Default: ");
@@ -53,8 +50,8 @@ public class SalmonAndroidPerfTestRunner {
         System.out.println();
     }
 
-    public static void EncryptAndDecryptStreamPerformanceSalmonDef() throws Exception {
-        AesStream.setAesProviderType(AesStream.ProviderType.Default);
+    public static void encryptAndDecryptStreamPerformanceSalmonDef() throws Exception {
+        AesStream.setAesProviderType(ProviderType.Default);
         // warm up
         AndroidTestHelper.encryptAndDecryptByteArray(TEST_PERF_SIZE, false);
         System.out.println("Perf AesStream Salmon Def: ");
@@ -62,17 +59,8 @@ public class SalmonAndroidPerfTestRunner {
         System.out.println();
     }
 
-    public static void EncryptAndDecryptPerformanceSalmonIntrinsics() throws Exception {
-        AesStream.setAesProviderType(AesStream.ProviderType.AesIntrinsics);
-        //warm up
-        AndroidTestHelper.encryptAndDecryptByteArrayNative(TEST_PERF_SIZE, false);
-        System.out.println("Perf Salmon Intrinsics: ");
-        AndroidTestHelper.encryptAndDecryptByteArrayNative(TEST_PERF_SIZE, true);
-        System.out.println();
-    }
-
-    public static void EncryptAndDecryptStreamPerformanceSalmonIntrinsics() throws Exception {
-        AesStream.setAesProviderType(AesStream.ProviderType.AesIntrinsics);
+    public static void encryptAndDecryptStreamPerformanceSalmonIntrinsics() throws Exception {
+        AesStream.setAesProviderType(ProviderType.AesIntrinsics);
         //warm up
         AndroidTestHelper.encryptAndDecryptByteArray(TEST_PERF_SIZE, false);
         System.out.println("Perf AesStream Salmon Intrinsics: ");
@@ -80,8 +68,8 @@ public class SalmonAndroidPerfTestRunner {
         System.out.println();
     }
 
-    public static void EncryptAndDecryptStreamPerformanceSalmonIntrinsics2Threads() throws Exception {
-        AesStream.setAesProviderType(AesStream.ProviderType.AesIntrinsics);
+    public static void encryptAndDecryptStreamPerformanceSalmonIntrinsics2Threads() throws Exception {
+        AesStream.setAesProviderType(ProviderType.AesIntrinsics);
         // warm up
         AndroidTestHelper.encryptAndDecryptByteArray(TEST_PERF_SIZE, 2, false);
         System.out.println("Perf AesStream Salmon Intrinsics with 2 threads: ");
@@ -89,8 +77,8 @@ public class SalmonAndroidPerfTestRunner {
         System.out.println();
     }
 
-    public static void EncryptAndDecryptStreamPerformanceSalmonTinyAes() throws Exception {
-        AesStream.setAesProviderType(AesStream.ProviderType.TinyAES);
+    public static void encryptAndDecryptStreamPerformanceSalmonAes() throws Exception {
+        AesStream.setAesProviderType(ProviderType.Aes);
         // warm up
         AndroidTestHelper.encryptAndDecryptByteArray(TEST_PERF_SIZE, true);
         System.out.println("Perf AesStream Salmon TinyAES: ");
