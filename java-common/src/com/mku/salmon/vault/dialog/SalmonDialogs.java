@@ -26,7 +26,6 @@ SOFTWARE.
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.fs.file.Credentials;
 import com.mku.fs.file.IFile;
-import com.mku.fs.file.WSFile;
 import com.mku.func.Consumer;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonSettings;
@@ -250,7 +249,7 @@ public class SalmonDialogs {
 
     public static void promptCreateVault() {
         List<String> vaultTypes = new ArrayList<>(List.of("Local", "Web Service"));
-        SalmonDialog.promptSingleValue("Vault Type", vaultTypes, -1,
+        SalmonDialog.promptSingleValue("Vault Type", vaultTypes, 0,
                 (Integer which) ->
                 {
                     switch (which) {
@@ -300,7 +299,7 @@ public class SalmonDialogs {
 
     public static void promptOpenVault() {
         List<String> vaultTypes = new ArrayList<>(List.of("Local", "HTTP", "Web Service"));
-        SalmonDialog.promptSingleValue("Vault Type", vaultTypes, -1,
+        SalmonDialog.promptSingleValue("Vault Type", vaultTypes, 0,
                 (Integer which) ->
                 {
                     switch (which) {
