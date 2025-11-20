@@ -68,39 +68,35 @@ public class MediaPlayerController {
     private static final SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
     private static final double mediaViewHorizMargin = 24;
     private static final double mediaViewVertMargin = 64;
+    private static final int buffers = 2;
+    private static final int bufferSize = 8 * 1024 * 1024;
+    private static final int threads = 1;
+    private static final int backOffset = 256 * 1024;
 
     @FXML
     public GridPane gridPane;
-
     @FXML
     public Button playButton;
     @FXML
     public Slider slider;
-
     @FXML
     public HBox mediaContainer;
-
     @FXML
     public VBox root;
-
     @FXML
     public HBox controlContainer;
-
-    private Stage stage;
-
     @FXML
     private MediaView mediaView;
-    private MediaPlayer mp;
-
     @FXML
     private MenuBar menuBar;
 
+    private Stage stage;
+    private MediaPlayer mp;
     private String url;
-
-    private boolean quit = false;
-
     private final ObjectProperty<Image> image = new SimpleObjectProperty<>(this, "image");
     private Timer timer;
+    private AesStreamHandler handler;
+    private boolean closed;
 
     public final void setImage(Image image) {
         this.image.set(image);
@@ -205,7 +201,11 @@ public class MediaPlayerController {
         String filePath;
         try {
             filePath = file.getRealPath();
-            this.url = AesStreamHandler.getInstance().register(filePath, file);
+            if(handler == null) {
+                handler = AesStreamHandler.getInstance();
+                handler.setProperties(buffers, bufferSize, threads, backOffset);
+            }
+            this.url = handler.register(filePath, file);
             Media m = new Media(url);
             mp = new MediaPlayer(m);
             mp.setOnPaused(() -> setImage(playImage));
@@ -239,14 +239,23 @@ public class MediaPlayerController {
         });
     }
 
+    public void finalize() {
+        onClose();
+    }
+
     public void onClose() {
+        if(closed)
+            return;
         if (timer != null) {
             timer.cancel();
         }
         mp.stop();
         mp.dispose();
         stage.close();
-        AesStreamHandler.getInstance().unregister(this.url);
+        if(handler != null)
+            handler.unregister(this.url);
+        mp = null;
+        closed = true;
     }
 
     public void togglePlay() {

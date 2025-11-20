@@ -39,27 +39,33 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ContentViewerController {
-
-    public WebView webView;
-    private Stage stage;
-
     @FXML
     private MenuBar menuBar;
-
     @FXML
     private VBox root;
+    private Stage stage;
+    private WebView webView;
     private WebEngine webEngine;
+    private AesStreamHandler handler;
+    private String url;
 
     public void setStage(Stage stage) {
         this.stage = stage;
     }
-
     private static final double imageViewMargin = 64;
+    private static final int buffers = 2;
+    private static final int bufferSize = 8 * 1024 * 1024;
+    private static final int threads = 1;
+    private static final int backOffset = 256 * 1024;
+
     private static final Executor executor = Executors.newSingleThreadExecutor();
 
     public static void openContentViewer(SalmonFileViewModel file, Stage owner) throws IOException {
@@ -101,11 +107,17 @@ public class ContentViewerController {
         AesFile file = item.getAesFile();
         try {
             webEngine = webView.getEngine();
-            String url = AesStreamHandler.getInstance().register("content.dat", file);
+            Path path = new File(item.dateProperty().getName()).toPath();
+            String mimeType = Files.probeContentType(path);
+            if(handler == null) {
+                handler = AesStreamHandler.getInstance();
+                handler.setProperties(buffers, bufferSize, threads, backOffset);
+            }
+            url = handler.register("content.dat", file);
             WindowUtils.runOnMainThread(()-> {
                                 webEngine.loadContent("<html><body>" +
                         "<video controls='controls'>" +
-                        "<source src='" + url + "' type='video/mp4'>" +
+                        "<source src='" + url + "' type='" + mimeType + "'>" +
                         "</video>" +
                         "</body></html>");
             });
@@ -116,6 +128,8 @@ public class ContentViewerController {
 
     public void onClose() {
         webEngine.load(null);
+        if(handler != null)
+            handler.unregister(this.url);
         stage.close();
     }
 }
