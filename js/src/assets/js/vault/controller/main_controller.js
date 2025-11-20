@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { Binding } from "../../common/binding/binding.js";
-import { StringProperty } from "../../common/binding/string_property.js";
-import { BooleanProperty } from "../../common/binding/boolean_property.js";
-import { ObservableList } from "../../common/binding/observable_list.js";
-import { DoubleProperty } from "../../common/binding/double_property.js";
-import { SalmonDialog } from "../dialog/salmon_dialog.js";
+import { Binding } from "../../lib/jbind/binding.js";
+import { StringProperty } from "../../lib/jbind/string_property.js";
+import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
+import { ObservableList } from "../../lib/jbind/observable_list.js";
+import { DoubleProperty } from "../../lib/jbind/double_property.js";
+import { SalmonDialog } from "../../lib/jwin/assets/js/salmon_dialog.js";
 import { ServiceLocator } from "../../common/services/service_locator.js";
 import { ISettingsService } from "../../common/services/isettings_service.js";
 import { JsSettingsService } from "../services/js_settings_service.js";

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { IPropertyNotifier } from "../../common/binding/iproperty_notifier.js";
+import { IPropertyNotifier } from "../../lib/jbind/iproperty_notifier.js";
 import { FileUtils } from "../../lib/salmon-fs/fs/drive/utils/file_utils.js";
 import { ByteUtils } from "../../common/utils/byte_utils.js";
 import { Thumbnails } from "../image/thumbnails.js";

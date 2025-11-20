@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import { MainController } from "../controller/main_controller.js";
-import { WindowUtils } from "../utils/window_utils.js";
+import { WindowUtils } from "../../lib/jwin/assets/js/window_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
 import { HttpSyncClient } from "../../lib/salmon-fs/fs/file/http_sync_client.js";
 

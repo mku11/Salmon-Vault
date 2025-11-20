@@ -21,12 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { Binding } from "../../common/binding/binding.js";
-import { BooleanProperty } from "../../common/binding/boolean_property.js";
-import { ObservableList } from "../../common/binding/observable_list.js";
+
+import { Binding } from "../../lib/jbind/binding.js";
+import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
+import { ObservableList } from "../../lib/jbind/observable_list.js";
+import { SalmonWindow } from "../../lib/jwin/assets/js/salmon_window.js";
+import { WindowUtils } from "../../lib/jwin/assets/js/window_utils.js";
 import { SalmonSettings } from "../../common/model/salmon_settings.js";
-import { SalmonWindow } from "../window/salmon_window.js";
-import { WindowUtils } from "../utils/window_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
 
 export class SettingsController {

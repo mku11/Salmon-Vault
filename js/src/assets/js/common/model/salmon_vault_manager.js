@@ -22,14 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { IPropertyNotifier } from "../../common/binding/iproperty_notifier.js";
+import { IPropertyNotifier } from "../../lib/jbind/iproperty_notifier.js";
 import { SalmonConfig } from "../../vault/config/salmon_config.js";
 import { SalmonSettings } from "../../common/model/salmon_settings.js";
 import { AesFileCommander } from "../../lib/salmon-fs/salmonfs/drive/utils/aes_file_commander.js";
 import { autoRenameFile as SalmonFileAutoRename } from "../../lib/salmon-fs/salmonfs/file/aes_file.js";
 import { AesDrive } from "../../lib/salmon-fs/salmonfs/drive/aes_drive.js";
 import { AesFile } from "../../lib/salmon-fs/salmonfs/file/aes_file.js";
-import { SalmonDialog } from "../../vault/dialog/salmon_dialog.js";
+import { SalmonDialog } from "../../lib/jwin/assets/js/salmon_dialog.js";
 import { SalmonDialogs } from "../dialog/salmon_dialogs.js";
 import { autoRenameFile as IRealFileAutoRename } from "../../lib/salmon-fs/fs/file/ifile.js";
 import { File } from "../../lib/salmon-fs/fs/file/file.js";
@@ -756,7 +756,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
             }
         } finally {
             try {
-                await stream.close();
+                if(stream)
+                    await stream.close();
             } catch (e) {
                 throw e;
             }

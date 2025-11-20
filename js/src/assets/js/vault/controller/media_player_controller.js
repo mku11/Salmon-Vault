@@ -22,17 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { SalmonWindow } from "../window/salmon_window.js";
-import { WindowUtils } from "../utils/window_utils.js";
+import { SalmonWindow } from "../../lib/jwin/assets/js/salmon_window.js";
+import { WindowUtils } from "../../lib/jwin/assets/js/window_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
-import { Binding } from "../../common/binding/binding.js";
-import { StringProperty } from "../../common/binding/string_property.js";
-import { BooleanProperty } from "../../common/binding/boolean_property.js";
+import { Binding } from "../../lib/jbind/binding.js";
+import { StringProperty } from "../../lib/jbind/string_property.js";
+import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
 import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
 import { AesFileReadableStream } from "../../lib/salmon-fs/salmonfs/streams/aes_file_readable_stream.js";
 import { HttpSyncClient } from "../../lib/salmon-fs/fs/file/http_sync_client.js";
-import { SalmonDialog } from "../dialog/salmon_dialog.js";
+import { SalmonDialog } from "../../lib/jwin/assets/js/salmon_dialog.js";
 
 export class MediaPlayerController {
     static MIN_FILE_STREAMING = 1 * 1024 * 1024;

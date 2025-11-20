@@ -1,7 +1,7 @@
 import { setDebugConsole } from "./assets/js/common/utils/debug_utils.js";
 import { Handler } from "./assets/js/lib/salmon-fs/service/handler.js";
-import { SalmonDialog } from "./assets/js/vault/dialog/salmon_dialog.js";
-import { WindowUtils } from "./assets/js/vault/utils/window_utils.js";
+import { SalmonDialog } from "./assets/js/lib/jwin/assets/js/salmon_dialog.js";
+import { WindowUtils } from "./assets/js/lib/jwin/assets/js/window_utils.js";
 import { SalmonConfig } from "./assets/js/vault/config/salmon_config.js";
 
 const DEBUG = false;
