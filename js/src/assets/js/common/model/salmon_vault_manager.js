@@ -31,19 +31,19 @@ import { AesDrive } from "../../lib/salmon-fs/salmonfs/drive/aes_drive.js";
 import { AesFile } from "../../lib/salmon-fs/salmonfs/file/aes_file.js";
 import { SalmonDialog } from "../../lib/jwin/assets/js/salmon_dialog.js";
 import { SalmonDialogs } from "../dialog/salmon_dialogs.js";
-import { autoRenameFile as IRealFileAutoRename } from "../../lib/salmon-fs/fs/file/ifile.js";
-import { File } from "../../lib/salmon-fs/fs/file/file.js";
-import { HttpFile } from "../../lib/salmon-fs/fs/file/http_file.js";
-import { WSFile } from "../../lib/salmon-fs/fs/file/ws_file.js";
+import { autoRenameFile as IRealFileAutoRename } from "../../lib/simple-fs/fs/file/ifile.js";
+import { File } from "../../lib/simple-fs/fs/file/file.js";
+import { HttpFile } from "../../lib/simple-fs/fs/file/http_file.js";
+import { WSFile } from "../../lib/simple-fs/fs/file/ws_file.js";
 import { Drive } from "../../lib/salmon-fs/salmonfs/drive/drive.js";
 import { HttpDrive } from "../../lib/salmon-fs/salmonfs/drive/http_drive.js";
 import { WSDrive } from "../../lib/salmon-fs/salmonfs/drive/ws_drive.js";
-import { LocalStorageFile } from "../../lib/salmon-fs/fs/file/ls_file.js";
+import { LocalStorageFile } from "../../lib/simple-fs/fs/file/ls_file.js";
 import { FileSequencer } from "../../lib/salmon-fs/salmonfs/sequence/file_sequencer.js";
 import { SequenceSerializer } from "../../lib/salmon-core/salmon/sequence/sequence_serializer.js";
 import { ByteUtils } from "../../common/utils/byte_utils.js";
-import { BatchCopyOptions, BatchDeleteOptions, BatchExportOptions, BatchImportOptions } from "../../lib/salmon-fs/fs/drive/utils/file_commander.js";
-import { SearchOptions } from "../../lib/salmon-fs/fs/drive/utils/file_searcher.js";
+import { BatchCopyOptions, BatchDeleteOptions, BatchExportOptions, BatchImportOptions } from "../../lib/simple-fs/fs/drive/utils/file_commander.js";
+import { SearchOptions } from "../../lib/simple-fs/fs/drive/utils/file_searcher.js";
 
 export class SalmonVaultManager extends IPropertyNotifier {
     static SEQUENCER_DIR_NAME = ".salmon";

@@ -28,7 +28,7 @@ import { SalmonWindow } from "../../lib/jwin/assets/js/salmon_window.js";
 import { WindowUtils } from "../../lib/jwin/assets/js/window_utils.js";
 import { SalmonTextEditor } from "../../common/model/salmon_text_editor.js";
 import { SalmonConfig } from "../config/salmon_config.js";
-import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
+import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
 import { SalmonDialog } from "../../lib/jwin/assets/js/salmon_dialog.js";
 import { ServiceLocator } from "../../common/services/service_locator.js";

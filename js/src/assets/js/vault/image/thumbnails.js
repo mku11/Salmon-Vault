@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { FileUtils } from "../../lib/salmon-fs/fs/drive/utils/file_utils.js";
-import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
+import { FileUtils } from "../../lib/simple-fs/fs/drive/utils/file_utils.js";
+import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 
 /**
  * Utility class that generates thumbnails for encrypted salmon files

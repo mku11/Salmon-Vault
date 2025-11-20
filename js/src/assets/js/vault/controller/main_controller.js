@@ -48,7 +48,7 @@ import { JsMediaPlayerService } from "../services/js_media_player_service.js";
 import { SalmonDialogs } from "../../common/dialog/salmon_dialogs.js";
 import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
 import { SalmonFileViewModel } from "../viewmodel/salmon_file_view_model.js";
-import { FileUtils } from "../../lib/salmon-fs/fs/drive/utils/file_utils.js";
+import { FileUtils } from "../../lib/simple-fs/fs/drive/utils/file_utils.js";
 import { ImageViewerController } from "./image_viewer_controller.js";
 import { TextEditorController } from "./text_editor_controller.js";
 import { SettingsController } from "./settings_controller.js";

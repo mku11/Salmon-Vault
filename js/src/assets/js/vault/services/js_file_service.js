@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import { IFileService } from "../../common/services/ifile_service.js";
-import { File } from "../../lib/salmon-fs/fs/file/file.js";
+import { File } from "../../lib/simple-fs/fs/file/file.js";
 
 export class JsFileService extends IFileService {
     constructor() {

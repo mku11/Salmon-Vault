@@ -27,11 +27,11 @@ import { IFileDialogService } from "../services/ifile_dialog_service.js";
 import { SalmonSettings } from "../model/salmon_settings.js";
 import { SalmonVaultManager } from "../model/salmon_vault_manager.js";
 import { AesDrive } from "../../lib/salmon-fs/salmonfs/drive/aes_drive.js";
-import { Credentials } from "../../lib/salmon-fs/fs/file/credentials.js";
+import { Credentials } from "../../lib/simple-fs/fs/file/credentials.js";
 import { SalmonDialog } from "../../lib/jwin/assets/js/salmon_dialog.js";
 import { SalmonConfig } from "../../vault/config/salmon_config.js";
 import { URLUtils } from "../../vault/utils/url_utils.js";
-import { FileUtils } from "../../lib/salmon-fs/fs/drive/utils/file_utils.js";
+import { FileUtils } from "../../lib/simple-fs/fs/drive/utils/file_utils.js";
 import { IHttpFileService } from "../../common/services/ihttp_file_service.js";
 import { IWSFileService } from "../../common/services/iws_file_service.js";
 

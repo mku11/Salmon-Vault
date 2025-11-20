@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import { IFileDialogService } from "../../common/services/ifile_dialog_service.js";
-import { File } from "../../lib/salmon-fs/fs/file/file.js";
+import { File } from "../../lib/simple-fs/fs/file/file.js";
 
 export class JsFileDialogService extends IFileDialogService {
     stage;

@@ -29,9 +29,9 @@ import { Binding } from "../../lib/jbind/binding.js";
 import { StringProperty } from "../../lib/jbind/string_property.js";
 import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
-import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
+import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 import { AesFileReadableStream } from "../../lib/salmon-fs/salmonfs/streams/aes_file_readable_stream.js";
-import { HttpSyncClient } from "../../lib/salmon-fs/fs/file/http_sync_client.js";
+import { HttpSyncClient } from "../../lib/simple-fs/fs/file/http_sync_client.js";
 import { SalmonDialog } from "../../lib/jwin/assets/js/salmon_dialog.js";
 
 export class MediaPlayerController {

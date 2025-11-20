@@ -30,7 +30,7 @@ import { ObjectProperty } from "../../lib/jbind/object_property.js";
 import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
 import { WindowUtils } from "../../lib/jwin/assets/js/window_utils.js";
 import { SalmonConfig } from "../config/salmon_config.js";
-import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
+import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
 
 export class ImageViewerController {

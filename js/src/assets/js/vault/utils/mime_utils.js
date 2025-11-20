@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { FileUtils } from "../../lib/salmon-fs/fs/drive/utils/file_utils.js";
+import { FileUtils } from "../../lib/simple-fs/fs/drive/utils/file_utils.js";
 
 export class MimeUtils {	
 	static isVideo(filename) {
