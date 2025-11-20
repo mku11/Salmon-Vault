@@ -792,7 +792,8 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 }
             } finally {
                 try {
-                    stream.close();
+					if(stream!=null)
+						stream.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
