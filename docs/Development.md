@@ -4,6 +4,18 @@ If you're working on Windows make sure you ignore the unix file permission by se
 filemode = false
 ```
 
+Before building you need to get the dependencies and gitmodules:
+```
+cd scripts
+./init_gitmodules.bat
+```
+
+If you want to run the web vault app you will need to get the dependencies:
+```
+cd js\project
+getdeps.bat
+```
+
 If you have unix shell scripts update the index with the correct permissions before committing.
 You can use either a linux distro or WSL, cygwin will not work.
 ```
