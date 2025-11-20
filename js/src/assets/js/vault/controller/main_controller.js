@@ -55,6 +55,7 @@ import { SettingsController } from "./settings_controller.js";
 import { MediaPlayerController } from "./media_player_controller.js";
 import { PdfViewerController } from "./pdf_viewer_controller.js";
 import { MimeUtils } from "../../vault/utils/mime_utils.js";
+import { ContextMenu } from "../../lib/jwin/assets/js/context_menu.js";
 
 export class MainController {
     static MAX_TEXT_FILE = 1 * 1024 * 1024;
@@ -71,8 +72,9 @@ export class MainController {
 
     keysPressed = new Set();
     metaKeysPressed = new Set();
+    contextMenu = {};
     manager;
-
+    
     constructor() {
         
     }
@@ -238,8 +240,11 @@ export class MainController {
             this.fileItemList.clear();
         else {
             this.fileItemList.clear();
-            for (let file of this.manager.getFileItemList())
-                this.fileItemList.push(new SalmonFileViewModel(file));
+            for (let file of this.manager.getFileItemList()) {
+                this.fileItemList.push(new SalmonFileViewModel(file), (obj, index, event) => {
+                    ContextMenu.showContextMenu(obj.get(index).name, this.contextMenu, event.clientX, event.clientY);
+                });
+            }
         }
     }
 
@@ -455,36 +460,31 @@ export class MainController {
     }
 
     setContextMenu() {
-        this.fileItemList.setContextMenuTitle((item) => {
-            return item.name;
-        });
-        let contextMenu = this.fileItemList.getContextMenu();
-
-        contextMenu["View"] = { name: "View", 
+        this.contextMenu["View"] = { name: "View", 
             icon: "assets/images/common-res/icons/file_small.png", 
             callback: async () => this.onOpenItem(this.fileItemList.getSelectedIndex()) };
-        contextMenu["ViewAsText"] = { name: "View as Text", 
+        this.contextMenu["ViewAsText"] = { name: "View as Text", 
             icon: "assets/images/common-res/icons/text_file_small.png", 
             callback: async () => this.startTextEditor(this.fileItemList.getSelectedItems()[0]) };
-        contextMenu["Copy"] = { name: "Copy (Ctrl-C)", 
+        this.contextMenu["Copy"] = { name: "Copy (Ctrl-C)", 
             icon: "assets/images/common-res/icons/copy_file_small.png", 
             callback: async () => this.onCopy() };
-        contextMenu["Cut"] = { name: "Cut (Ctrl-X)", 
+        this.contextMenu["Cut"] = { name: "Cut (Ctrl-X)", 
             icon: "assets/images/common-res/icons/move_file_small.png", 
             callback: async () => this.onCut() };
-        contextMenu["Delete"] = { name: "Delete (Del)", 
+        this.contextMenu["Delete"] = { name: "Delete (Del)", 
             icon: "assets/images/common-res/icons/delete_small.png", 
             callback: async () => this.onDelete() };
-        contextMenu["Rename"] = { name: "Rename", 
+        this.contextMenu["Rename"] = { name: "Rename", 
             icon: "assets/images/common-res/icons/rename_small.png", 
             callback: async () => SalmonDialogs.promptRenameFile(this.fileItemList.getSelectedItems()[0].getAesFile()) };
-        contextMenu["Export"] = { name: "Export (Ctrl-E)", 
+        this.contextMenu["Export"] = { name: "Export (Ctrl-E)", 
             icon: "assets/images/common-res/icons/export_file_small.png", 
             callback: async () => this.onExport() };
-        contextMenu["ExportAndDelete"] = { name: "Export And Delete (Ctrl-Shift-E)", 
+        this.contextMenu["ExportAndDelete"] = { name: "Export And Delete (Ctrl-Shift-E)", 
             icon: "assets/images/common-res/icons/export_and_delete_file_small.png", 
             callback: async () => this.onExportAndDelete() };
-        contextMenu["Properties"] = { name: "Properties", 
+        this.contextMenu["Properties"] = { name: "Properties", 
             icon: "assets/images/common-res/icons/info_small.png", 
             callback: async () => await SalmonDialogs.showProperties(this.fileItemList.getSelectedItems()[0].getAesFile()) };
     }
