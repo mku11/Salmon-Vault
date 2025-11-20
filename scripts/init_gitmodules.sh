@@ -6,13 +6,16 @@ git submodule update --recursive --init
 
 # get specific versions
 cd $CURRDIR/../deps/jbind
-cp -rf src/* ../js/src/assets/js/lib/jbind
+mkdir -p ../../js/src/assets/js/lib/jbind
+cp -rf src/* ../../js/src/assets/js/lib/jbind
 
 cd $CURRDIR/../deps/jwin
-cp -rf src/* ../js/src/assets/js/lib/jbind
+mkdir -p ../../js/src/assets/js/lib/jwin
+cp -rf src/* ../../js/src/assets/js/lib/jwin
 
 # uncomment to copy the web gpu logger if you're debugging
 # cd $CURRDIR/../deps/WebGPULogger
-# cp -rf src/* ../js/src/assets/js/lib/webgpu-logger
+# mkdir -p ../../js/src/assets/js/lib/webgpu-logger
+# cp -rf src/* ../../js/src/assets/js/lib/webgpu-logger
 
 cd $CURRDIR
