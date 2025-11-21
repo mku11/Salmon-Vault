@@ -23,14 +23,14 @@ SOFTWARE.
 */
 
 import { MainController } from "../controller/main_controller.js";
-import { WindowUtils } from "../../lib/jwin/assets/js/window_utils.js";
+import { Window } from "../../lib/jwin/assets/js/window.js";
 import { SalmonConfig } from "../config/salmon_config.js";
 import { HttpSyncClient } from "../../lib/simple-fs/fs/file/http_sync_client.js";
 
 addEventListener("load", (e) => {
     console.log("Starting Salmon Vault");
     HttpSyncClient.setAllowClearTextTraffic(false); // use only for demo and testing purposes
-    WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
+    Window.setDefaultIconPath(SalmonConfig.APP_ICON);
     window.mainController = new MainController();
     window.mainController.initialize();
     window.mainController.setWindow();

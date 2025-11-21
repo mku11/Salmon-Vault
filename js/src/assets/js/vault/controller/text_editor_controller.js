@@ -22,21 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { Binding } from "../../lib/jbind/binding.js";
+import { JBind } from "../../lib/jbind/jbind.js";
 import { StringProperty } from "../../lib/jbind/string_property.js";
-import { SalmonWindow } from "../../lib/jwin/assets/js/salmon_window.js";
-import { WindowUtils } from "../../lib/jwin/assets/js/window_utils.js";
+import { Window } from "../../lib/jwin/assets/js/window.js";
 import { SalmonTextEditor } from "../../common/model/salmon_text_editor.js";
-import { SalmonConfig } from "../config/salmon_config.js";
 import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
-import { SalmonDialog } from "../../lib/jwin/assets/js/salmon_dialog.js";
+import { SalmonDialog } from "../../lib/jwin/assets/js/dialog.js";
 import { ServiceLocator } from "../../common/services/service_locator.js";
 import { IKeyboardService } from "../../common/services/ikeyboard_service.js";
 
 export class TextEditorController {
-    static modalURL = "text-editor.html";
-    modalWindow;
+    static contentURL = "text-editor.html";
+    contentWindow;
     item;
     contentArea;
     searchText;
@@ -55,28 +53,25 @@ export class TextEditorController {
         this.setupKeyboardShortcuts();
     }
 
-    setStage(modalWindow) {
-        this.modalWindow = modalWindow;
-        this.contentArea = Binding.bind(this.modalWindow.getRoot(), 'text-editor-text', 'textContent', new StringProperty());
-        this.searchText = Binding.bind(this.modalWindow.getRoot(), 'search-text', 'value', new StringProperty());
-        this.status = Binding.bind(this.modalWindow.getRoot(), 'text-editor-status', 'innerText', new StringProperty());
+    setStage(contentWindow) {
+        this.contentWindow = contentWindow;
+        this.contentArea = JBind.bind(this.contentWindow.getRoot(), 'text-editor-text', 'textContent', new StringProperty());
+        this.searchText = JBind.bind(this.contentWindow.getRoot(), 'search-text', 'value', new StringProperty());
+        this.status = JBind.bind(this.contentWindow.getRoot(), 'text-editor-status', 'innerText', new StringProperty());
         this.initialize();
     }
 
-    static openTextEditor(fileViewModel, owner) {
-        fetch(TextEditorController.modalURL).then(async (response) => {
-            let htmlText = await response.text();
-            let controller = new TextEditorController();
-            window.textEditorController = controller;
-            let modalWindow = await SalmonWindow.createWindow("Text Editor", htmlText);
-            controller.setStage(modalWindow);
-            WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
-            modalWindow.onClose = () => controller.onClose(this);
-            modalWindow.show();
-            controller.showTaskMessage("File loading");
-            setTimeout(async ()=>{
-                await controller.load(fileViewModel);
-            });
+    static async openTextEditor(fileViewModel, owner) {
+        let controller = new TextEditorController();
+        window.textEditorController = controller;
+        let contentWindow = await Window.createWindowWithURL("Text Editor", this.contentURL);
+        controller.setStage(contentWindow);
+
+        contentWindow.onClose = () => controller.onClose(this);
+        contentWindow.show();
+        controller.showTaskMessage("File loading");
+        setTimeout(async () => {
+            await controller.load(fileViewModel);
         });
     }
 
@@ -110,7 +105,7 @@ export class TextEditorController {
         let oldFile = this.item.getAesFile();
         try {
             let targetFile = await this.editor.onSave(this.item.getAesFile(), this.contentArea.get());
-            if(targetFile == null){
+            if (targetFile == null) {
                 throw new Error("Could not save file");
             }
             let index = SalmonVaultManager.getInstance().getFileItemList().indexOf(oldFile);
@@ -224,7 +219,7 @@ export class TextEditorController {
     }
 
     close() {
-        this.modalWindow.hide();
+        this.contentWindow.hide();
     }
 
     onClose(self) {

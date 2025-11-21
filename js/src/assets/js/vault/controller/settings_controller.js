@@ -22,52 +22,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { Binding } from "../../lib/jbind/binding.js";
+import { JBind } from "../../lib/jbind/jbind.js";
 import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
 import { ObservableList } from "../../lib/jbind/observable_list.js";
-import { SalmonWindow } from "../../lib/jwin/assets/js/salmon_window.js";
-import { WindowUtils } from "../../lib/jwin/assets/js/window_utils.js";
+import { Window } from "../../lib/jwin/assets/js/window.js";
 import { SalmonSettings } from "../../common/model/salmon_settings.js";
-import { SalmonConfig } from "../config/salmon_config.js";
 
 export class SettingsController {
-    static modalURL = "settings.html";
+    static contentURL = "settings.html";
     aesType;
     pbkdfType;
     pbkdfAlgo;
     authType;
     deleteSourceAfterImport;
-    modalWindow;
+    contentWindow;
 
     initialize() {
 
         for (let aesType of Object.values(SalmonSettings.AESType))
-            this.aesType.push(aesType.name);
+            this.aesType.add(aesType.name);
         this.aesType.select(SalmonSettings.getInstance().getAesType().name);
 
         for (let pbkdfImplType of Object.values(SalmonSettings.PbkdfImplType))
-            this.pbkdfType.push(pbkdfImplType.name);
+            this.pbkdfType.add(pbkdfImplType.name);
         this.pbkdfType.select(SalmonSettings.getInstance().getPbkdfImpl().name);
 
         for (let pbkdfAlgoType of Object.values(SalmonSettings.PbkdfAlgoType))
-            this.pbkdfAlgo.push(pbkdfAlgoType.name);
+            this.pbkdfAlgo.add(pbkdfAlgoType.name);
         this.pbkdfAlgo.select(SalmonSettings.getInstance().getPbkdfAlgo().name);
 
         for (let authType of Object.values(SalmonSettings.AuthType))
-            this.authType.push(authType.name);
+            this.authType.add(authType.name);
         this.authType.select(SalmonSettings.getInstance().getSequencerAuthType().name);
 
         this.deleteSourceAfterImport.set(SalmonSettings.getInstance().isDeleteAfterImport());
 
     }
 
-    setStage(modalWindow) {
-        this.modalWindow = modalWindow;
-        this.aesType = Binding.bind(this.modalWindow.getRoot(), 'aesType', 'options', new ObservableList());
-        this.pbkdfType = Binding.bind(this.modalWindow.getRoot(), 'pbkdfType', 'options', new ObservableList());
-        this.pbkdfAlgo = Binding.bind(this.modalWindow.getRoot(), 'pbkdfAlgo', 'options', new ObservableList());
-        this.authType = Binding.bind(this.modalWindow.getRoot(), 'authType', 'options', new ObservableList());
-        this.deleteSourceAfterImport = Binding.bind(this.modalWindow.getRoot(), 'deleteSourceAfterImport', 'value', new BooleanProperty());
+    setStage(contentWindow) {
+        this.contentWindow = contentWindow;
+        this.aesType = JBind.bind(this.contentWindow.getRoot(), 'aesType', 'options', new ObservableList());
+        this.pbkdfType = JBind.bind(this.contentWindow.getRoot(), 'pbkdfType', 'options', new ObservableList());
+        this.pbkdfAlgo = JBind.bind(this.contentWindow.getRoot(), 'pbkdfAlgo', 'options', new ObservableList());
+        this.authType = JBind.bind(this.contentWindow.getRoot(), 'authType', 'options', new ObservableList());
+        this.deleteSourceAfterImport = JBind.bind(this.contentWindow.getRoot(), 'deleteSourceAfterImport', 'value', new BooleanProperty());
         this.initialize();
     }
 
@@ -91,17 +89,13 @@ export class SettingsController {
         return SalmonSettings.AuthType[this.authType.getSelectedItem()];
     }
 
-    static openSettings(owner) {
-        fetch(SettingsController.modalURL).then(async (response) => {
-            let htmlText = await response.text();
-            let controller = new SettingsController();
-            window.settingsController = controller;
-            let modalWindow = await SalmonWindow.createModal("Settings", htmlText);
-            controller.setStage(modalWindow);
-            WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
-            modalWindow.show();
-            modalWindow.onClose = () => controller.onClose(this);
-        });
+    static async openSettings(owner) {
+        let controller = new SettingsController();
+        window.settingsController = controller;
+        let contentWindow = await Window.createModalWithURL("Settings", this.contentURL);
+        controller.setStage(contentWindow);
+        contentWindow.show();
+        contentWindow.onClose = () => controller.onClose(this);
     }
 
     onClose(self) {

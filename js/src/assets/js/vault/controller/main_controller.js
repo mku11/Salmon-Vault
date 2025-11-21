@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { Binding } from "../../lib/jbind/binding.js";
+import { JBind } from "../../lib/jbind/jbind.js";
 import { StringProperty } from "../../lib/jbind/string_property.js";
 import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
 import { ObservableList } from "../../lib/jbind/observable_list.js";
 import { DoubleProperty } from "../../lib/jbind/double_property.js";
-import { SalmonDialog } from "../../lib/jwin/assets/js/salmon_dialog.js";
+import { SalmonDialog } from "../../lib/jwin/assets/js/dialog.js";
 import { ServiceLocator } from "../../common/services/service_locator.js";
 import { ISettingsService } from "../../common/services/isettings_service.js";
 import { JsSettingsService } from "../services/js_settings_service.js";
@@ -61,14 +61,14 @@ export class MainController {
     static MAX_TEXT_FILE = 1 * 1024 * 1024;
     static THREADS = 1;
 
-    fileItemList = Binding.bind(document, 'table', 'tbody', new ObservableList());
-    status = Binding.bind(document, 'status', 'innerText', new StringProperty());
-    path = Binding.bind(document, 'path', 'value', new StringProperty());
-    progressVisibility = Binding.bind(document, 'progress-layout-container', 'display', new BooleanProperty());
-    fileprogress = Binding.bind(document, 'file-progress', 'value', new DoubleProperty());
-    fileprogresstext = Binding.bind(document, 'file-progress-text', 'innerText', new StringProperty());
-    filesprogress = Binding.bind(document, 'files-progress', 'value', new DoubleProperty());
-    filesprogresstext = Binding.bind(document, 'files-progress-text', 'innerText', new StringProperty());
+    fileItemList = JBind.bind(document, 'table', 'tbody', new ObservableList());
+    status = JBind.bind(document, 'status', 'innerText', new StringProperty());
+    path = JBind.bind(document, 'path', 'value', new StringProperty());
+    progressVisibility = JBind.bind(document, 'progress-layout-container', 'display', new BooleanProperty());
+    fileprogress = JBind.bind(document, 'file-progress', 'value', new DoubleProperty());
+    fileprogresstext = JBind.bind(document, 'file-progress-text', 'innerText', new StringProperty());
+    filesprogress = JBind.bind(document, 'files-progress', 'value', new DoubleProperty());
+    filesprogresstext = JBind.bind(document, 'files-progress-text', 'innerText', new StringProperty());
 
     keysPressed = new Set();
     metaKeysPressed = new Set();
@@ -241,7 +241,7 @@ export class MainController {
         else {
             this.fileItemList.clear();
             for (let file of this.manager.getFileItemList()) {
-                this.fileItemList.push(new SalmonFileViewModel(file), (obj, index, event) => {
+                this.fileItemList.add(new SalmonFileViewModel(file), (obj, index, event) => {
                     ContextMenu.showContextMenu(obj.get(index).name, this.contextMenu, event.clientX, event.clientY);
                 });
             }
@@ -402,7 +402,7 @@ export class MainController {
             return;
         try {
             let index = 0;
-            for (let i = 0; i < this.fileItemList.size(); i++) {
+            for (let i = 0; i < this.fileItemList.length(); i++) {
                 let viewModel = this.fileItemList.get(i);
                 if (viewModel == vm) {
                     setTimeout(() => {
@@ -495,7 +495,7 @@ export class MainController {
     }
 
     getViewModel(item) {
-        for (let i = 0; i < this.fileItemList.size(); i++) {
+        for (let i = 0; i < this.fileItemList.length(); i++) {
             let vm = this.fileItemList.get(i);
             if (vm.getAesFile() == item)
                 return vm;

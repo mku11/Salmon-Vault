@@ -28,7 +28,7 @@ import { SalmonSettings } from "../model/salmon_settings.js";
 import { SalmonVaultManager } from "../model/salmon_vault_manager.js";
 import { AesDrive } from "../../lib/salmon-fs/salmonfs/drive/aes_drive.js";
 import { Credentials } from "../../lib/simple-fs/fs/file/credentials.js";
-import { SalmonDialog } from "../../lib/jwin/assets/js/salmon_dialog.js";
+import { SalmonDialog } from "../../lib/jwin/assets/js/dialog.js";
 import { SalmonConfig } from "../../vault/config/salmon_config.js";
 import { URLUtils } from "../../vault/utils/url_utils.js";
 import { FileUtils } from "../../lib/simple-fs/fs/drive/utils/file_utils.js";
@@ -427,7 +427,7 @@ export class SalmonDialogs {
             }
         }
         SalmonDialog.promptDialog(
-                "Export", "Export " + (deleteSource ? "and delete " : "") + SalmonVaultManager.getInstance().getSelectedFiles().size() + " " + itemsString,
+                "Export", "Export " + (deleteSource ? "and delete " : "") + SalmonVaultManager.getInstance().getSelectedFiles().length() + " " + itemsString,
                 "Ok",
                 () => {
                     SalmonDialogs.promptExport(text, requestCode, deleteSource);

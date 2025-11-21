@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { IPropertyNotifier } from "../../lib/jbind/iproperty_notifier.js";
+import { PropertyNotifier } from "../../lib/jbind/property_notifier.js";
 import { FileUtils } from "../../lib/simple-fs/fs/drive/utils/file_utils.js";
 import { ByteUtils } from "../../common/utils/byte_utils.js";
 import { Thumbnails } from "../image/thumbnails.js";
 
-export class SalmonFileViewModel extends IPropertyNotifier {
+export class SalmonFileViewModel extends PropertyNotifier {
     static #IMAGE_SIZE = 48;
     static THUMBNAIL_MAX_STEPS = 10;
     static VIDEO_THUMBNAIL_MSECS = 3000;
