@@ -99,9 +99,9 @@ export class MainController {
         contentWindow.modal.style.resize = "both";
         contentWindow.modal.style.width = "800px";
         contentWindow.modal.style.height = "600px";
-        // contentWindow.enableDraggable(true);
-        // contentWindow.enableDismissable(false);
-        // contentWindow.enableDismissableOutside(false);
+        contentWindow.enableDraggable(true);
+        contentWindow.enableDismissable(false);
+        contentWindow.enableDismissableOutside(false);
         
         window.mainController = new MainController();
         window.mainController.setStage(contentWindow);
@@ -304,61 +304,61 @@ export class MainController {
         let fileMenuItem = new JMenuItem("fileMenu", "File");
         menuBar.addMenuItem(fileMenuItem);
         fileMenuItem.addMenuItem(new JMenuSubItem("openVault", "Open Vault (Ctrl-O)",
-            MainController.iconsUrl + "/open_vault_small.png", this.onOpenVault));
+            MainController.iconsUrl + "/open_vault_small.png", () => { this.onOpenVault(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("newVault", "New Vault (Ctrl-N)",
-            MainController.iconsUrl + "/add_vault_small.png", this.onCreateVault));
+            MainController.iconsUrl + "/add_vault_small.png", () => { this.onCreateVault(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("closeVault", "Close Vault (Ctrl-Q)",
-            MainController.iconsUrl + "/close_vault_small.png", this.onCloseVault));
+            MainController.iconsUrl + "/close_vault_small.png", () => { this.onCloseVault(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("changePassword", "Change Password",
-            MainController.iconsUrl + "/add_vault_small.png", this.onChangePassword));
+            MainController.iconsUrl + "/add_vault_small.png", () => { this.onChangePassword(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("importAuth", "Import Auth File",
-            MainController.iconsUrl + "/auth_import_small.png", this.onImportAuth));
+            MainController.iconsUrl + "/auth_import_small.png", () => { this.onImportAuth(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("exportAuth", "Export Auth File",
-            MainController.iconsUrl + "/auth_export_small.png", this.onExportAuth));
+            MainController.iconsUrl + "/auth_export_small.png", () => { this.onExportAuth(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("revokeAuth", "Revoke Auth",
-            MainController.iconsUrl + "/auth_revoke_small.png", this.onRevokeAuth));
+            MainController.iconsUrl + "/auth_revoke_small.png", () => { this.onRevokeAuth(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("displayAuthId", "Display Auth ID",
-            MainController.iconsUrl + "/auth_small.png", this.onDisplayAuthId));
+            MainController.iconsUrl + "/auth_small.png", () => { this.onDisplayAuthId(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("settings", "Settings",
-            MainController.iconsUrl + "/settings_small.png", this.onSettings));
+            MainController.iconsUrl + "/settings_small.png", () => { this.onSettings(); }));
 
         fileMenuItem = new JMenuItem("editMenu", "Edit");
         menuBar.addMenuItem(fileMenuItem);
         fileMenuItem.addMenuItem(new JMenuSubItem("newFolder", "New Folder",
-            MainController.iconsUrl + "/add_folder_small.png", this.onNewFolder));
+            MainController.iconsUrl + "/add_folder_small.png", () => { this.onNewFolder(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("newFile", "New File",
-            MainController.iconsUrl + "/add_file_small.png", this.onNewFile));
+            MainController.iconsUrl + "/add_file_small.png", () => { this.onNewFile(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("copy", "Copy (Ctrl-C)",
-            MainController.iconsUrl + "/copy_file_small.png", () => this.onCopy));
+            MainController.iconsUrl + "/copy_file_small.png", () => { this.onCopy(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("cut", "Cut (Ctrl-X)",
-            MainController.iconsUrl + "/move_file_small.png", this.onCut));
+            MainController.iconsUrl + "/move_file_small.png", () => { this.onCut(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("paste", "Paste (Ctrl-V)",
-            MainController.iconsUrl + "/file_paste_small.png", this.onPaste));
+            MainController.iconsUrl + "/file_paste_small.png", () => { this.onPaste(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("delete", "Delete (Del)",
-            MainController.iconsUrl + "/delete_small.png", this.onDelete));
+            MainController.iconsUrl + "/delete_small.png", () => { this.onDelete(); }));
         this.contentWindow.setMenuBar(menuBar);
 
         fileMenuItem = new JMenuItem("operationsMenu", "Operations");
         menuBar.addMenuItem(fileMenuItem);
         fileMenuItem.addMenuItem(new JMenuSubItem("importFiles", "Import Files (Ctrl-I)",
-            MainController.iconsUrl + "/import_file_small.png", this.onImport));
+            MainController.iconsUrl + "/import_file_small.png", () => { this.onImport(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("exportFiles", "Export Files (Ctrl-E)",
-            MainController.iconsUrl + "/export_file_small.png", this.onExport));
+            MainController.iconsUrl + "/export_file_small.png", () => { this.onExport(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("exportAndDeleteFiles", "Export Files And Delete (Ctrl-Shift-E)",
-            MainController.iconsUrl + "/export_and_delete_file_small.png", this.onExportAndDelete));
+            MainController.iconsUrl + "/export_and_delete_file_small.png", () => { this.onExportAndDelete(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("search", "Search (Ctrl-F)",
-            MainController.iconsUrl + "/search_small.png", this.onSearch));
+            MainController.iconsUrl + "/search_small.png", () => { this.onSearch(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("refresh", "Refresh (Ctrl-R)",
-            MainController.iconsUrl + "/refresh_small.png", this.onRefresh));
+            MainController.iconsUrl + "/refresh_small.png", () => { this.onRefresh(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("back", "Back (Backspace)",
-            MainController.iconsUrl + "/back_small.png", this.onBack));
+            MainController.iconsUrl + "/back_small.png", () => { this.onBack(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("stop", "Stop",
-            MainController.iconsUrl + "/cancel_small.png", this.onStop));
+            MainController.iconsUrl + "/cancel_small.png", () => { this.onStop(); }));
 
         fileMenuItem = new JMenuItem("helpMenu", "Help");
         menuBar.addMenuItem(fileMenuItem);
         fileMenuItem.addMenuItem(new JMenuSubItem("about", "About",
-            MainController.iconsUrl + "/info_small.png", this.onAbout));
+            MainController.iconsUrl + "/info_small.png", () => { this.onAbout(); }));
     }
 
     onAbout() {
