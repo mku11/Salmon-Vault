@@ -101,6 +101,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     private GestureMode gestMode = GestureMode.NONE;
     private AudioManager audioManager;
     private int currVolume;
+    private static boolean checkIntegrity;
 
     private enum GestureMode {
         SEEK, VOLUME, BRIGHTNESS, NONE
@@ -111,6 +112,10 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     public static void setMediaFiles(int position, AesFile[] mediaFiles) {
         pos = position;
         videos = mediaFiles;
+    }
+
+    public static void setCheckIntegrity(boolean checkIntegrity) {
+        MediaPlayerActivity.checkIntegrity = checkIntegrity;
     }
 
     protected void setMediaThreads(int threads) {
@@ -209,6 +214,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
         }
         executor.submit(() -> {
             try {
+                file.setVerifyIntegrity(checkIntegrity);
                 source = new AesMediaDataSource(file,
                         MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
                 source.setOnError(new Consumer<String>() {

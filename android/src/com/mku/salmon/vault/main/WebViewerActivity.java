@@ -73,10 +73,15 @@ public class WebViewerActivity extends AppCompatActivity {
     private final Object swipeObj = new Object();
 
     private static final ExecutorService executor = Executors.newFixedThreadPool(2);
+    private static boolean checkIntegrity;
 
     public static void setContentFiles(int position, AesFile[] salmonFiles) {
         pos = position;
         fileList = salmonFiles;
+    }
+
+    public static void setCheckIntegrity(boolean checkIntegrity) {
+        WebViewerActivity.checkIntegrity = checkIntegrity;
     }
 
     public void loadContentAsync() {
@@ -98,17 +103,10 @@ public class WebViewerActivity extends AppCompatActivity {
     protected void loadContent(AesFile file) throws Exception {
         String filename = file.getName();
         String ext = FileUtils.getExtensionFromFileName(filename).toLowerCase();
-        String mimeType = null;
-        try {
-            mimeType = MimeUtils.getMimeTypeFromExtension(ext);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        if (mimeType == null || mimeType.trim().equals("")) {
-            mimeType = "text/plain";
-        }
+        String mimeType = "image/gif";
 
         try {
+            file.setVerifyIntegrity(checkIntegrity);
             AesStream encStream = file.getInputStream();
 
             // in order for the webview not to crash we suppress Exceptions

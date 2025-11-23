@@ -61,6 +61,7 @@ public class Thumbnails {
     private static final int THRESHOLD_SEEK = 30;
 
     private static Random random = new Random(System.currentTimeMillis());
+    private static boolean checkIntegrity;
 
     /**
      * Returns a bitmap thumbnail from an encrypted file
@@ -72,10 +73,19 @@ public class Thumbnails {
         return getVideoThumbnailRetriever(file, ms);
     }
 
+    public static boolean isCheckIntegrity() {
+        return checkIntegrity;
+    }
+
+    public static void setCheckIntegrity(boolean checkIntegrity) {
+        Thumbnails.checkIntegrity = checkIntegrity;
+    }
+
     public static Bitmap getVideoThumbnailRetriever(AesFile file, long ms) {
         MediaMetadataRetriever retriever = null;
         Bitmap bitmap = null;
         try {
+            file.setVerifyIntegrity(Thumbnails.checkIntegrity);
             retriever = new MediaMetadataRetriever();
             AesMediaDataSource source = new AesMediaDataSource(file,
                     MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, MEDIA_THREADS, MEDIA_BACKOFFSET);
@@ -131,6 +141,7 @@ public class Thumbnails {
         BufferedInputStream stream = null;
         Bitmap bitmap = null;
         try {
+            salmonFile.setVerifyIntegrity(Thumbnails.checkIntegrity);
             String ext = FileUtils.getExtensionFromFileName(salmonFile.getName()).toLowerCase();
             if (ext.equals("gif") && salmonFile.getLength() > TMP_GIF_THUMB_MAX_SIZE)
                 stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(salmonFile, TMP_GIF_THUMB_MAX_SIZE)), BUFFER_SIZE);

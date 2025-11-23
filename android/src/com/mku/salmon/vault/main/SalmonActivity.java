@@ -910,7 +910,7 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    public void startMediaPlayer(int position) {
+    protected void startMediaPlayer(int position) {
         List<AesFile> salmonFiles = new ArrayList<>();
         int pos = 0;
         int i = 0;
@@ -920,7 +920,7 @@ public class SalmonActivity extends AppCompatActivity {
             String filename;
             try {
                 filename = file.getName();
-                if (MimeUtils.isVideo(filename) || MimeUtils.isAudio(filename)) {
+                if (MimeUtils.isVideo(filename) || MimeUtils.isAudio(filename) || i == position) {
                     salmonFiles.add(file);
                 }
                 if (i == position)
@@ -943,7 +943,7 @@ public class SalmonActivity extends AppCompatActivity {
         return new Intent(this, MediaPlayerActivity.class);
     }
 
-    private void startTextViewer(AesFile salmonFile) {
+    protected void startTextViewer(AesFile salmonFile) {
         try {
             if (salmonFile.getLength() > 5 * 1024 * 1024) {
                 Toast.makeText(this, "File too large", Toast.LENGTH_LONG).show();
@@ -955,7 +955,7 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    private void startWebViewer(int position) {
+    protected void startWebViewer(int position) {
         try {
             List<AesFile> salmonFiles = new ArrayList<>();
             AesFile file = fileItemList.get(position);
@@ -995,7 +995,7 @@ public class SalmonActivity extends AppCompatActivity {
         }
     }
 
-    private void startTextEditor(int position) {
+    protected void startTextEditor(int position) {
         AesFile file = fileItemList.get(position);
         TextEditorActivity.setTextFile(file);
         Intent intent = getTextEditorIntent();
