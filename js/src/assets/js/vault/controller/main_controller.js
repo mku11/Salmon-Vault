@@ -146,13 +146,8 @@ export class MainController {
         return detected;
     }
 
-    isModalOpened() {
-        let modals = document.getElementsByClassName("modal");
-        return modals.length > 0;
-    }
-
     detectShortcuts() {
-        if (document.activeElement.tagName == 'BODY' && !this.isModalOpened()) {
+        if (document.activeElement.tagName == 'BODY' && JWindow.getTopWindow() == this.contentWindow) {
             if (this.metaKeysPressed.has('Control') && this.keysPressed.has("R"))
                 this.onRefresh();
             else if (this.keysPressed.has("Back"))
