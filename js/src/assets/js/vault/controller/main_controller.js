@@ -529,7 +529,7 @@ export class MainController {
             let currentExportDir = this.manager.getExportDir;
             this.manager.getExportDir = async () => {
                 return new Promise(async (resolve, reject) => {
-                    ServiceLocator.getInstance().resolve(IFileDialogService).pickFolder("Select directory to export files",
+                    ServiceLocator.getInstance().resolve(IFileDialogService).openFolder("Select directory to export files",
                         await currentExportDir(this.manager), (filePath) => {
                             resolve(filePath);
                         },

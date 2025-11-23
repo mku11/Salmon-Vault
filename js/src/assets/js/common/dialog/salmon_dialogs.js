@@ -228,7 +228,7 @@ export class SalmonDialogs {
     }
 
     static promptCreateLocalVault() {
-        ServiceLocator.getInstance().resolve(IFileDialogService).pickFolder("Select the vault",
+        ServiceLocator.getInstance().resolve(IFileDialogService).openFolder("Select the vault",
             SalmonSettings.getInstance().getVaultLocation(), (file) => {
                 SalmonDialogs.promptSetPassword(async (pass) => {
                     SalmonVaultManager.getInstance().createVault(file, pass);
@@ -280,7 +280,7 @@ export class SalmonDialogs {
     }
     
     static promptOpenLocalVault() {
-        ServiceLocator.getInstance().resolve(IFileDialogService).pickFolder("Select the vault",
+        ServiceLocator.getInstance().resolve(IFileDialogService).openFolder("Select the vault",
             SalmonSettings.getInstance().getVaultLocation(),
             (dir) => {
                 SalmonDialogs.promptPassword(async (password) => {
@@ -413,21 +413,21 @@ export class SalmonDialogs {
      */
     static promptExportFolder(text, requestCode, deleteSource) {
         if (!deleteSource) {
-            promptExport(text, requestCode, deleteSource);
+            SalmonDialogs.promptExport(text, requestCode, deleteSource);
             return;
         }
 
         if (!SalmonDialogs.isDriveLoaded())
             return;
         let itemsString = "item(s)?";
-        for (file of SalmonVaultManager.getInstance().getSelectedFiles()) {
+        for (let file of SalmonVaultManager.getInstance().getSelectedFiles()) {
             if (file.isDirectory()) {
                 itemsString = "item(s) and subfolders?";
                 break;
             }
         }
         JDialog.promptDialog(
-                "Export", "Export " + (deleteSource ? "and delete " : "") + SalmonVaultManager.getInstance().getSelectedFiles().length() + " " + itemsString,
+                "Export", "Export " + (deleteSource ? "and delete " : "") + SalmonVaultManager.getInstance().getSelectedFiles().size + " " + itemsString,
                 "Ok",
                 () => {
                     SalmonDialogs.promptExport(text, requestCode, deleteSource);
@@ -445,7 +445,7 @@ export class SalmonDialogs {
     static promptExport(text, requestCode, deleteSource) {
         if (!SalmonDialogs.isDriveLoaded())
             return;
-        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder(text,
+        ServiceLocator.getInstance().resolve(IFileDialogService).openFolder(text,
                 SalmonSettings.getInstance().getLastExportDir(), (obj) =>
                 {
                     try {

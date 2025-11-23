@@ -69,7 +69,7 @@ export class JsFileDialogService extends IFileDialogService {
         onFilesPicked(files);
     }
 
-    async pickFolder(title, initialDirectory, onFolderPicked, requestCode) {
+    async openFolder(title, initialDirectory, onFolderPicked, requestCode) {
         this.handlers[requestCode] = onFolderPicked;
         const dirHandle = await showDirectoryPicker({
             id: requestCode,

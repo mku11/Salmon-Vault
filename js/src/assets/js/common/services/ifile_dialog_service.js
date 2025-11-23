@@ -26,7 +26,7 @@ SOFTWARE.
 export class IFileDialogService {
     getCallback(requestCode){}
 
-    pickFolder(title,initialDirectory,OnFolderPicked,requestCode){}
+    openFolder(title,initialDirectory,OnFolderPicked,requestCode){}
 
     openFile(title, filename, filter, initialDirectory, OnFilePicked, requestCode){}
 
