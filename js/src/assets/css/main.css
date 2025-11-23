@@ -4,7 +4,6 @@
   right: 0;
   height:100%;
   margin: auto;
-  border-style: solid;  
   border-width: 1pt;
   border-radius: 2pt;
   border-color: gray;
@@ -54,9 +53,7 @@
 }
 
 .table-container {
-  border-style: solid;
-  border-width: 1pt;
-  margin: 8pt;
+  margin: 4px;
   height: 75%;
   overflow: auto;
 }

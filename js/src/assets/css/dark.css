@@ -14,9 +14,6 @@ body {
 .menu-container {
     background-color: white;
     background-image: linear-gradient(to bottom, #2d3343BB, #2d3343FF);
-    margin: 4pt;
-    border-width: 1pt;
-    border-style: solid;
 }
 
 .menu-container a:hover,
