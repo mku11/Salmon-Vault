@@ -25,7 +25,7 @@ SOFTWARE.
 import { JBind } from "../../lib/jbind/jbind.js";
 import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
 import { ObservableList } from "../../lib/jbind/observable_list.js";
-import { Window } from "../../lib/jwin/assets/js/window.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
 import { SalmonSettings } from "../../common/model/salmon_settings.js";
 
 export class SettingsController {
@@ -92,7 +92,7 @@ export class SettingsController {
     static async openSettings(owner) {
         let controller = new SettingsController();
         window.settingsController = controller;
-        let contentWindow = await Window.createModalWithURL("Settings", this.contentURL);
+        let contentWindow = await JWindow.createModalWithURL("Settings", this.contentURL);
         controller.setStage(contentWindow);
         contentWindow.show();
         contentWindow.onClose = () => controller.onClose(this);

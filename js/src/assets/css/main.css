@@ -1,10 +1,9 @@
 .app-container {
   position: absolute;
-  top: 15%;
   left: 0;
   right: 0;
+  height:100%;
   margin: auto;
-  width: 75%;
   border-style: solid;  
   border-width: 1pt;
   border-radius: 2pt;
@@ -55,22 +54,24 @@
 }
 
 .table-container {
-  overflow: auto;
-  height: 300pt;
   border-style: solid;
   border-width: 1pt;
-  margin: 4pt;
+  margin: 8pt;
+  height: 75%;
+  overflow: auto;
 }
 
 .table-container th {
   background:#eee; 
-  position: sticky;
-  top: 0pt;
   z-index: 2;
 }
 
 .table {
+  width: 100%;
+  max-height: 300px;
   border-collapse: collapse;
+  overflow: auto;
+  resize: both;
 }
 
 table td {
@@ -104,12 +105,12 @@ table td {
 }
 
 .th-file-name {
-  min-width: 240pt;
+  min-width: 120pt;
   text-align: left;
 }
 
 .th-file-date {
-  min-width: 180pt;
+  min-width: 120pt;
   text-align: left;
 }
 
@@ -182,13 +183,12 @@ table td {
 .status-container {
   display: flex;
   justify-content: flex-end;
-  height: 1em;
-  overflow: auto;
+  height: min-content;
   margin: 4pt;
 }
 
 .status {
-  font-size: 10pt;
+  font-size: 12pt;
 }
 
 .debug-console-container {
@@ -210,4 +210,10 @@ select {
 
 .settings-row {
   height: 24pt;
+}
+
+.unselectable {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

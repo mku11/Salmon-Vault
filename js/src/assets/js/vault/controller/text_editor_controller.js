@@ -24,11 +24,11 @@ SOFTWARE.
 
 import { JBind } from "../../lib/jbind/jbind.js";
 import { StringProperty } from "../../lib/jbind/string_property.js";
-import { Window } from "../../lib/jwin/assets/js/window.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
 import { SalmonTextEditor } from "../../common/model/salmon_text_editor.js";
 import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
-import { SalmonDialog } from "../../lib/jwin/assets/js/dialog.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 import { ServiceLocator } from "../../common/services/service_locator.js";
 import { IKeyboardService } from "../../common/services/ikeyboard_service.js";
 
@@ -53,6 +53,10 @@ export class TextEditorController {
         this.setupKeyboardShortcuts();
     }
 
+    /**
+     * Set the content window
+     * @param {JWindow} contentWindow 
+     */
     setStage(contentWindow) {
         this.contentWindow = contentWindow;
         this.contentArea = JBind.bind(this.contentWindow.getRoot(), 'text-editor-text', 'textContent', new StringProperty());
@@ -64,7 +68,7 @@ export class TextEditorController {
     static async openTextEditor(fileViewModel, owner) {
         let controller = new TextEditorController();
         window.textEditorController = controller;
-        let contentWindow = await Window.createWindowWithURL("Text Editor", this.contentURL);
+        let contentWindow = await JWindow.createWindowWithURL("Text Editor", this.contentURL);
         controller.setStage(contentWindow);
 
         contentWindow.onClose = () => controller.onClose(this);
@@ -120,7 +124,7 @@ export class TextEditorController {
             }, 2000);
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Could not save file: " + e);
+            JDialog.promptDialog("Error", "Could not save file: " + e);
         }
     }
 

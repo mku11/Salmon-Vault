@@ -16,7 +16,7 @@
   vertical-align: middle;
   background-color: black;
   color: white;
-  font-size: 10pt;
+  font-size: 12pt;
 }
 
 .search-button {
@@ -38,5 +38,5 @@
 
 .text-editor-status {
   vertical-align: middle;
-  font-size: 10pt;
+  font-size: 12pt;
 }

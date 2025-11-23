@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-import { Window } from "../../lib/jwin/assets/js/window.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
 import { JBind } from "../../lib/jbind/jbind.js";
 import { ObjectProperty } from "../../lib/jbind/object_property.js";
 import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
@@ -46,7 +46,7 @@ export class PdfViewerController {
 
     static async openPdfViewer(fileViewModel, owner) {
         let controller = new PdfViewerController();
-        let contentWindow = await Window.createWindowWithURL("PDF Viewer", this.contentURL);
+        let contentWindow = await JWindow.createWindowWithURL("PDF Viewer", this.contentURL);
         contentWindow.modal.style.resize = "none";
         controller.setStage(contentWindow);
         setTimeout(() => {

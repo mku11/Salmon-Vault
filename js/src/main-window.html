@@ -1,0 +1,56 @@
+<div id="app-container" class="app-container">
+    <div id="path-container" class="path-container">
+        <button onclick="mainController.onBack()" id="upButton" class="path-button">
+            <img id="upImage" class="path-button-image" src="assets/images/common-res/icons/up.png" />
+        </button>
+        <input type="text" readonly="true" id="path" class="path-input" value=""></input>
+        <button onclick="mainController.onRefresh()" id="refreshButton" class="path-button">
+            <img id="refreshImage" class="path-button-image" src="assets/images/common-res/icons/refresh.png" />
+        </button>
+    </div>
+    <div id="table-container" class="table-container">
+        <table name="table" class="table">
+            <thead class="table-header">
+                <tr>
+                    <th name="image" type="image" class="th-file-image file-image">
+                        <div class="th-file-image"></div>
+                    </th>
+                    <th name="name" type="text" class="th-file-name file-name">
+                        <div class="th-text th-resizable th-file-name">Name</div>
+                    </th>
+                    <th name="date" type="text" class="th-file-date file-date">
+                        <div class="th-text th-resizable th-file-date">Date Modified</div>
+                    </th>
+                    <th name="type" type="text" class="th-file-type file-type">
+                        <div class="th-text th-resizable th-file-type">Type</div>
+                    </th>
+                    <th name="size" type="text" class="th-file-size file-size">
+                        <div class="th-text th-resizable th-file-size">Size</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="table-body" class="table-body"></tbody>
+        </table>
+    </div>
+    <div id="progress-layout-container" class="progress-layout-container">
+        <div id="progress-layout-containers" class="progress-layout-containers">
+            <div id="progress-containers" class="progress-containers">
+                <div id="file-progress-container" class="file-progress-container">
+                    <span id="file-progress-text" class="file-progress-text">0%</span>
+                    <div>
+                        <progress id="file-progress" value="0" class="file-progress"></progress>
+                    </div>
+                </div>
+                <div id="files-progress-container" class="file-progress-container">
+                    <span id="files-progress-text" class="file-progress-text">0%</span>
+                    <div>
+                        <progress id="files-progress" value="0" class="file-progress"></progress>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="status-container" class="status-container">
+        <span id="status" class="status"></span>
+    </div>
+</div>

@@ -23,20 +23,18 @@ SOFTWARE.
 */
 
 import { MainController } from "../controller/main_controller.js";
-import { Window } from "../../lib/jwin/assets/js/window.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
 import { SalmonConfig } from "../config/salmon_config.js";
 import { HttpSyncClient } from "../../lib/simple-fs/fs/file/http_sync_client.js";
 
-addEventListener("load", (e) => {
+addEventListener("load", async (e) => {
     console.log("Starting Salmon Vault");
     HttpSyncClient.setAllowClearTextTraffic(false); // use only for demo and testing purposes
-    Window.setDefaultIconPath(SalmonConfig.APP_ICON);
-    window.mainController = new MainController();
-    window.mainController.initialize();
-    window.mainController.setWindow();
-	if(document.salmonStartUp) {
-		console.log("found startup");
-		document.salmonStartUp();
-	}
+    JWindow.setDefaultIconPath(SalmonConfig.APP_ICON);
+    MainController.openMainWindow(window);
+    if (document.salmonStartUp) {
+        console.log("found startup");
+        document.salmonStartUp();
+    }
 });
 

@@ -1,6 +1,6 @@
 import { setDebugConsole } from "./assets/js/common/utils/debug_utils.js";
 import { Handler } from "./assets/js/lib/salmon-fs/service/handler.js";
-import { SalmonDialog } from "./assets/js/lib/jwin/assets/js/dialog.js";
+import { JDialog } from "./assets/js/lib/jwin/assets/js/jdialog.js";
 
 const DEBUG = false;
 function setupDebug() {
@@ -16,7 +16,7 @@ async function registerServiceWorker() {
     try {
         await Handler.getInstance().register();
     } catch (ex) {
-        SalmonDialog.promptDialog("Error", ex);
+        JDialog.promptDialog("Error", ex);
     }
 }
 

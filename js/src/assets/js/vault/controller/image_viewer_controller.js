@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-import { Window } from "../../lib/jwin/assets/js/window.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
 import { SalmonImageViewer } from "../../common/model/salmon_image_viewer.js";
 import { JBind } from "../../lib/jbind/jbind.js";
 import { ObjectProperty } from "../../lib/jbind/object_property.js";
@@ -47,7 +47,7 @@ export class ImageViewerController {
 
     static async openImageViewer(fileViewModel, owner) {
         let controller = new ImageViewerController();
-        let contentWindow = await Window.createWindowWithURL("Image Viewer", ImageViewerController.contentURL);
+        let contentWindow = await JWindow.createWindowWithURL("Image Viewer", ImageViewerController.contentURL);
         contentWindow.modal.style.resize = "both";
         controller.setStage(contentWindow);
         setTimeout(() => {

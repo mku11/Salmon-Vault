@@ -24,7 +24,7 @@ SOFTWARE.
 
 
 import {MemoryStream} from "../../lib/simple-io/streams/memory_stream.js";
-import { SalmonDialog } from "../../lib/jwin/assets/js/dialog.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 
 export class SalmonTextEditor
 {
@@ -49,7 +49,7 @@ export class SalmonTextEditor
         catch (ex)
         {
             console.error(ex);
-            SalmonDialog.promptDialog("Error", "Error during saving file: " + ex);
+            JDialog.promptDialog("Error", "Error during saving file: " + ex);
         }
         finally
         {

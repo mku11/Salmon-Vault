@@ -29,7 +29,7 @@ import { AesFileCommander } from "../../lib/salmon-fs/salmonfs/drive/utils/aes_f
 import { autoRenameFile as SalmonFileAutoRename } from "../../lib/salmon-fs/salmonfs/file/aes_file.js";
 import { AesDrive } from "../../lib/salmon-fs/salmonfs/drive/aes_drive.js";
 import { AesFile } from "../../lib/salmon-fs/salmonfs/file/aes_file.js";
-import { SalmonDialog } from "../../lib/jwin/assets/js/dialog.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 import { SalmonDialogs } from "../dialog/salmon_dialogs.js";
 import { autoRenameFile as IRealFileAutoRename } from "../../lib/simple-fs/fs/file/ifile.js";
 import { File } from "../../lib/simple-fs/fs/file/file.js";
@@ -347,7 +347,7 @@ export class SalmonVaultManager extends PropertyNotifier {
                     this.setPathText(await this.currDir.getPath());
             } catch (exception) {
                 console.error(exception);
-                SalmonDialog.promptDialog("Error", exception);
+                JDialog.promptDialog("Error", exception);
             }
 
             let list = [];
@@ -369,7 +369,7 @@ export class SalmonVaultManager extends PropertyNotifier {
             this.setupFileSequencer();
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Error during initializing: " + e);
+            JDialog.promptDialog("Error", "Error during initializing: " + e);
         }
     }
 
@@ -415,7 +415,7 @@ export class SalmonVaultManager extends PropertyNotifier {
             await this.refresh();
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Could not open vault: " + e.message + ". " +
+            JDialog.promptDialog("Error", "Could not open vault: " + e.message + ". " +
                 (e.getCause && e.getCause() != null ? e.getCause().getMessage() : ""));
         } finally {
             this.propertyChanged(this, "taskComplete");
@@ -499,14 +499,14 @@ export class SalmonVaultManager extends PropertyNotifier {
             } catch (e) {
                 if (!this.fileCommander.areJobsStopped()) {
                     console.error(e);
-                    SalmonDialog.promptDialog("Error", "Could not delete files: " + e, "Ok");
+                    JDialog.promptDialog("Error", "Could not delete files: " + e, "Ok");
                 }
             }
             if (this.fileCommander.areJobsStopped())
                 this.setTaskMessage("Delete Stopped");
             else if (failedFiles.length > 0) {
                 console.error(exception);
-                SalmonDialog.promptDialog("Delete", "Some files failed: " + exception);
+                JDialog.promptDialog("Delete", "Some files failed: " + exception);
             } else
                 this.setTaskMessage("Delete Complete");
             this.setFileProgress(1);
@@ -583,13 +583,13 @@ export class SalmonVaultManager extends PropertyNotifier {
             } catch (e) {
                 if (!this.fileCommander.areJobsStopped()) {
                     console.error(e);
-                    SalmonDialog.promptDialog("Error", "Could not copy files: " + e, "Ok");
+                    JDialog.promptDialog("Error", "Could not copy files: " + e, "Ok");
                 }
             }
             if (this.fileCommander.areJobsStopped())
                 this.setTaskMessage(action + " Stopped");
             else if (failedFiles.length > 0)
-                SalmonDialog.promptDialog(action, "Some files failed: " + exception);
+                JDialog.promptDialog(action, "Some files failed: " + exception);
             else
                 this.setTaskMessage(action + " Complete");
             this.setFileProgress(1);
@@ -710,7 +710,7 @@ export class SalmonVaultManager extends PropertyNotifier {
             await SalmonVaultManager.getInstance().updateListItem(file);
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Could not rename file: " + e.message);
+            JDialog.promptDialog("Error", "Could not rename file: " + e.message);
         }
     }
 
@@ -726,7 +726,7 @@ export class SalmonVaultManager extends PropertyNotifier {
         } catch (exception) {
             console.error(exception);
             if (!SalmonVaultManager.getInstance().handleException(exception)) {
-                SalmonDialog.promptDialog("Error", "Could not create folder: " + exception.message);
+                JDialog.promptDialog("Error", "Could not create folder: " + exception.message);
             }
         } finally {
             if(file != null)
@@ -752,7 +752,7 @@ export class SalmonVaultManager extends PropertyNotifier {
         } catch (exception) {
             console.error(exception);
             if (!SalmonVaultManager.getInstance().handleException(exception)) {
-                SalmonDialog.promptDialog("Error", "Could not create file: " + exception.message);
+                JDialog.promptDialog("Error", "Could not create file: " + exception.message);
             }
         } finally {
             try {
@@ -771,9 +771,9 @@ export class SalmonVaultManager extends PropertyNotifier {
         try {
             this.propertyChanged(this, "taskRunning");
             await SalmonVaultManager.getInstance().getDrive().setPassword(pass);
-            SalmonDialog.promptDialog("Password changed");
+            JDialog.promptDialog("Password changed");
         } catch (e) {
-            SalmonDialog.promptDialog("Could not change password: " + e.message);
+            JDialog.promptDialog("Could not change password: " + e.message);
         } finally {
             this.propertyChanged(this, "taskComplete");
         }
@@ -837,12 +837,12 @@ export class SalmonVaultManager extends PropertyNotifier {
                     onFinished(files);
             } catch (e) {
                 console.error(e);
-                SalmonDialog.promptDialog("Error", "Error while exporting files: " + e);
+                JDialog.promptDialog("Error", "Error while exporting files: " + e);
             }
             if (this.fileCommander.areJobsStopped())
                 this.setTaskMessage("Export Stopped");
             else if (failedFiles.length > 0)
-                SalmonDialog.promptDialog("Export", "Some files failed: " + exception);
+                JDialog.promptDialog("Export", "Some files failed: " + exception);
             else if (files != null) {
                 this.setTaskMessage("Export Complete");
             }
@@ -902,13 +902,13 @@ export class SalmonVaultManager extends PropertyNotifier {
             } catch (e) {
                 console.error(e);
                 if (!this.handleException(e)) {
-                    SalmonDialog.promptDialog("Error", "Error while importing files: " + e);
+                    JDialog.promptDialog("Error", "Error while importing files: " + e);
                 }
             }
             if (this.fileCommander.areJobsStopped())
                 this.setTaskMessage("Import Stopped");
             else if (failedFiles.length > 0)
-                SalmonDialog.promptDialog("Import", "Some files failed: " + exception);
+                JDialog.promptDialog("Import", "Some files failed: " + exception);
             else if (aesFiles != null)
                 this.setTaskMessage("Import Complete");
             this.setFileProgress(1);
@@ -979,10 +979,10 @@ export class SalmonVaultManager extends PropertyNotifier {
             this.drive = await AesDrive.createDrive(dir, this.getDriveClassType(dir), password, this.sequencer);
             this.currDir = await this.drive.getRoot();
             await this.refresh();
-            SalmonDialog.promptDialog("Action", "Vault created, you can start importing your files");
+            JDialog.promptDialog("Action", "Vault created, you can start importing your files");
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Could not create vault: " + e.message + ". " +
+            JDialog.promptDialog("Error", "Could not create vault: " + e.message + ". " +
                 (e.getCause && e.getCause() != null ? e.getCause().getMessage() : ""));
         } finally {
             this.propertyChanged(this, "taskComplete");

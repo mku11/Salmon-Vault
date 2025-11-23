@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { Window } from "../../lib/jwin/assets/js/window.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
 import { JBind } from "../../lib/jbind/jbind.js";
 import { StringProperty } from "../../lib/jbind/string_property.js";
 import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
@@ -30,7 +30,7 @@ import { Handler } from "../../lib/salmon-fs/service/handler.js";
 import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 import { AesFileReadableStream } from "../../lib/salmon-fs/salmonfs/streams/aes_file_readable_stream.js";
 import { HttpSyncClient } from "../../lib/simple-fs/fs/file/http_sync_client.js";
-import { SalmonDialog } from "../../lib/jwin/assets/js/dialog.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 import { URLUtils } from "../../vault/utils/url_utils.js";
 
 export class MediaPlayerController {
@@ -63,7 +63,7 @@ export class MediaPlayerController {
 
     static async openMediaPlayer(fileViewModel, owner) {
         let controller = new MediaPlayerController();
-        let contentWindow = await Window.createWindowWithURL("Media Player", this.contentURL);
+        let contentWindow = await JWindow.createWindowWithURL("Media Player", this.contentURL);
         controller.setStage(contentWindow);
         setTimeout(() => {
             controller.load(fileViewModel);
@@ -126,7 +126,7 @@ export class MediaPlayerController {
             this.progressVisibility.set(false);
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", e);
+            JDialog.promptDialog("Error", e);
         }
     }
 
