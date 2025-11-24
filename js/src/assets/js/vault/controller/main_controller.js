@@ -332,7 +332,6 @@ export class MainController {
             MainController.iconsUrl + "/file_paste_small.png", () => { this.onPaste(); }));
         fileMenuItem.addMenuItem(new JMenuSubItem("delete", "Delete (Del)",
             MainController.iconsUrl + "/delete_small.png", () => { this.onDelete(); }));
-        this.contentWindow.setMenuBar(menuBar);
 
         fileMenuItem = new JMenuItem("operationsMenu", "Operations");
         menuBar.addMenuItem(fileMenuItem);
@@ -355,6 +354,8 @@ export class MainController {
         menuBar.addMenuItem(fileMenuItem);
         fileMenuItem.addMenuItem(new JMenuSubItem("about", "About",
             MainController.iconsUrl + "/info_small.png", () => { this.onAbout(); }));
+
+        this.contentWindow.setMenuBar(menuBar);
     }
 
     onAbout() {
