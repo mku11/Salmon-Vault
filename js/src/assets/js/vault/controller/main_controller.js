@@ -265,7 +265,8 @@ export class MainController {
             this.fileItemList.clear();
             for (let file of this.manager.getFileItemList()) {
                 this.fileItemList.add(new SalmonFileViewModel(file), (obj, index, event) => {
-                    JContextMenu.showContextMenu(obj.get(index).name, this.contextMenu, event.clientX, event.clientY);
+                    JContextMenu.showContextMenu(obj.get(index).name, this.contextMenu, 
+                        event.clientX, event.clientY);
                 });
             }
         }
