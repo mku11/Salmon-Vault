@@ -208,9 +208,3 @@ select {
 .settings-row {
   height: 24pt;
 }
-
-.jmenu-unselectable {
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
