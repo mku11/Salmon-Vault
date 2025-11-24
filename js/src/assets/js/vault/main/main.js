@@ -26,15 +26,37 @@ import { MainController } from "../controller/main_controller.js";
 import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
 import { SalmonConfig } from "../config/salmon_config.js";
 import { HttpSyncClient } from "../../lib/simple-fs/fs/file/http_sync_client.js";
+import { setDebugConsole } from "../../common/utils/debug_utils.js";
+import { Handler } from "../../lib/salmon-fs/service/handler.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 
 addEventListener("load", async (e) => {
+    const DEBUG = false;
+    // worker path should be relative to the root of the site
+    const workerPath = 'assets/js/vault/workers/service-worker.js';
+
+    function setupDebug() {
+        let debugConsole = document.getElementById("debug-console");
+        let debugConsoleContainer = document.getElementById("debug-console-container");
+        debugConsoleContainer.style.display = DEBUG ? "flex" : "none";
+        setDebugConsole(debugConsole);
+    }
+
+    async function registerServiceWorker() {
+        Handler.getInstance().setWorkerPath(workerPath);
+        try {
+            await Handler.getInstance().register();
+        } catch (ex) {
+            JDialog.promptDialog("Error", ex);
+        }
+    }
+
+    setupDebug();
+    registerServiceWorker();
+
     console.log("Starting Salmon Vault");
     HttpSyncClient.setAllowClearTextTraffic(false); // use only for demo and testing purposes
     JWindow.setDefaultIconPath(SalmonConfig.APP_ICON);
     MainController.openMainWindow(window);
-    if (document.salmonStartUp) {
-        console.log("found startup");
-        document.salmonStartUp();
-    }
 });
 
