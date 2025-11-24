@@ -57,13 +57,14 @@ export class MediaPlayerController {
 
     setStage(contentWindow) {
         this.contentWindow = contentWindow;
-        this.player = JBind.bind(this.contentWindow.getRoot(), 'media-player-video', 'src', new StringProperty());
-        this.progressVisibility = JBind.bind(this.contentWindow.getRoot(), 'media-progress', 'display', new BooleanProperty());
+        this.player = JBind.bind(this.contentWindow.getWindowPanel(), 'media-player-video', 'src', new StringProperty());
+        this.progressVisibility = JBind.bind(this.contentWindow.getWindowPanel(), 'media-progress', 'display', new BooleanProperty());
     }
 
     static async openMediaPlayer(fileViewModel, owner) {
         let controller = new MediaPlayerController();
         let contentWindow = await JWindow.createWindowWithURL("Media Player", this.contentURL);
+        contentWindow.setResizable(true);
         controller.setStage(contentWindow);
         setTimeout(() => {
             controller.load(fileViewModel);

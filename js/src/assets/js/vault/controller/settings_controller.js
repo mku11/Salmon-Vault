@@ -61,11 +61,11 @@ export class SettingsController {
 
     setStage(contentWindow) {
         this.contentWindow = contentWindow;
-        this.aesType = JBind.bind(this.contentWindow.getRoot(), 'aesType', 'options', new ObservableList());
-        this.pbkdfType = JBind.bind(this.contentWindow.getRoot(), 'pbkdfType', 'options', new ObservableList());
-        this.pbkdfAlgo = JBind.bind(this.contentWindow.getRoot(), 'pbkdfAlgo', 'options', new ObservableList());
-        this.authType = JBind.bind(this.contentWindow.getRoot(), 'authType', 'options', new ObservableList());
-        this.deleteSourceAfterImport = JBind.bind(this.contentWindow.getRoot(), 'deleteSourceAfterImport', 'value', new BooleanProperty());
+        this.aesType = JBind.bind(this.contentWindow.getWindowPanel(), 'aesType', 'options', new ObservableList());
+        this.pbkdfType = JBind.bind(this.contentWindow.getWindowPanel(), 'pbkdfType', 'options', new ObservableList());
+        this.pbkdfAlgo = JBind.bind(this.contentWindow.getWindowPanel(), 'pbkdfAlgo', 'options', new ObservableList());
+        this.authType = JBind.bind(this.contentWindow.getWindowPanel(), 'authType', 'options', new ObservableList());
+        this.deleteSourceAfterImport = JBind.bind(this.contentWindow.getWindowPanel(), 'deleteSourceAfterImport', 'value', new BooleanProperty());
         this.initialize();
     }
 

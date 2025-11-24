@@ -34,6 +34,10 @@ import { IKeyboardService } from "../../common/services/ikeyboard_service.js";
 
 export class TextEditorController {
     static contentURL = "text-editor.html";
+    /**
+     * The content window
+     * @type {JWindow}
+     */
     contentWindow;
     item;
     contentArea;
@@ -59,9 +63,9 @@ export class TextEditorController {
      */
     setStage(contentWindow) {
         this.contentWindow = contentWindow;
-        this.contentArea = JBind.bind(this.contentWindow.getRoot(), 'text-editor-text', 'textContent', new StringProperty());
-        this.searchText = JBind.bind(this.contentWindow.getRoot(), 'search-text', 'value', new StringProperty());
-        this.status = JBind.bind(this.contentWindow.getRoot(), 'text-editor-status', 'innerText', new StringProperty());
+        this.contentArea = JBind.bind(this.contentWindow.getWindowPanel(), 'text-editor-text', 'textContent', new StringProperty());
+        this.searchText = JBind.bind(this.contentWindow.getWindowPanel(), 'search-text', 'value', new StringProperty());
+        this.status = JBind.bind(this.contentWindow.getWindowPanel(), 'text-editor-status', 'innerText', new StringProperty());
         this.initialize();
     }
 

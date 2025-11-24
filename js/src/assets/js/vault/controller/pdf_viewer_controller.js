@@ -40,16 +40,16 @@ export class PdfViewerController {
 
     setStage(contentWindow) {
         this.contentWindow = contentWindow;
-        this.iframe = JBind.bind(this.contentWindow.getRoot(), 'pdf-viewer-iframe', 'src', new ObjectProperty());
-        this.progressVisibility = JBind.bind(this.contentWindow.getRoot(), 'pdf-progress', 'display', new BooleanProperty());
+        this.iframe = JBind.bind(this.contentWindow.getWindowPanel(), 'pdf-viewer-iframe', 'src', new ObjectProperty());
+        this.progressVisibility = JBind.bind(this.contentWindow.getWindowPanel(), 'pdf-progress', 'display', new BooleanProperty());
     }
 
     static async openPdfViewer(fileViewModel, owner) {
         let controller = new PdfViewerController();
         let contentWindow = await JWindow.createWindowWithURL("PDF Viewer", this.contentURL);
-        contentWindow.getWindowPanel().style.resize = "both";
-        contentWindow.getWindowPanel().style.width = "800px";
-        contentWindow.getWindowPanel().style.height = "600px";
+        contentWindow.setResizable(true);
+        contentWindow.setWidth(800);
+        contentWindow.setHeight(600);
         controller.setStage(contentWindow);
         setTimeout(() => {
             controller.load(fileViewModel);

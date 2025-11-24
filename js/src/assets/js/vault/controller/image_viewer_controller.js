@@ -41,14 +41,14 @@ export class ImageViewerController {
 
     setStage(contentWindow) {
         this.contentWindow = contentWindow;
-        this.image = JBind.bind(this.contentWindow.getRoot(), 'image-viewer-image', 'src', new ObjectProperty());
-        this.progressVisibility = JBind.bind(this.contentWindow.getRoot(), 'media-progress', 'display', new BooleanProperty());
+        this.image = JBind.bind(this.contentWindow.getWindowPanel(), 'image-viewer-image', 'src', new ObjectProperty());
+        this.progressVisibility = JBind.bind(this.contentWindow.getWindowPanel(), 'media-progress', 'display', new BooleanProperty());
     }
 
     static async openImageViewer(fileViewModel, owner) {
         let controller = new ImageViewerController();
         let contentWindow = await JWindow.createWindowWithURL("Image Viewer", ImageViewerController.contentURL);
-        contentWindow.getWindowPanel().style.resize = "both";
+        contentWindow.setResizable(true);
         controller.setStage(contentWindow);
         setTimeout(() => {
             controller.load(fileViewModel);
