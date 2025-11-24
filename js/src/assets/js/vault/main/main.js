@@ -32,8 +32,8 @@ import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 
 addEventListener("load", async (e) => {
     const DEBUG = false;
-    // worker path should be relative to the root of the site
-    const workerPath = 'assets/js/vault/workers/service-worker.js';
+    // worker path should be at the root of the site
+    const workerPath = 'service-worker.js';
 
     function setupDebug() {
         let debugConsole = document.getElementById("debug-console");
