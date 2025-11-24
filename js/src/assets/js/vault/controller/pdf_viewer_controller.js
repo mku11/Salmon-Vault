@@ -47,9 +47,9 @@ export class PdfViewerController {
     static async openPdfViewer(fileViewModel, owner) {
         let controller = new PdfViewerController();
         let contentWindow = await JWindow.createWindowWithURL("PDF Viewer", this.contentURL);
-        contentWindow.modal.style.resize = "both";
-        contentWindow.modal.style.width = "800px";
-        contentWindow.modal.style.height = "600px";
+        contentWindow.getWindowPanel().style.resize = "both";
+        contentWindow.getWindowPanel().style.width = "800px";
+        contentWindow.getWindowPanel().style.height = "600px";
         controller.setStage(contentWindow);
         setTimeout(() => {
             controller.load(fileViewModel);

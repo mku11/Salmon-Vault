@@ -96,9 +96,9 @@ export class MainController {
 
     static async openMainWindow(owner) {
         let contentWindow = await JWindow.createWindowWithURL("Salmon Vault", this.contentURL);
-        contentWindow.modal.style.resize = "both";
-        contentWindow.modal.style.width = "800px";
-        contentWindow.modal.style.height = "600px";
+        contentWindow.getWindowPanel().style.resize = "both";
+        contentWindow.getWindowPanel().style.width = "800px";
+        contentWindow.getWindowPanel().style.height = "600px";
         contentWindow.enableDraggable(true);
         contentWindow.enableDismissable(false);
         contentWindow.enableDismissableOutside(false);

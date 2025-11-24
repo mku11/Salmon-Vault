@@ -209,7 +209,7 @@ select {
   height: 24pt;
 }
 
-.unselectable {
+.jmenu-unselectable {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;

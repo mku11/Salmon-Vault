@@ -48,7 +48,7 @@ export class ImageViewerController {
     static async openImageViewer(fileViewModel, owner) {
         let controller = new ImageViewerController();
         let contentWindow = await JWindow.createWindowWithURL("Image Viewer", ImageViewerController.contentURL);
-        contentWindow.modal.style.resize = "both";
+        contentWindow.getWindowPanel().style.resize = "both";
         controller.setStage(contentWindow);
         setTimeout(() => {
             controller.load(fileViewModel);

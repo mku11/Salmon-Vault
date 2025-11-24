@@ -11,31 +11,6 @@ body {
     color: white;
 }
 
-.menu-container {
-    background-color: white;
-    background-image: linear-gradient(to bottom, #2d3343BB, #2d3343FF);
-}
-
-.menu-container a:hover,
-.dropdown:hover .dropbtn,
-.dropbtn:focus {
-    background: white;
-    background-color: #2d3343AA;
-}
-
-.dropdown-content {
-    border-end-start-radius: 2pt;
-    border-end-end-radius: 2pt;
-}
-
-.dropdown-content a {
-    color: white;
-}
-
-.div {
-    color: white;
-}
-
 .dialog-button {
     background: white;
     background-color: #2d3343;
@@ -111,16 +86,6 @@ input {
 
 .file-progress {
     accent-color: #485167bb;
-}
-
-.modal-content {
-    background-color: #2d3343FF;
-    color: white;
-}
-
-.modal-close:hover {
-    background: white;
-    background-color: #2d3343AA;
 }
 
 .dialog-input {
