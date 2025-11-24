@@ -22,16 +22,6 @@ body {
     background-color: #485167bb;
 }
 
-.th-row {
-    background-color: black;
-    color: white;
-}
-
-.td-cell:selected {
-    background-color: #909090;
-    color: white;
-}
-
 .progress-bar {
     color: #3f4f4f;
 }
@@ -46,12 +36,8 @@ input {
     color: white;
 }
 
-.td-cell {
-    color: white;
-}
-
 .table-container {
-    background-color: black;
+    background-color: #11131a;
 }
 
 .table-container th {
@@ -59,16 +45,22 @@ input {
     color: white;
 }
 
-.image-text {
-    color: black;
+.th-row {
+    background-color: black;
+    color: white;
 }
 
 .tr-row {
-    background-color: black;
+    background-color: #11131a;
 }
 
 .tr-row-selected {
-    background-color: #71727f;
+    background-color: #33384d;
+}
+
+.td-cell:selected {
+    background-color: #909090;
+    color: white;
 }
 
 .status {
@@ -110,4 +102,8 @@ select {
     background: #485167bb;
     color: white;
     border-color: white;
+}
+
+.image-text {
+    color: black;
 }
