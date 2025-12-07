@@ -53,3 +53,5 @@ js/src/assets/js/lib
 js/project/app_package
 
 *.log
+
+/libs
