@@ -186,3 +186,5 @@ run.dependsOn build
 
 distZip.enabled = false
 distTar.enabled = false
+installDist.enabled = false
+assembleDist.enabled = false
