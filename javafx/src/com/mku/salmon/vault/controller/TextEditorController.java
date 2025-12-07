@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmonfs.file.AesFile;
 import com.mku.streams.MemoryStream;
 import com.mku.salmon.streams.AesStream;
@@ -39,13 +40,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class TextEditorController {
 
@@ -67,8 +65,6 @@ public class TextEditorController {
     private int currentCaretPosition = 0;
     private SalmonTextEditor editor;
 
-    private static final Executor executor = Executors.newSingleThreadExecutor();
-
     @FXML
     private void initialize() {
         editor = new SalmonTextEditor();
@@ -88,9 +84,8 @@ public class TextEditorController {
         stage.setTitle("TextEditor");
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        WindowUtils.setDefaultIconPath(SalmonConfig.icon);
         stage.show();
-        executor.execute(() -> {
+        TaskQueueUtils.run(() -> {
             controller.load(file);
         });
     }

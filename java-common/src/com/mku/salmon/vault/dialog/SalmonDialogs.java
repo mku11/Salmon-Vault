@@ -465,9 +465,6 @@ public class SalmonDialogs {
                             SalmonVaultManager.getInstance().renameFile(ifile, newFilename);
                         } catch (Exception exception) {
                             exception.printStackTrace();
-                            if (!SalmonVaultManager.getInstance().handleException(exception)) {
-                                SalmonDialog.promptDialog("Error: " + exception.getMessage());
-                            }
                         }
                     }, currentFilename, true, false, false, null);
         } catch (Exception exception) {

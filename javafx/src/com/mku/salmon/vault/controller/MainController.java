@@ -27,14 +27,15 @@ import com.mku.fs.drive.utils.FileUtils;
 import com.mku.fs.file.IFile;
 import com.mku.func.BiConsumer;
 import com.mku.func.Consumer;
+import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
 import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.model.SalmonVaultManager;
 import com.mku.salmon.vault.model.win.SalmonWinVaultManager;
 import com.mku.salmon.vault.services.*;
-import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.MimeUtils;
+import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.utils.FileTypes;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
@@ -56,14 +57,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -71,18 +68,15 @@ import java.util.stream.Collectors;
 public class MainController {
     private static final long MAX_TEXT_FILE = 5 * 1024 * 1024;
     private static final int THREADS = 1;
-    private static final Executor executor = Executors.newSingleThreadExecutor();
 
     @FXML
     public final ObservableList<SalmonFileViewModel> fileItemList = FXCollections.observableArrayList();
 
     @FXML
     public TableView<SalmonFileViewModel> table;
-    private Stage stage;
 
     @FXML
     private final SimpleStringProperty status = new SimpleStringProperty();
-    private boolean useContentViewer;
 
     @FXML
     public SimpleStringProperty statusProperty() {
@@ -183,10 +177,20 @@ public class MainController {
 
     private SalmonVaultManager manager;
 
+    private Stage stage;
     public MainController() {
-
+        registerClosing();
     }
 
+    private void registerClosing() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Shutting down");
+            TaskQueueUtils.stop();
+            if(manager != null)
+                manager.close();
+        }));
+    }
+    
     private void fileItemRemoved(final Integer position, AesFile file) {
         WindowUtils.runOnMainThread(() ->
         {
@@ -349,7 +353,7 @@ public class MainController {
             row.setOnMouseEntered(event -> {
                 SalmonFileViewModel item = row.getItem();
                 if (item != null)
-                    item.entered();
+                    item.animateThumbnail();
             });
             return row;
         });
@@ -700,7 +704,7 @@ public class MainController {
         SalmonFileViewModel vm = getViewModel(file);
         try {
             if (MimeUtils.isVideo(file.getName())) {
-                if (useContentViewer)
+                if (SalmonConfig.USE_CONTENT_VIEWER)
                     startContentViewer(vm);
                 else
                     startMediaPlayer(vm);
@@ -747,7 +751,7 @@ public class MainController {
 
     private void openWith(AesFile salmonFile) {
         SalmonDialogs.promptShare("Export and Share File", SalmonVaultManager.REQUEST_EXPORT_DIR, (sharedDir) -> {
-            executor.execute(() -> {
+            TaskQueueUtils.run(() -> {
                 openWith(salmonFile, sharedDir);
             });
         });

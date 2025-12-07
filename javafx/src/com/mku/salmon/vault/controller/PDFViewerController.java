@@ -24,6 +24,7 @@ SOFTWARE.
 */
 
 import com.mku.salmon.vault.dialog.SalmonDialog;
+import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import javafx.embed.swing.SwingFXUtils;
@@ -36,12 +37,8 @@ import org.icepdf.ri.common.SwingViewBuilder;
 import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class PDFViewerController {
-
-    private static final Executor executor = Executors.newSingleThreadExecutor();
 
     public static void openPDFViewer(SalmonFileViewModel file, Stage owner) throws IOException {
         SwingController swingController = new SwingController();
@@ -57,7 +54,7 @@ public class PDFViewerController {
         window.pack();
         window.setIconImage(SwingFXUtils.fromFXImage(WindowUtils.getDefaultIcon(), null));
         window.setVisible(true);
-        executor.execute(() -> {
+        TaskQueueUtils.run(() -> {
             load(swingController, file);
         });
     }

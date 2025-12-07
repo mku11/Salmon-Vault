@@ -40,6 +40,9 @@ public class SalmonConfig {
     public static final String css = "/css/dark.css";
     public static final String REGISTRY_CHKSUM_KEY = "FILESEQCHKSUM";
     public static final String FILE_SEQ_FILENAME = "config.xml";
+
+    public static final boolean USE_CONTENT_VIEWER = false;
+
     public static String getVersion() {
         return SalmonConfig.class.getPackage().getImplementationVersion();
     }

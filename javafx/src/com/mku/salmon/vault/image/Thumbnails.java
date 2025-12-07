@@ -27,6 +27,7 @@ import com.mku.convert.BitConverter;
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.streams.AesStream;
 import com.mku.salmon.vault.io.AesSeekableByteChannel;
+import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.utils.MimeUtils;
 import com.mku.salmonfs.file.AesFile;
@@ -69,11 +70,8 @@ public class Thumbnails {
     private static final LinkedHashMap<Integer, Image> cache = new LinkedHashMap<>();
     private static final int TINT_COLOR_ALPHA = 60;
     private static int cacheSize;
-
-
     private static final HashMap<AesFile, AesSeekableByteChannel> byteChannels = new HashMap<>();
-    private static final Executor executor = Executors.newFixedThreadPool(2);
-    private static final Executor videoThumbExecutor = Executors.newFixedThreadPool(2);
+
     private static final LinkedBlockingDeque<ThumbnailTask> tasks = new LinkedBlockingDeque<>();
 
     private static class ThumbnailTask {
@@ -86,11 +84,12 @@ public class Thumbnails {
         }
     }
 
-    /// <summary>
-    /// Returns a bitmap thumbnail from an encrypted file
-    /// </summary>
-    /// <param name="salmonFile">The encrypted media file which will be used to get the thumbnail</param>
-    /// <returns></returns>
+    /**
+     * Returns a bitmap thumbnail from an encrypted file
+     * @param salmonFile The encrypted media file which will be used to get the thumbnail
+     * @return The bitmap
+     * @throws Exception If error occurs
+     */
     public static Image getVideoThumbnail(AesFile salmonFile) throws Exception {
         return getVideoThumbnail(salmonFile, VIDEO_THUMBNAIL_MSECS / 1000f);
     }
@@ -108,6 +107,12 @@ public class Thumbnails {
     public static synchronized Image getVideoThumbnail(AesFile salmonFile, double secs) throws Exception {
         if (animationStopped)
             return null;
+
+        Integer key = (getHash(salmonFile) + ":" + secs).hashCode();
+        if(cache.containsKey(key)) {
+            return cache.get(key);
+        }
+
         AesSeekableByteChannel byteChannel = byteChannels.getOrDefault(salmonFile, null);
         if (byteChannel == null) {
             byteChannel = new AesSeekableByteChannel(salmonFile);
@@ -117,6 +122,7 @@ public class Thumbnails {
         Picture picture = FrameGrab.getFrameFromChannelAtSec(byteChannel, secs);
         BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
         WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
+        cache.put(key, image);
         return image;
     }
 
@@ -193,11 +199,11 @@ public class Thumbnails {
         }
         task = new ThumbnailTask(salmonFile, imageView);
         tasks.addFirst(task);
-        executor.execute(() -> {
+        TaskQueueUtils.run(() -> {
             try {
                 ThumbnailTask task1 = tasks.take();
                 if (MimeUtils.isVideo(task1.file.getName()))
-                    videoThumbExecutor.execute(() -> {
+                    TaskQueueUtils.run(() -> {
                         generateThumbnail(task1);
                     });
                 else

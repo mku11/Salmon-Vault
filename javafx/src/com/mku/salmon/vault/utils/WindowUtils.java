@@ -23,16 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import com.mku.salmon.vault.main.Main;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
 
 import java.io.InputStream;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class WindowUtils {
     private static String iconPath;
-    private static final Executor executor = Executors.newCachedThreadPool();
     private static final String os = System.getProperty("os.name").toUpperCase();
 
     public static void runOnMainThread(Runnable runnable) {
@@ -40,7 +38,7 @@ public class WindowUtils {
     }
 
     public static void runOnMainThread(Runnable runnable, int delay) {
-        executor.execute(() -> {
+        TaskQueueUtils.run(() -> {
             try {
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
@@ -55,7 +53,7 @@ public class WindowUtils {
     }
 
     public static Image getDefaultIcon() {
-        InputStream logo = WindowUtils.class.getClassLoader().getResourceAsStream(iconPath);
+        InputStream logo = Main.class.getClassLoader().getResourceAsStream(iconPath);
         Image icon = new Image(logo);
         return icon;
     }

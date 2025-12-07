@@ -24,7 +24,6 @@ SOFTWARE.
 */
 
 import com.mku.fs.drive.utils.FileCommander;
-import com.mku.fs.drive.utils.FileCommander.BatchDeleteOptions;
 import com.mku.fs.drive.utils.FileSearcher;
 import com.mku.fs.file.*;
 import com.mku.func.BiConsumer;
@@ -33,12 +32,12 @@ import com.mku.func.Function;
 import com.mku.salmon.sequence.INonceSequenceSerializer;
 import com.mku.salmon.sequence.INonceSequencer;
 import com.mku.salmon.sequence.SequenceSerializer;
-import com.mku.salmon.streams.AesStream;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.dialog.SalmonDialogs;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.IPropertyNotifier;
+import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.drive.AesDrive;
 import com.mku.salmonfs.drive.Drive;
@@ -53,9 +52,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.RandomAccess;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -74,8 +70,6 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public static final int REQUEST_EXPORT_AUTH_FILE = 1005;
     public static final int REQUEST_IMPORT_FOLDER = 1006;
     public static final long PROGRESS_TIME_INTERVAL = 500; // ms
-
-    private static final ExecutorService executor = Executors.newFixedThreadPool(2);
 
     private String sequencerDefaultDirPath = SalmonConfig.getPrivateDir() + File.separator + SEQUENCER_DIR_NAME;
     private HashSet<BiConsumer<Object, String>> observers = new HashSet<>();
@@ -304,6 +298,11 @@ public class SalmonVaultManager implements IPropertyNotifier {
         setTaskMessage("");
     }
 
+    public void close() {
+        closeVault();
+        fileCommander.close();
+    }
+
     public void copySelectedFiles() {
         if (isJobRunning())
             throw new RuntimeException("Another Job is Running");
@@ -335,7 +334,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             return;
         if (this.drive == null)
             return;
-        executor.execute(() ->
+        TaskQueueUtils.run(() ->
         {
             if(fileManagerMode == Mode.Browse) {
                 salmonFiles = currDir.listFiles();
@@ -355,7 +354,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     protected void populateFileList(AesFile currentFile) {
-        executor.execute(() ->
+        TaskQueueUtils.run(() ->
         {
             selectedFiles.clear();
             try {
@@ -427,7 +426,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         if (dir == null)
             return;
 
-        executor.submit(() -> {
+        TaskQueueUtils.run(() -> {
             try {
                 propertyChanged(this, "taskRunning");
                 closeVault();
@@ -473,7 +472,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             return;
         if (isJobRunning())
             throw new RuntimeException("Another job is running");
-        executor.execute(() ->
+        TaskQueueUtils.run(() ->
         {
             setFileProgress(0);
             setFilesProgress(0);
@@ -561,7 +560,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             throw new RuntimeException("Another job is running");
         if (fileManagerMode != Mode.Browse)
             throw new RuntimeException("Navigate to a folder before pasting");
-        executor.execute(() ->
+        TaskQueueUtils.run(() ->
         {
             setFileProgress(0);
             setFilesProgress(0);
@@ -659,7 +658,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public boolean openItem(AesFile selectedFile) {
-        executor.execute(() ->
+        TaskQueueUtils.run(() ->
         {
             int position = fileItemList.indexOf(selectedFile);
             if (position < 0)
@@ -682,7 +681,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         if (fileManagerMode == Mode.Search && fileCommander.isFileSearcherRunning()) {
             fileCommander.stopFileSearch();
         } else if (fileManagerMode == Mode.Search) {
-            executor.execute(() ->
+            TaskQueueUtils.run(() ->
             {
                 fileManagerMode = Mode.Browse;
                 salmonFiles = currDir.listFiles();
@@ -690,7 +689,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             });
         } else if (canGoBack()) {
             AesFile finalParent = currDir.getParent();
-            executor.execute(() ->
+            TaskQueueUtils.run(() ->
             {
                 if (checkFileSearcher())
                     return;
@@ -727,7 +726,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void renameFile(AesFile file, String newFilename, Consumer<AesFile> onRenamed) {
-        executor.execute(() -> {
+        TaskQueueUtils.run(() -> {
             try {
                 fileCommander.renameFile(file, newFilename);
                 //FIXME: IFile is not reporting the correct length after rename
@@ -740,7 +739,9 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 });
             } catch (Exception e) {
                 e.printStackTrace();
-                SalmonDialog.promptDialog("Error", "Could not rename file: " + e.getMessage());
+                if (!SalmonVaultManager.getInstance().handleException(e)) {
+                    SalmonDialog.promptDialog("Error: " + e.getMessage());
+                }
             }
         });
     }
@@ -757,7 +758,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
 
     public void createDirectory(String folderName) {
         clearSelectedFiles();
-        executor.submit(() -> {
+        TaskQueueUtils.run(() -> {
             AesFile file = null;
             try {
                 file = getCurrDir().createDirectory(folderName);
@@ -775,7 +776,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void createFile(String fileName) {
-        executor.submit(() -> {
+        TaskQueueUtils.run(() -> {
             clearSelectedFiles();
             RandomAccessStream stream = null;
             AesFile file = null;
@@ -805,7 +806,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void setPassword(String pass) {
-        executor.submit(() -> {
+        TaskQueueUtils.run(() -> {
             try {
                 propertyChanged(this, "taskRunning");
                 getDrive().setPassword(pass);
@@ -829,7 +830,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     public void exportFiles(AesFile[] items, IFile exportDir, boolean deleteSource, Consumer<IFile[]> onFinished) {
         if (isJobRunning())
             throw new RuntimeException("Another job is running");
-        executor.execute(() ->
+        TaskQueueUtils.run(() ->
         {
             setFileProgress(0);
             setFilesProgress(0);
@@ -919,7 +920,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                             Consumer<AesFile[]> onFinished, boolean autorename) {
         if (isJobRunning())
             throw new RuntimeException("Another job is running");
-        executor.execute(() ->
+        TaskQueueUtils.run(() ->
         {
             setFileProgress(0);
             setFilesProgress(0);
@@ -996,7 +997,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         searchTerm = value;
         if (checkFileSearcher())
             return;
-        executor.execute(() ->
+        TaskQueueUtils.run(() ->
         {
             fileManagerMode = Mode.Search;
             setFileProgress(0);
@@ -1050,7 +1051,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void createVault(IFile dir, String password) {
-        executor.submit(() -> {
+        TaskQueueUtils.run(() -> {
             try {
                 propertyChanged(this, "taskRunning");
                 if (!dir.exists()) {
@@ -1063,8 +1064,10 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 SalmonDialog.promptDialog("Action", "Vault created, you can start importing your files");
             } catch (Exception e) {
                 e.printStackTrace();
-                SalmonDialog.promptDialog("Error", "Could not create vault: " + e.getMessage() + ". " +
-                        (e.getCause() != null ? e.getCause().getMessage() : ""));
+                if (!SalmonVaultManager.getInstance().handleException(e)) {
+                    SalmonDialog.promptDialog("Error", "Could not create vault: " + e.getMessage() + ". " +
+                            (e.getCause() != null ? e.getCause().getMessage() : ""));
+                }
             } finally {
                 propertyChanged(this, "taskComplete");
             }
@@ -1105,7 +1108,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
     }
 
     public void getDiskUsage(AesFile[] selectedFiles, BiConsumer<AtomicInteger, AtomicLong> updateUsage) {
-        executor.submit(() -> {
+        TaskQueueUtils.run(() -> {
             getDiskUsage(selectedFiles, updateUsage, new AtomicInteger(0), new AtomicLong(0));
         });
     }

@@ -113,7 +113,6 @@ public class SettingsController {
         stage.setTitle("Settings");
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        WindowUtils.setDefaultIconPath(SalmonConfig.icon);
         stage.showAndWait();
 
         SalmonSettings.getInstance().setAesType(controller.getAESType());

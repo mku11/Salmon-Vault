@@ -23,11 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.utils.MimeUtils;
+import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.Timer;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
@@ -52,19 +52,15 @@ import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.TimeZone;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class MediaPlayerController {
-    private static final Image playImage = new Image(MediaPlayerController.class.getResourceAsStream("/icons/play.png"));
-    private static final Image pauseImage = new Image(MediaPlayerController.class.getResourceAsStream("/icons/pause.png"));
     private static final SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
     private static final double mediaViewHorizMargin = 24;
     private static final double mediaViewVertMargin = 64;
@@ -72,6 +68,12 @@ public class MediaPlayerController {
     private static final int bufferSize = 8 * 1024 * 1024;
     private static final int threads = 1;
     private static final int backOffset = 256 * 1024;
+    private static Image playImage;
+    private static Image pauseImage;
+
+    static {
+        setupImages();
+    }
 
     @FXML
     public GridPane gridPane;
@@ -138,8 +140,6 @@ public class MediaPlayerController {
         return totaltime;
     }
 
-    private static final Executor executor = Executors.newSingleThreadExecutor();
-
     @FXML
     private void initialize() {
         format.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -150,9 +150,7 @@ public class MediaPlayerController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
-        stage.setOnCloseRequest(event -> {
-            this.onClose();
-        });
+        stage.setOnCloseRequest(event -> this.onClose());
     }
 
     public static void openMediaPlayer(SalmonFileViewModel file, Stage owner) throws IOException {
@@ -164,7 +162,6 @@ public class MediaPlayerController {
         stage.getIcons().add(WindowUtils.getDefaultIcon());
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        WindowUtils.setDefaultIconPath(SalmonConfig.icon);
         if (MimeUtils.isVideo(file.getAesFile().getName())) {
             stage.widthProperty().addListener((observable, oldValue, newValue) -> {
                 controller.mediaView.setFitWidth(newValue.doubleValue()
@@ -186,10 +183,17 @@ public class MediaPlayerController {
             scene.getWindow().setHeight(600);
         }
         stage.show();
-        executor.execute(() -> {
+        TaskQueueUtils.run(() -> {
             controller.load(file);
             controller.play();
         });
+    }
+
+    private static void setupImages() {
+        playImage = new Image(Objects.requireNonNull(
+                MediaPlayerController.class.getResourceAsStream("/icons/play.png")));
+        pauseImage = new Image(Objects.requireNonNull(
+                MediaPlayerController.class.getResourceAsStream("/icons/pause.png")));
     }
 
     private void play() {
@@ -214,9 +218,7 @@ public class MediaPlayerController {
             startTimer();
 
             String filename = file.getName();
-            WindowUtils.runOnMainThread(()->{
-                stage.setTitle("Media Player - " + filename);
-            });
+            WindowUtils.runOnMainThread(()-> stage.setTitle("Media Player - " + filename));
         } catch (Exception e) {
             e.printStackTrace();
             SalmonDialog.promptDialog("Error", "Could not load file: " + e);
@@ -224,7 +226,7 @@ public class MediaPlayerController {
     }
 
     private void startTimer() {
-        timer = new Timer(()->updateTimeControls(), 1000);
+        timer = new Timer(this::updateTimeControls, 1000);
         timer.start();
     }
 
@@ -237,10 +239,6 @@ public class MediaPlayerController {
             currtime.setValue(format.format(curr));
             totaltime.setValue(format.format(total));
         });
-    }
-
-    public void finalize() {
-        onClose();
     }
 
     public void onClose() {

@@ -26,6 +26,7 @@ SOFTWARE.
 import com.mku.salmon.vault.config.SalmonConfig;
 import com.mku.salmon.vault.model.SalmonImageViewer;
 import com.mku.salmon.vault.model.SalmonSettings;
+import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import javafx.beans.property.ObjectProperty;
@@ -37,15 +38,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.MenuBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class ImageViewerController {
     private static final int ENC_BUFFER_SIZE = 128 * 1024;
@@ -79,7 +76,6 @@ public class ImageViewerController {
     }
 
     private static double imageViewMargin = 64;
-    private static final Executor executor = Executors.newSingleThreadExecutor();
 
     public static void openImageViewer(SalmonFileViewModel file, Stage owner) throws IOException {
         FXMLLoader loader = new FXMLLoader(SalmonSettings.getInstance().getClass().getResource("/view/image-viewer.fxml"));
@@ -91,7 +87,6 @@ public class ImageViewerController {
         stage.setTitle("Image Viewer");
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        WindowUtils.setDefaultIconPath(SalmonConfig.icon);
         stage.widthProperty().addListener((observable, oldValue, newValue) -> {
             controller.imageView.setFitWidth(newValue.doubleValue()
                     - controller.root.getPadding().getLeft()
@@ -108,7 +103,7 @@ public class ImageViewerController {
             );
         });
         stage.show();
-        executor.execute(() -> {
+        TaskQueueUtils.run(() -> {
             controller.load(file);
         });
     }

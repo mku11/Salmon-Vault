@@ -28,6 +28,7 @@ import com.mku.salmon.vault.image.Thumbnails;
 import com.mku.salmon.vault.utils.ByteUtils;
 import com.mku.salmon.vault.utils.MimeUtils;
 
+import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmonfs.file.AesFile;
 import javafx.application.Platform;
@@ -43,11 +44,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class SalmonFileViewModel {
-    private static final int BACKGROUND_THREADS = 1;
     private static final int THUMBNAIL_MAX_STEPS = 10;
     private static final long VIDEO_THUMBNAIL_MSECS = 3000;
 
@@ -61,8 +59,6 @@ public class SalmonFileViewModel {
     private final SimpleStringProperty path = new SimpleStringProperty();
 
     private AesFile salmonFile;
-
-    private static final Executor executor = Executors.newFixedThreadPool(BACKGROUND_THREADS);
 
     public SalmonFileViewModel(AesFile salmonFile) {
         this.salmonFile = salmonFile;
@@ -185,7 +181,7 @@ public class SalmonFileViewModel {
     }
 
     private void animateVideo() {
-        executor.execute(() -> {
+        TaskQueueUtils.run(() -> {
             if (!Thumbnails.isAnimationEnabled())
                 return;
             int i = 0;
@@ -225,7 +221,7 @@ public class SalmonFileViewModel {
         animationViewModel = null;
     }
 
-    public void entered() {
+    public void animateThumbnail() {
         try {
             checkAndStartAnimation();
         } catch (IOException e) {

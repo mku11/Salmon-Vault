@@ -23,8 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import com.mku.salmon.vault.config.SalmonConfig;
+import com.mku.fs.drive.utils.FileUtils;
 import com.mku.salmon.vault.model.SalmonSettings;
+import com.mku.salmon.vault.utils.Resources;
+import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
 import com.mku.salmonfs.file.AesFile;
@@ -43,8 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ContentViewerController {
     @FXML
@@ -52,6 +54,7 @@ public class ContentViewerController {
     @FXML
     private VBox root;
     private Stage stage;
+    @FXML
     private WebView webView;
     private WebEngine webEngine;
     private AesStreamHandler handler;
@@ -60,13 +63,12 @@ public class ContentViewerController {
     public void setStage(Stage stage) {
         this.stage = stage;
     }
+
     private static final double imageViewMargin = 64;
     private static final int buffers = 2;
     private static final int bufferSize = 8 * 1024 * 1024;
     private static final int threads = 1;
     private static final int backOffset = 256 * 1024;
-
-    private static final Executor executor = Executors.newSingleThreadExecutor();
 
     public static void openContentViewer(SalmonFileViewModel file, Stage owner) throws IOException {
         FXMLLoader loader = new FXMLLoader(SalmonSettings.getInstance().getClass().getResource("/view/content-viewer.fxml"));
@@ -78,7 +80,6 @@ public class ContentViewerController {
         stage.setTitle("Content Viewer");
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        WindowUtils.setDefaultIconPath(SalmonConfig.icon);
         stage.widthProperty().addListener((observable, oldValue, newValue) -> {
             controller.webView.setPrefWidth(newValue.doubleValue()
                     - controller.root.getPadding().getLeft()
@@ -95,10 +96,10 @@ public class ContentViewerController {
             );
         });
         stage.show();
-        executor.execute(() -> {
+        TaskQueueUtils.run(() -> {
             controller.load(file);
         });
-        stage.setOnCloseRequest((event)-> {
+        stage.setOnCloseRequest((event) -> {
             controller.onClose();
         });
     }
@@ -107,19 +108,26 @@ public class ContentViewerController {
         AesFile file = item.getAesFile();
         try {
             webEngine = webView.getEngine();
-            Path path = new File(item.dateProperty().getName()).toPath();
+            Path path = new File(item.getAesFile().getName()).toPath();
             String mimeType = Files.probeContentType(path);
-            if(handler == null) {
+            if (handler == null) {
                 handler = AesStreamHandler.getInstance();
                 handler.setProperties(buffers, bufferSize, threads, backOffset);
             }
-            url = handler.register("content.dat", file);
-            WindowUtils.runOnMainThread(()-> {
-                                webEngine.loadContent("<html><body>" +
-                        "<video controls='controls'>" +
-                        "<source src='" + url + "' type='" + mimeType + "'>" +
-                        "</video>" +
-                        "</body></html>");
+
+            StringBuilder content = new StringBuilder();
+            if(FileUtils.isVideo(item.getAesFile().getName())) {
+                url = handler.register("content.mp4#t=5", file);
+                String html = Resources.getResourceAsString("/html/video_content.html");
+                html = html.replaceAll(Pattern.quote("$videoSrc"), Matcher.quoteReplacement(url));
+                html = html.replaceAll(Pattern.quote("$videoMimeType"), Matcher.quoteReplacement(mimeType));
+                content.append(html);
+            } else {
+                url = handler.register("content.dat", file);
+                content.append(url);
+            }
+            WindowUtils.runOnMainThread(() -> {
+                webEngine.loadContent(content.toString());
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -128,7 +136,7 @@ public class ContentViewerController {
 
     public void onClose() {
         webEngine.load(null);
-        if(handler != null)
+        if (handler != null)
             handler.unregister(this.url);
         stage.close();
     }
