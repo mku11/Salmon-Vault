@@ -26,7 +26,7 @@ SOFTWARE.
 import java.util.HashMap;
 public class ServiceLocator
 {
-    private HashMap<Object, Object> _services;
+    private final HashMap<Object, Object> _services;
     private static ServiceLocator instance;
 
     private ServiceLocator()
@@ -49,6 +49,7 @@ public class ServiceLocator
         _services.put(type, impl);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T resolve(Class<T> type) {
         if (_services.containsKey(type))
             return (T)_services.get(type);
