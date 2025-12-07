@@ -51,6 +51,8 @@ To run/debug the app from within the IDE open gradle tab and run the task "runAp
 
 Package:
 To package the app build the artifacts from Intellij IDEA.
+Make sure that any library that contains duplicate classes should not be included in the --module-path since they will clash. For example jcodec and jcodec.javase libraries should be packaged under the libs folder so they can be included only in the classpath (-cp) and not in the --modules-path.  
+Also do not include the salmon-native jars in module path since the name native is invalid for a module, so include the jar under the classpath (-cp) which works fine.
 
 Native library support:
 If you need to build with AES intrinsics for a different cpu architecture you need to place the native libraries under libs folder.
