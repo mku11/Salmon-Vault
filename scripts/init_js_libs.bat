@@ -14,10 +14,10 @@ set SIMPLE_FS_LIB=%SALMON_LIB%\%SIMPLE_FS%.js.%SIMPLE_FS_VERSION%
 set SALMON_CORE_LIB=%SALMON_LIB%\%SALMON_CORE%.js.%SALMON_LIB_VERSION%
 set SALMON_FS_LIB=%SALMON_LIB%\%SALMON_FS%.js.%SALMON_LIB_VERSION%
 
-move %SIMPLE_IO_LIB%\%SIMPLE_IO% ..\js\src\assets\js\lib\
-move %SIMPLE_FS_LIB%\%SIMPLE_FS% ..\js\src\assets\js\lib\
-move %SALMON_CORE_LIB%\%SALMON_CORE% ..\js\src\assets\js\lib\
-move %SALMON_FS_LIB%\%SALMON_FS% ..\js\src\assets\js\lib\
+xcopy /E /Y /I %SIMPLE_IO_LIB%\%SIMPLE_IO% ..\js\src\assets\js\lib\
+xcopy /E /Y /I %SIMPLE_FS_LIB%\%SIMPLE_FS% ..\js\src\assets\js\lib\
+xcopy /E /Y /I %SALMON_CORE_LIB%\%SALMON_CORE% ..\js\src\assets\js\lib\
+xcopy /E /Y /I %SALMON_FS_LIB%\%SALMON_FS% ..\js\src\assets\js\lib\
 
 :: JavaScript libs
 cd %CURRDIR%\..\libs\jbind
