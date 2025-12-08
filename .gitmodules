@@ -1,5 +1,5 @@
 [submodule "deps/WebGPULogger"]
-	path = deps/WebGPULogger
+	path = libs/WebGPULogger
 	url = https://github.com/mku11/WebGPULogger.git
 [submodule "deps/jbind"]
 	path = deps/jbind

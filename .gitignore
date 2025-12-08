@@ -54,4 +54,5 @@ js/project/app_package
 
 *.log
 
-/libs
+/libs/salmon
+/libs/salmon/salmon.zip
