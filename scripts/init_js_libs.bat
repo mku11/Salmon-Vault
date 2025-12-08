@@ -1,3 +1,6 @@
+@ECHO ON
+set CURRDIR=%CD%
+
 :: Salmon Libs
 set SIMPLE_IO_VERSION=1.0.2
 set SIMPLE_FS_VERSION=1.0.2
@@ -29,3 +32,5 @@ xcopy /E /Y /I src ..\..\js\src\assets\js\lib\jwin
 :: uncomment to copy the web gpu logger if you're debugging
 REM cd %CURRDIR%\..\libs\WebGPULogger
 REM xcopy /E /Y /I *.js ..\..\js\src\assets\js\lib\webgpu-logger
+
+cd %CURRDIR%
