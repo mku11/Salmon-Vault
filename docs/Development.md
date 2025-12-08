@@ -4,16 +4,14 @@ If you're working on Windows make sure you ignore the unix file permission by se
 filemode = false
 ```
 
-Before building you need to get the dependencies and gitmodules:
+Before building you need to get the dependencies and gitmodules run:
+For Windows:
 ```
-cd scripts
-./init_gitmodules.bat
+setup.bat
 ```
-
-If you want to run the web vault app you will need to get the dependencies:
+For Linux/MacOS:
 ```
-cd js\project
-getdeps.bat
+setup.sh
 ```
 
 If you have unix shell scripts update the index with the correct permissions before committing.
@@ -34,7 +32,7 @@ find . -name "*.sh" -exec dos2unix {} \;
 find . -name "gradlew" -exec dos2unix {} \;
 ```
 
-To refresh a branch from the remote repo:
+To refresh a specific branch from the remote repo:
 ```
-git pull origin wip-3.0.0
+git pull origin brachname
 ```

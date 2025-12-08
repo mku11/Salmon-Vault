@@ -1,6 +1,6 @@
 CURRDIR=$(pwd)
 
-DEPS_DIR=./libs/
+DEPS_DIR=../libs/
 SALMON_LIB_VERSION=3.0.2
 
 SALMON_BINARY=salmon-multi-arch.v$SALMON_LIB_VERSION.zip

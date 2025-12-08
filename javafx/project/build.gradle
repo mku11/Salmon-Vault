@@ -49,30 +49,8 @@ repositories {
     maven {
         url uri(salmonLibsPath + "salmon-java")
     }
-    if(project.os == 'win' && project.arch == 'x86_64') {
-        maven {
-            url uri(salmonLibsPath + "salmon-java-win-x86_64")
-        }
-    }
-    if(project.os == 'linux' && project.arch == 'x86_64') {
-        maven {
-            url uri(salmonLibsPath + "salmon-java-linux-x86_64")
-        }
-    }
-    if(project.os == 'linux' && project.arch == 'aarch64') {
-        maven {
-            url uri(salmonLibsPath + "salmon-java-linux-x86_64")
-        }
-    }
-    if(project.os == 'macos' && project.arch == 'x86_64') {
-        maven {
-            url uri(salmonLibsPath + "salmon-java-macos-x86_64")
-        }
-    }
-    if(project.os == 'macos' && project.arch == 'aarch64') {
-        maven {
-            url uri(salmonLibsPath + "salmon-java-macos-aarch64")
-        }
+    maven {
+        url uri(salmonLibsPath + "salmon-java-${project.os}-${project.arch}")
     }
     mavenCentral()
 }
@@ -171,7 +149,6 @@ task copyJavaFxDependencies(type: Copy) {
 }
 build.dependsOn copyJavaFxDependencies
 
-// To run the app execute runApp instead of run task
 run {
     group = "application"
     description = "Run the application"

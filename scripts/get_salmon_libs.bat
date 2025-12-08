@@ -1,7 +1,7 @@
 @ECHO ON
 set CURRDIR=%CD%
 
-set DEPS_DIR=.\libs\
+set DEPS_DIR=..\libs\
 set SALMON_LIB_VERSION=3.0.2
 
 set SALMON_BINARY=salmon-multi-arch.v%SALMON_LIB_VERSION%.zip

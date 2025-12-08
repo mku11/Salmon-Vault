@@ -1,0 +1,12 @@
+[submodule "libs/WebGPULogger"]
+	path = libs/WebGPULogger
+	url = https://github.com/mku11/WebGPULogger.git
+[submodule "libs/WebFS"]
+	path = libs/WebFS
+	url = https://github.com/mku11/WebFS.git
+[submodule "libs/jwin"]
+	path = libs/jwin
+	url = https://github.com/mku11/jwin.git
+[submodule "libs/jbind"]
+	path = libs/jbind
+	url = https://github.com/mku11/jbind.git
