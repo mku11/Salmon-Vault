@@ -94,7 +94,7 @@ export class SettingsController {
         window.settingsController = controller;
         let contentWindow = await JWindow.createModalWithURL("Settings", this.contentURL);
         controller.setStage(contentWindow);
-        contentWindow.show();
+        await contentWindow.show();
         contentWindow.onClose = () => controller.onClose(this);
     }
 

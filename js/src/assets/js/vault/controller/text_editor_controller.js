@@ -31,9 +31,13 @@ import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
 import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 import { ServiceLocator } from "../../common/services/service_locator.js";
 import { IKeyboardService } from "../../common/services/ikeyboard_service.js";
+import { JMenuBar, JMenuItem, JMenuSubItem, JMenuWidget } from "../../lib/jwin/assets/js/jmenu_bar.js";
 
 export class TextEditorController {
     static contentURL = "text-editor.html";
+    static searchWidgetUrl = "text-search-widget.html";
+    static iconsUrl = "assets/images/common-res/icons";
+
     /**
      * The content window
      * @type {JWindow}
@@ -63,23 +67,48 @@ export class TextEditorController {
      */
     setStage(contentWindow) {
         this.contentWindow = contentWindow;
-        this.contentArea = JBind.bind(this.contentWindow.getWindowPanel(), 'text-editor-text', 'textContent', new StringProperty());
         this.searchText = JBind.bind(this.contentWindow.getWindowPanel(), 'search-text', 'value', new StringProperty());
+        this.contentArea = JBind.bind(this.contentWindow.getWindowPanel(), 'text-editor-text', 'textContent', new StringProperty());
         this.status = JBind.bind(this.contentWindow.getWindowPanel(), 'text-editor-status', 'innerText', new StringProperty());
         this.initialize();
+    }
+
+    setupMenuBar(contentWindow) {
+        let menuBar = new JMenuBar();
+
+        let fileMenuItem = new JMenuItem("fileMenu", "File");
+        menuBar.addMenuItem(fileMenuItem);
+        fileMenuItem.addMenuItem(new JMenuSubItem("save", "Save File (Ctrl-S)",
+            TextEditorController.iconsUrl + "/save_small.png", () => { this.onSave(); }));
+        fileMenuItem.addMenuItem(new JMenuSubItem("newVault", "Close",
+            TextEditorController.iconsUrl + "/exit_small.png", () => { this.close(); }));
+
+        let searchWidget = new JMenuWidget("searchText", this.#getSearchWidgetHtml);
+        menuBar.addMenuWidget(searchWidget);
+
+        contentWindow.setMenuBar(menuBar);
     }
 
     static async openTextEditor(fileViewModel, owner) {
         let controller = new TextEditorController();
         window.textEditorController = controller;
         let contentWindow = await JWindow.createWindowWithURL("Text Editor", this.contentURL);
-        controller.setStage(contentWindow);
-
+        controller.setupMenuBar(contentWindow);
         contentWindow.onClose = () => controller.onClose(this);
-        contentWindow.show();
+        await contentWindow.show();
+        controller.setStage(contentWindow);
         controller.showTaskMessage("File loading");
         setTimeout(async () => {
             await controller.load(fileViewModel);
+        });
+    }
+
+    async #getSearchWidgetHtml() {
+        return new Promise((resolve, reject) => {
+            fetch(TextEditorController.searchWidgetUrl).then(async (response) => {
+                let content = await response.text();
+                resolve(content);
+            });
         });
     }
 

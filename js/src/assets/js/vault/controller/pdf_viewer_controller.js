@@ -54,7 +54,7 @@ export class PdfViewerController {
         setTimeout(() => {
             controller.load(fileViewModel);
         });
-        contentWindow.show();
+        await contentWindow.show();
         contentWindow.onClose = () => controller.onClose(this);
     }
 

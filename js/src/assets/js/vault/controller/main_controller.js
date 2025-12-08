@@ -105,7 +105,7 @@ export class MainController {
         
         window.mainController = new MainController();
         window.mainController.setStage(contentWindow);
-        contentWindow.show();
+        await contentWindow.show();
     }
 
     setPath(value) {
