@@ -1,8 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net8.0-windows</TargetFramework>
+		<TargetFramework>net9.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
 		<UseWindowsForms>true</UseWindowsForms>
 		<StartupObject>Salmon.Vault.WPF.App</StartupObject>
@@ -10,6 +9,7 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>false</ImplicitUsings>
 		<Version>3.0.1</Version>
+		<SalmonVersion>3.0.3</SalmonVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -178,15 +178,15 @@
 		<Resource Include="..\..\..\common\common-res\icons\file_properties_small.png" Link="Icons\file_properties_small.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
-		
+
 		<Resource Include="..\..\..\common\common-res\icons\import_file_small.png" Link="Icons\import_file_small.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
-		
+
 		<Resource Include="..\..\..\common\common-res\icons\import_folder_small.png" Link="Icons\import_folder_small.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
-		
+
 		<Resource Include="..\..\..\common\common-res\icons\info_small.png" Link="Icons\info_small.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
@@ -213,7 +213,7 @@
 		<Resource Include="..\..\..\common\common-res\icons\save_small.png" Link="Icons\save_small.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
-		
+
 		<Resource Include="..\..\..\common\common-res\icons\search_small.png" Link="Icons\search_small.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
@@ -244,10 +244,6 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
 
-
-
-
-
 		<Resource Include="logo_48x48.ico">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
@@ -257,10 +253,10 @@
 		<PackageReference Include="FFME.Windows" Version="4.4.350" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2088.41" />
 		<PackageReference Include="MimeTypesMap" Version="1.0.8" />
-		<PackageReference Include="Salmon.Core" Version="3.0.2" />
-		<PackageReference Include="Salmon.FS" Version="3.0.2" />
-		<PackageReference Include="Salmon.Native" Version="3.0.2" />
-		<PackageReference Include="Salmon.Win" Version="3.0.2" />
+		<PackageReference Include="Salmon.Core" Version="$(SalmonVersion)" />
+		<PackageReference Include="Salmon.FS" Version="$(SalmonVersion)" />
+		<PackageReference Include="Salmon.Native" Version="$(SalmonVersion)" />
+		<PackageReference Include="Salmon.Win" Version="$(SalmonVersion)" />
 	</ItemGroup>
 
 	<ItemGroup>
