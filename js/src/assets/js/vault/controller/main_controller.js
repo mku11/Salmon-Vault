@@ -224,7 +224,7 @@ export class MainController {
             }
         }
         if (pos >= 0) {
-            self.fileItemList.add(pos, new SalmonFileViewModel(file));
+            self.fileItemList.insert(pos, new SalmonFileViewModel(file));
         }
     }
 
@@ -381,7 +381,8 @@ export class MainController {
     onItemMouseEntered(position) {
         let vm = this.fileItemList.get(position);
         try {
-            vm.entered();
+            if(vm)
+                vm.entered();
         } catch (e) {
             console.error(e);
         }
