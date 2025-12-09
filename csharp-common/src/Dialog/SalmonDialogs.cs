@@ -295,7 +295,7 @@ public class SalmonDialogs
     public static void PromptCreateVault()
     {
         List<string> vaultTypes = new List<string>(new string[] { "Local", "Web Service" });
-        SalmonDialog.PromptSingleValue("Vault Type", vaultTypes, -1,
+        SalmonDialog.PromptSingleValue("Vault Type", vaultTypes, 0,
                 (int which) =>
                 {
                     switch (which)
@@ -344,14 +344,14 @@ public class SalmonDialogs
                             {
                                 SalmonVaultManager.Instance.CreateVault(dir, pass);
                             });
-                        }, "/tv3", false, false, false, null);
+                        }, "", false, false, false, null);
                 });
     }
 
     public static void PromptOpenVault()
     {
         List<string> vaultTypes = new List<string>(new string[] { "Local", "HTTP", "Web Service" });
-        SalmonDialog.PromptSingleValue("Vault Type", vaultTypes, -1,
+        SalmonDialog.PromptSingleValue("Vault Type", vaultTypes, 0,
                 (int which) =>
                 {
                     switch (which)
@@ -438,7 +438,7 @@ public class SalmonDialogs
                         {
                             SalmonVaultManager.Instance.OpenVault(dir, password);
                         });
-                    }, "/tv3", false, false, false, null);
+                    }, "", false, false, false, null);
                 });
     }
 
