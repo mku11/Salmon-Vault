@@ -293,7 +293,7 @@ public class SalmonDialogs {
                                 {
                                     SalmonVaultManager.getInstance().createVault(dir, pass);
                                 });
-                            }, "/tv3", false, false, false, null);
+                            }, "", false, false, false, null);
                 });
     }
 
@@ -370,7 +370,7 @@ public class SalmonDialogs {
                                 SalmonDialogs.promptPassword((password) -> {
                                     SalmonVaultManager.getInstance().openVault(dir, password);
                                 });
-                            }, "/tv3", false, false, false, null);
+                            }, "", false, false, false, null);
                 });
     }
 
