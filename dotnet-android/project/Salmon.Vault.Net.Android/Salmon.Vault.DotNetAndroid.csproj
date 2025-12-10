@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net8.0-android</TargetFramework>
+		<TargetFramework>net9.0-android36</TargetFramework>
 		<SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
 		<OutputType>Exe</OutputType>
 		<ImplicitUsings>false</ImplicitUsings>
@@ -10,7 +10,7 @@
 		<!-- WORKAROUND: ListeneableFuture see: https://github.com/dotnet/maui/issues/6022
     and: https://github.com/xamarin/AndroidX/issues/535 -->
 		<XamarinGoogleGuavaListenableFutureOptOut>true</XamarinGoogleGuavaListenableFutureOptOut>
-		<SalmonVersion>3.0.2</SalmonVersion>
+		<SalmonVersion>3.0.3</SalmonVersion>
 		<Version>$(ApplicationVersion)</Version>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
