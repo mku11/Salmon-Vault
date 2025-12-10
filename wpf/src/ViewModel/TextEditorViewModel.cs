@@ -27,6 +27,7 @@ using Salmon.Vault.Model;
 using Salmon.Vault.Utils;
 using System;
 using System.ComponentModel;
+using System.Threading;
 using System.Windows.Input;
 
 namespace Salmon.Vault.ViewModel;
@@ -147,27 +148,31 @@ public class TextEditorViewModel : INotifyPropertyChanged
 
     private void OnSave()
     {
-        try
+        ThreadPool.QueueUserWorkItem(state =>
         {
-            AesFile oldFile = item.GetAesFile();
-            AesFile targetFile = editor.OnSave(item.GetAesFile(), ContentArea);
-            int index = SalmonVaultManager.Instance.FileItemList.IndexOf(oldFile);
-            if (index >= 0)
+            try
             {
-                SalmonVaultManager.Instance.FileItemList.Remove(oldFile);
-                SalmonVaultManager.Instance.FileItemList.Insert(index, targetFile);
-            }
-            item.SetAesFile(targetFile);
-            ShowTaskMessage("File saved");
-            WindowUtils.RunOnMainThread(() =>
-            {
-                ShowTaskMessage("");
-            }, 2000);
+                AesFile oldFile = item.GetAesFile();
+                AesFile targetFile = editor.OnSave(item.GetAesFile(), ContentArea);
+                int index = SalmonVaultManager.Instance.FileItemList.IndexOf(oldFile);
+                if (index >= 0)
+                {
+                    SalmonVaultManager.Instance.FileItemList.Remove(oldFile);
+                    SalmonVaultManager.Instance.FileItemList.Insert(index, targetFile);
+                }
+                item.SetAesFile(targetFile);
+                ShowTaskMessage("File saved");
+                WindowUtils.RunOnMainThread(() =>
+                {
+                    ShowTaskMessage("");
+                }, 2000);
 
-        }
-        catch (Exception ignored)
-        {
-        }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+            }
+        });
     }
 
     public void Load(SalmonFileViewModel fileItem)
