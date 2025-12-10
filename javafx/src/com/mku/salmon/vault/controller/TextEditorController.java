@@ -124,23 +124,25 @@ public class TextEditorController {
     }
 
     public synchronized void onSave() {
-        AesFile oldFile = item.getAesFile();
-        AesFile targetFile = editor.OnSave(item.getAesFile(), contentArea.getText());
-        int index = SalmonVaultManager.getInstance().getFileItemList().indexOf(oldFile);
-        if (index >= 0) {
-            SalmonVaultManager.getInstance().getFileItemList().remove(oldFile);
-            SalmonVaultManager.getInstance().getFileItemList().add(index, targetFile);
-        }
-        try {
-            item.setAesFile(targetFile);
-            ShowTaskMessage("File saved");
-            WindowUtils.runOnMainThread(() ->
-            {
-                ShowTaskMessage("");
-            }, 2000);
-        } catch (Exception e) {
-            SalmonDialog.promptDialog("Could not save file: " + e.getMessage());
-        }
+		TaskQueueUtils.run(() -> {
+			AesFile oldFile = item.getAesFile();
+			AesFile targetFile = editor.OnSave(item.getAesFile(), contentArea.getText());
+			int index = SalmonVaultManager.getInstance().getFileItemList().indexOf(oldFile);
+			if (index >= 0) {
+				SalmonVaultManager.getInstance().getFileItemList().remove(oldFile);
+				SalmonVaultManager.getInstance().getFileItemList().add(index, targetFile);
+			}
+			try {
+				item.setAesFile(targetFile);
+				ShowTaskMessage("File saved");
+				WindowUtils.runOnMainThread(() ->
+				{
+					ShowTaskMessage("");
+				}, 2000);
+			} catch (Exception e) {
+				SalmonDialog.promptDialog("Could not save file: " + e.getMessage());
+			}
+		});
     }
 
     public void ShowTaskMessage(String msg) {
