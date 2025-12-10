@@ -34,6 +34,11 @@ msbuild -t:clean
 To build from the command line:
 msbuild
 
+To debug the salmon packages:
+Build the Salmon packages in debug configuration.
+Edit nuget.config and uncomment the debug package folder instead of the release
+If you still cannot step in to the code you might need to right click on solution and add the source code from Salmon-AES-CTR\libs\src\csharp as debug source code.
+
 Package:
 To package the app click on Build/Publish in Visual Studio.
 or type in the command prompt:
