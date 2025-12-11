@@ -89,8 +89,8 @@ dependencies {
     implementation("com.mku.salmon:salmon-core:${salmonLibVersion}")
     implementation("com.mku.salmon:salmon-fs:${salmonLibVersion}")
     implementation("com.mku.salmon:salmon-win:${salmonLibVersion}")
-    implementation("com.mku.salmon:salmon-native:${salmonLibVersion}:win-x86_64")
-    nativeImplementation("com.mku.salmon:salmon-native:${salmonLibVersion}:win-x86_64")
+    implementation("com.mku.salmon:salmon-native:${salmonLibVersion}:${project.os}-${project.arch}")
+    nativeImplementation("com.mku.salmon:salmon-native:${salmonLibVersion}:${project.os}-${project.arch}")
 
     implementation 'net.java.dev.jna:jna:5.13.0'
 
