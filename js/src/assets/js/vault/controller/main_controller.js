@@ -237,7 +237,7 @@ export class MainController {
         if (propertyName == "FileItemList") {
             self.updateFileViewModels();
         } else if (propertyName == "CurrentItem") {
-            self.selectItem(self.manager.getCurrentItem());
+            setTimeout(() =>self.selectItem(self.manager.getCurrentItem()));
         } else if (propertyName == "Status") {
             setTimeout(() => self.status.set(self.manager.getStatus()));
         } else if (propertyName == "IsJobRunning") {
