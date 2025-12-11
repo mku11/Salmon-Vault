@@ -92,6 +92,11 @@ input {
     color: white;
 }
 
+.text-editor-text:focus {
+    outline: none !important;
+    border:1px solid rgb(189, 196, 216);
+}
+
 .search-text {
     background: white;
     background-color: #485167bb;
