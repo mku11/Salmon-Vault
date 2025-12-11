@@ -1,3 +1,5 @@
+#!/bin/bash -x
+
 CURRDIR=$(pwd)
 
 DEPS_DIR=../libs/
@@ -11,14 +13,15 @@ ZIP_FILENAME=salmon
 mkdir -p $DEPS_DIR
 curl $SALMON_URL -LJo $DEPS_DIR/$ZIP_FILENAME.zip
 cd $DEPS_DIR
-mkdir $ZIP_FILENAME
+mkdir -p $ZIP_FILENAME
 cd $ZIP_FILENAME
 unzip -qq -o ../$ZIP_FILENAME.zip
 
 # extract the native lib for windows
 cd salmon-msvc-win-x86_64
 cp -f Salmon.Native.$SALMON_LIB_VERSION.nupkg Salmon.Native.$SALMON_LIB_VERSION.zip
-mkdir Salmon.Native.$SALMON_LIB_VERSION
+rm -rf Salmon.Native.$SALMON_LIB_VERSION
+mkdir -p Salmon.Native.$SALMON_LIB_VERSION
 cd Salmon.Native.$SALMON_LIB_VERSION
 unzip -qq -o ../Salmon.Native.$SALMON_LIB_VERSION.zip
 

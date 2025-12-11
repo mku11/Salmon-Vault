@@ -1,54 +1,39 @@
-set SIMPLE_IO_VERSION=1.0.2
-set SIMPLE_FS_VERSION=1.0.2
-set SALMON_LIB_VERSION=3.0.2
+#!/bin/bash -x
 
-set SIMPLE_IO=simple-io
-set SIMPLE_IO_LIB=%SIMPLE_IO%.js.%SIMPLE_IO_VERSION%
-set SIMPLE_IO_LIB_FILENAME=%SIMPLE_IO_LIB%.zip
+CURRDIR=$(pwd)
 
-set SIMPLE_FS=simple-fs
-set SIMPLE_FS_LIB=%SIMPLE_FS%.js.%SIMPLE_FS_VERSION%
-set SIMPLE_FS_LIB_FILENAME=%SIMPLE_FS_LIB%.zip
+# Salmon Libs
+SIMPLE_IO_VERSION=1.0.2
+SIMPLE_FS_VERSION=1.0.2
+SALMON_LIB_VERSION=3.0.3
 
-set SALMON_CORE=salmon-core
-set SALMON_CORE_LIB=%SALMON_CORE%.js.%SALMON_LIB_VERSION%
-set SALMON_CORE_LIB_FILENAME=%SALMON_CORE_LIB%.zip
+SIMPLE_IO=simple-io
+SIMPLE_FS=simple-fs
+SALMON_CORE=salmon-core
+SALMON_FS=salmon-fs
 
-set SALMON_FS=salmon-fs
-set SALMON_FS_LIB=%SALMON_FS%.js.%SALMON_LIB_VERSION%
-set SALMON_FS_LIB_FILENAME=%SALMON_FS_LIB%.zip
+SALMON_LIB=../libs/salmon/salmon-javascript
+SIMPLE_IO_LIB=$SALMON_LIB/$SIMPLE_IO.js.$SIMPLE_IO_VERSION
+SIMPLE_FS_LIB=$SALMON_LIB/$SIMPLE_FS.js.$SIMPLE_FS_VERSION
+SALMON_CORE_LIB=$SALMON_LIB/$SALMON_CORE.js.$SALMON_LIB_VERSION
+SALMON_FS_LIB=$SALMON_LIB/$SALMON_FS.js.$SALMON_LIB_VERSION
 
-rmdir packages /S /Q
-mkdir packages
-rmdir ..\src\assets\js\lib\%SIMPLE_IO% /S /Q
-rmdir ..\src\assets\js\lib\%SIMPLE_FS% /S /Q
-rmdir ..\src\assets\js\lib\%SALMON_CORE% /S /Q
-rmdir ..\src\assets\js\lib\%SALMON_FS% /S /Q
-mkdir ..\src\assets\js\lib
+cp -rf $SIMPLE_IO_LIB/* ../js/src/assets/js/lib/
+cp -rf $SIMPLE_FS_LIB/* ../js/src/assets/js/lib/
+cp -rf $SALMON_CORE_LIB/* ../js/src/assets/js/lib/
+cp -rf $SALMON_FS_LIB/* ../js/src/assets/js/lib/
 
-:: for development use local repository:
-set SALMON_LIBS_URL=http://localhost/repository/javascript
-:: or official github salmon repository:
-:: set SALMON_LIBS_URL=https://github.com/mku11/Salmon-AES-CTR/releases/download/v%SALMON_LIB_VERSION%
+# JavaScript libs
+cd $CURRDIR/../libs/jbind
+mkdir -p ../../js/src/assets/js/lib/jbind/
+cp -rf src/* ../../js/src/assets/js/lib/jbind/
 
-set SIMPLE_IO_LIB_URL=%SALMON_LIBS_URL%/%SIMPLE_IO_LIB_FILENAME%
-set SIMPLE_FS_LIB_URL=%SALMON_LIBS_URL%/%SIMPLE_FS_LIB_FILENAME%
-set SALMON_CORE_LIB_URL=%SALMON_LIBS_URL%/%SALMON_CORE_LIB_FILENAME%
-set SALMON_FS_LIB_URL=%SALMON_LIBS_URL%/%SALMON_FS_LIB_FILENAME%
+cd $CURRDIR/../libs/jwin
+mkdir -p ../../js/src/assets/js/lib/jwin/
+cp -rf src/* ../../js/src/assets/js/lib/jwin/
 
-cd packages
-curl %SIMPLE_IO_LIB_URL% -LJo %SIMPLE_IO_LIB_FILENAME%
-curl %SIMPLE_FS_LIB_URL% -LJo %SIMPLE_FS_LIB_FILENAME%
-curl %SALMON_CORE_LIB_URL% -LJo %SALMON_CORE_LIB_FILENAME%
-curl %SALMON_FS_LIB_URL% -LJo %SALMON_FS_LIB_FILENAME%
+# uncomment to copy the web gpu logger if you're debugging
+# cd $CURRDIR/../libs/WebGPULogger
+# cp -rf *.js ../../js/src/assets/js/lib/webgpu-logger/
 
-powershell -command Expand-Archive -Force '%SIMPLE_IO_LIB_FILENAME%'
-powershell -command Expand-Archive -Force '%SIMPLE_FS_LIB_FILENAME%'
-powershell -command Expand-Archive -Force '%SALMON_CORE_LIB_FILENAME%'
-powershell -command Expand-Archive -Force '%SALMON_FS_LIB_FILENAME%'
-
-cd ..
-move packages\%SIMPLE_IO_LIB%\%SIMPLE_IO% ..\src\assets\js\lib\
-move packages\%SIMPLE_FS_LIB%\%SIMPLE_FS% ..\src\assets\js\lib\
-move packages\%SALMON_CORE_LIB%\%SALMON_CORE% ..\src\assets\js\lib\
-move packages\%SALMON_FS_LIB%\%SALMON_FS% ..\src\assets\js\lib\
+cd $CURRDIR
