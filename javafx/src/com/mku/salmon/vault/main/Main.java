@@ -37,6 +37,7 @@ import javafx.stage.Stage;
 public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
+		// enable only for demo and testing purposes
         HttpSyncClient.setAllowClearTextTraffic(false);
         WindowUtils.setDefaultIconPath(SalmonConfig.icon);
         SalmonDialog.setDefaultStyleSheet(SalmonConfig.css);

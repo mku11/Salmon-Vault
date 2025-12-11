@@ -29,6 +29,7 @@ import { HttpSyncClient } from "../../lib/simple-fs/fs/file/http_sync_client.js"
 import { setDebugConsole } from "../../common/utils/debug_utils.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
 import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
+import { WebGPU } from "../../lib/salmon-core/salmon/bridge/webgpu.js";
 
 addEventListener("load", async (e) => {
     const DEBUG = false;
@@ -55,7 +56,8 @@ addEventListener("load", async (e) => {
     registerServiceWorker();
 
     console.log("Starting Salmon Vault");
-    HttpSyncClient.setAllowClearTextTraffic(false); // use only for demo and testing purposes
+    HttpSyncClient.setAllowClearTextTraffic(false); // enable only for demo and testing purposes
+    WebGPU.enable(false); // enable only for demo and testing purposes
     JWindow.setDefaultIconPath(SalmonConfig.APP_ICON);
     MainController.openMainWindow(window);
 });

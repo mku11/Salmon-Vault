@@ -35,7 +35,7 @@ public partial class App : Application
 
     private void Application_Startup(object sender, StartupEventArgs e)
     {
-		// set to false for production
+		// enable only for demo and testing purposes
         HttpSyncClient.AllowClearTextTraffic = false;
         SetupServices();
         MainWindow = new MainWindow();
