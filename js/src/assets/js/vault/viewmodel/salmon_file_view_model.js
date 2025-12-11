@@ -28,7 +28,7 @@ import { ByteUtils } from "../../common/utils/byte_utils.js";
 import { Thumbnails } from "../image/thumbnails.js";
 
 export class SalmonFileViewModel extends PropertyNotifier {
-    static #IMAGE_SIZE = 48;
+    static #IMAGE_SIZE = 128;
     static THUMBNAIL_MAX_STEPS = 10;
     static VIDEO_THUMBNAIL_MSECS = 3000;
 
@@ -236,9 +236,9 @@ export class SalmonFileViewModel extends PropertyNotifier {
                     }
                     let image = null;
                     try {
-                        image = await Thumbnails.getVideoThumbnail(this.salmonFile,
+                        image = await Thumbnails.generateThumbnail(this.salmonFile,
+                            SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE,
                                 (i + 1) * SalmonFileViewModel.VIDEO_THUMBNAIL_MSECS / 1000.0);
-                        image = await Thumbnails.resize(image, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
                     } catch (e) {
                         console.error(e);
                     }

@@ -57,10 +57,10 @@ export class Thumbnails {
      * Returns a bitmap thumbnail from an encrypted file
      * @param {AesFile} salmonFile The file
      * @param {number} position The position in seconds
-     * @returns 
+     * @returns {Promise<>}
      */
     static async getVideoThumbnail(salmonFile, position = 3) {
-        let blob = await Thumbnails.getVideoTmpBlob(salmonFile);
+        let blob = await Thumbnails.#getVideoTmpBlob(salmonFile);
         let imageUrl = Thumbnails.createObjectURL(blob);
         return new Promise((resolve, reject) => {
             let video = document.createElement('video');
@@ -87,14 +87,14 @@ export class Thumbnails {
         });
     }
 
-    static async getVideoTmpBlob(salmonFile) {
-        let ms = await Thumbnails.getTempStream(salmonFile, Thumbnails.TMP_VIDEO_THUMB_MAX_SIZE);
+    static async #getVideoTmpBlob(salmonFile) {
+        let ms = await Thumbnails.#getTempStream(salmonFile, Thumbnails.TMP_VIDEO_THUMB_MAX_SIZE);
         let blob = new Blob([ms.toArray().buffer]);
         await ms.close();
         return blob;    
     }
 
-    static async getTempStream(salmonFile, maxSize) {
+    static async #getTempStream(salmonFile, maxSize) {
         let ms = new MemoryStream();
         let ins = await salmonFile.getInputStream();
         let buffer = new Uint8Array(Thumbnails.ENC_BUFFER_SIZE);
@@ -111,11 +111,23 @@ export class Thumbnails {
         return ms;
     }
 
-    static async generateThumbnail(salmonFile, width, height) {
+    /**
+     * 
+     * @param {AesFile} salmonFile The aes file
+     * @param {number} width The width
+     * @param {number} height The height
+     * @param {number} position The position in seconds if file is media
+     * @returns 
+     */
+    static async generateThumbnail(salmonFile, width, height, position = 3) {
         let image = null;
-        let key = await Thumbnails.getHash(salmonFile);
-        if (key in Thumbnails.cache) {
-            image = Thumbnails.cache.get(key);
+        let key = await Thumbnails.getHash(salmonFile) + ":" + width + ":" + height;
+        if (await salmonFile.isFile() && FileUtils.isVideo(await salmonFile.getName())) {        
+            key += ":" + position;
+        }
+        if (Thumbnails.cache.has(key)) {
+            let size = 0;
+            [image,size] = Thumbnails.cache.get(key);
             if(image.parentElement!=null)
                 image.parentElement.removeChild(image);
             return image;
@@ -124,16 +136,16 @@ export class Thumbnails {
         try {
             if (await salmonFile.isFile() && FileUtils.isImage(await salmonFile.getName())) {
                 image = await Thumbnails.getImageThumbnail(salmonFile);
-                image = await Thumbnails.resize(image, width, height);
+                image = await Thumbnails.#resize(image, width, height);
             } else if (await salmonFile.isFile() && FileUtils.isVideo(await salmonFile.getName())) {
-                image = await Thumbnails.getVideoThumbnail(salmonFile);
-                image = await Thumbnails.resize(image, width, height);
+                image = await Thumbnails.getVideoThumbnail(salmonFile, position);
+                image = await Thumbnails.#resize(image, width, height);
             }
         } catch (e) {
             throw e;
         }
         if(image != null)
-            Thumbnails.addCache(salmonFile, image);
+            Thumbnails.addCache(key, image);
         return image;
     }
 
@@ -192,7 +204,7 @@ export class Thumbnails {
             parent.appendChild(textElement);
     }
 
-    static async resize(image, width, height) {
+    static async #resize(image, width, height) {
         return new Promise((resolve, reject) => {
             image.onload = () => {
                 let hOffset = 0;
@@ -220,8 +232,7 @@ export class Thumbnails {
         });
     }
 
-    static async addCache(file, image) {
-        let key = await Thumbnails.getHash(file);
+    static async addCache(key, image) {
         if (!Thumbnails.enableCache)
             return;
         if (Thumbnails.cacheSize > Thumbnails.MAX_CACHE_SIZE)
@@ -258,7 +269,7 @@ export class Thumbnails {
 
     static async removeCache(file) {
         let key = await Thumbnails.getHash(file);
-        if (key in Thumbnails.cache) {
+        if (Thumbnails.cache.has(key)) {
             if(Thumbnails.cache.get(key) != null) {
                 let [image,size] = Thumbnails.cache.get(key);
                 Thumbnails.cacheSize -= size;
