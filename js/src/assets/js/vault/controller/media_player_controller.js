@@ -35,9 +35,9 @@ import { URLUtils } from "../../vault/utils/url_utils.js";
 
 export class MediaPlayerController {
     static MIN_FILE_STREAMING = 1 * 1024 * 1024;
-    static MEDIA_BUFFERS = 2;
+    static MEDIA_BUFFERS = 4;
     // make sure we use a large enough buffer for the MediaDataSource since some videos stall
-    static MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    static MEDIA_BUFFER_SIZE = 32 * 1024 * 1024;
     static MEDIA_BACKOFFSET = 256 * 1024;
     // increase the threads if you have more cpus available for parallel processing
     static mediaThreads = 1;

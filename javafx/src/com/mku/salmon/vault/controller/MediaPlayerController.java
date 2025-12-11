@@ -64,8 +64,8 @@ public class MediaPlayerController {
     private static final SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
     private static final double mediaViewHorizMargin = 24;
     private static final double mediaViewVertMargin = 64;
-    private static final int buffers = 2;
-    private static final int bufferSize = 8 * 1024 * 1024;
+    private static final int buffers = 4;
+    private static final int bufferSize = 32 * 1024 * 1024;
     private static final int threads = 1;
     private static final int backOffset = 256 * 1024;
     private static Image playImage;
