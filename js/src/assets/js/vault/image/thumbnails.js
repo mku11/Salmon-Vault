@@ -35,7 +35,7 @@ export class Thumbnails {
     static ENC_BUFFER_SIZE = 512 * 1024;
     static THUMBNAIL_SIZE = 64;
 
-    static MAX_CACHE_SIZE = 128 * 1024;
+    static MAX_CACHE_SIZE = 8 * 1024 * 1024;
     static cache = new Map();
     static TINT_COLOR_ALPHA = 127;
     static cacheSize = 0;
