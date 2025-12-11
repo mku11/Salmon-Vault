@@ -1,5 +1,5 @@
 Salmon Vault - JavaFx
-version: 3.0.0
+version: 3.0.1
 project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 
@@ -42,17 +42,15 @@ Run the build task from gradle instead of the Intellij IDEA. This will include t
 Alternatively you can build from the command line:
 gradlew.bat build -x test --rerun-tasks
 
-To refresh development packages make sure you delete the salmon packages in the cache:
+To refresh development packages make sure you delete the salmon packages from the cache:
 C:\Users\<username>\.gradle\caches\modules-2\files-2.1\com.mku.salmon.*
 Then refresh the gradle dependencies from the IDE or from command line:
 gradlew.bat --refresh-dependencies
 
-To run/debug the app from within the IDE open gradle tab and run the task "runApp" under Application. This will ensure that the salmon native library is loaded.
+To run/debug the app from within the IDE open gradle tab and run the task "run" under Application. This will ensure that the salmon native library is loaded.
 
 Package:
-To package the app build the artifacts from Intellij IDEA.
-Make sure that any library that contains duplicate classes should not be included in the --module-path since they will clash. For example jcodec and jcodec.javase libraries should be packaged under the libs folder so they can be included only in the classpath (-cp) and not in the --modules-path.  
-Also do not include the salmon-native jars in module path since the name native is invalid for a module, so include the jar under the classpath (-cp) which works fine.
+To package the app run package.sh/package.bat
 
 Native library support:
 If you need to build with AES intrinsics for a different cpu architecture you need to place the native libraries under libs folder.
