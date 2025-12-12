@@ -1,0 +1,129 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+
+# Build, Package, and Release
+# This workflow should only run in the main branch
+
+# Note: if you have cache misses then make sure this workflow runs in the main branch first for the same cache keys.
+name: CD.BuildPackageRelease
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+
+jobs: 
+
+  javafx_build_matrix:
+    strategy:
+      matrix:
+        os: [windows-latest,ubuntu-latest,ubuntu-24.04-arm,macos-15-intel,macos-latest]
+    name: build.javafx.${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read 
+    steps:
+    
+    # Git
+    - name: Checkout sources
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref }}
+    
+    - if: runner.os == 'Windows'
+      name: Setup on Windows
+      shell: cmd
+      run: setup.bat
+    - if: runner.os == 'Linux' || runner.os == 'macOS'
+      name: Setup on Linux/MacOS
+      shell: bash
+      run: ./setup.sh
+    
+    # Toolchains and Build envs
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: ${{ matrix.java_version }}
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v5
+    
+    # Caches
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    
+    # Gradle Build JavaFx App
+    - if: runner.os == 'Windows'
+      name: Build JavaFx App on Windows
+      shell: cmd
+      run: cd .\javafx\project && gradlew.bat build -x test -i && package.bat
+    - if: runner.os == 'Linux' || runner.os == 'macOS'
+      name: Build JavaFx App on Linux/MacOS
+      shell: bash
+      run: cd ./javafx/project && ./gradlew build -x test -i && ./package.sh 
+      
+    # Rename Package
+    - if: ${{ matrix.os == 'windows-latest' }}
+      name: Rename Java Windows x64 Package
+      shell: cmd
+      run: cd .\output\javafx && ren salmon-vault-javafx.zip salmon-vault-javafx-win-x86_64.${{ github.ref_name }}.zip
+    - if: ${{ matrix.os == 'ubuntu-latest' }}
+      name: Rename Java Linux x64 Package
+      shell: bash
+      run: cd ./output/javafx && mv salmon-vault-javafx.zip salmon-vault-javafx-linux-x86_64.${{ github.ref_name }}.zip
+    - if: ${{ matrix.os == 'ubuntu-24.04-arm' }}
+      name: Rename Java Linux aarch64 Package
+      shell: bash
+      run: cd ./output/javafx && mv salmon-vault-javafx.zip salmon-vault-javafx-linux-aarch64.${{ github.ref_name }}.zip
+    - if: ${{ matrix.os == 'macos-15-intel' }}
+      name: Rename Java MacOS aarch64 Package
+      shell: bash
+      run: cd ./output/javafx && mv salmon-vault-javafx.zip salmon-vault-javafx-macos-x86_64.${{ github.ref_name }}.zip
+    - if: ${{ matrix.os == 'macos-latest' }}
+      name: Rename Java MacOS aarch64 Package
+      shell: bash
+      run: cd ./output/javafx && mv salmon-vault-javafx.zip salmon-vault-javafx-macos-aarch64.${{ github.ref_name }}.zip
+      
+    # Upload JavaFx App
+    - if: ${{ matrix.os == 'windows-latest' }}
+      name: Upload Java Windows x64 Packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: salmon-vault-javafx-win-x86_64
+        path: output/javafx
+    - if: ${{ matrix.os == 'ubuntu-latest' }}
+      name: Upload Java Linux x64 Packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: salmon-vault-javafx-linux-x86_64
+        path: output/javafx
+    - if: ${{ matrix.os == 'ubuntu-24.04-arm' }}
+      name: Upload Java Linux aarch64 Packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: salmon-vault-javafx-linux-aarch64
+        path: output/javafx
+    - if: ${{ matrix.os == 'macos-15-intel' }}
+      name: Upload JavaFx MacOS x64 Packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: salmon-java-macos-x86_64
+        path: output/javafx
+    - if: ${{ matrix.os == 'macos-latest' }}
+      name: Upload JavaFx MacOS aarch64 Packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: salmon-java-macos-aarch64
+        path: output/javafx
