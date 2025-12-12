@@ -15,7 +15,7 @@ set SALMON_SCRIPTS_DIR=.\scripts
 
 set PACKAGES_DIR=app_package
 set SALMON_VAULT=salmon-vault-javafx
-set SALMON_VAULT_PACKAGE_NAME=%SALMON_VAULT%.%VERSION%
+set SALMON_VAULT_PACKAGE_NAME=%SALMON_VAULT%
 
 powershell mkdir -ErrorAction SilentlyContinue %PACKAGES_DIR%
 del /S /Q .\%PACKAGES_DIR%\*
