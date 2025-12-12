@@ -1,4 +1,6 @@
 @echo ON
+set CURRDIR=%CD%
+
 set VERSION=3.0.1
 
 :: Salmon Vault javascript
@@ -38,3 +40,4 @@ cd ..\..\
 powershell mkdir -ErrorAction SilentlyContinue %OUTPUT_DIR%
 copy /Y %PACKAGES_DIR%\%SALMON_VAULT_PACKAGE_NAME%.zip %OUTPUT_DIR%
 
+cd %CURRDIR%
