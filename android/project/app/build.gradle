@@ -3,19 +3,17 @@ plugins {
 }
 
 repositories {
-    maven {
-        // uncomment for local repo
-         allowInsecureProtocol true
-         url 'http://localhost/repository/maven/releases'
-
-        // official salmon repo
-//        url 'https://github.com/mku11/Repo/raw/main/maven/releases'
-    }
+	maven {
+		url uri("../../../libs/salmon/salmon-java")
+	}
+	maven {
+		url uri("../../../libs/salmon/salmon-android")
+	}
     mavenCentral()
 }
 
 ext {
-    salmonLibVersion = '3.0.2'
+    salmonLibVersion = '3.0.3'
 }
 
 android {
