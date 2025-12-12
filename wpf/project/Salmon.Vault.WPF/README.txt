@@ -32,7 +32,7 @@ To clean:
 msbuild -t:clean
 
 To build from the command line:
-msbuild
+msbuild /p:Configuration=Release
 
 To debug the salmon packages:
 Build the Salmon packages in debug configuration.

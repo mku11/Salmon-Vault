@@ -1,5 +1,5 @@
 Salmon Vault - Android
-version: 2.0.0
+version: 3.0.2
 project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 
@@ -17,6 +17,9 @@ To build the app you will need:
 
 If you're in development and the snapshot dependencies have changed make sure you refresh:
 ./gradlew --refresh-dependencies
+
+To Build:
+./gradlew build -x test
 
 Optional:  
 If you want to include the fast AES intrinsics and Tiny AES:
