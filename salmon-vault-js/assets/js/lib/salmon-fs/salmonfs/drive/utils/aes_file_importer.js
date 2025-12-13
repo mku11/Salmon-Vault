@@ -21,11 +21,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { HttpSyncClient } from "../../../fs/file/http_sync_client.js";
+import { HttpSyncClient } from "../../../../simple-fs/fs/file/http_sync_client.js";
 import { IntegrityException } from "../../../../salmon-core/salmon/integrity/integrity_exception.js";
 import { AuthException } from "../../auth/auth_exception.js";
-import { FileImporter } from "../../../fs/drive/utils/file_importer.js";
-import { FileUtils } from "../../../fs/drive/utils/file_utils.js";
+import { FileImporter } from "../../../../simple-fs/fs/drive/utils/file_importer.js";
+import { FileUtils } from "../../../../simple-fs/fs/drive/utils/file_utils.js";
+import { Platform, PlatformType } from "../../../../simple-io/platform/platform.js";
 /**
  * Imports files to a drive.
  * Make sure you use setWorkerPath() with the correct worker script.
@@ -41,7 +42,6 @@ export class AesFileImporter extends FileImporter {
      */
     constructor(bufferSize = 0, threads = 1) {
         super();
-        super.setWorkerPath('./lib/salmon-fs/salmonfs/drive/utils/aes_file_importer_worker.js');
         super.initialize(bufferSize, threads);
     }
     /**
@@ -50,6 +50,10 @@ export class AesFileImporter extends FileImporter {
      * @param {boolean} integrity True if integrity enabled
      */
     async onPrepare(targetFile, integrity) {
+        if (!this.getWorkerPath()) {
+            let workerPath = await Platform.getAbsolutePath("aes_file_importer_worker.js", import.meta.url);
+            super.setWorkerPath(workerPath);
+        }
         targetFile.setAllowOverwrite(true);
         // we use default chunk file size
         await targetFile.setApplyIntegrity(integrity);
@@ -62,9 +66,8 @@ export class AesFileImporter extends FileImporter {
      */
     async getMinimumPartSize(sourceFile, targetFile) {
         // we force the whole content to use 1 thread if:
-        if (
-        // we are in the browser and the target is a local file (chromes crswap clash between writers)
-        targetFile.getRealFile().constructor.name === 'File' && typeof process !== 'object') {
+        if (targetFile.getRealFile().constructor.name === 'File' && Platform.getPlatform() == PlatformType.Browser) {
+            // we are in the browser and the target is a local file (chromes crswap clashes between writers)
             return await sourceFile.getLength();
         }
         return await targetFile.getMinimumPartSize();
@@ -121,13 +124,13 @@ export class AesFileImporter extends FileImporter {
             realSourceFileHandle: realSourceFileHandle,
             realSourceFileType: realSourceFileType,
             realSourceServicePath: realSourceServicePath,
-            realSourceServiceUser: realSourceFileCredentials === null || realSourceFileCredentials === void 0 ? void 0 : realSourceFileCredentials.getServiceUser(),
-            realSourceServicePassword: realSourceFileCredentials === null || realSourceFileCredentials === void 0 ? void 0 : realSourceFileCredentials.getServicePassword(),
+            realSourceServiceUser: realSourceFileCredentials?.getServiceUser(),
+            realSourceServicePassword: realSourceFileCredentials?.getServicePassword(),
             realTargetFileHandle: realTargetFileHandle,
             realTargetFileType: realTargetFileType,
             realTargetServicePath: realTargetServicePath,
-            realTargetServiceUser: realTargetFileCredentials === null || realTargetFileCredentials === void 0 ? void 0 : realTargetFileCredentials.getServiceUser(),
-            realTargetServicePassword: realTargetFileCredentials === null || realTargetFileCredentials === void 0 ? void 0 : realTargetFileCredentials.getServicePassword(),
+            realTargetServiceUser: realTargetFileCredentials?.getServiceUser(),
+            realTargetServicePassword: realTargetFileCredentials?.getServicePassword(),
             start: start, length: length,
             key: targetFileToImport.getEncryptionKey(),
             integrity: integrity,

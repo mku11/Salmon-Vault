@@ -21,18 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var _a, _Password_pbkdfAlgo, _Password_provider;
 import { PbkdfAlgo } from "./pbkdf_algo.js";
 import { DefaultPbkdfProvider } from "./default_pbkdf_provider.js";
 import { PbkdfFactory } from "./pbkdf_factory.js";
@@ -40,13 +28,15 @@ import { PbkdfFactory } from "./pbkdf_factory.js";
  * Generates security keys based on text passwords.
  */
 export class Password {
+    static #pbkdfAlgo = PbkdfAlgo.SHA256;
+    static #provider = new DefaultPbkdfProvider();
     /**
      * Returns the current global PBKDF algorithm.
      *
      * @returns {PbkdfAlgo} The PBKDF algorithm to be used.
      */
     static getPbkdfAlgo() {
-        return __classPrivateFieldGet(_a, _a, "f", _Password_pbkdfAlgo);
+        return Password.#pbkdfAlgo;
     }
     /**
      * Set the global PDKDF algorithm to be used for key derivation.
@@ -54,7 +44,7 @@ export class Password {
      * @param {PbkdfAlgo} pbkdfAlgo The Pbkdf algorithm
      */
     static setPbkdfAlgo(pbkdfAlgo) {
-        __classPrivateFieldSet(_a, _a, pbkdfAlgo, "f", _Password_pbkdfAlgo);
+        Password.#pbkdfAlgo = pbkdfAlgo;
     }
     /**
      * Set the global PBKDF implementation to be used for text key derivation.
@@ -62,7 +52,7 @@ export class Password {
      * @param {PbkdfType} pbkdfType The pbkdf implementation type.
      */
     static setPbkdfType(pbkdfType) {
-        __classPrivateFieldSet(_a, _a, PbkdfFactory.create(pbkdfType), "f", _Password_provider);
+        Password.#provider = PbkdfFactory.create(pbkdfType);
     }
     /**
      * Set the global PBKDF provider to be used for text key derivation.
@@ -70,7 +60,7 @@ export class Password {
      * @param {ISalmonPbkdfProvider} pbkdfProvider The PBKDF provider.
      */
     static setPbkdfProvider(pbkdfProvider) {
-        __classPrivateFieldSet(_a, _a, pbkdfProvider, "f", _Password_provider);
+        Password.#provider = pbkdfProvider;
     }
     /**
      * Derives the key from a text password
@@ -83,7 +73,7 @@ export class Password {
      * @throws SalmonSecurityException Thrown when error with security
      */
     static async getMasterKey(pass, salt, iterations, length) {
-        let masterKey = await _a.getKeyFromPassword(pass, salt, iterations, length);
+        let masterKey = await Password.getKeyFromPassword(pass, salt, iterations, length);
         return masterKey;
     }
     /**
@@ -97,9 +87,6 @@ export class Password {
      * @throws SalmonSecurityException Thrown when error with security
      */
     static async getKeyFromPassword(password, salt, iterations, outputBytes) {
-        return __classPrivateFieldGet(_a, _a, "f", _Password_provider).getKey(password, salt, iterations, outputBytes, __classPrivateFieldGet(_a, _a, "f", _Password_pbkdfAlgo));
+        return Password.#provider.getKey(password, salt, iterations, outputBytes, Password.#pbkdfAlgo);
     }
 }
-_a = Password;
-_Password_pbkdfAlgo = { value: PbkdfAlgo.SHA256 };
-_Password_provider = { value: new DefaultPbkdfProvider() };

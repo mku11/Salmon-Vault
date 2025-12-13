@@ -21,39 +21,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _a, _Handler_instance, _Handler_workerPath;
 /**
  * Provides a handler that uses a service worker to inject decrypt streams
  * for specific urls. It can be used with Elements like video, img, etc.
  * Make sure you use setWorkerPath() with the correct worker script.
  */
 export class Handler {
-    constructor() {
-        _Handler_workerPath.set(this, null);
-    }
+    static #instance = null;
+    #workerPath = null;
     setWorkerPath(workerPath) {
-        __classPrivateFieldSet(this, _Handler_workerPath, workerPath, "f");
+        this.#workerPath = workerPath;
     }
     static getInstance() {
-        if (__classPrivateFieldGet(_a, _a, "f", _Handler_instance) == null) {
-            __classPrivateFieldSet(_a, _a, new _a(), "f", _Handler_instance);
+        if (Handler.#instance == null) {
+            Handler.#instance = new Handler();
         }
-        return __classPrivateFieldGet(_a, _a, "f", _Handler_instance);
+        return Handler.#instance;
     }
     async register(path = null, params = null, remove = false) {
         return new Promise((resolve, reject) => {
-            let workerPath = __classPrivateFieldGet(this, _Handler_workerPath, "f");
+            let workerPath = this.#workerPath;
             if (workerPath == null)
                 throw new Error("Worker path is not set");
             if ('serviceWorker' in navigator) {
@@ -94,5 +81,3 @@ export class Handler {
         await this.register(path, null, true);
     }
 }
-_a = Handler, _Handler_workerPath = new WeakMap();
-_Handler_instance = { value: null };

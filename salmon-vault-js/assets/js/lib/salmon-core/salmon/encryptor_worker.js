@@ -21,14 +21,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+import { Platform, PlatformType } from "../../simple-io/platform/platform.js";
 import { encryptData } from "./encryptor_helper.js";
 async function receive(event) {
-    let params = typeof process === 'object' ? event : event.data;
+    let params = Platform.getPlatform() == PlatformType.NodeJs ? event : event.data;
     let destBuffer = new Uint8Array(params.out_size);
     try {
         let { startPos, endPos } = await encryptData(params.data, params.start, params.length, destBuffer, params.key, params.nonce, params.format, params.integrity, params.hashKey, params.chunkSize, params.bufferSize);
         let msg = { startPos: startPos, endPos: endPos, outData: destBuffer };
-        if (typeof process === 'object') {
+        if (Platform.getPlatform() == PlatformType.NodeJs) {
             const { parentPort } = await import("worker_threads");
             if (parentPort) {
                 parentPort.postMessage(msg);
@@ -38,7 +39,7 @@ async function receive(event) {
             postMessage(msg);
     }
     catch (ex) {
-        if (typeof process === 'object') {
+        if (Platform.getPlatform() == PlatformType.NodeJs) {
             const { parentPort } = await import("worker_threads");
             if (parentPort) {
                 parentPort.postMessage(ex);
@@ -48,7 +49,7 @@ async function receive(event) {
             postMessage(ex);
     }
 }
-if (typeof process === 'object') {
+if (Platform.getPlatform() == PlatformType.NodeJs) {
     const { parentPort } = await import("worker_threads");
     if (parentPort)
         parentPort.addListener('message', receive);

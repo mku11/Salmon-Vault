@@ -21,14 +21,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _DriveConfig_magicBytes, _DriveConfig_version, _DriveConfig_salt, _DriveConfig_iterations, _DriveConfig_iv, _DriveConfig_encryptedData, _DriveConfig_hashSignature;
-import { BitConverter } from "../../../salmon-core/convert/bit_converter.js";
-import { MemoryStream } from "../../../salmon-core/streams/memory_stream.js";
+import { BitConverter } from "../../../simple-io/convert/bit_converter.js";
+import { MemoryStream } from "../../../simple-io/streams/memory_stream.js";
 import { Generator } from "../../../salmon-core/salmon/generator.js";
 import { DriveGenerator } from "./drive_generator.js";
 /**
@@ -36,18 +30,18 @@ import { DriveGenerator } from "./drive_generator.js";
  * with a master key which is password derived.
  */
 export class DriveConfig {
+    //TODO: support versioned formats for the file header
+    #magicBytes = new Uint8Array(Generator.MAGIC_LENGTH);
+    #version = new Uint8Array(Generator.VERSION_LENGTH);
+    #salt = new Uint8Array(DriveGenerator.SALT_LENGTH);
+    #iterations = new Uint8Array(DriveGenerator.ITERATIONS_LENGTH);
+    #iv = new Uint8Array(DriveGenerator.IV_LENGTH);
+    #encryptedData = new Uint8Array(DriveGenerator.COMBINED_KEY_LENGTH + DriveGenerator.DRIVE_ID_LENGTH);
+    #hashSignature = new Uint8Array(Generator.HASH_RESULT_LENGTH);
     /**
      * Construct a class that hosts the properties of the drive config file
      */
     constructor() {
-        //TODO: support versioned formats for the file header
-        _DriveConfig_magicBytes.set(this, new Uint8Array(Generator.MAGIC_LENGTH));
-        _DriveConfig_version.set(this, new Uint8Array(Generator.VERSION_LENGTH));
-        _DriveConfig_salt.set(this, new Uint8Array(DriveGenerator.SALT_LENGTH));
-        _DriveConfig_iterations.set(this, new Uint8Array(DriveGenerator.ITERATIONS_LENGTH));
-        _DriveConfig_iv.set(this, new Uint8Array(DriveGenerator.IV_LENGTH));
-        _DriveConfig_encryptedData.set(this, new Uint8Array(DriveGenerator.COMBINED_KEY_LENGTH + DriveGenerator.DRIVE_ID_LENGTH));
-        _DriveConfig_hashSignature.set(this, new Uint8Array(Generator.HASH_RESULT_LENGTH));
     }
     /**
      * Initializes the properties of the drive config file
@@ -56,13 +50,13 @@ export class DriveConfig {
      */
     async init(contents) {
         let ms = new MemoryStream(contents);
-        await ms.read(__classPrivateFieldGet(this, _DriveConfig_magicBytes, "f"), 0, Generator.MAGIC_LENGTH);
-        await ms.read(__classPrivateFieldGet(this, _DriveConfig_version, "f"), 0, Generator.VERSION_LENGTH);
-        await ms.read(__classPrivateFieldGet(this, _DriveConfig_salt, "f"), 0, DriveGenerator.SALT_LENGTH);
-        await ms.read(__classPrivateFieldGet(this, _DriveConfig_iterations, "f"), 0, DriveGenerator.ITERATIONS_LENGTH);
-        await ms.read(__classPrivateFieldGet(this, _DriveConfig_iv, "f"), 0, DriveGenerator.IV_LENGTH);
-        await ms.read(__classPrivateFieldGet(this, _DriveConfig_encryptedData, "f"), 0, DriveGenerator.COMBINED_KEY_LENGTH + DriveGenerator.AUTH_ID_SIZE);
-        await ms.read(__classPrivateFieldGet(this, _DriveConfig_hashSignature, "f"), 0, Generator.HASH_RESULT_LENGTH);
+        await ms.read(this.#magicBytes, 0, Generator.MAGIC_LENGTH);
+        await ms.read(this.#version, 0, Generator.VERSION_LENGTH);
+        await ms.read(this.#salt, 0, DriveGenerator.SALT_LENGTH);
+        await ms.read(this.#iterations, 0, DriveGenerator.ITERATIONS_LENGTH);
+        await ms.read(this.#iv, 0, DriveGenerator.IV_LENGTH);
+        await ms.read(this.#encryptedData, 0, DriveGenerator.COMBINED_KEY_LENGTH + DriveGenerator.AUTH_ID_SIZE);
+        await ms.read(this.#hashSignature, 0, Generator.HASH_RESULT_LENGTH);
         await ms.close();
     }
     /**
@@ -100,57 +94,56 @@ export class DriveConfig {
      * Clear properties.
      */
     clear() {
-        __classPrivateFieldGet(this, _DriveConfig_magicBytes, "f").fill(0);
-        __classPrivateFieldGet(this, _DriveConfig_version, "f").fill(0);
-        __classPrivateFieldGet(this, _DriveConfig_salt, "f").fill(0);
-        __classPrivateFieldGet(this, _DriveConfig_iterations, "f").fill(0);
-        __classPrivateFieldGet(this, _DriveConfig_iv, "f").fill(0);
-        __classPrivateFieldGet(this, _DriveConfig_encryptedData, "f").fill(0);
-        __classPrivateFieldGet(this, _DriveConfig_hashSignature, "f").fill(0);
+        this.#magicBytes.fill(0);
+        this.#version.fill(0);
+        this.#salt.fill(0);
+        this.#iterations.fill(0);
+        this.#iv.fill(0);
+        this.#encryptedData.fill(0);
+        this.#hashSignature.fill(0);
     }
     /**
      * Get the magic bytes from the config file.
      * @returns {Uint8Array} The magic bytes
      */
     getMagicBytes() {
-        return __classPrivateFieldGet(this, _DriveConfig_magicBytes, "f");
+        return this.#magicBytes;
     }
     /**
      * Get the salt to be used for the password key derivation.
      * @returns {Uint8Array} the salt
      */
     getSalt() {
-        return __classPrivateFieldGet(this, _DriveConfig_salt, "f");
+        return this.#salt;
     }
     /**
      * Get the iterations to be used for the key derivation.
      * @returns {number} The number of iterations
      */
     getIterations() {
-        if (__classPrivateFieldGet(this, _DriveConfig_iterations, "f") == null)
+        if (this.#iterations == null)
             return 0;
-        return BitConverter.toLong(__classPrivateFieldGet(this, _DriveConfig_iterations, "f"), 0, DriveGenerator.ITERATIONS_LENGTH);
+        return BitConverter.toLong(this.#iterations, 0, DriveGenerator.ITERATIONS_LENGTH);
     }
     /**
      * Get encrypted data using the master key: drive key, hash key, drive id.
      * @returns {Uint8Array} The encrypted data
      */
     getEncryptedData() {
-        return __classPrivateFieldGet(this, _DriveConfig_encryptedData, "f");
+        return this.#encryptedData;
     }
     /**
      * Get the initial vector that was used to encrypt this drive configuration.
      * @returns {Uint8Array} The initial vector
      */
     getIv() {
-        return __classPrivateFieldGet(this, _DriveConfig_iv, "f");
+        return this.#iv;
     }
     /**
      * Get the hash signature that was used to sign this drive configuration.
      * @returns {Uint8Array} The hash signature
      */
     getHashSignature() {
-        return __classPrivateFieldGet(this, _DriveConfig_hashSignature, "f");
+        return this.#hashSignature;
     }
 }
-_DriveConfig_magicBytes = new WeakMap(), _DriveConfig_version = new WeakMap(), _DriveConfig_salt = new WeakMap(), _DriveConfig_iterations = new WeakMap(), _DriveConfig_iv = new WeakMap(), _DriveConfig_encryptedData = new WeakMap(), _DriveConfig_hashSignature = new WeakMap();

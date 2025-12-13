@@ -21,32 +21,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _SecurityException_cause;
 /**
  * Salmon generic security exception.
  */
 export class SecurityException extends Error {
+    #cause = null;
     /**
      * Construct an exception with a specific message and inner exception.
      * @param {string | null} msg The provided message.
      * @param {Error | unknown | null} ex The inner exception.
      */
     constructor(msg = null, ex = null) {
-        super(msg !== null && msg !== void 0 ? msg : "");
-        _SecurityException_cause.set(this, null);
+        super(msg ?? "");
         if (ex) {
-            __classPrivateFieldSet(this, _SecurityException_cause, ex, "f");
+            this.#cause = ex;
         }
     }
     /**
@@ -54,7 +42,6 @@ export class SecurityException extends Error {
      * @returns {Error | unknown | null} The inner exception.
      */
     getCause() {
-        return __classPrivateFieldGet(this, _SecurityException_cause, "f");
+        return this.#cause;
     }
 }
-_SecurityException_cause = new WeakMap();

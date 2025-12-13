@@ -31,20 +31,20 @@ import { AesNativeTransformer } from "./aes_native_transformer.js";
 export class TransformerFactory {
     /**
      * Create an encryption transformer implementation.
-     * @param {ProviderType} type The supported provider type.
+     * @param {ProviderType} providerType The supported provider type.
      * @returns {ISalmonCTRTransformer} The transformer.
      * @throws SalmonSecurityException Thrown when error with security
      */
-    static create(type) {
-        switch (type) {
+    static create(providerType) {
+        switch (providerType) {
             case ProviderType.Default:
                 return new AesDefaultTransformer();
             case ProviderType.AesIntrinsics:
             case ProviderType.Aes:
             case ProviderType.AesGPU:
-                return new AesNativeTransformer(type);
+                return new AesNativeTransformer(providerType);
             default:
-                throw new SecurityException("Unknown Transformer type");
+                throw new SecurityException("Unknown Transformer type: " + providerType);
         }
     }
 }

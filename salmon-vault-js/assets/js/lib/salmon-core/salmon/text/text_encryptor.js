@@ -21,19 +21,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _a, _TextEncryptor_encryptor;
 import { Encryptor } from "../encryptor.js";
-import { Base64Utils } from "../encode/base64_utils.js";
+import { Base64Utils } from "../../../simple-io/encode/base64_utils.js";
 import { EncryptionFormat } from "../streams/encryption_format.js";
 /**
  * Utility class that encrypts and decrypts text strings.
  */
 export class TextEncryptor {
+    static #encryptor = new Encryptor();
     /**
      * Encrypts a text String using AES256 with the key and nonce provided.
      *
@@ -51,10 +46,8 @@ export class TextEncryptor {
      */
     static async encryptString(text, key, nonce, format = EncryptionFormat.Salmon, integrity = false, hashKey = null, chunkSize = 0) {
         let bytes = new TextEncoder().encode(text);
-        let encBytes = await __classPrivateFieldGet(this, _a, "f", _TextEncryptor_encryptor).encrypt(bytes, key, nonce, format, integrity, hashKey, chunkSize);
+        let encBytes = await this.#encryptor.encrypt(bytes, key, nonce, format, integrity, hashKey, chunkSize);
         let encString = Base64Utils.getBase64().encode(encBytes).replace("\n", "");
         return encString;
     }
 }
-_a = TextEncryptor;
-_TextEncryptor_encryptor = { value: new Encryptor() };

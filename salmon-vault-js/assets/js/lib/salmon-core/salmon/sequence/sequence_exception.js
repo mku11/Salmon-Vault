@@ -25,14 +25,14 @@ SOFTWARE.
  * Thrown when there is a failure in the nonce sequencer.
  */
 export class SequenceException extends Error {
+    cause = null;
     /**
      * Construct an exception with a specific message and inner exception
      * @param {string | null} msg The provided message
      * @param {Error | unknown | null} ex The inner exception
      */
     constructor(msg = null, ex = null) {
-        super(msg !== null && msg !== void 0 ? msg : "");
-        this.cause = null;
+        super(msg ?? "");
         if (ex) {
             this.cause = ex;
         }

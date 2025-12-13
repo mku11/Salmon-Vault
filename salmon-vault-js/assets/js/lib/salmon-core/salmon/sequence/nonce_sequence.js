@@ -26,6 +26,26 @@ SOFTWARE.
  */
 export class NonceSequence {
     /**
+     * The id for this sequence.
+     */
+    id;
+    /**
+     * The authorization id for a specific device.
+     */
+    authId;
+    /**
+     * Then next available nonce.
+     */
+    nextNonce = null;
+    /**
+     * The maximum nonce.
+     */
+    maxNonce = null;
+    /**
+     * The current status of the sequence.
+     */
+    status = Status.New;
+    /**
      * Instantiate a nonce sequence with the provided authorization id.
      * @param {string} id The Id for this sequence.
      * @param {string} authId The authorization id for this device and drive.
@@ -34,18 +54,6 @@ export class NonceSequence {
      * @param {Status} status The status of the sequencer.
      */
     constructor(id, authId, nextNonce, maxNonce, status) {
-        /**
-         * Then next available nonce.
-         */
-        this.nextNonce = null;
-        /**
-         * The maximum nonce.
-         */
-        this.maxNonce = null;
-        /**
-         * The current status of the sequence.
-         */
-        this.status = Status.New;
         this.id = id;
         this.authId = authId;
         this.nextNonce = nextNonce;

@@ -23,57 +23,49 @@ SOFTWARE.
 */
 
 
-import { SalmonWindow } from "../window/salmon_window.js";
-import { Binding } from "../../common/binding/binding.js";
-import { ObjectProperty } from "../../common/binding/object_property.js";
-import { BooleanProperty } from "../../common/binding/boolean_property.js";
-import { WindowUtils } from "../utils/window_utils.js";
-import { SalmonConfig } from "../config/salmon_config.js";
-import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
+import { JBind } from "../../lib/jbind/jbind.js";
+import { ObjectProperty } from "../../lib/jbind/object_property.js";
+import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
+import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
 
 export class PdfViewerController {
-    static modalURL = "pdf-viewer.html";
+    static contentURL = "pdf-viewer.html";
     iframe;
-    modalWindow;
+    contentWindow;
     viewer;
     progressVisibility;
     url;
 
-    constructor() {
-        
+    setStage(contentWindow) {
+        this.contentWindow = contentWindow;
+        this.iframe = JBind.bind(this.contentWindow.getWindowPanel(), 'pdf-viewer-iframe', 'src', new ObjectProperty());
+        this.progressVisibility = JBind.bind(this.contentWindow.getWindowPanel(), 'pdf-progress', 'display', new BooleanProperty());
     }
 
-    setStage(modalWindow) {
-        this.modalWindow = modalWindow;
-        this.iframe = Binding.bind(this.modalWindow.getRoot(), 'pdf-viewer-iframe', 'src', new ObjectProperty());
-        this.progressVisibility = Binding.bind(this.modalWindow.getRoot(), 'pdf-progress', 'display', new BooleanProperty());
-    }
-
-    static openPdfViewer(fileViewModel, owner) {
-        fetch(PdfViewerController.modalURL).then(async (response) => {
-            let htmlText = await response.text();
-            let controller = new PdfViewerController();
-            let modalWindow = await SalmonWindow.createWindow("PDF Viewer", htmlText);
-            modalWindow.modal.style.resize = "none";
-            controller.setStage(modalWindow);
-            setTimeout(() => {
-                controller.load(fileViewModel);
-            });
-            WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
-            modalWindow.show();
-            modalWindow.onClose = () => controller.onClose(this);
+    static async openPdfViewer(fileViewModel, owner) {
+        let controller = new PdfViewerController();
+        let contentWindow = await JWindow.createWindowWithURL("PDF Viewer", this.contentURL);
+        contentWindow.setResizable(true);
+        contentWindow.setWidth(800);
+        contentWindow.setHeight(600);
+        controller.setStage(contentWindow);
+        setTimeout(() => {
+            controller.load(fileViewModel);
         });
+        await contentWindow.show();
+        contentWindow.onClose = () => controller.onClose(this);
     }
 
     async load(fileViewModel) {
         try {
-            let stream = await fileViewModel.getSalmonFile().getInputStream();
+            let stream = await fileViewModel.getAesFile().getInputStream();
             let ms = new MemoryStream();
             await stream.copyTo(ms);
             await stream.close();
-            let blob = new Blob([ms.toArray().buffer], {type: "application/pdf"});
-            await ms.close();          
+            let blob = new Blob([ms.toArray().buffer], { type: "application/pdf" });
+            await ms.close();
             this.url = URL.createObjectURL(blob);
             this.iframe.set(this.url);
         } catch (e) {

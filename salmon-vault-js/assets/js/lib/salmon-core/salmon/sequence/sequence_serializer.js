@@ -21,20 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _SequenceSerializer_instances, _SequenceSerializer_objToArray;
 import { NonceSequence } from "../sequence/nonce_sequence.js";
 /**
  * Serializes sequences for all the drives the device is authorized.
  */
 export class SequenceSerializer {
-    constructor() {
-        _SequenceSerializer_instances.add(this);
-    }
     /**
      * Serialize the sequences to a json string.
      *
@@ -60,19 +51,19 @@ export class SequenceSerializer {
         let configs = new Map();
         for (let key in configsObj) {
             let seq = configsObj[key];
-            configs.set(key, new NonceSequence(seq.id, seq.authId, __classPrivateFieldGet(this, _SequenceSerializer_instances, "m", _SequenceSerializer_objToArray).call(this, seq.nextNonce), __classPrivateFieldGet(this, _SequenceSerializer_instances, "m", _SequenceSerializer_objToArray).call(this, seq.maxNonce), seq.status));
+            configs.set(key, new NonceSequence(seq.id, seq.authId, this.#objToArray(seq.nextNonce), this.#objToArray(seq.maxNonce), seq.status));
         }
         return configs;
     }
-}
-_SequenceSerializer_instances = new WeakSet(), _SequenceSerializer_objToArray = function _SequenceSerializer_objToArray(obj) {
-    if (obj == null)
-        return null;
-    let length = Object.values(obj).length;
-    let arr = new Uint8Array(length);
-    for (let key in obj) {
-        let index = parseInt(key);
-        arr[index] = obj[key];
+    #objToArray(obj) {
+        if (obj == null)
+            return null;
+        let length = Object.values(obj).length;
+        let arr = new Uint8Array(length);
+        for (let key in obj) {
+            let index = parseInt(key);
+            arr[index] = obj[key];
+        }
+        return arr;
     }
-    return arr;
-};
+}

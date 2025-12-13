@@ -22,30 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { IPropertyNotifier } from "../../common/binding/iproperty_notifier.js";
+import { PropertyNotifier } from "../../lib/jbind/property_notifier.js";
 import { SalmonConfig } from "../../vault/config/salmon_config.js";
 import { SalmonSettings } from "../../common/model/salmon_settings.js";
 import { AesFileCommander } from "../../lib/salmon-fs/salmonfs/drive/utils/aes_file_commander.js";
 import { autoRenameFile as SalmonFileAutoRename } from "../../lib/salmon-fs/salmonfs/file/aes_file.js";
 import { AesDrive } from "../../lib/salmon-fs/salmonfs/drive/aes_drive.js";
 import { AesFile } from "../../lib/salmon-fs/salmonfs/file/aes_file.js";
-import { SalmonDialog } from "../../vault/dialog/salmon_dialog.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 import { SalmonDialogs } from "../dialog/salmon_dialogs.js";
-import { autoRenameFile as IRealFileAutoRename } from "../../lib/salmon-fs/fs/file/ifile.js";
-import { File } from "../../lib/salmon-fs/fs/file/file.js";
-import { HttpFile } from "../../lib/salmon-fs/fs/file/http_file.js";
-import { WSFile } from "../../lib/salmon-fs/fs/file/ws_file.js";
+import { autoRenameFile as IRealFileAutoRename } from "../../lib/simple-fs/fs/file/ifile.js";
+import { File } from "../../lib/simple-fs/fs/file/file.js";
+import { HttpFile } from "../../lib/simple-fs/fs/file/http_file.js";
+import { WSFile } from "../../lib/simple-fs/fs/file/ws_file.js";
 import { Drive } from "../../lib/salmon-fs/salmonfs/drive/drive.js";
 import { HttpDrive } from "../../lib/salmon-fs/salmonfs/drive/http_drive.js";
 import { WSDrive } from "../../lib/salmon-fs/salmonfs/drive/ws_drive.js";
-import { LocalStorageFile } from "../../lib/salmon-fs/fs/file/ls_file.js";
+import { LocalStorageFile } from "../../lib/simple-fs/fs/file/ls_file.js";
 import { FileSequencer } from "../../lib/salmon-fs/salmonfs/sequence/file_sequencer.js";
 import { SequenceSerializer } from "../../lib/salmon-core/salmon/sequence/sequence_serializer.js";
 import { ByteUtils } from "../../common/utils/byte_utils.js";
-import { BatchCopyOptions, BatchDeleteOptions, BatchExportOptions, BatchImportOptions } from "../../lib/salmon-fs/fs/drive/utils/file_commander.js";
-import { SearchOptions } from "../../lib/salmon-fs/fs/drive/utils/file_searcher.js";
+import { BatchCopyOptions, BatchDeleteOptions, BatchExportOptions, BatchImportOptions } from "../../lib/simple-fs/fs/drive/utils/file_commander.js";
+import { SearchOptions } from "../../lib/simple-fs/fs/drive/utils/file_searcher.js";
 
-export class SalmonVaultManager extends IPropertyNotifier {
+export class SalmonVaultManager extends PropertyNotifier {
     static SEQUENCER_DIR_NAME = ".salmon";
     static SERVICE_PIPE_NAME = "SalmonService";
 
@@ -58,6 +58,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     static REQUEST_EXPORT_DIR = 1003;
     static REQUEST_IMPORT_AUTH_FILE = 1004;
     static REQUEST_EXPORT_AUTH_FILE = 1005;
+	static PROGRESS_TIME_INTERVAL = 500; // ms
 
     sequencerDefaultDirPath = SalmonConfig.getPrivateDir() + File.separator + SalmonVaultManager.SEQUENCER_DIR_NAME;
     observers = {};
@@ -92,6 +93,9 @@ export class SalmonVaultManager extends IPropertyNotifier {
     updateListItem = null;
     onFileItemRemoved = null;
     onFileItemAdded = null;
+	
+	lastTimeProgress = 0;
+	
     sequencer = null;
     static instance = null;
 
@@ -237,9 +241,14 @@ export class SalmonVaultManager extends IPropertyNotifier {
     salmonFiles;
     searchTerm;
     fileManagerMode = SalmonVaultManager.Mode.Browse;
+	fileManagerOperationMode = SalmonVaultManager.Mode.Browse;
 
     getFileManagerMode() {
         return this.fileManagerMode;
+    }
+	
+	getFileManagerOperationMode() {
+        return this.fileManagerOperationMode;
     }
 
     constructor() {
@@ -271,14 +280,21 @@ export class SalmonVaultManager extends IPropertyNotifier {
 
     stopOperation() {
         this.fileCommander.cancel();
-        this.fileManagerMode = SalmonVaultManager.Mode.Browse;
+		this.fileManagerOperationMode = SalmonVaultManager.OperationMode.None;
+		if(this.fileManagerMode != SalmonVaultManager.Mode.Search) {
+            this.clearSelectedFiles();
+            this.clearCopiedFiles();
+        }
+		this.setFileProgress(0);
+        this.setFilesProgress(0);
         this.setTaskRunning(false);
+        this.setTaskMessage("");
     }
 
     copySelectedFiles() {
         if (this.isJobRunning())
             throw new Error("Another Job is Running");
-        this.fileManagerMode = SalmonVaultManager.Mode.Copy;
+        this.fileManagerOperationMode = SalmonVaultManager.OperationMode.Copy;
         this.copyFiles = Array.from(this.selectedFiles);
         this.setTaskRunning(true, false);
         this.setTaskMessage(this.copyFiles.length + " Items selected for copy");
@@ -287,7 +303,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     cutSelectedFiles() {
         if (this.isJobRunning())
             throw new Error("Another Job is Running");
-        this.fileManagerMode = SalmonVaultManager.Mode.Move;
+        this.fileManagerOperationMode = SalmonVaultManager.OperationMode.Move;
         this.copyFiles = Array.from(this.selectedFiles);
         this.setTaskRunning(true, false);
         this.setTaskMessage(this.copyFiles.length + " Items selected for move");
@@ -325,13 +341,13 @@ export class SalmonVaultManager extends IPropertyNotifier {
         setTimeout(async () => {
             this.selectedFiles.clear();
             try {
-                if (this.fileManagerMode == SalmonVaultManager.Mode.Search)
+                if (this.fileManagerMode == SalmonVaultManager.Mode.Search && this.searchTerm != null)
                     this.setPathText(await this.currDir.getPath() + "?search=" + this.searchTerm);
                 else
                     this.setPathText(await this.currDir.getPath());
             } catch (exception) {
                 console.error(exception);
-                SalmonDialog.promptDialog("Error", exception);
+                JDialog.promptDialog("Error", exception);
             }
 
             let list = [];
@@ -353,7 +369,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
             this.setupFileSequencer();
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Error during initializing: " + e);
+            JDialog.promptDialog("Error", "Error during initializing: " + e);
         }
     }
 
@@ -369,7 +385,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     pasteSelected() {
-        this.#copySelectedFiles(this.fileManagerMode == SalmonVaultManager.Mode.Move);
+        this.#copySelectedFiles(this.fileManagerOperationMode == SalmonVaultManager.OperationMode.Move);
     }
 
     setTaskRunning(value, progress = true) {
@@ -399,7 +415,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
             await this.refresh();
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Could not open vault: " + e.message + ". " +
+            JDialog.promptDialog("Error", "Could not open vault: " + e.message + ". " +
                 (e.getCause && e.getCause() != null ? e.getCause().getMessage() : ""));
         } finally {
             this.propertyChanged(this, "taskComplete");
@@ -418,7 +434,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
             return HttpDrive;
         else if (vaultDir instanceof WSFile)
             return WSDrive;
-        throw new RuntimeException("Unknown drive type");
+        throw new Error("Unknown drive type");
     }
 
     deleteSelectedFiles() {
@@ -434,6 +450,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     deleteFiles(files) {
         if (files == null)
             return;
+		if (this.isJobRunning())
+            throw new Error("Another job is running");
         setTimeout(async () => {
             this.setFileProgress(0);
             this.setFilesProgress(0);
@@ -442,53 +460,85 @@ export class SalmonVaultManager extends IPropertyNotifier {
             let exception = null;
             let processedFiles = [-1];
             let failedFiles = [];
+			let deletedFiles = [];
             try {
                 let deleteOptions = new BatchDeleteOptions();
-                deleteOptions.onProgressChanged = async (taskProgress) => {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
-                            if (taskProgress.getProcessedBytes() != taskProgress.getTotalBytes()) {
-                                this.setTaskMessage("Deleting: " + await taskProgress.getFile().getName()
-                                    + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                            }
-                        } catch (e) {
-                            console.error(e);
+                deleteOptions.onProgressChanged = (taskProgress) => {
+                    try {
+                        if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+							setTimeout(async ()=>{
+	                            this.setTaskMessage("Deleting: " + await taskProgress.getFile().getName()
+                                            + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
+							});
+                            processedFiles[0] = taskProgress.getProcessedFiles();
                         }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
+                        let ctime = Date.now();
+                        if (ctime - this.lastTimeProgress > SalmonVaultManager.PROGRESS_TIME_INTERVAL) {
+                            this.lastTimeProgress = ctime;
+                            this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
+							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+                        }
+						if (taskProgress.getProcessedBytes() == taskProgress.getTotalBytes()) {
+                            deletedFiles.push(taskProgress.getFile());
+                        }
+                    } catch (ex) {
+                        console.error(ex);
                     }
-                    this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
-                    this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
                 };
                 deleteOptions.onFailed = (file, ex) => {
                     failedFiles.push(file);
                     exception = ex;
                 };
                 await this.fileCommander.deleteFiles(files, deleteOptions);
+				if (this.fileManagerMode == SalmonVaultManager.Mode.Search) {
+					for(let file of files) {
+						this.fileItemList.remove(file);
+					}
+					this.salmonFiles = this.fileItemList.copy();
+                }
             } catch (e) {
                 if (!this.fileCommander.areJobsStopped()) {
                     console.error(e);
-                    SalmonDialog.promptDialog("Error", "Could not delete files: " + e, "Ok");
+                    JDialog.promptDialog("Error", "Could not delete files: " + e, "Ok");
                 }
             }
             if (this.fileCommander.areJobsStopped())
                 this.setTaskMessage("Delete Stopped");
             else if (failedFiles.length > 0) {
                 console.error(exception);
-                SalmonDialog.promptDialog("Delete", "Some files failed: " + exception);
+                JDialog.promptDialog("Delete", "Some files failed: " + exception);
             } else
                 this.setTaskMessage("Delete Complete");
             this.setFileProgress(1);
             this.setFilesProgress(1);
-            await this.refresh();
+            if(deletedFiles.length < 20) {
+                for (let deletedFile of deletedFiles) {
+                    this.onFileItemRemoved(-1, deletedFile);
+                }
+            } else {
+                try {
+                    if (this.drive != null && files[0] != null && files[0].getParent() != null
+                            && this.currDir.getPath() == files[0].getParent().getPath()) {
+                        this.refresh();
+                    }
+                } catch(ex) {
+                    console.error(ex);
+                }
+            }
             this.setTaskRunning(false);
             this.copyFiles = null;
             this.fileManagerMode = SalmonVaultManager.Mode.Browse;
+			this.fileManagerOperationMode = SalmonVaultManager.OperationMode.None;
         });
     }
 
     #copyFiles(files, dir, move) {
         if (files == null)
             return;
+		if (this.isJobRunning())
+            throw new Error("Another job is running");
+        if (this.fileManagerMode != SalmonVaultManager.Mode.Browse)
+            throw new Error("Navigate to a folder before pasting");
         setTimeout(async () => {
             this.setFileProgress(0);
             this.setFilesProgress(0);
@@ -503,18 +553,26 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 copyOptions.autoRename = SalmonFileAutoRename;
                 copyOptions.move = move;
                 copyOptions.autoRenameFolders = true;
-                copyOptions.onProgressChanged = async (taskProgress) => {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
-                            this.setTaskMessage(action + ": " + await taskProgress.getFile().getName()
-                                + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                        } catch (e) {
-                            console.error(e);
-                        }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
-                    }
-                    this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
-                    this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+                copyOptions.onProgressChanged = (taskProgress) => {
+                    try {
+						if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+							setTimeout(async ()=>{
+								this.setTaskMessage(action + ": " + await taskProgress.getFile().getName()
+									+ " " + (taskProgress.getProcessedFiles() + 1)
+									+ "/" + taskProgress.getTotalFiles());
+							});
+							processedFiles[0] = taskProgress.getProcessedFiles();
+						}
+
+						let ctime = Date.now();
+						if (ctime - this.lastTimeProgress > SalmonVaultManager.PROGRESS_TIME_INTERVAL) {
+							this.lastTimeProgress = ctime;
+							this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
+							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+						}
+					} catch (ex) {
+						console.error(ex);
+					}
                 };
                 copyOptions.onFailed = (file, ex) => {
                     this.handleThrowException(ex);
@@ -525,13 +583,13 @@ export class SalmonVaultManager extends IPropertyNotifier {
             } catch (e) {
                 if (!this.fileCommander.areJobsStopped()) {
                     console.error(e);
-                    SalmonDialog.promptDialog("Error", "Could not copy files: " + e, "Ok");
+                    JDialog.promptDialog("Error", "Could not copy files: " + e, "Ok");
                 }
             }
             if (this.fileCommander.areJobsStopped())
                 this.setTaskMessage(action + " Stopped");
             else if (failedFiles.length > 0)
-                SalmonDialog.promptDialog(action, "Some files failed: " + exception);
+                JDialog.promptDialog(action, "Some files failed: " + exception);
             else
                 this.setTaskMessage(action + " Complete");
             this.setFileProgress(1);
@@ -540,6 +598,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
             await this.refresh();
             this.copyFiles = null;
             this.fileManagerMode = SalmonVaultManager.Mode.Browse;
+			this.fileManagerOperationMode = SalmonVaultManager.OperationMode.None;
         });
     }
 
@@ -651,7 +710,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
             await SalmonVaultManager.getInstance().updateListItem(file);
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Could not rename file: " + e.message);
+            JDialog.promptDialog("Error", "Could not rename file: " + e.message);
         }
     }
 
@@ -660,13 +719,14 @@ export class SalmonVaultManager extends IPropertyNotifier {
      * @param {string} folderName 
      */
     async createDirectory(folderName) {
+		this.clearSelectedFiles();
         let file = null;
         try {
             file = await SalmonVaultManager.getInstance().getCurrDir().createDirectory(folderName);
         } catch (exception) {
             console.error(exception);
             if (!SalmonVaultManager.getInstance().handleException(exception)) {
-                SalmonDialog.promptDialog("Error", "Could not create folder: " + exception.message);
+                JDialog.promptDialog("Error", "Could not create folder: " + exception.message);
             }
         } finally {
             if(file != null)
@@ -680,6 +740,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
      * @param {string} fileName 
      */
     async createFile(fileName) {
+		this.clearSelectedFiles();
         let stream = null;
         let file = null;
         try {
@@ -691,11 +752,12 @@ export class SalmonVaultManager extends IPropertyNotifier {
         } catch (exception) {
             console.error(exception);
             if (!SalmonVaultManager.getInstance().handleException(exception)) {
-                SalmonDialog.promptDialog("Error", "Could not create file: " + exception.message);
+                JDialog.promptDialog("Error", "Could not create file: " + exception.message);
             }
         } finally {
             try {
-                await stream.close();
+                if(stream)
+                    await stream.close();
             } catch (e) {
                 throw e;
             }
@@ -709,9 +771,9 @@ export class SalmonVaultManager extends IPropertyNotifier {
         try {
             this.propertyChanged(this, "taskRunning");
             await SalmonVaultManager.getInstance().getDrive().setPassword(pass);
-            SalmonDialog.promptDialog("Password changed");
+            JDialog.promptDialog("Password changed");
         } catch (e) {
-            SalmonDialog.promptDialog("Could not change password: " + e.message);
+            JDialog.promptDialog("Could not change password: " + e.message);
         } finally {
             this.propertyChanged(this, "taskComplete");
         }
@@ -719,12 +781,18 @@ export class SalmonVaultManager extends IPropertyNotifier {
 
     static Mode = {
         Browse: 'Browse',
-        Search: 'Search',
+        Search: 'Search'
+    }
+	
+	static OperationMode = {
+        None: 'None',
         Copy: 'Copy',
         Move: 'Move'
     }
 
     exportFiles(items, exportDir, deleteSource, onFinished) {
+		if (this.isJobRunning())
+            throw new Error("Another job is running");
         setTimeout(async () => {
             this.setFileProgress(0);
             this.setFilesProgress(0);
@@ -739,19 +807,26 @@ export class SalmonVaultManager extends IPropertyNotifier {
                 exportOptions.deleteSource = deleteSource;
                 exportOptions.integrity = true;
                 exportOptions.autoRenameFile = IRealFileAutoRename;
-                exportOptions.onProgressChanged = async (taskProgress) => {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
-                            this.setTaskMessage("Exporting: " + await taskProgress.getFile().getName()
-                                + " " + (taskProgress.getProcessedFiles() + 1)
-                                + "/" + taskProgress.getTotalFiles());
-                        } catch (e) {
-                            console.error(e);
+                exportOptions.onProgressChanged = (taskProgress) => {
+                    try {
+                        if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+							setTimeout(async ()=>{
+	                            this.setTaskMessage("Exporting: " + await taskProgress.getFile().getName()
+                                        + " " + (taskProgress.getProcessedFiles() + 1)
+                                        + "/" + taskProgress.getTotalFiles());
+							});
+                            processedFiles[0] = taskProgress.getProcessedFiles();
                         }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
+
+                        let ctime = Date.now();
+                        if (ctime - this.lastTimeProgress > SalmonVaultManager.PROGRESS_TIME_INTERVAL) {
+                            this.lastTimeProgress = ctime;
+                            this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
+							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+                        }
+                    } catch (ex) {
+                        console.error(ex);
                     }
-                    this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
-                    this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
                 };
                 exportOptions.onFailed = (file, ex) => {
                     failedFiles.push(file);
@@ -762,12 +837,12 @@ export class SalmonVaultManager extends IPropertyNotifier {
                     onFinished(files);
             } catch (e) {
                 console.error(e);
-                SalmonDialog.promptDialog("Error", "Error while exporting files: " + e);
+                JDialog.promptDialog("Error", "Error while exporting files: " + e);
             }
             if (this.fileCommander.areJobsStopped())
                 this.setTaskMessage("Export Stopped");
             else if (failedFiles.length > 0)
-                SalmonDialog.promptDialog("Export", "Some files failed: " + exception);
+                JDialog.promptDialog("Export", "Some files failed: " + exception);
             else if (files != null) {
                 this.setTaskMessage("Export Complete");
             }
@@ -779,6 +854,8 @@ export class SalmonVaultManager extends IPropertyNotifier {
     }
 
     importFiles(files, importDir, deleteSource, onFinished, autoRename = true) {
+		if (this.isJobRunning())
+            throw new Error("Another job is running");
         setTimeout(async () => {
             this.setFileProgress(0);
             this.setFilesProgress(0);
@@ -794,18 +871,26 @@ export class SalmonVaultManager extends IPropertyNotifier {
                     importOptions.autoRename = IRealFileAutoRename;
                 importOptions.deleteSource = deleteSource;
                 importOptions.integrity = true;
-                importOptions.onProgressChanged = async (taskProgress) => {
-                    if (processedFiles[0] < taskProgress.getProcessedFiles()) {
-                        try {
-                            this.setTaskMessage("Importing: " + await taskProgress.getFile().getName()
-                                + " " + (taskProgress.getProcessedFiles() + 1) + "/" + taskProgress.getTotalFiles());
-                        } catch (e) {
-                            console.error(e);
+                importOptions.onProgressChanged = (taskProgress) => {
+                    try {
+                        if (processedFiles[0] < taskProgress.getProcessedFiles()) {
+							setTimeout(async ()=>{
+	                            this.setTaskMessage("Importing: " + await taskProgress.getFile().getName()
+                                    + " " + (taskProgress.getProcessedFiles() + 1)
+                                    + "/" + taskProgress.getTotalFiles());
+							});
+                            processedFiles[0] = taskProgress.getProcessedFiles();
                         }
-                        processedFiles[0] = taskProgress.getProcessedFiles();
+
+                        let ctime = Date.now();
+                        if (ctime - this.lastTimeProgress > SalmonVaultManager.PROGRESS_TIME_INTERVAL) {
+                            this.lastTimeProgress = ctime;
+                            this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
+							this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
+                        }
+                    } catch (ex) {
+                        console.error(ex);
                     }
-                    this.setFileProgress(taskProgress.getProcessedBytes() / taskProgress.getTotalBytes());
-                    this.setFilesProgress(taskProgress.getProcessedFiles() / taskProgress.getTotalFiles());
                 };
                 importOptions.onFailed = (file, ex) => {
                     this.handleThrowException(ex);
@@ -817,13 +902,13 @@ export class SalmonVaultManager extends IPropertyNotifier {
             } catch (e) {
                 console.error(e);
                 if (!this.handleException(e)) {
-                    SalmonDialog.promptDialog("Error", "Error while importing files: " + e);
+                    JDialog.promptDialog("Error", "Error while importing files: " + e);
                 }
             }
             if (this.fileCommander.areJobsStopped())
                 this.setTaskMessage("Import Stopped");
             else if (failedFiles.length > 0)
-                SalmonDialog.promptDialog("Import", "Some files failed: " + exception);
+                JDialog.promptDialog("Import", "Some files failed: " + exception);
             else if (aesFiles != null)
                 this.setTaskMessage("Import Complete");
             this.setFileProgress(1);
@@ -875,6 +960,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
             else
                 this.setStatus("Search Stopped");
             this.setTaskRunning(false);
+			this.searchTerm = null;
         });
     }
 
@@ -893,10 +979,10 @@ export class SalmonVaultManager extends IPropertyNotifier {
             this.drive = await AesDrive.createDrive(dir, this.getDriveClassType(dir), password, this.sequencer);
             this.currDir = await this.drive.getRoot();
             await this.refresh();
-            SalmonDialog.promptDialog("Action", "Vault created, you can start importing your files");
+            JDialog.promptDialog("Action", "Vault created, you can start importing your files");
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Could not create vault: " + e.message + ". " +
+            JDialog.promptDialog("Error", "Could not create vault: " + e.message + ". " +
                 (e.getCause && e.getCause() != null ? e.getCause().getMessage() : ""));
         } finally {
             this.propertyChanged(this, "taskComplete");
@@ -906,6 +992,7 @@ export class SalmonVaultManager extends IPropertyNotifier {
     clearCopiedFiles() {
         this.copyFiles = null;
         this.fileManagerMode = SalmonVaultManager.Mode.Browse;
+		this.fileManagerOperationMode = SalmonVaultManager.OperationMode.None;
         this.setTaskRunning(false, false);
         this.setTaskMessage("");
     }

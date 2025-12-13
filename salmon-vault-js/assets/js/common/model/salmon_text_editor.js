@@ -23,8 +23,8 @@ SOFTWARE.
 */
 
 
-import {MemoryStream} from "../../lib/salmon-core/streams/memory_stream.js";
-import {SalmonDialog } from "../../vault/dialog/salmon_dialog.js";
+import {MemoryStream} from "../../lib/simple-io/streams/memory_stream.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 
 export class SalmonTextEditor
 {
@@ -49,7 +49,7 @@ export class SalmonTextEditor
         catch (ex)
         {
             console.error(ex);
-            SalmonDialog.promptDialog("Error", "Error during saving file: " + ex);
+            JDialog.promptDialog("Error", "Error during saving file: " + ex);
         }
         finally
         {

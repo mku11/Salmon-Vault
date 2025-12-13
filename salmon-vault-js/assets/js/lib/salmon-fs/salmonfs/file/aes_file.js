@@ -21,25 +21,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _AesFile_instances, _a, _AesFile_drive, _AesFile_format, _AesFile_realFile, _AesFile__baseName, _AesFile__header, _AesFile_overwrite, _AesFile_integrity, _AesFile_reqChunkSize, _AesFile_encryptionKey, _AesFile_hashKey, _AesFile_requestedNonce, _AesFile_tag, _AesFile_getRealFileHeaderData, _AesFile_getChunkSizeLength, _AesFile_getHeaderLength, _AesFile_getPath, _AesFile_getRelativePath, _AesFile_getHashTotalBytesLength, _AesFile_getDecryptedFilename;
-import { BitConverter } from "../../../salmon-core/convert/bit_converter.js";
-import { IOException } from "../../../salmon-core/streams/io_exception.js";
-import { SeekOrigin } from "../../../salmon-core/streams/random_access_stream.js";
+var _a;
+import { BitConverter } from "../../../simple-io/convert/bit_converter.js";
+import { IOException } from "../../../simple-io/streams/io_exception.js";
+import { SeekOrigin } from "../../../simple-io/streams/random_access_stream.js";
 import { Generator } from "../../../salmon-core/salmon/generator.js";
 import { Header } from "../../../salmon-core/salmon/header.js";
 import { AesStream } from "../../../salmon-core/salmon/streams/aes_stream.js";
-import { autoRename as IFileAutoRename, copyRecursively as IFileCopyRecursively, moveRecursively as IFileMoveRecursively, deleteRecursively as IFileDeleteRecursively, RecursiveCopyOptions, RecursiveMoveOptions, RecursiveDeleteOptions } from "../../fs/file/ifile.js";
+import { autoRename as IFileAutoRename, copyRecursively as IFileCopyRecursively, moveRecursively as IFileMoveRecursively, deleteRecursively as IFileDeleteRecursively, RecursiveCopyOptions, RecursiveMoveOptions, RecursiveDeleteOptions } from "../../../simple-fs/fs/file/ifile.js";
 import { EncryptionMode } from "../../../salmon-core/salmon/streams/encryption_mode.js";
 import { EncryptionFormat } from "../../../salmon-core/salmon/streams/encryption_format.js";
 import { SecurityException } from "../../../salmon-core/salmon/security_exception.js";
@@ -47,13 +36,27 @@ import { IntegrityException } from "../../../salmon-core/salmon/integrity/integr
 import { TextDecryptor } from "../../../salmon-core/salmon/text/text_decryptor.js";
 import { TextEncryptor } from "../../../salmon-core/salmon/text/text_encryptor.js";
 import { Integrity } from "../../../salmon-core/salmon/integrity/integrity.js";
-import { VirtualRecursiveCopyOptions, VirtualRecursiveMoveOptions, VirtualRecursiveDeleteOptions } from "../../fs/file/ivirtual_file.js";
+import { VirtualRecursiveCopyOptions, VirtualRecursiveMoveOptions, VirtualRecursiveDeleteOptions } from "../../../simple-fs/fs/file/ivirtual_file.js";
 /**
  * A virtual file backed by an encrypted {@link IFile} on the real filesystem.
  * Supports operations for retrieving {@link AesStream} for reading/decrypting
  * and writing/encrypting contents.
  */
 export class AesFile {
+    static separator = "/";
+    #drive;
+    #format;
+    #realFile;
+    //cached values
+    #_baseName = null;
+    #_header = null;
+    #overwrite = false;
+    #integrity = false;
+    #reqChunkSize = 0;
+    #encryptionKey = null;
+    #hashKey = null;
+    #requestedNonce = null;
+    #tag = null;
     /**
      * Provides a file handle that can be used to create encrypted files.
      * Requires a virtual drive that supports the underlying filesystem see IFile.
@@ -63,42 +66,28 @@ export class AesFile {
      * You usually don't have to set this since it will inherit from its parent.
      */
     constructor(realFile, drive, format = EncryptionFormat.Salmon) {
-        _AesFile_instances.add(this);
-        _AesFile_drive.set(this, void 0);
-        _AesFile_format.set(this, void 0);
-        _AesFile_realFile.set(this, void 0);
-        //cached values
-        _AesFile__baseName.set(this, null);
-        _AesFile__header.set(this, null);
-        _AesFile_overwrite.set(this, false);
-        _AesFile_integrity.set(this, false);
-        _AesFile_reqChunkSize.set(this, 0);
-        _AesFile_encryptionKey.set(this, null);
-        _AesFile_hashKey.set(this, null);
-        _AesFile_requestedNonce.set(this, null);
-        _AesFile_tag.set(this, null);
-        __classPrivateFieldSet(this, _AesFile_realFile, realFile, "f");
-        __classPrivateFieldSet(this, _AesFile_drive, drive, "f");
-        __classPrivateFieldSet(this, _AesFile_format, format, "f");
-        if (__classPrivateFieldGet(this, _AesFile_integrity, "f") && drive)
-            __classPrivateFieldSet(this, _AesFile_reqChunkSize, drive.getDefaultFileChunkSize(), "f");
+        this.#realFile = realFile;
+        this.#drive = drive;
+        this.#format = format;
+        if (this.#integrity && drive)
+            this.#reqChunkSize = drive.getDefaultFileChunkSize();
         if (drive != null && drive.getKey()) {
             let key = drive.getKey();
             if (key)
-                __classPrivateFieldSet(this, _AesFile_hashKey, key.getHashKey(), "f");
+                this.#hashKey = key.getHashKey();
         }
     }
     /**
      * Return if integrity is set
      */
     isIntegrityEnabled() {
-        return __classPrivateFieldGet(this, _AesFile_integrity, "f");
+        return this.#integrity;
     }
     /**
      * Return the current chunk size requested that will be used for integrity
      */
     getRequestedChunkSize() {
-        return __classPrivateFieldGet(this, _AesFile_reqChunkSize, "f");
+        return this.#reqChunkSize;
     }
     /**
      * Get the file chunk size from the header.
@@ -121,12 +110,12 @@ export class AesFile {
     async getHeader() {
         if (!(await this.exists()))
             return null;
-        if (__classPrivateFieldGet(this, _AesFile__header, "f"))
-            return __classPrivateFieldGet(this, _AesFile__header, "f");
+        if (this.#_header)
+            return this.#_header;
         let header = new Header(new Uint8Array());
         let stream = null;
         try {
-            stream = await __classPrivateFieldGet(this, _AesFile_realFile, "f").getInputStream();
+            stream = await this.#realFile.getInputStream();
             header = await Header.readHeaderData(stream);
         }
         catch (ex) {
@@ -138,7 +127,7 @@ export class AesFile {
                 await stream.close();
             }
         }
-        __classPrivateFieldSet(this, _AesFile__header, header, "f");
+        this.#_header = header;
         return header;
     }
     /**
@@ -152,26 +141,26 @@ export class AesFile {
     async getInputStream() {
         if (!(await this.exists()))
             throw new IOException("File does not exist");
-        let realStream = await __classPrivateFieldGet(this, _AesFile_realFile, "f").getInputStream();
+        let realStream = await this.#realFile.getInputStream();
         await realStream.seek(Generator.MAGIC_LENGTH + Generator.VERSION_LENGTH, SeekOrigin.Begin);
-        let fileChunkSizeBytes = new Uint8Array(__classPrivateFieldGet(this, _AesFile_instances, "m", _AesFile_getChunkSizeLength).call(this));
+        let fileChunkSizeBytes = new Uint8Array(this.#getChunkSizeLength());
         let bytesRead = await realStream.read(fileChunkSizeBytes, 0, fileChunkSizeBytes.length);
         if (bytesRead == 0)
             throw new IOException("Could not parse chunks size from file header");
         let chunkSize = BitConverter.toLong(fileChunkSizeBytes, 0, 4);
-        if (__classPrivateFieldGet(this, _AesFile_integrity, "f") && chunkSize == 0)
+        if (this.#integrity && chunkSize == 0)
             throw new SecurityException("Cannot check integrity if file doesn't support it");
         let nonceBytes = new Uint8Array(Generator.NONCE_LENGTH);
         let ivBytesRead = await realStream.read(nonceBytes, 0, nonceBytes.length);
         if (ivBytesRead == 0)
             throw new IOException("Could not parse nonce from file header");
         await realStream.setPosition(0);
-        let headerData = new Uint8Array(__classPrivateFieldGet(this, _AesFile_instances, "m", _AesFile_getHeaderLength).call(this));
+        let headerData = new Uint8Array(this.#getHeaderLength());
         await realStream.read(headerData, 0, headerData.length);
         let key = this.getEncryptionKey();
         if (key == null)
             throw new IOException("Set an encryption key to the file first");
-        let stream = new AesStream(key, nonceBytes, EncryptionMode.Decrypt, realStream, __classPrivateFieldGet(this, _AesFile_format, "f"), __classPrivateFieldGet(this, _AesFile_integrity, "f"), this.getHashKey());
+        let stream = new AesStream(key, nonceBytes, EncryptionMode.Decrypt, realStream, this.#format, this.#integrity, this.getHashKey());
         return stream;
     }
     /**
@@ -185,36 +174,36 @@ export class AesFile {
     async getOutputStream(nonce = null) {
         // check if we have an existing iv in the header
         let nonceBytes = await this.getFileNonce();
-        if (nonceBytes != null && !__classPrivateFieldGet(this, _AesFile_overwrite, "f"))
+        if (nonceBytes != null && !this.#overwrite)
             throw new SecurityException("You should not overwrite existing files for security instead delete the existing file and create a new file. If this is a new file and you want to use parallel streams you can   this with SetAllowOverwrite(true)");
         if (nonceBytes == null) {
             // set it to zero (disabled integrity) or get the default chunk
             // size defined by the drive
-            if (__classPrivateFieldGet(this, _AesFile_integrity, "f") && __classPrivateFieldGet(this, _AesFile_reqChunkSize, "f") == null && __classPrivateFieldGet(this, _AesFile_drive, "f"))
-                __classPrivateFieldSet(this, _AesFile_reqChunkSize, __classPrivateFieldGet(this, _AesFile_drive, "f").getDefaultFileChunkSize(), "f");
-            else if (!__classPrivateFieldGet(this, _AesFile_integrity, "f"))
-                __classPrivateFieldSet(this, _AesFile_reqChunkSize, 0, "f");
-            if (__classPrivateFieldGet(this, _AesFile_reqChunkSize, "f") == null)
+            if (this.#integrity && this.#reqChunkSize == null && this.#drive)
+                this.#reqChunkSize = this.#drive.getDefaultFileChunkSize();
+            else if (!this.#integrity)
+                this.#reqChunkSize = 0;
+            if (this.#reqChunkSize == null)
                 throw new IntegrityException("File requires a chunk size");
             if (nonce)
-                __classPrivateFieldSet(this, _AesFile_requestedNonce, nonce, "f");
-            else if (__classPrivateFieldGet(this, _AesFile_requestedNonce, "f") == null && __classPrivateFieldGet(this, _AesFile_drive, "f"))
-                __classPrivateFieldSet(this, _AesFile_requestedNonce, await __classPrivateFieldGet(this, _AesFile_drive, "f").getNextNonce(), "f");
-            if (__classPrivateFieldGet(this, _AesFile_requestedNonce, "f") == null)
+                this.#requestedNonce = nonce;
+            else if (this.#requestedNonce == null && this.#drive)
+                this.#requestedNonce = await this.#drive.getNextNonce();
+            if (this.#requestedNonce == null)
                 throw new SecurityException("File requires a nonce");
-            nonceBytes = __classPrivateFieldGet(this, _AesFile_requestedNonce, "f");
+            nonceBytes = this.#requestedNonce;
         }
         // create a stream with the file chunk size specified which will be used to host the integrity hash
         // we also specify if stream ranges can be overwritten which is generally dangerous if the file is existing
         // but practical if the file is brand new and multithreaded writes for performance need to be used.
-        let realStream = await __classPrivateFieldGet(this, _AesFile_realFile, "f").getOutputStream();
+        let realStream = await this.#realFile.getOutputStream();
         let key = this.getEncryptionKey();
         if (key == null)
             throw new IOException("Set an encryption key to the file first");
         if (nonceBytes == null)
             throw new IOException("No nonce provided and no nonce found in file");
-        let stream = new AesStream(key, nonceBytes, EncryptionMode.Encrypt, realStream, __classPrivateFieldGet(this, _AesFile_format, "f"), __classPrivateFieldGet(this, _AesFile_integrity, "f"), this.getHashKey(), this.getRequestedChunkSize());
-        stream.setAllowRangeWrite(__classPrivateFieldGet(this, _AesFile_overwrite, "f"));
+        let stream = new AesStream(key, nonceBytes, EncryptionMode.Encrypt, realStream, this.#format, this.#integrity, this.getHashKey(), this.getRequestedChunkSize());
+        stream.setAllowRangeWrite(this.#overwrite);
         return stream;
     }
     /**
@@ -222,10 +211,10 @@ export class AesFile {
      * @returns {Uint8Array | null} The key
      */
     getEncryptionKey() {
-        if (__classPrivateFieldGet(this, _AesFile_encryptionKey, "f"))
-            return __classPrivateFieldGet(this, _AesFile_encryptionKey, "f");
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f")) {
-            let key = __classPrivateFieldGet(this, _AesFile_drive, "f").getKey();
+        if (this.#encryptionKey)
+            return this.#encryptionKey;
+        if (this.#drive) {
+            let key = this.#drive.getKey();
             if (key)
                 return key.getDriveKey();
         }
@@ -237,14 +226,27 @@ export class AesFile {
      * @param {Uint8Array | null} encryptionKey The AES encryption key to be used
      */
     setEncryptionKey(encryptionKey) {
-        __classPrivateFieldSet(this, _AesFile_encryptionKey, encryptionKey, "f");
+        this.#encryptionKey = encryptionKey;
+    }
+    /**
+     * Return the current header data that are stored in the file
+     *
+     * @param {IFile} realFile The real file containing the data
+     * @returns {Promise<Uint8Array>} The header data.
+     */
+    async #getRealFileHeaderData(realFile) {
+        let realStream = await realFile.getInputStream();
+        let headerData = new Uint8Array(this.#getHeaderLength());
+        await realStream.read(headerData, 0, headerData.length);
+        await realStream.close();
+        return headerData;
     }
     /**
      * Retrieve the current hash key that is used to encrypt / decrypt the file contents.
      * @returns {Uint8Array | null} The hash key.
      */
     getHashKey() {
-        return __classPrivateFieldGet(this, _AesFile_hashKey, "f");
+        return this.#hashKey;
     }
     /**
      * Enabled verification of file integrity during read() and write()
@@ -256,20 +258,20 @@ export class AesFile {
         let header = await this.getHeader();
         if (header == null && integrity)
             throw new IntegrityException("File does not support integrity");
-        if (integrity && hashKey == null && __classPrivateFieldGet(this, _AesFile_drive, "f")) {
-            let key = __classPrivateFieldGet(this, _AesFile_drive, "f").getKey();
+        if (integrity && hashKey == null && this.#drive) {
+            let key = this.#drive.getKey();
             if (key)
                 hashKey = key.getHashKey();
         }
-        __classPrivateFieldSet(this, _AesFile_reqChunkSize, await this.getFileChunkSize(), "f");
-        if (integrity && __classPrivateFieldGet(this, _AesFile_reqChunkSize, "f") == 0) {
+        this.#reqChunkSize = await this.getFileChunkSize();
+        if (integrity && this.#reqChunkSize == 0) {
             console.log("warning: cannot enable integrity because file does not contain integrity chunks");
             return;
         }
-        __classPrivateFieldSet(this, _AesFile_integrity, integrity, "f");
-        __classPrivateFieldSet(this, _AesFile_hashKey, hashKey, "f");
+        this.#integrity = integrity;
+        this.#hashKey = hashKey;
         if (header)
-            __classPrivateFieldSet(this, _AesFile_reqChunkSize, header.getChunkSize(), "f");
+            this.#reqChunkSize = header.getChunkSize();
     }
     /**
      * Appy integrity when writing to file.
@@ -279,22 +281,22 @@ export class AesFile {
      */
     async setApplyIntegrity(integrity, hashKey = null, requestChunkSize = 0) {
         let header = await this.getHeader();
-        if (header != null && header.getChunkSize() > 0 && !__classPrivateFieldGet(this, _AesFile_overwrite, "f"))
+        if (header != null && header.getChunkSize() > 0 && !this.#overwrite)
             throw new IntegrityException("Cannot redefine chunk size");
         if (requestChunkSize < 0)
             throw new IntegrityException("Chunk size needs to be zero for default chunk size or a positive value");
-        if (integrity && hashKey == null && __classPrivateFieldGet(this, _AesFile_drive, "f")) {
-            let key = __classPrivateFieldGet(this, _AesFile_drive, "f").getKey();
+        if (integrity && hashKey == null && this.#drive) {
+            let key = this.#drive.getKey();
             if (key)
                 hashKey = key.getHashKey();
         }
         if (integrity && hashKey == null)
             throw new SecurityException("Integrity needs a hashKey");
-        __classPrivateFieldSet(this, _AesFile_integrity, integrity, "f");
-        __classPrivateFieldSet(this, _AesFile_reqChunkSize, requestChunkSize, "f");
-        if (integrity && __classPrivateFieldGet(this, _AesFile_reqChunkSize, "f") == null && __classPrivateFieldGet(this, _AesFile_drive, "f"))
-            __classPrivateFieldSet(this, _AesFile_reqChunkSize, __classPrivateFieldGet(this, _AesFile_drive, "f").getDefaultFileChunkSize(), "f");
-        __classPrivateFieldSet(this, _AesFile_hashKey, hashKey, "f");
+        this.#integrity = integrity;
+        this.#reqChunkSize = requestChunkSize;
+        if (integrity && this.#reqChunkSize == null && this.#drive)
+            this.#reqChunkSize = this.#drive.getDefaultFileChunkSize();
+        this.#hashKey = hashKey;
     }
     /**
      * Warning! Allow overwriting on a current stream. Overwriting is not a good idea because it will re-use the same IV.
@@ -304,7 +306,22 @@ export class AesFile {
      * @param {boolean} value True to allow overwriting operations
      */
     setAllowOverwrite(value) {
-        __classPrivateFieldSet(this, _AesFile_overwrite, value, "f");
+        this.#overwrite = value;
+    }
+    /**
+     * Returns the file chunk size
+     * @returns {number} The chunk
+     */
+    #getChunkSizeLength() {
+        return Generator.CHUNK_SIZE_LENGTH;
+    }
+    /**
+     * Returns the length of the header in bytes
+     * @returns {number} The header length
+     */
+    #getHeaderLength() {
+        return Generator.MAGIC_LENGTH + Generator.VERSION_LENGTH +
+            this.#getChunkSizeLength() + Generator.NONCE_LENGTH;
     }
     /**
      * Returns the initial vector that is used for encryption / decryption
@@ -323,9 +340,9 @@ export class AesFile {
      * @throws SalmonSecurityException Thrown when error with security
      */
     setRequestedNonce(nonce) {
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f"))
+        if (this.#drive)
             throw new SecurityException("Nonce is already set by the drive");
-        __classPrivateFieldSet(this, _AesFile_requestedNonce, nonce, "f");
+        this.#requestedNonce = nonce;
     }
     /**
      * Get the nonce that is used for encryption/decryption of this file.
@@ -333,7 +350,7 @@ export class AesFile {
      * @returns {Uint8Array | null} The nonce
      */
     getRequestedNonce() {
-        return __classPrivateFieldGet(this, _AesFile_requestedNonce, "f");
+        return this.#requestedNonce;
     }
     /**
      * Return the AES block size for encryption / decryption
@@ -348,17 +365,17 @@ export class AesFile {
      * @returns {Promise<number>} The children count
      */
     async getChildrenCount() {
-        return await __classPrivateFieldGet(this, _AesFile_realFile, "f").getChildrenCount();
+        return await this.#realFile.getChildrenCount();
     }
     /**
      * Lists files and directories under this directory
      * @returns {Promise<AesFile[]>} The files
      */
     async listFiles() {
-        let files = await __classPrivateFieldGet(this, _AesFile_realFile, "f").listFiles();
+        let files = await this.#realFile.listFiles();
         let aesFiles = [];
         for (let iRealFile of await files) {
-            let file = new _a(iRealFile, __classPrivateFieldGet(this, _AesFile_drive, "f"));
+            let file = new _a(iRealFile, this.#drive);
             aesFiles.push(file);
         }
         return aesFiles;
@@ -390,66 +407,107 @@ export class AesFile {
      * @returns {Promise<AesFile>} The file
      */
     async createDirectory(dirName, key = null, dirNameNonce = null) {
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f") == null)
+        if (this.#drive == null)
             throw new SecurityException("Need to pass the key and dirNameNonce nonce if not using a drive");
         let encryptedDirName = await this.getEncryptedFilename(dirName, key, dirNameNonce);
-        let realDir = await __classPrivateFieldGet(this, _AesFile_realFile, "f").createDirectory(encryptedDirName);
-        return new _a(realDir, __classPrivateFieldGet(this, _AesFile_drive, "f"));
+        let realDir = await this.#realFile.createDirectory(encryptedDirName);
+        return new _a(realDir, this.#drive);
     }
     /**
      * Return the real file
      * @returns {IFile} The file
      */
     getRealFile() {
-        return __classPrivateFieldGet(this, _AesFile_realFile, "f");
+        return this.#realFile;
     }
     /**
      * Returns true if this is a file
      * @returns {Promise<boolean>} True if file
      */
     async isFile() {
-        return await __classPrivateFieldGet(this, _AesFile_realFile, "f").isFile();
+        return await this.#realFile.isFile();
     }
     /**
      * Returns True if this is a directory
      * @returns {Promise<boolean>} True if directory
      */
     async isDirectory() {
-        return await __classPrivateFieldGet(this, _AesFile_realFile, "f").isDirectory();
+        return await this.#realFile.isDirectory();
     }
     /**
      * Return the path of the real file stored
      * @returns {Promise<string>} The path
      */
     async getPath() {
-        let realPath = __classPrivateFieldGet(this, _AesFile_realFile, "f").getDisplayPath();
-        return __classPrivateFieldGet(this, _AesFile_instances, "m", _AesFile_getPath).call(this, realPath);
+        let realPath = this.#realFile.getDisplayPath();
+        return await this.#getPath(realPath);
+    }
+    /**
+     * Returns the virtual path for the drive and the file provided
+     *
+     * @param realPath The path of the real file
+     * @returns {Promise<string>} The path
+     */
+    async #getPath(realPath = null) {
+        if (realPath == null)
+            realPath = this.#realFile.getDisplayPath();
+        let relativePath = await this.#getRelativePath(realPath);
+        let path = "";
+        let parts = relativePath.split(/\\|\//);
+        for (let part of parts) {
+            if (part != "") {
+                path += _a.separator;
+                path += await this.getDecryptedFilename(part);
+            }
+        }
+        return path.toString();
     }
     /**
      * Return the path of the real file
      * @returns {Promise<string>} The real path
      */
     getRealPath() {
-        return __classPrivateFieldGet(this, _AesFile_realFile, "f").getDisplayPath();
+        return this.#realFile.getDisplayPath();
+    }
+    /**
+     * Return the virtual relative path of the file belonging to a drive
+     *
+     * @param realPath The path of the real file
+     * @returns {Promise<string>} The relative path
+     */
+    async #getRelativePath(realPath) {
+        if (this.#drive == null) {
+            return this.getRealFile().getName();
+        }
+        if (this.#drive == null)
+            throw new Error("File is not part of a drive");
+        let virtualRoot = await this.#drive.getRoot();
+        if (virtualRoot == null)
+            throw new Error("Could not find virtual root, if this file is part of a drive make sure you init first");
+        let virtualRootPath = virtualRoot.getRealFile().getDisplayPath();
+        if (realPath.startsWith(virtualRootPath)) {
+            return realPath.replace(virtualRootPath, "");
+        }
+        return realPath;
     }
     /**
      * Returns the name for the file
      * @returns {Promise<string>} The file name
      */
     async getName() {
-        if (__classPrivateFieldGet(this, _AesFile__baseName, "f"))
-            return __classPrivateFieldGet(this, _AesFile__baseName, "f");
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f")) {
-            let virtualRoot = await __classPrivateFieldGet(this, _AesFile_drive, "f").getRoot();
+        if (this.#_baseName)
+            return this.#_baseName;
+        if (this.#drive) {
+            let virtualRoot = await this.#drive.getRoot();
             if (virtualRoot == null) {
                 throw new SecurityException("Could not get virtual root, you need to init drive first");
             }
             if (this.getRealPath() == virtualRoot.getRealPath())
                 return "";
         }
-        let realBaseName = __classPrivateFieldGet(this, _AesFile_realFile, "f").getName();
-        __classPrivateFieldSet(this, _AesFile__baseName, await this.getDecryptedFilename(realBaseName), "f");
-        return __classPrivateFieldGet(this, _AesFile__baseName, "f");
+        let realBaseName = this.#realFile.getName();
+        this.#_baseName = await this.getDecryptedFilename(realBaseName);
+        return this.#_baseName;
     }
     /**
      * Get the virtual parent directory
@@ -457,9 +515,9 @@ export class AesFile {
      */
     async getParent() {
         try {
-            if (__classPrivateFieldGet(this, _AesFile_drive, "f") == null)
+            if (this.#drive == null)
                 return null;
-            let virtualRoot = await __classPrivateFieldGet(this, _AesFile_drive, "f").getRoot();
+            let virtualRoot = await this.#drive.getRoot();
             if (virtualRoot == null)
                 throw new SecurityException("Could not get virtual root, you need to init drive first");
             if (virtualRoot.getRealFile().getPath() == this.getRealFile().getPath()) {
@@ -470,17 +528,17 @@ export class AesFile {
             console.error(exception);
             return null;
         }
-        let realDir = await __classPrivateFieldGet(this, _AesFile_realFile, "f").getParent();
+        let realDir = await this.#realFile.getParent();
         if (realDir == null)
             throw new Error("Could not get parent");
-        let dir = new _a(realDir, __classPrivateFieldGet(this, _AesFile_drive, "f"));
+        let dir = new _a(realDir, this.#drive);
         return dir;
     }
     /**
      * Delete this file.
      */
     async delete() {
-        await __classPrivateFieldGet(this, _AesFile_realFile, "f").delete();
+        await this.#realFile.delete();
     }
     /**
      * Create this directory. Currently Not Supported
@@ -493,19 +551,35 @@ export class AesFile {
      * @returns {Promise<number>} The date modified
      */
     async getLastDateModified() {
-        return await __classPrivateFieldGet(this, _AesFile_realFile, "f").getLastDateModified();
+        return await this.#realFile.getLastDateModified();
     }
     /**
      * Return the virtual size of the file excluding the header and hash signatures.
      * @returns {Promise<number>} The length
      */
     async getLength() {
-        let rSize = await __classPrivateFieldGet(this, _AesFile_realFile, "f").getLength();
+        let rSize = await this.#realFile.getLength();
         if (rSize == 0)
             return rSize;
-        let headerBytes = __classPrivateFieldGet(this, _AesFile_instances, "m", _AesFile_getHeaderLength).call(this);
-        let totalHashBytes = await __classPrivateFieldGet(this, _AesFile_instances, "m", _AesFile_getHashTotalBytesLength).call(this);
+        let headerBytes = this.#getHeaderLength();
+        let totalHashBytes = await this.#getHashTotalBytesLength();
         return rSize - headerBytes - totalHashBytes;
+    }
+    /**
+     * Returns the hash total bytes occupied by signatures
+     * @returns {Promise<number>} The total hash bytes
+     */
+    async #getHashTotalBytesLength() {
+        // file does not support integrity
+        let fileChunkSize = await this.getFileChunkSize();
+        if (fileChunkSize <= 0)
+            return 0;
+        // integrity has been requested but hash is missing
+        if (this.#integrity && this.getHashKey() == null)
+            throw new IntegrityException("File requires hashKey, use SetVerifyIntegrity() to provide one");
+        let realLength = await this.#realFile.getLength();
+        let headerLength = this.#getHeaderLength();
+        return Integrity.getTotalHashDataLength(EncryptionMode.Decrypt, realLength - headerLength, fileChunkSize, Generator.HASH_RESULT_LENGTH, Generator.HASH_KEY_LENGTH);
     }
     /**
      * Create a file under this directory
@@ -519,18 +593,18 @@ export class AesFile {
     //TODO: files with real same name can exists we can add checking all files in the dir
     // and throw an Exception though this could be an expensive operation
     async createFile(realFilename, key = null, fileNameNonce = null, fileNonce = null) {
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f") == null && (key == null || fileNameNonce == null || fileNonce == null))
+        if (this.#drive == null && (key == null || fileNameNonce == null || fileNonce == null))
             throw new SecurityException("Need to pass the key, filename nonce, and file nonce if not using a drive");
         let encryptedFilename = await this.getEncryptedFilename(realFilename, key, fileNameNonce);
-        let file = await __classPrivateFieldGet(this, _AesFile_realFile, "f").createFile(encryptedFilename);
-        let aesFile = new _a(file, __classPrivateFieldGet(this, _AesFile_drive, "f"));
+        let file = await this.#realFile.createFile(encryptedFilename);
+        let aesFile = new _a(file, this.#drive);
         aesFile.setEncryptionKey(key);
-        __classPrivateFieldSet(aesFile, _AesFile_integrity, __classPrivateFieldGet(this, _AesFile_integrity, "f"), "f");
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f") != null && (fileNonce != null || fileNameNonce))
+        aesFile.#integrity = this.#integrity;
+        if (this.#drive != null && (fileNonce != null || fileNameNonce))
             throw new SecurityException("Nonce is already set by the drive");
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f") != null && key)
+        if (this.#drive != null && key)
             throw new SecurityException("Key is already set by the drive");
-        __classPrivateFieldSet(aesFile, _AesFile_requestedNonce, fileNonce, "f");
+        aesFile.#requestedNonce = fileNonce;
         return aesFile;
     }
     /**
@@ -540,20 +614,31 @@ export class AesFile {
      * @param {Uint8Array | null} nonce       The nonce to use
      */
     async rename(newFilename, nonce = null) {
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f") == null && (__classPrivateFieldGet(this, _AesFile_encryptionKey, "f") == null || __classPrivateFieldGet(this, _AesFile_requestedNonce, "f") == null))
+        if (this.#drive == null && (this.#encryptionKey == null || this.#requestedNonce == null))
             throw new SecurityException("Need to pass a nonce if not using a drive");
         let newEncryptedFilename = await this.getEncryptedFilename(newFilename, null, nonce);
-        await __classPrivateFieldGet(this, _AesFile_realFile, "f").renameTo(newEncryptedFilename);
-        __classPrivateFieldSet(this, _AesFile__baseName, null, "f");
+        await this.#realFile.renameTo(newEncryptedFilename);
+        this.#_baseName = null;
     }
     /**
      * Returns true if this file exists
      * @returns {Promise<boolean>} True if exists
      */
     async exists() {
-        if (__classPrivateFieldGet(this, _AesFile_realFile, "f") == null)
+        if (this.#realFile == null)
             return false;
-        return await __classPrivateFieldGet(this, _AesFile_realFile, "f").exists();
+        return await this.#realFile.exists();
+    }
+    /**
+     * Return the decrypted filename of a real filename
+     *
+     * @param {string} filename The filename of a real file
+     * @returns {Promise<string>} The decrypted filename
+     */
+    async #getDecryptedFilename(filename) {
+        if (this.#drive == null && (this.#encryptionKey == null || this.#requestedNonce == null))
+            throw new SecurityException("Need to use a drive or pass key and nonce");
+        return await this.getDecryptedFilename(filename);
     }
     /**
      * Return the decrypted filename of a real filename
@@ -564,14 +649,14 @@ export class AesFile {
      */
     async getDecryptedFilename(filename, key = null, nonce = null) {
         let rfilename = filename.replace(/-/g, "/");
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f") != null && nonce)
+        if (this.#drive != null && nonce)
             throw new SecurityException("Filename nonce is already set by the drive");
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f") != null && key)
+        if (this.#drive != null && key)
             throw new SecurityException("Key is already set by the drive");
         if (key == null)
-            key = __classPrivateFieldGet(this, _AesFile_encryptionKey, "f");
-        if (key == null && __classPrivateFieldGet(this, _AesFile_drive, "f")) {
-            let salmonKey = __classPrivateFieldGet(this, _AesFile_drive, "f").getKey();
+            key = this.#encryptionKey;
+        if (key == null && this.#drive) {
+            let salmonKey = this.#drive.getKey();
             if (salmonKey == null) {
                 throw new SecurityException("Could not get the key, make sure you init the drive first");
             }
@@ -591,14 +676,14 @@ export class AesFile {
      * @returns {Promise<string>} The encrypted filename
      */
     async getEncryptedFilename(filename, key = null, nonce = null) {
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f") != null && nonce)
+        if (this.#drive != null && nonce)
             throw new SecurityException("Filename nonce is already set by the drive");
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f"))
-            nonce = await __classPrivateFieldGet(this, _AesFile_drive, "f").getNextNonce();
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f") != null && key)
+        if (this.#drive)
+            nonce = await this.#drive.getNextNonce();
+        if (this.#drive != null && key)
             throw new SecurityException("Key is already set by the drive");
-        if (__classPrivateFieldGet(this, _AesFile_drive, "f")) {
-            let salmonKey = __classPrivateFieldGet(this, _AesFile_drive, "f").getKey();
+        if (this.#drive) {
+            let salmonKey = this.#drive.getKey();
             if (salmonKey == null) {
                 throw new SecurityException("Could not get the key, make sure you init the drive first");
             }
@@ -618,7 +703,7 @@ export class AesFile {
      * @returns {AesDrive | undefined} The drive
      */
     getDrive() {
-        return __classPrivateFieldGet(this, _AesFile_drive, "f");
+        return this.#drive;
     }
     /**
      * Set the tag for this file.
@@ -626,7 +711,7 @@ export class AesFile {
      * @param {object} tag Any object
      */
     setTag(tag) {
-        __classPrivateFieldSet(this, _AesFile_tag, tag, "f");
+        this.#tag = tag;
     }
     /**
      * Get the file tag.
@@ -634,7 +719,7 @@ export class AesFile {
      * @returns {object | null} The file tag.
      */
     getTag() {
-        return __classPrivateFieldGet(this, _AesFile_tag, "f");
+        return this.#tag;
     }
     /**
      * Move file to another directory.
@@ -645,8 +730,8 @@ export class AesFile {
      * @throws IOException Thrown if there is an IO error.
      */
     async move(dir, options) {
-        let newRealFile = await __classPrivateFieldGet(this, _AesFile_realFile, "f").move(dir.getRealFile(), options);
-        return new _a(newRealFile, __classPrivateFieldGet(this, _AesFile_drive, "f"));
+        let newRealFile = await this.#realFile.move(dir.getRealFile(), options);
+        return new _a(newRealFile, this.#drive);
     }
     /**
      * Copy a file to another directory.
@@ -657,10 +742,10 @@ export class AesFile {
      * @throws IOException Thrown if there is an IO error.
      */
     async copy(dir, options) {
-        let newRealFile = await __classPrivateFieldGet(this, _AesFile_realFile, "f").copy(dir.getRealFile(), options);
+        let newRealFile = await this.#realFile.copy(dir.getRealFile(), options);
         if (newRealFile == null)
             throw new IOException("Could not copy file");
-        return new _a(newRealFile, __classPrivateFieldGet(this, _AesFile_drive, "f"));
+        return new _a(newRealFile, this.#drive);
     }
     /**
      * Copy a directory recursively
@@ -691,9 +776,9 @@ export class AesFile {
         copyOptions.onFailed = onFailedRealFile;
         copyOptions.onProgressChanged = (file, position, length) => {
             if (options.onProgressChanged)
-                options.onProgressChanged(new _a(file, __classPrivateFieldGet(this, _AesFile_drive, "f")), position, length);
+                options.onProgressChanged(new _a(file, this.#drive), position, length);
         };
-        await IFileCopyRecursively(__classPrivateFieldGet(this, _AesFile_realFile, "f"), dest.getRealFile(), copyOptions);
+        await IFileCopyRecursively(this.#realFile, dest.getRealFile(), copyOptions);
     }
     /**
      * Move a directory recursively
@@ -724,9 +809,9 @@ export class AesFile {
         moveOptions.onFailed = onFailedRealFile;
         moveOptions.onProgressChanged = (file, position, length) => {
             if (options.onProgressChanged)
-                options.onProgressChanged(new _a(file, __classPrivateFieldGet(this, _AesFile_drive, "f")), position, length);
+                options.onProgressChanged(new _a(file, this.#drive), position, length);
         };
-        await IFileMoveRecursively(__classPrivateFieldGet(this, _AesFile_realFile, "f"), dest.getRealFile(), moveOptions);
+        await IFileMoveRecursively(this.#realFile, dest.getRealFile(), moveOptions);
     }
     /**
      * Delete a directory recursively
@@ -740,14 +825,14 @@ export class AesFile {
         if (options.onFailed) {
             onFailedRealFile = (file, ex) => {
                 if (options.onFailed)
-                    options.onFailed(new _a(file, __classPrivateFieldGet(this, _AesFile_drive, "f")), ex);
+                    options.onFailed(new _a(file, this.#drive), ex);
             };
         }
         let deleteOptions = new RecursiveDeleteOptions();
         deleteOptions.onFailed = onFailedRealFile;
         deleteOptions.onProgressChanged = (file, position, length) => {
             if (options.onProgressChanged)
-                options.onProgressChanged(new _a(file, __classPrivateFieldGet(this, _AesFile_drive, "f")), position, length);
+                options.onProgressChanged(new _a(file, this.#drive), position, length);
         };
         await IFileDeleteRecursively(this.getRealFile(), deleteOptions);
     }
@@ -766,94 +851,7 @@ export class AesFile {
         return this.getBlockSize();
     }
 }
-_a = AesFile, _AesFile_drive = new WeakMap(), _AesFile_format = new WeakMap(), _AesFile_realFile = new WeakMap(), _AesFile__baseName = new WeakMap(), _AesFile__header = new WeakMap(), _AesFile_overwrite = new WeakMap(), _AesFile_integrity = new WeakMap(), _AesFile_reqChunkSize = new WeakMap(), _AesFile_encryptionKey = new WeakMap(), _AesFile_hashKey = new WeakMap(), _AesFile_requestedNonce = new WeakMap(), _AesFile_tag = new WeakMap(), _AesFile_instances = new WeakSet(), _AesFile_getRealFileHeaderData = 
-/**
- * Return the current header data that are stored in the file
- *
- * @param {IFile} realFile The real file containing the data
- * @returns {Promise<Uint8Array>} The header data.
- */
-async function _AesFile_getRealFileHeaderData(realFile) {
-    let realStream = await realFile.getInputStream();
-    let headerData = new Uint8Array(__classPrivateFieldGet(this, _AesFile_instances, "m", _AesFile_getHeaderLength).call(this));
-    await realStream.read(headerData, 0, headerData.length);
-    await realStream.close();
-    return headerData;
-}, _AesFile_getChunkSizeLength = function _AesFile_getChunkSizeLength() {
-    return Generator.CHUNK_SIZE_LENGTH;
-}, _AesFile_getHeaderLength = function _AesFile_getHeaderLength() {
-    return Generator.MAGIC_LENGTH + Generator.VERSION_LENGTH +
-        __classPrivateFieldGet(this, _AesFile_instances, "m", _AesFile_getChunkSizeLength).call(this) + Generator.NONCE_LENGTH;
-}, _AesFile_getPath = 
-/**
- * Returns the virtual path for the drive and the file provided
- *
- * @param realPath The path of the real file
- * @returns {Promise<string>} The path
- */
-async function _AesFile_getPath(realPath = null) {
-    if (realPath == null)
-        realPath = __classPrivateFieldGet(this, _AesFile_realFile, "f").getDisplayPath();
-    let relativePath = await __classPrivateFieldGet(this, _AesFile_instances, "m", _AesFile_getRelativePath).call(this, realPath);
-    let path = "";
-    let parts = relativePath.split(/\\|\//);
-    for (let part of parts) {
-        if (part != "") {
-            path += _a.separator;
-            path += await this.getDecryptedFilename(part);
-        }
-    }
-    return path.toString();
-}, _AesFile_getRelativePath = 
-/**
- * Return the virtual relative path of the file belonging to a drive
- *
- * @param realPath The path of the real file
- * @returns {Promise<string>} The relative path
- */
-async function _AesFile_getRelativePath(realPath) {
-    if (__classPrivateFieldGet(this, _AesFile_drive, "f") == null) {
-        return this.getRealFile().getName();
-    }
-    if (__classPrivateFieldGet(this, _AesFile_drive, "f") == null)
-        throw new Error("File is not part of a drive");
-    let virtualRoot = await __classPrivateFieldGet(this, _AesFile_drive, "f").getRoot();
-    if (virtualRoot == null)
-        throw new Error("Could not find virtual root, if this file is part of a drive make sure you init first");
-    let virtualRootPath = virtualRoot.getRealFile().getDisplayPath();
-    if (realPath.startsWith(virtualRootPath)) {
-        return realPath.replace(virtualRootPath, "");
-    }
-    return realPath;
-}, _AesFile_getHashTotalBytesLength = 
-/**
- * Returns the hash total bytes occupied by signatures
- * @returns {Promise<number>} The total hash bytes
- */
-async function _AesFile_getHashTotalBytesLength() {
-    // file does not support integrity
-    let fileChunkSize = await this.getFileChunkSize();
-    if (fileChunkSize <= 0)
-        return 0;
-    // integrity has been requested but hash is missing
-    if (__classPrivateFieldGet(this, _AesFile_integrity, "f") && this.getHashKey() == null)
-        throw new IntegrityException("File requires hashKey, use SetVerifyIntegrity() to provide one");
-    let realLength = await __classPrivateFieldGet(this, _AesFile_realFile, "f").getLength();
-    let headerLength = __classPrivateFieldGet(this, _AesFile_instances, "m", _AesFile_getHeaderLength).call(this);
-    return Integrity.getTotalHashDataLength(EncryptionMode.Decrypt, realLength - headerLength, fileChunkSize, Generator.HASH_RESULT_LENGTH, Generator.HASH_KEY_LENGTH);
-}, _AesFile_getDecryptedFilename = 
-/**
- * Return the decrypted filename of a real filename
- *
- * @param {string} filename The filename of a real file
- * @returns {Promise<string>} The decrypted filename
- */
-async function _AesFile_getDecryptedFilename(filename) {
-    if (__classPrivateFieldGet(this, _AesFile_drive, "f") == null && (__classPrivateFieldGet(this, _AesFile_encryptionKey, "f") == null || __classPrivateFieldGet(this, _AesFile_requestedNonce, "f") == null))
-        throw new SecurityException("Need to use a drive or pass key and nonce");
-    return await this.getDecryptedFilename(filename);
-};
-AesFile.separator = "/";
+_a = AesFile;
 /**
  * Default autorename.
  * @param {AesFile} file The file to be renamed

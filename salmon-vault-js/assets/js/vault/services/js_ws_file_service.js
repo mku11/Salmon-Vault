@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import { IWSFileService } from "../../common/services/iws_file_service.js";
-import { WSFile } from "../../lib/salmon-fs/fs/file/ws_file.js";
+import { WSFile } from "../../lib/simple-fs/fs/file/ws_file.js";
 
 export class JsWSFileService extends IWSFileService {
     constructor() {

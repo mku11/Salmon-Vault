@@ -21,28 +21,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _a, _FileSequencer_sequenceFile, _FileSequencer_serializer, _FileSequencer_getSequence;
-import { BitConverter } from "../../../salmon-core/convert/bit_converter.js";
+import { BitConverter } from "../../../simple-io/convert/bit_converter.js";
 import { Generator } from "../../../salmon-core/salmon/generator.js";
 import { Status, NonceSequence } from "../../../salmon-core/salmon/sequence/nonce_sequence.js";
 import { Nonce } from "../../../salmon-core/salmon/nonce.js";
 import { SequenceException } from "../../../salmon-core/salmon/sequence/sequence_exception.js";
-import { MemoryStream } from "../../../salmon-core/streams/memory_stream.js";
+import { MemoryStream } from "../../../simple-io/streams/memory_stream.js";
 /**
  * Generates nonces based on a sequencer backed by a file.
  */
 export class FileSequencer {
+    #sequenceFile;
+    #serializer;
     /**
      * Instantiate a nonce file sequencer.
      *
@@ -52,20 +42,18 @@ export class FileSequencer {
      * @throws SequenceException Thrown if error with the nonce sequence
      */
     constructor(sequenceFile, serializer) {
-        _FileSequencer_sequenceFile.set(this, void 0);
-        _FileSequencer_serializer.set(this, void 0);
-        __classPrivateFieldSet(this, _FileSequencer_sequenceFile, sequenceFile, "f");
-        __classPrivateFieldSet(this, _FileSequencer_serializer, serializer, "f");
+        this.#sequenceFile = sequenceFile;
+        this.#serializer = serializer;
     }
     /**
      * Initialize the file sequencer
      */
     async initialize() {
-        if (!await __classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f").exists()) {
-            let parent = await __classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f").getParent();
+        if (!await this.#sequenceFile.exists()) {
+            let parent = await this.#sequenceFile.getParent();
             if (parent == null)
                 throw new Error("Could not get parent");
-            __classPrivateFieldSet(this, _FileSequencer_sequenceFile, await parent.createFile(__classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f").getName()), "f");
+            this.#sequenceFile = await parent.createFile(this.#sequenceFile.getName());
             await this.saveSequenceFile(new Map());
         }
     }
@@ -74,7 +62,7 @@ export class FileSequencer {
      * @returns {IFile} The sequence file
      */
     getSequenceFile() {
-        return __classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f");
+        return this.#sequenceFile;
     }
     /**
      * Create a sequence for the drive ID and auth ID provided.
@@ -85,8 +73,8 @@ export class FileSequencer {
      */
     async createSequence(driveId, authId) {
         let contents = await this.getContents();
-        let configs = __classPrivateFieldGet(this, _FileSequencer_serializer, "f").deserialize(contents);
-        let sequence = __classPrivateFieldGet(_a, _a, "m", _FileSequencer_getSequence).call(_a, configs, driveId);
+        let configs = this.#serializer.deserialize(contents);
+        let sequence = FileSequencer.#getSequence(configs, driveId);
         if (sequence)
             throw new SequenceException("Sequence already exists");
         let nsequence = new NonceSequence(driveId, authId, null, null, Status.New);
@@ -105,8 +93,8 @@ export class FileSequencer {
      */
     async initializeSequence(driveId, authId, startNonce, maxNonce) {
         let contents = await this.getContents();
-        let configs = __classPrivateFieldGet(this, _FileSequencer_serializer, "f").deserialize(contents);
-        let sequence = __classPrivateFieldGet(_a, _a, "m", _FileSequencer_getSequence).call(_a, configs, driveId);
+        let configs = this.#serializer.deserialize(contents);
+        let sequence = FileSequencer.#getSequence(configs, driveId);
         if (sequence == null)
             throw new SequenceException("Sequence does not exist");
         if (sequence.getNextNonce())
@@ -126,8 +114,8 @@ export class FileSequencer {
      */
     async setMaxNonce(driveId, authId, maxNonce) {
         let contents = await this.getContents();
-        let configs = __classPrivateFieldGet(this, _FileSequencer_serializer, "f").deserialize(contents);
-        let sequence = __classPrivateFieldGet(_a, _a, "m", _FileSequencer_getSequence).call(_a, configs, driveId);
+        let configs = this.#serializer.deserialize(contents);
+        let sequence = FileSequencer.#getSequence(configs, driveId);
         if (sequence == null || sequence.getStatus() == Status.Revoked)
             throw new SequenceException("Sequence does not exist");
         let currMaxNonce = sequence.getMaxNonce();
@@ -149,8 +137,8 @@ export class FileSequencer {
      */
     async nextNonce(driveId) {
         let contents = await this.getContents();
-        let configs = __classPrivateFieldGet(this, _FileSequencer_serializer, "f").deserialize(contents);
-        let sequence = __classPrivateFieldGet(_a, _a, "m", _FileSequencer_getSequence).call(_a, configs, driveId);
+        let configs = this.#serializer.deserialize(contents);
+        let sequence = FileSequencer.#getSequence(configs, driveId);
         if (sequence == null || sequence.getNextNonce() == null || sequence.getMaxNonce() == null)
             throw new SequenceException("Device not Authorized");
         //We get the next nonce
@@ -175,7 +163,7 @@ export class FileSequencer {
         let stream = null;
         let outputStream = null;
         try {
-            stream = await __classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f").getInputStream();
+            stream = await this.#sequenceFile.getInputStream();
             outputStream = new MemoryStream();
             await stream.copyTo(outputStream);
         }
@@ -212,8 +200,8 @@ export class FileSequencer {
      */
     async revokeSequence(driveId) {
         let contents = await this.getContents();
-        let configs = __classPrivateFieldGet(this, _FileSequencer_serializer, "f").deserialize(contents);
-        let sequence = __classPrivateFieldGet(_a, _a, "m", _FileSequencer_getSequence).call(_a, configs, driveId);
+        let configs = this.#serializer.deserialize(contents);
+        let sequence = FileSequencer.#getSequence(configs, driveId);
         if (sequence == null)
             throw new SequenceException("Sequence does not exist");
         if (sequence.getStatus() == Status.Revoked)
@@ -230,8 +218,8 @@ export class FileSequencer {
      */
     async getSequence(driveId) {
         let contents = await this.getContents();
-        let configs = __classPrivateFieldGet(this, _FileSequencer_serializer, "f").deserialize(contents);
-        let sequence = __classPrivateFieldGet(_a, _a, "m", _FileSequencer_getSequence).call(_a, configs, driveId);
+        let configs = this.#serializer.deserialize(contents);
+        let sequence = FileSequencer.#getSequence(configs, driveId);
         return sequence;
     }
     /**
@@ -247,7 +235,7 @@ export class FileSequencer {
      */
     async saveSequenceFile(sequences) {
         try {
-            let contents = __classPrivateFieldGet(this, _FileSequencer_serializer, "f").serialize(sequences);
+            let contents = this.#serializer.serialize(sequences);
             await this.saveContents(contents);
         }
         catch (ex) {
@@ -263,7 +251,7 @@ export class FileSequencer {
         let inputStream = null;
         let outputStream = null;
         try {
-            outputStream = await __classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f").getOutputStream();
+            outputStream = await this.#sequenceFile.getOutputStream();
             // FileSystemDirectoryHandle.removeEntry() does not always work in time
             // to avoid NoModificationAllowedError we force truncate
             await outputStream.setLength(0);
@@ -297,21 +285,29 @@ export class FileSequencer {
                 }
             }
         }
-        let parent = await __classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f").getParent();
-        __classPrivateFieldSet(this, _FileSequencer_sequenceFile, await parent.getChild(__classPrivateFieldGet(this, _FileSequencer_sequenceFile, "f").getName()), "f");
+        let parent = await this.#sequenceFile.getParent();
+        this.#sequenceFile = await parent.getChild(this.#sequenceFile.getName());
     }
-}
-_a = FileSequencer, _FileSequencer_sequenceFile = new WeakMap(), _FileSequencer_serializer = new WeakMap(), _FileSequencer_getSequence = function _FileSequencer_getSequence(configs, driveId) {
-    let sequence = null;
-    for (let [key, seq] of configs) {
-        if (driveId.toUpperCase() == seq.getId().toUpperCase()) {
-            // there should be only one sequence available
-            if (seq.getStatus() == Status.Active || seq.getStatus() == Status.New) {
-                if (sequence)
-                    throw new SequenceException("Corrupt sequence config");
-                sequence = seq;
+    /**
+     * Get the sequence for the drive provided.
+     *
+     * @param {Map<string, NonceSequence>} configs All sequence configurations.
+     * @param {string} driveId The drive ID.
+     * @returns {NonceSequence | null} The nonce sequence
+     * @throws SequenceException Thrown if error with the nonce sequence
+     */
+    static #getSequence(configs, driveId) {
+        let sequence = null;
+        for (let [key, seq] of configs) {
+            if (driveId.toUpperCase() == seq.getId().toUpperCase()) {
+                // there should be only one sequence available
+                if (seq.getStatus() == Status.Active || seq.getStatus() == Status.New) {
+                    if (sequence)
+                        throw new SequenceException("Corrupt sequence config");
+                    sequence = seq;
+                }
             }
         }
+        return sequence;
     }
-    return sequence;
-};
+}

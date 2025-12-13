@@ -25,14 +25,14 @@ SOFTWARE.
  * Thrown when there is a failure during authorization.
  */
 export class AuthException extends Error {
+    cause = null;
     /**
      * Construct an exception with a specific message and inner exception
      * @param {string} msg The provided message
      * @param {Error | unknown | null} ex The inner exception
      */
     constructor(msg = null, ex = null) {
-        super(msg !== null && msg !== void 0 ? msg : "");
-        this.cause = null;
+        super(msg ?? "");
         if (ex) {
             this.cause = ex;
         }

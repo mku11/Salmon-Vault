@@ -9,6 +9,6 @@
   display: block;
 }
 
-.modal:has(.media-player) {
+.jwindow-panel:has(.media-player) {
 	resize: both; 
 }

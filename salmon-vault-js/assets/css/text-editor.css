@@ -1,6 +1,8 @@
 .text-editor-text {
-  min-width: 400pt;
-  min-height: 300pt;
+  width: 540pt;
+  height: 380pt;
+  min-width: 300pt;
+  min-height: 100pt;
   max-width: 800pt;
   max-height: 600pt;
 }
@@ -14,14 +16,13 @@
 
 .search-button-text {
   vertical-align: middle;
-  background-color: black;
   color: white;
-  font-size: 10pt;
+  font-size: 12pt;
 }
 
 .search-button {
   vertical-align: middle;
-  background-color: black;
+  background-color: transparent;
 }
 
 .search-text {
@@ -38,5 +39,6 @@
 
 .text-editor-status {
   vertical-align: middle;
-  font-size: 10pt;
+  font-size: 12pt;
+  overflow: hidden;
 }

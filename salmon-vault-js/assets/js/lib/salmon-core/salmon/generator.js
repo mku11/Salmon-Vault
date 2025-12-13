@@ -26,6 +26,46 @@ SOFTWARE.
  */
 export class Generator {
     /**
+     * Version.
+     */
+    static VERSION = 2;
+    /**
+     * Lenght for the magic bytes.
+     */
+    static MAGIC_LENGTH = 3;
+    /**
+     * Length for the Version in the data header.
+     */
+    static VERSION_LENGTH = 1;
+    /**
+     * Should be 16 for AES256 the same as the iv.
+     */
+    static BLOCK_SIZE = 16;
+    /**
+     * Encryption key length for AES256.
+     */
+    static KEY_LENGTH = 32;
+    /**
+     * HASH Key length for integrity, currently we use HMAC SHA256.
+     */
+    static HASH_KEY_LENGTH = 32;
+    /**
+     * Hash signature size for integrity, currently we use HMAC SHA256.
+     */
+    static HASH_RESULT_LENGTH = 32;
+    /**
+     * Nonce size.
+     */
+    static NONCE_LENGTH = 8;
+    /**
+     * Chunk size format length.
+     */
+    static CHUNK_SIZE_LENGTH = 4;
+    /**
+     * Magic bytes.
+     */
+    static MAGIC_BYTES = "SLM";
+    /**
      * Gets the fixed magic bytes array
      * @returns {Uint8Array} The magic bytes
      */
@@ -50,43 +90,3 @@ export class Generator {
         return bytes;
     }
 }
-/**
- * Version.
- */
-Generator.VERSION = 2;
-/**
- * Lenght for the magic bytes.
- */
-Generator.MAGIC_LENGTH = 3;
-/**
- * Length for the Version in the data header.
- */
-Generator.VERSION_LENGTH = 1;
-/**
- * Should be 16 for AES256 the same as the iv.
- */
-Generator.BLOCK_SIZE = 16;
-/**
- * Encryption key length for AES256.
- */
-Generator.KEY_LENGTH = 32;
-/**
- * HASH Key length for integrity, currently we use HMAC SHA256.
- */
-Generator.HASH_KEY_LENGTH = 32;
-/**
- * Hash signature size for integrity, currently we use HMAC SHA256.
- */
-Generator.HASH_RESULT_LENGTH = 32;
-/**
- * Nonce size.
- */
-Generator.NONCE_LENGTH = 8;
-/**
- * Chunk size format length.
- */
-Generator.CHUNK_SIZE_LENGTH = 4;
-/**
- * Magic bytes.
- */
-Generator.MAGIC_BYTES = "SLM";

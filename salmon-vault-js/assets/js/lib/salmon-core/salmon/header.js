@@ -21,84 +21,73 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var _Header_magicBytes, _Header_version, _Header_chunkSize, _Header_nonce, _Header_headerData;
-import { BitConverter } from "../convert/bit_converter.js";
-import { MemoryStream } from "../streams/memory_stream.js";
+import { BitConverter } from "../../simple-io/convert/bit_converter.js";
+import { MemoryStream } from "../../simple-io/streams/memory_stream.js";
 import { Generator } from "./generator.js";
 /**
  * Header embedded in the SalmonStream. Header contains nonce and other information for
  * decrypting the stream.
  */
 export class Header {
+    static HEADER_LENGTH = 16;
+    /**
+     * Magic bytes.
+     */
+    #magicBytes = new Uint8Array(Generator.MAGIC_LENGTH);
+    /**
+     * Format version from {@link Generator#VERSION}.
+     */
+    #version = 0;
+    /**
+     * Chunk size used for data integrity.
+     */
+    #chunkSize = 0;
+    /**
+     * Starting nonce for the CTR mode. This is the upper part of the Counter.
+     *
+     */
+    #nonce = null;
+    /**
+     * Binary data.
+     */
+    #headerData;
     /**
      * Get the nonce.
      * @returns {Uint8Array | null} The nonce saved in the header.
      */
     getNonce() {
-        return __classPrivateFieldGet(this, _Header_nonce, "f");
+        return this.#nonce;
     }
     /**
      * Get the chunk size.
      * @returns {number} Chunk size
      */
     getChunkSize() {
-        return __classPrivateFieldGet(this, _Header_chunkSize, "f");
+        return this.#chunkSize;
     }
     /**
      * Get the raw header data.
      * @returns {Uint8Array | null} Header data
      */
     getHeaderData() {
-        return __classPrivateFieldGet(this, _Header_headerData, "f");
+        return this.#headerData;
     }
     /**
      * Get the Salmon format  version
      * @returns {number} The format version
      */
     getVersion() {
-        return __classPrivateFieldGet(this, _Header_version, "f");
+        return this.#version;
     }
     /**
      * Get the magic bytes
      * @returns {Uint8Array} Magic bytes
      */
     getMagicBytes() {
-        return __classPrivateFieldGet(this, _Header_magicBytes, "f");
+        return this.#magicBytes;
     }
     constructor(headerData) {
-        /**
-         * Magic bytes.
-         */
-        _Header_magicBytes.set(this, new Uint8Array(Generator.MAGIC_LENGTH));
-        /**
-         * Format version from {@link Generator#VERSION}.
-         */
-        _Header_version.set(this, 0);
-        /**
-         * Chunk size used for data integrity.
-         */
-        _Header_chunkSize.set(this, 0);
-        /**
-         * Starting nonce for the CTR mode. This is the upper part of the Counter.
-         *
-         */
-        _Header_nonce.set(this, null);
-        /**
-         * Binary data.
-         */
-        _Header_headerData.set(this, void 0);
-        __classPrivateFieldSet(this, _Header_headerData, headerData, "f");
+        this.#headerData = headerData;
     }
     /**
      * Parse the header data from the stream
@@ -115,17 +104,17 @@ export class Header {
             + Generator.CHUNK_SIZE_LENGTH + Generator.NONCE_LENGTH);
         await stream.read(headerData, 0, headerData.length);
         let header = new Header(headerData);
-        let ms = new MemoryStream(__classPrivateFieldGet(header, _Header_headerData, "f"));
-        __classPrivateFieldSet(header, _Header_magicBytes, new Uint8Array(Generator.MAGIC_LENGTH), "f");
-        await ms.read(__classPrivateFieldGet(header, _Header_magicBytes, "f"), 0, __classPrivateFieldGet(header, _Header_magicBytes, "f").length);
+        let ms = new MemoryStream(header.#headerData);
+        header.#magicBytes = new Uint8Array(Generator.MAGIC_LENGTH);
+        await ms.read(header.#magicBytes, 0, header.#magicBytes.length);
         let versionBytes = new Uint8Array(Generator.VERSION_LENGTH);
         await ms.read(versionBytes, 0, Generator.VERSION_LENGTH);
-        __classPrivateFieldSet(header, _Header_version, versionBytes[0], "f");
+        header.#version = versionBytes[0];
         let chunkSizeHeader = new Uint8Array(Generator.CHUNK_SIZE_LENGTH);
         await ms.read(chunkSizeHeader, 0, chunkSizeHeader.length);
-        __classPrivateFieldSet(header, _Header_chunkSize, BitConverter.toLong(chunkSizeHeader, 0, Generator.CHUNK_SIZE_LENGTH), "f");
-        __classPrivateFieldSet(header, _Header_nonce, new Uint8Array(Generator.NONCE_LENGTH), "f");
-        await ms.read(__classPrivateFieldGet(header, _Header_nonce, "f"), 0, __classPrivateFieldGet(header, _Header_nonce, "f").length);
+        header.#chunkSize = BitConverter.toLong(chunkSizeHeader, 0, Generator.CHUNK_SIZE_LENGTH);
+        header.#nonce = new Uint8Array(Generator.NONCE_LENGTH);
+        await ms.read(header.#nonce, 0, header.#nonce.length);
         await stream.setPosition(pos);
         return header;
     }
@@ -157,22 +146,20 @@ export class Header {
      * @param {number} chunkSize The chunk size
      */
     setChunkSize(chunkSize) {
-        __classPrivateFieldSet(this, _Header_chunkSize, chunkSize, "f");
+        this.#chunkSize = chunkSize;
     }
     /**
      * Set the Salmon format version
      * @param {number} version The format version
      */
     setVersion(version) {
-        __classPrivateFieldSet(this, _Header_version, version, "f");
+        this.#version = version;
     }
     /**
      * Set the nonce to be used.
      * @param {Uint8Array} nonce The nonce
      */
     setNonce(nonce) {
-        __classPrivateFieldSet(this, _Header_nonce, nonce, "f");
+        this.#nonce = nonce;
     }
 }
-_Header_magicBytes = new WeakMap(), _Header_version = new WeakMap(), _Header_chunkSize = new WeakMap(), _Header_nonce = new WeakMap(), _Header_headerData = new WeakMap();
-Header.HEADER_LENGTH = 16;

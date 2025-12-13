@@ -21,18 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _Integrity_chunkSize, _Integrity_key, _Integrity_hashSize, _Integrity_provider, _Integrity_integrity;
 import { Generator } from "../generator.js";
 import { SecurityException } from "../security_exception.js";
 import { EncryptionMode } from "../streams/encryption_mode.js";
@@ -43,6 +31,27 @@ import { IntegrityException } from "../integrity/integrity_exception.js";
  * This class operates on chunks of byte arrays calculating hashes for each one.
  */
 export class Integrity {
+    /**
+     * Default chunk size for integrity.
+     */
+    static DEFAULT_CHUNK_SIZE = 256 * 1024;
+    /**
+     * The chunk size to be used for integrity.
+     */
+    #chunkSize = -1;
+    /**
+     * Key to be used for integrity signing and validation.
+     */
+    #key = null;
+    /**
+     * Hash result size;
+     */
+    #hashSize = 0;
+    /**
+     * The hash provider.
+     */
+    #provider;
+    #integrity;
     /**
      * Instantiate an object to be used for applying and verifying hash signatures for each of the data chunks.
      *
@@ -56,23 +65,6 @@ export class Integrity {
      * @throws SalmonSecurityException When security has failed
      */
     constructor(integrity, key, chunkSize = 0, provider, hashSize = 0) {
-        /**
-         * The chunk size to be used for integrity.
-         */
-        _Integrity_chunkSize.set(this, -1);
-        /**
-         * Key to be used for integrity signing and validation.
-         */
-        _Integrity_key.set(this, null);
-        /**
-         * Hash result size;
-         */
-        _Integrity_hashSize.set(this, 0);
-        /**
-         * The hash provider.
-         */
-        _Integrity_provider.set(this, void 0);
-        _Integrity_integrity.set(this, void 0);
         if (chunkSize < 0 || (chunkSize > 0 && chunkSize < AESCTRTransformer.BLOCK_SIZE)
             || (chunkSize > 0 && chunkSize % AESCTRTransformer.BLOCK_SIZE != 0)) {
             throw new IntegrityException("Invalid chunk size, specify zero for default value or a positive number multiple of: "
@@ -81,15 +73,15 @@ export class Integrity {
         if (integrity && key == null)
             throw new SecurityException("You need a hash key to use with integrity");
         if (integrity && (chunkSize === null || chunkSize == 0))
-            __classPrivateFieldSet(this, _Integrity_chunkSize, Integrity.DEFAULT_CHUNK_SIZE, "f");
+            this.#chunkSize = Integrity.DEFAULT_CHUNK_SIZE;
         else if (chunkSize && (integrity || chunkSize > 0))
-            __classPrivateFieldSet(this, _Integrity_chunkSize, chunkSize, "f");
+            this.#chunkSize = chunkSize;
         if (hashSize < 0)
             throw new SecurityException("Hash size should be a positive number");
-        __classPrivateFieldSet(this, _Integrity_key, key, "f");
-        __classPrivateFieldSet(this, _Integrity_provider, provider, "f");
-        __classPrivateFieldSet(this, _Integrity_integrity, integrity, "f");
-        __classPrivateFieldSet(this, _Integrity_hashSize, hashSize, "f");
+        this.#key = key;
+        this.#provider = provider;
+        this.#integrity = integrity;
+        this.#hashSize = hashSize;
     }
     /**
      * Calculate hash of the data provided.
@@ -152,32 +144,32 @@ export class Integrity {
      * @returns {number} The number of bytes all hash signatures occupy
      */
     getHashDataLength(count, hashOffset) {
-        if (__classPrivateFieldGet(this, _Integrity_chunkSize, "f") <= 0)
+        if (this.#chunkSize <= 0)
             return 0;
-        return Integrity.getTotalHashDataLength(EncryptionMode.Decrypt, count, __classPrivateFieldGet(this, _Integrity_chunkSize, "f"), hashOffset, __classPrivateFieldGet(this, _Integrity_hashSize, "f"));
+        return Integrity.getTotalHashDataLength(EncryptionMode.Decrypt, count, this.#chunkSize, hashOffset, this.#hashSize);
     }
     /**
      * Get the chunk size.
      * @returns {number} The chunk size.
      */
     getChunkSize() {
-        return __classPrivateFieldGet(this, _Integrity_chunkSize, "f");
+        return this.#chunkSize;
     }
     /**
      * Get the hash key.
      * @returns {Uint8Array} The hash key.
      */
     getKey() {
-        if (__classPrivateFieldGet(this, _Integrity_key, "f") == null)
+        if (this.#key == null)
             throw new SecurityException("Key is missing");
-        return __classPrivateFieldGet(this, _Integrity_key, "f");
+        return this.#key;
     }
     /**
      * Get the integrity enabled option.
      * @returns {boolean} True if integrity is enabled.
      */
     useIntegrity() {
-        return __classPrivateFieldGet(this, _Integrity_integrity, "f");
+        return this.#integrity;
     }
     /**
      * Generate a hash signatures for each data chunk.
@@ -187,12 +179,12 @@ export class Integrity {
      * @throws IntegrityException Thrown if the data are corrupt or tampered with.
      */
     async generateHashes(buffer, includeHeaderData) {
-        if (!__classPrivateFieldGet(this, _Integrity_integrity, "f"))
+        if (!this.#integrity)
             return null;
         const hashes = [];
-        for (let i = 0; i < buffer.length; i += __classPrivateFieldGet(this, _Integrity_chunkSize, "f")) {
-            const len = Math.min(__classPrivateFieldGet(this, _Integrity_chunkSize, "f"), buffer.length - i);
-            hashes.push(await Integrity.calculateHash(__classPrivateFieldGet(this, _Integrity_provider, "f"), buffer, i, len, this.getKey(), i == 0 ? includeHeaderData : null));
+        for (let i = 0; i < buffer.length; i += this.#chunkSize) {
+            const len = Math.min(this.#chunkSize, buffer.length - i);
+            hashes.push(await Integrity.calculateHash(this.#provider, buffer, i, len, this.getKey(), i == 0 ? includeHeaderData : null));
         }
         return hashes;
     }
@@ -202,10 +194,10 @@ export class Integrity {
      * @returns {Uint8Array[] | null} The hash signatures.
      */
     getHashes(buffer) {
-        if (!__classPrivateFieldGet(this, _Integrity_integrity, "f"))
+        if (!this.#integrity)
             return null;
         let hashes = new Array();
-        for (let i = 0; i < buffer.length; i += Generator.HASH_KEY_LENGTH + __classPrivateFieldGet(this, _Integrity_chunkSize, "f")) {
+        for (let i = 0; i < buffer.length; i += Generator.HASH_KEY_LENGTH + this.#chunkSize) {
             let hash = new Uint8Array(Generator.HASH_KEY_LENGTH);
             for (let j = 0; j < Generator.HASH_KEY_LENGTH; j++)
                 hash[j] = buffer[i + j];
@@ -222,9 +214,9 @@ export class Integrity {
      */
     async verifyHashes(hashes, buffer, includeHeaderData) {
         let chunk = 0;
-        for (let i = 0; i < buffer.length; i += __classPrivateFieldGet(this, _Integrity_chunkSize, "f")) {
-            let nChunkSize = Math.min(__classPrivateFieldGet(this, _Integrity_chunkSize, "f"), buffer.length - i);
-            let hash = await Integrity.calculateHash(__classPrivateFieldGet(this, _Integrity_provider, "f"), buffer, i, nChunkSize, this.getKey(), i == 0 ? includeHeaderData : null);
+        for (let i = 0; i < buffer.length; i += this.#chunkSize) {
+            let nChunkSize = Math.min(this.#chunkSize, buffer.length - i);
+            let hash = await Integrity.calculateHash(this.#provider, buffer, i, nChunkSize, this.getKey(), i == 0 ? includeHeaderData : null);
             for (let k = 0; k < hash.length; k++) {
                 if (hash[k] != hashes[chunk][k]) {
                     throw new IntegrityException("Data corrupt or tampered");
@@ -234,8 +226,3 @@ export class Integrity {
         }
     }
 }
-_Integrity_chunkSize = new WeakMap(), _Integrity_key = new WeakMap(), _Integrity_hashSize = new WeakMap(), _Integrity_provider = new WeakMap(), _Integrity_integrity = new WeakMap();
-/**
- * Default chunk size for integrity.
- */
-Integrity.DEFAULT_CHUNK_SIZE = 256 * 1024;

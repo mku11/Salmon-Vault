@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import { IHttpFileService } from "../../common/services/ihttp_file_service.js";
-import { HttpFile } from "../../lib/salmon-fs/fs/file/http_file.js";
+import { HttpFile } from "../../lib/simple-fs/fs/file/http_file.js";
 
 export class JsHttpFileService extends IHttpFileService {
     constructor() {

@@ -23,61 +23,51 @@ SOFTWARE.
 */
 
 
-import { SalmonWindow } from "../window/salmon_window.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
 import { SalmonImageViewer } from "../../common/model/salmon_image_viewer.js";
-import { Binding } from "../../common/binding/binding.js";
-import { ObjectProperty } from "../../common/binding/object_property.js";
-import { BooleanProperty } from "../../common/binding/boolean_property.js";
-import { WindowUtils } from "../utils/window_utils.js";
-import { SalmonConfig } from "../config/salmon_config.js";
-import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
+import { JBind } from "../../lib/jbind/jbind.js";
+import { ObjectProperty } from "../../lib/jbind/object_property.js";
+import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
+import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
 
 export class ImageViewerController {
-    static modalURL = "image-viewer.html";
+    static contentURL = "image-viewer.html";
     image;
-    modalWindow;
+    contentWindow;
     viewer;
     progressVisibility;
     url;
 
-    constructor() {
-        
+    setStage(contentWindow) {
+        this.contentWindow = contentWindow;
+        this.image = JBind.bind(this.contentWindow.getWindowPanel(), 'image-viewer-image', 'src', new ObjectProperty());
+        this.progressVisibility = JBind.bind(this.contentWindow.getWindowPanel(), 'media-progress', 'display', new BooleanProperty());
     }
 
-    setStage(modalWindow) {
-        this.modalWindow = modalWindow;
-        this.image = Binding.bind(this.modalWindow.getRoot(), 'image-viewer-image', 'src', new ObjectProperty());
-        this.progressVisibility = Binding.bind(this.modalWindow.getRoot(), 'media-progress', 'display', new BooleanProperty());
-    }
-
-    static openImageViewer(fileViewModel, owner) {
-        fetch(ImageViewerController.modalURL).then(async (response) => {
-            let htmlText = await response.text();
-            let controller = new ImageViewerController();
-            let modalWindow = await SalmonWindow.createWindow("Image Viewer", htmlText);
-            modalWindow.modal.style.resize = "both";
-            controller.setStage(modalWindow);
-            setTimeout(() => {
-                controller.load(fileViewModel);
-            });
-            WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
-            modalWindow.show();
-            modalWindow.onClose = () => controller.onClose(this);
+    static async openImageViewer(fileViewModel, owner) {
+        let controller = new ImageViewerController();
+        let contentWindow = await JWindow.createWindowWithURL("Image Viewer", ImageViewerController.contentURL);
+        contentWindow.setResizable(true);
+        controller.setStage(contentWindow);
+        setTimeout(() => {
+            controller.load(fileViewModel);
         });
+        await contentWindow.show();
+        contentWindow.onClose = () => controller.onClose(this);
     }
 
     async load(fileViewModel) {
         if (this.viewer == null)
             this.viewer = new SalmonImageViewer();
         try {
-            this.viewer.load(fileViewModel.getSalmonFile());
-            let stream = await fileViewModel.getSalmonFile().getInputStream();
+            this.viewer.load(fileViewModel.getAesFile());
+            let stream = await fileViewModel.getAesFile().getInputStream();
             let ms = new MemoryStream();
             await stream.copyTo(ms);
             await stream.close();
             let blob = new Blob([ms.toArray().buffer]);
-            await ms.close();            
+            await ms.close();
             this.url = URL.createObjectURL(blob);
             this.image.set(this.url);
         } catch (e) {

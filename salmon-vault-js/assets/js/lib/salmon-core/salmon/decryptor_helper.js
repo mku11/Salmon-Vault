@@ -21,11 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { MemoryStream } from "../streams/memory_stream.js";
+import { MemoryStream } from "../../simple-io/streams/memory_stream.js";
 import { AesStream } from "./streams/aes_stream.js";
 import { EncryptionMode } from "./streams/encryption_mode.js";
 import { SecurityException } from "./security_exception.js";
-import { RandomAccessStream } from "../streams/random_access_stream.js";
+import { RandomAccessStream } from "../../simple-io/streams/random_access_stream.js";
 /**
  * Decrypt the data.
  * @param {Uint8Array} data The data to be decrypted.
@@ -66,7 +66,7 @@ export async function decryptData(data, start, count, outData, key, nonce, forma
         await outputStream.flush();
     }
     catch (ex) {
-        console.error(ex);
+        console.log("Decryptor Error:", ex.message);
         throw new SecurityException("Could not decrypt data", ex);
     }
     finally {

@@ -22,21 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { SalmonWindow } from "../window/salmon_window.js";
+import { JBind } from "../../lib/jbind/jbind.js";
+import { StringProperty } from "../../lib/jbind/string_property.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
 import { SalmonTextEditor } from "../../common/model/salmon_text_editor.js";
-import { Binding } from "../../common/binding/binding.js";
-import { StringProperty } from "../../common/binding/string_property.js";
-import { WindowUtils } from "../utils/window_utils.js";
-import { SalmonConfig } from "../config/salmon_config.js";
-import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
+import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
-import { SalmonDialog } from "../dialog/salmon_dialog.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 import { ServiceLocator } from "../../common/services/service_locator.js";
 import { IKeyboardService } from "../../common/services/ikeyboard_service.js";
+import { JMenuBar, JMenuItem, JMenuSubItem, JMenuWidget } from "../../lib/jwin/assets/js/jmenu_bar.js";
 
 export class TextEditorController {
-    static modalURL = "text-editor.html";
-    modalWindow;
+    static contentURL = "text-editor.html";
+    static searchWidgetUrl = "text-search-widget.html";
+    static iconsUrl = "assets/images/common-res/icons";
+
+    /**
+     * The content window
+     * @type {JWindow}
+     */
+    contentWindow;
     item;
     contentArea;
     searchText;
@@ -55,27 +61,53 @@ export class TextEditorController {
         this.setupKeyboardShortcuts();
     }
 
-    setStage(modalWindow) {
-        this.modalWindow = modalWindow;
-        this.contentArea = Binding.bind(this.modalWindow.getRoot(), 'text-editor-text', 'textContent', new StringProperty());
-        this.searchText = Binding.bind(this.modalWindow.getRoot(), 'search-text', 'value', new StringProperty());
-        this.status = Binding.bind(this.modalWindow.getRoot(), 'text-editor-status', 'innerText', new StringProperty());
+    /**
+     * Set the content window
+     * @param {JWindow} contentWindow 
+     */
+    setStage(contentWindow) {
+        this.contentWindow = contentWindow;
+        this.searchText = JBind.bind(this.contentWindow.getWindowPanel(), 'search-text', 'value', new StringProperty());
+        this.contentArea = JBind.bind(this.contentWindow.getWindowPanel(), 'text-editor-text', 'textContent', new StringProperty());
+        this.status = JBind.bind(this.contentWindow.getWindowPanel(), 'text-editor-status', 'innerText', new StringProperty());
         this.initialize();
     }
 
-    static openTextEditor(fileViewModel, owner) {
-        fetch(TextEditorController.modalURL).then(async (response) => {
-            let htmlText = await response.text();
-            let controller = new TextEditorController();
-            window.textEditorController = controller;
-            let modalWindow = await SalmonWindow.createWindow("Text Editor", htmlText);
-            controller.setStage(modalWindow);
-            WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
-            modalWindow.onClose = () => controller.onClose(this);
-            modalWindow.show();
-            controller.showTaskMessage("File loading");
-            setTimeout(async ()=>{
-                await controller.load(fileViewModel);
+    setupMenuBar(contentWindow) {
+        let menuBar = new JMenuBar();
+
+        let fileMenuItem = new JMenuItem("fileMenu", "File");
+        menuBar.addMenuItem(fileMenuItem);
+        fileMenuItem.addMenuItem(new JMenuSubItem("save", "Save File (Ctrl-S)",
+            TextEditorController.iconsUrl + "/save_small.png", () => { this.onSave(); }));
+        fileMenuItem.addMenuItem(new JMenuSubItem("newVault", "Close",
+            TextEditorController.iconsUrl + "/exit_small.png", () => { this.close(); }));
+
+        let searchWidget = new JMenuWidget("searchText", this.#getSearchWidgetHtml);
+        menuBar.addMenuWidget(searchWidget);
+
+        contentWindow.setMenuBar(menuBar);
+    }
+
+    static async openTextEditor(fileViewModel, owner) {
+        let controller = new TextEditorController();
+        window.textEditorController = controller;
+        let contentWindow = await JWindow.createWindowWithURL("Text Editor", this.contentURL);
+        controller.setupMenuBar(contentWindow);
+        contentWindow.onClose = () => controller.onClose(this);
+        await contentWindow.show();
+        controller.setStage(contentWindow);
+        controller.showTaskMessage("File loading");
+        setTimeout(async () => {
+            await controller.load(fileViewModel);
+        });
+    }
+
+    async #getSearchWidgetHtml() {
+        return new Promise((resolve, reject) => {
+            fetch(TextEditorController.searchWidgetUrl).then(async (response) => {
+                let content = await response.text();
+                resolve(content);
             });
         });
     }
@@ -84,7 +116,7 @@ export class TextEditorController {
         this.item = item;
         let content;
         try {
-            content = await this.getTextContent(this.item.getSalmonFile());
+            content = await this.getTextContent(this.item.getAesFile());
             this.contentArea.set(content);
             this.showTaskMessage("File loaded");
             setTimeout(() => {
@@ -107,10 +139,10 @@ export class TextEditorController {
     }
 
     async onSave() {
-        let oldFile = this.item.getSalmonFile();
+        let oldFile = this.item.getAesFile();
         try {
-            let targetFile = await this.editor.onSave(this.item.getSalmonFile(), this.contentArea.get());
-            if(targetFile == null){
+            let targetFile = await this.editor.onSave(this.item.getAesFile(), this.contentArea.get());
+            if (targetFile == null) {
                 throw new Error("Could not save file");
             }
             let index = SalmonVaultManager.getInstance().getFileItemList().indexOf(oldFile);
@@ -125,7 +157,7 @@ export class TextEditorController {
             }, 2000);
         } catch (e) {
             console.error(e);
-            SalmonDialog.promptDialog("Error", "Could not save file: " + e);
+            JDialog.promptDialog("Error", "Could not save file: " + e);
         }
     }
 
@@ -224,7 +256,7 @@ export class TextEditorController {
     }
 
     close() {
-        this.modalWindow.hide();
+        this.contentWindow.hide();
     }
 
     onClose(self) {

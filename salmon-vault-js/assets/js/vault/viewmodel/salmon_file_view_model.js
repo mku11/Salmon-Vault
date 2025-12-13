@@ -22,13 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { IPropertyNotifier } from "../../common/binding/iproperty_notifier.js";
-import { FileUtils } from "../../lib/salmon-fs/fs/drive/utils/file_utils.js";
+import { PropertyNotifier } from "../../lib/jbind/property_notifier.js";
+import { FileUtils } from "../../lib/simple-fs/fs/drive/utils/file_utils.js";
 import { ByteUtils } from "../../common/utils/byte_utils.js";
 import { Thumbnails } from "../image/thumbnails.js";
 
-export class SalmonFileViewModel extends IPropertyNotifier {
-    static #IMAGE_SIZE = 48;
+export class SalmonFileViewModel extends PropertyNotifier {
+    static #IMAGE_SIZE = 128;
     static THUMBNAIL_MAX_STEPS = 10;
     static VIDEO_THUMBNAIL_MSECS = 3000;
 
@@ -49,18 +49,8 @@ export class SalmonFileViewModel extends IPropertyNotifier {
     #_image = null;
     get image() {
         if (this.#_image == null) {
-            let img = new Image();
-            img.width = SalmonFileViewModel.#IMAGE_SIZE;
-            img.height = SalmonFileViewModel.#IMAGE_SIZE;
             setTimeout(async () => {
-                this.image = await Thumbnails.getIcon(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
-                if (await this.salmonFile.isFile()) {
-                    let ext = FileUtils.getExtensionFromFileName(await this.salmonFile.getName()).toLowerCase();
-                    Thumbnails.addText(this.image, ext);
-                }
-                let imageThumbnail = await Thumbnails.generateThumbnail(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
-                if(imageThumbnail != null)
-                    this.image = imageThumbnail;
+                this.image = await this.getImage();
             });
         }
         return this.#_image;
@@ -159,6 +149,8 @@ export class SalmonFileViewModel extends IPropertyNotifier {
 
     async update() {
         try {
+            Thumbnails.removeCache(this.salmonFile);
+            this.image = await this.getImage();
             this.name = await this.salmonFile.getName();
             this.date = await this.getDateText();
             this.size = await this.getSizeText();
@@ -167,6 +159,18 @@ export class SalmonFileViewModel extends IPropertyNotifier {
         } catch (ex) {
             console.error(ex);
         }
+    }
+
+    async getImage() {
+        let image = await Thumbnails.getIcon(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
+        if (await this.salmonFile.isFile()) {
+            let ext = FileUtils.getExtensionFromFileName(await this.salmonFile.getName()).toLowerCase();
+            Thumbnails.addText(image, ext);
+        }
+        let imageThumbnail = await Thumbnails.generateThumbnail(this.salmonFile, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
+        if(imageThumbnail != null)
+            image = imageThumbnail;
+        return image;
     }
 
     async getExtText() {
@@ -196,7 +200,7 @@ export class SalmonFileViewModel extends IPropertyNotifier {
         }
     }
 
-    getSalmonFile() {
+    getAesFile() {
         return this.salmonFile;
     }
 
@@ -232,9 +236,9 @@ export class SalmonFileViewModel extends IPropertyNotifier {
                     }
                     let image = null;
                     try {
-                        image = await Thumbnails.getVideoThumbnail(this.salmonFile,
+                        image = await Thumbnails.generateThumbnail(this.salmonFile,
+                            SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE,
                                 (i + 1) * SalmonFileViewModel.VIDEO_THUMBNAIL_MSECS / 1000.0);
-                        image = await Thumbnails.resize(image, SalmonFileViewModel.#IMAGE_SIZE, SalmonFileViewModel.#IMAGE_SIZE);
                     } catch (e) {
                         console.error(e);
                     }

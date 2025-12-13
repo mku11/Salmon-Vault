@@ -55,8 +55,8 @@ export class SalmonSettings {
 
     static AESType = {
         Default: { name: 'Default', ordinal: 0 },
-        AesIntrinsics: { name: 'AesIntrinsics', ordinal: 1 },
-        TinyAES: { name: 'TinyAES', ordinal: 2 },
+        Aes: { name: 'Aes', ordinal: 1 },
+        AesGPU: { name: 'AesGPU', ordinal: 2 },
     }
 
     static DEFAULT_AES_TYPE = SalmonSettings.AESType.Default;

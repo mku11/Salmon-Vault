@@ -21,21 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var _AesStream_instances, _a, _AesStream_header, _AesStream_encryptionMode, _AesStream_format, _AesStream_allowRangeWrite, _AesStream_failSilently, _AesStream_baseStream, _AesStream_providerType, _AesStream_transformer, _AesStream_integrity, _AesStream_key, _AesStream_nonce, _AesStream_hashKey, _AesStream_chunkSize, _AesStream_enableIntegrity, _AesStream_init, _AesStream_getOrCreateHeader, _AesStream_initTransformer, _AesStream_initStream, _AesStream_initIntegrity, _AesStream_getHeaderLength, _AesStream_setVirtualPosition, _AesStream_closeStreams, _AesStream_readFromStream, _AesStream_getAlignedOffset, _AesStream_getNormalizedBufferSize, _AesStream_readBufferData, _AesStream_readStreamData, _AesStream_writeToBuffer, _AesStream_writeToStream, _AesStream_stripSignatures;
-import { IOException } from "../../streams/io_exception.js";
-import { RandomAccessStream, SeekOrigin } from "../../streams/random_access_stream.js";
-import { ReadableStreamWrapper } from "../../streams/readable_stream_wrapper.js";
+var _a;
+import { IOException } from "../../../simple-io/streams/io_exception.js";
+import { RandomAccessStream, SeekOrigin } from "../../../simple-io/streams/random_access_stream.js";
+import { ReadableStreamWrapper } from "../../../simple-io/streams/readable_stream_wrapper.js";
 import { HmacSHA256Provider } from "../integrity/hmac_sha256_provider.js";
 import { Integrity } from "../integrity/integrity.js";
 import { IntegrityException } from "../integrity/integrity_exception.js";
@@ -52,11 +41,50 @@ import { ProviderType } from "./provider_type.js";
  */
 export class AesStream extends RandomAccessStream {
     /**
+     * Header data embedded in the stream if available.
+     */
+    #header = null;
+    /**
+     * Mode to be used for this stream. This can only be set once.
+     */
+    #encryptionMode;
+    /**
+     * Format to be used for this stream. This can only be set once.
+     */
+    #format;
+    /**
+     * Allow seek and write.
+     */
+    #allowRangeWrite = false;
+    /**
+     * Fail silently if integrity cannot be verified.
+     */
+    #failSilently = false;
+    /**
+     * The base stream. When EncryptionMode is Encrypt this will be the target stream.
+     * When EncryptionMode is Decrypt this will be the source stream.
+     */
+    #baseStream;
+    static #providerType = ProviderType.Default;
+    /**
+     * The transformer to use for encryption.
+     */
+    #transformer = TransformerFactory.create(_a.#providerType);
+    /**
+     * The integrity to use for hash signature creation and validation.
+     */
+    #integrity = new Integrity(false, null, 0, new HmacSHA256Provider(), Generator.HASH_RESULT_LENGTH);
+    #key;
+    #nonce;
+    #hashKey;
+    #chunkSize;
+    #enableIntegrity;
+    /**
      * Align size for performance calculating the integrity when available.
      * @returns The align size
      */
     getAlignSize() {
-        return __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() > 0 ? __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() : Generator.BLOCK_SIZE;
+        return this.#integrity.getChunkSize() > 0 ? this.#integrity.getChunkSize() : Generator.BLOCK_SIZE;
     }
     /**
      * Get the output size of the data to be transformed(encrypted or decrypted) including
@@ -114,58 +142,78 @@ export class AesStream extends RandomAccessStream {
      */
     constructor(key, nonce, encryptionMode, baseStream, format = EncryptionFormat.Salmon, integrity = false, hashKey = null, chunkSize = 0) {
         super();
-        _AesStream_instances.add(this);
-        /**
-         * Header data embedded in the stream if available.
-         */
-        _AesStream_header.set(this, null);
-        /**
-         * Mode to be used for this stream. This can only be set once.
-         */
-        _AesStream_encryptionMode.set(this, void 0);
-        /**
-         * Format to be used for this stream. This can only be set once.
-         */
-        _AesStream_format.set(this, void 0);
-        /**
-         * Allow seek and write.
-         */
-        _AesStream_allowRangeWrite.set(this, false);
-        /**
-         * Fail silently if integrity cannot be verified.
-         */
-        _AesStream_failSilently.set(this, false);
-        /**
-         * The base stream. When EncryptionMode is Encrypt this will be the target stream.
-         * When EncryptionMode is Decrypt this will be the source stream.
-         */
-        _AesStream_baseStream.set(this, void 0);
-        /**
-         * The transformer to use for encryption.
-         */
-        _AesStream_transformer.set(this, TransformerFactory.create(__classPrivateFieldGet(_a, _a, "f", _AesStream_providerType)));
-        /**
-         * The integrity to use for hash signature creation and validation.
-         */
-        _AesStream_integrity.set(this, new Integrity(false, null, 0, new HmacSHA256Provider(), Generator.HASH_RESULT_LENGTH));
-        _AesStream_key.set(this, void 0);
-        _AesStream_nonce.set(this, void 0);
-        _AesStream_hashKey.set(this, void 0);
-        _AesStream_chunkSize.set(this, void 0);
-        _AesStream_enableIntegrity.set(this, void 0);
         if (format == EncryptionFormat.Generic) {
             integrity = false;
             hashKey = null;
             chunkSize = 0;
         }
-        __classPrivateFieldSet(this, _AesStream_encryptionMode, encryptionMode, "f");
-        __classPrivateFieldSet(this, _AesStream_baseStream, baseStream, "f");
-        __classPrivateFieldSet(this, _AesStream_key, key, "f");
-        __classPrivateFieldSet(this, _AesStream_nonce, nonce, "f");
-        __classPrivateFieldSet(this, _AesStream_format, format, "f");
-        __classPrivateFieldSet(this, _AesStream_chunkSize, chunkSize, "f");
-        __classPrivateFieldSet(this, _AesStream_hashKey, hashKey, "f");
-        __classPrivateFieldSet(this, _AesStream_enableIntegrity, integrity, "f");
+        this.#encryptionMode = encryptionMode;
+        this.#baseStream = baseStream;
+        this.#key = key;
+        this.#nonce = nonce;
+        this.#format = format;
+        this.#chunkSize = chunkSize;
+        this.#hashKey = hashKey;
+        this.#enableIntegrity = integrity;
+    }
+    /**
+     * Initialize the salmon stream.
+     */
+    async #init() {
+        // init only once
+        if (this.#transformer.getKey())
+            return;
+        this.#header = await this.#getOrCreateHeader(this.#format, this.#nonce, this.#enableIntegrity, this.#chunkSize);
+        if (this.#header) {
+            this.#chunkSize = this.#header.getChunkSize();
+            this.#nonce = this.#header.getNonce();
+        }
+        else {
+            this.#chunkSize = 0;
+        }
+        if (this.#nonce == null)
+            throw new SecurityException("Nonce is missing");
+        this.#initIntegrity();
+        await this.#initTransformer();
+        await this.#initStream();
+    }
+    async #getOrCreateHeader(format, nonce, integrity, chunkSize) {
+        if (format == EncryptionFormat.Salmon) {
+            if (this.#encryptionMode == EncryptionMode.Encrypt) {
+                if (this.#nonce == null)
+                    throw new SecurityException("Nonce is missing");
+                if (integrity && chunkSize <= 0)
+                    chunkSize = Integrity.DEFAULT_CHUNK_SIZE;
+                return await Header.writeHeader(this.#baseStream, this.#nonce, chunkSize);
+            }
+            return await Header.readHeaderData(this.#baseStream);
+        }
+        return null;
+    }
+    /**
+     * To create the AES CTR mode we use ECB for AES with No Padding.
+     * Initailize the Counter to the initial vector provided.
+     * For each data block we increase the Counter and apply the EAS encryption on the Counter.
+     * The encrypted Counter then will be xor-ed with the actual data block.
+     * Note: for typescript since its async and we cannot run it in the constructor we delay
+     * until we run an opearation using the transformer.
+     */
+    async #initTransformer() {
+        if (this.#key == null)
+            throw new SecurityException("Key is missing");
+        if (this.#nonce == null)
+            throw new SecurityException("Nonce is missing");
+        this.#transformer = TransformerFactory.create(_a.#providerType);
+        await this.#transformer.init(this.#key, this.#nonce);
+        this.#transformer.resetCounter();
+    }
+    /**
+     * Init the stream.
+     *
+     * @throws IOException Thrown if there is an IO error.
+     */
+    async #initStream() {
+        await this.setPosition(0);
     }
     /**
      * Set the global AES provider type. Supported types: {@link ProviderType}.
@@ -173,7 +221,7 @@ export class AesStream extends RandomAccessStream {
      * @param {ProviderType} providerType The provider Type.
      */
     static setAesProviderType(providerType) {
-        __classPrivateFieldSet(_a, _a, providerType, "f", _AesStream_providerType);
+        _a.#providerType = providerType;
     }
     /**
      * Get the global AES provider type. Supported types: {@link ProviderType}.
@@ -181,7 +229,7 @@ export class AesStream extends RandomAccessStream {
      * @returns {ProviderType} The provider Type.
      */
     static getAesProviderType() {
-        return __classPrivateFieldGet(_a, _a, "f", _AesStream_providerType);
+        return _a.#providerType;
     }
     /**
      * Provides the length of the actual transformed data (minus the header and integrity data).
@@ -189,11 +237,11 @@ export class AesStream extends RandomAccessStream {
      * @returns {Promise<number>} The length of the stream.
      */
     async getLength() {
-        await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_init).call(this);
+        await this.#init();
         let totalHashBytes;
-        let hashOffset = __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() > 0 ? Generator.HASH_RESULT_LENGTH : 0;
-        totalHashBytes = __classPrivateFieldGet(this, _AesStream_integrity, "f").getHashDataLength(await __classPrivateFieldGet(this, _AesStream_baseStream, "f").getLength() - 1, hashOffset);
-        return await __classPrivateFieldGet(this, _AesStream_baseStream, "f").getLength() - __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_getHeaderLength).call(this) - totalHashBytes;
+        let hashOffset = this.#integrity.getChunkSize() > 0 ? Generator.HASH_RESULT_LENGTH : 0;
+        totalHashBytes = this.#integrity.getHashDataLength(await this.#baseStream.getLength() - 1, hashOffset);
+        return await this.#baseStream.getLength() - this.#getHeaderLength() - totalHashBytes;
     }
     /**
      * Provides the position of the stream relative to the data to be transformed.
@@ -202,11 +250,11 @@ export class AesStream extends RandomAccessStream {
      * @throws IOException Thrown if there is an IO error.
      */
     async getPosition() {
-        await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_init).call(this);
+        await this.#init();
         let totalHashBytes;
-        let hashOffset = __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() > 0 ? Generator.HASH_RESULT_LENGTH : 0;
-        totalHashBytes = __classPrivateFieldGet(this, _AesStream_integrity, "f").getHashDataLength(await __classPrivateFieldGet(this, _AesStream_baseStream, "f").getPosition(), hashOffset);
-        return await __classPrivateFieldGet(this, _AesStream_baseStream, "f").getPosition() - __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_getHeaderLength).call(this) - totalHashBytes;
+        let hashOffset = this.#integrity.getChunkSize() > 0 ? Generator.HASH_RESULT_LENGTH : 0;
+        totalHashBytes = this.#integrity.getHashDataLength(await this.#baseStream.getPosition(), hashOffset);
+        return await this.#baseStream.getPosition() - this.#getHeaderLength() - totalHashBytes;
     }
     /**
      * Sets the current position of the stream relative to the data to be transformed.
@@ -216,12 +264,12 @@ export class AesStream extends RandomAccessStream {
      * @throws IOException Thrown if there is an IO error.
      */
     async setPosition(value) {
-        if (await this.canWrite() && !__classPrivateFieldGet(this, _AesStream_allowRangeWrite, "f") && value != 0) {
+        if (await this.canWrite() && !this.#allowRangeWrite && value != 0) {
             throw new IOException("Could not set position", new SecurityException("Range Write is not allowed for security (non-reusable IVs). " +
                 "If you still want to take the risk you need to use SetAllowRangeWrite(true)"));
         }
         try {
-            await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_setVirtualPosition).call(this, value);
+            await this.#setVirtualPosition(value);
         }
         catch (e) {
             console.error(e);
@@ -234,7 +282,7 @@ export class AesStream extends RandomAccessStream {
      * @returns {Promise<boolean>} True if mode is decryption.
      */
     async canRead() {
-        return await __classPrivateFieldGet(this, _AesStream_baseStream, "f").canRead() && __classPrivateFieldGet(this, _AesStream_encryptionMode, "f") == EncryptionMode.Decrypt;
+        return await this.#baseStream.canRead() && this.#encryptionMode == EncryptionMode.Decrypt;
     }
     /**
      * If the stream is seekable (supported only if base stream is seekable).
@@ -242,7 +290,7 @@ export class AesStream extends RandomAccessStream {
      * @returns {Promise<boolean>} True if stream is seekable.
      */
     async canSeek() {
-        return __classPrivateFieldGet(this, _AesStream_baseStream, "f").canSeek();
+        return this.#baseStream.canSeek();
     }
     /**
      * If the stream is writeable (only if EncryptionMode is Encrypt)
@@ -250,7 +298,7 @@ export class AesStream extends RandomAccessStream {
      * @returns {Promise<boolean>} True if mode is decryption.
      */
     async canWrite() {
-        return await __classPrivateFieldGet(this, _AesStream_baseStream, "f").canWrite() && __classPrivateFieldGet(this, _AesStream_encryptionMode, "f") == EncryptionMode.Encrypt;
+        return await this.#baseStream.canWrite() && this.#encryptionMode == EncryptionMode.Encrypt;
     }
     /**
      * If the stream has integrity enabled
@@ -258,6 +306,31 @@ export class AesStream extends RandomAccessStream {
      */
     hasIntegrity() {
         return this.getChunkSize() > 0;
+    }
+    /**
+     * Initialize the integrity validator. This object is always associated with the
+     * stream because in the case of a decryption stream that has already embedded integrity
+     * we still need to calculate/skip the chunks.
+     *
+     * @param {boolean} integrity True to enable integrity
+     * @param {Uint8Array | null} hashKey The hash key for integrity
+     * @param {number} chunkSize The chunk size
+     * @throws SalmonSecurityException Thrown when error with security
+     * @throws IntegrityException Thrown if the data are corrupt or tampered with.
+     */
+    #initIntegrity() {
+        this.#integrity = new Integrity(this.#enableIntegrity, this.#hashKey, this.#chunkSize, new HmacSHA256Provider(), Generator.HASH_RESULT_LENGTH);
+    }
+    /**
+     * The length of the header data if the stream was initialized with a header.
+     *
+     * @returns {number} The header data length.
+     */
+    #getHeaderLength() {
+        if (this.#header == null)
+            return 0;
+        else
+            return this.#header.getHeaderData().length;
     }
     /**
      * Seek to a specific position on the stream. This does not include the header and any hash Signatures.
@@ -291,8 +364,8 @@ export class AesStream extends RandomAccessStream {
      * Flushes any buffered data to the base stream.
      */
     async flush() {
-        if (__classPrivateFieldGet(this, _AesStream_baseStream, "f")) {
-            await __classPrivateFieldGet(this, _AesStream_baseStream, "f").flush();
+        if (this.#baseStream) {
+            await this.#baseStream.flush();
         }
     }
     /**
@@ -301,7 +374,7 @@ export class AesStream extends RandomAccessStream {
      * @throws IOException Thrown if there is an IO error.
      */
     async close() {
-        await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_closeStreams).call(this);
+        await this.#closeStreams();
     }
     /**
      * Returns the current Counter value.
@@ -309,8 +382,8 @@ export class AesStream extends RandomAccessStream {
      * @returns {Promise<Uint8Array>} The current Counter value.
      */
     async getCounter() {
-        await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_init).call(this);
-        let ctr = __classPrivateFieldGet(this, _AesStream_transformer, "f").getCounter();
+        await this.#init();
+        let ctr = this.#transformer.getCounter();
         if (ctr == null)
             throw new SecurityException("No counter, init transformer first");
         return ctr.slice(0);
@@ -320,16 +393,16 @@ export class AesStream extends RandomAccessStream {
      * @returns {Promise<number>} The current block value.
      */
     async getBlock() {
-        await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_init).call(this);
-        return __classPrivateFieldGet(this, _AesStream_transformer, "f").getBlock();
+        await this.#init();
+        return this.#transformer.getBlock();
     }
     /**
      * Returns a copy of the encryption key.
      * @returns {Promise<Uint8Array>} A copy of the key.
      */
     async getKey() {
-        await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_init).call(this);
-        let key = __classPrivateFieldGet(this, _AesStream_transformer, "f").getKey();
+        await this.#init();
+        let key = this.#transformer.getKey();
         if (key == null)
             throw new SecurityException("No key, init transformer first");
         return key.slice(0);
@@ -339,15 +412,15 @@ export class AesStream extends RandomAccessStream {
      * @returns {Uint8Array} A copy of the hash key
      */
     getHashKey() {
-        return __classPrivateFieldGet(this, _AesStream_integrity, "f").getKey().slice(0);
+        return this.#integrity.getKey().slice(0);
     }
     /**
      * Returns a copy of the initial vector.
      * @returns {Promise<Uint8Array>} A copy of the initial vector
      */
     async getNonce() {
-        await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_init).call(this);
-        let nonce = __classPrivateFieldGet(this, _AesStream_transformer, "f").getNonce();
+        await this.#init();
+        let nonce = this.#transformer.getNonce();
         if (nonce == null)
             throw new SecurityException("No nonce, init transformer first");
         return nonce.slice(0);
@@ -357,7 +430,7 @@ export class AesStream extends RandomAccessStream {
      * @returns {number} The chunk size
      */
     getChunkSize() {
-        return __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize();
+        return this.#integrity.getChunkSize();
     }
     /**
      * Warning! Allow byte range encryption writes on a current stream. Overwriting is not a good idea because it will re-use the same IV.
@@ -367,7 +440,7 @@ export class AesStream extends RandomAccessStream {
      * @param {boolean} value True to allow byte range encryption write operations
      */
     setAllowRangeWrite(value) {
-        __classPrivateFieldSet(this, _AesStream_allowRangeWrite, value, "f");
+        this.#allowRangeWrite = value;
     }
     /**
      * Set to True if you want the stream to fail silently when integrity cannot be verified.
@@ -377,7 +450,33 @@ export class AesStream extends RandomAccessStream {
      * @param {boolean} value True to fail silently.
      */
     setFailSilently(value) {
-        __classPrivateFieldSet(this, _AesStream_failSilently, value, "f");
+        this.#failSilently = value;
+    }
+    /**
+     * Set the virtual position of the stream.
+     *
+     * @param {number} value The new position
+     * @throws IOException Thrown if there is an IO error.
+     * @throws SalmonRangeExceededException Thrown if nonce has exceeded range
+     */
+    async #setVirtualPosition(value) {
+        await this.#init();
+        // we skip the header bytes and any hash values we have if the file has integrity set
+        let totalHashBytes = this.#integrity.getHashDataLength(value, 0);
+        value += totalHashBytes + this.#getHeaderLength();
+        await this.#baseStream.setPosition(value);
+        this.#transformer.resetCounter();
+        this.#transformer.syncCounter(await this.getPosition());
+    }
+    /**
+     * Close base stream
+     */
+    async #closeStreams() {
+        if (this.#baseStream) {
+            if (await this.canWrite())
+                await this.#baseStream.flush();
+            await this.#baseStream.close();
+        }
     }
     /**
      * Decrypts the data from the baseStream and stores them in the buffer provided.
@@ -388,17 +487,17 @@ export class AesStream extends RandomAccessStream {
      * @returns {Promise<number>} The number of data bytes that were decrypted.
      */
     async read(buffer, offset, count) {
-        await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_init).call(this);
+        await this.#init();
         if (await this.getPosition() == await this.getLength())
             return -1;
-        let alignedOffset = await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_getAlignedOffset).call(this);
+        let alignedOffset = await this.#getAlignedOffset();
         let bytes = 0;
         let pos = await this.getPosition();
         // if the base stream is not aligned for read
         if (alignedOffset != 0) {
             // read partially once
             await this.setPosition(await this.getPosition() - alignedOffset);
-            let nCount = __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() > 0 ? __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() : Generator.BLOCK_SIZE;
+            let nCount = this.#integrity.getChunkSize() > 0 ? this.#integrity.getChunkSize() : Generator.BLOCK_SIZE;
             let buff = new Uint8Array(nCount);
             bytes = await this.read(buff, 0, nCount);
             bytes = Math.min(bytes - alignedOffset, count);
@@ -415,9 +514,68 @@ export class AesStream extends RandomAccessStream {
         // the base stream position should now be aligned
         // now we can now read the rest of the data.
         pos = await this.getPosition();
-        let nBytes = await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_readFromStream).call(this, buffer, bytes + offset, count - bytes);
+        let nBytes = await this.#readFromStream(buffer, bytes + offset, count - bytes);
         await this.setPosition(pos + nBytes);
         return bytes + nBytes;
+    }
+    /**
+     * Decrypts the data from the baseStream and stores them in the buffer provided.
+     * Use this only after you align the base stream to the chunk if integrity is enabled
+     * or to the encryption block size.
+     *
+     * @param {Uint8Array} buffer The buffer that the data will be stored after decryption
+     * @param {number} offset The start position on the buffer that data will be written.
+     * @param {number} count  The requested count of the data bytes that should be decrypted
+     * @returns {Promise<number>} The number of data bytes that were decrypted.
+     * @throws IOException Thrown if stream is not aligned.
+     */
+    async #readFromStream(buffer, offset, count) {
+        if (await this.getPosition() == await this.getLength())
+            return 0;
+        if (this.#integrity.getChunkSize() > 0 && await this.getPosition() % this.#integrity.getChunkSize() != 0)
+            throw new IOException("All reads should be aligned to the chunks size: " + this.#integrity.getChunkSize());
+        else if (this.#integrity.getChunkSize() == 0 && await this.getPosition() % AESCTRTransformer.BLOCK_SIZE != 0)
+            throw new IOException("All reads should be aligned to the block size: " + AESCTRTransformer.BLOCK_SIZE);
+        let pos = await this.getPosition();
+        // if there are not enough data in the stream
+        count = Math.min(count, await this.getLength() - await this.getPosition());
+        // if there are not enough space in the buffer
+        count = Math.min(count, buffer.length - offset);
+        if (count <= 0)
+            return 0;
+        // make sure our buffer size is also aligned to the block or chunk
+        let bufferSize = this.#getNormalizedBufferSize(true);
+        let bytes = 0;
+        while (bytes < count) {
+            // if there is no integrity make sure we don't overread for performance.
+            let nBufferSize = this.getChunkSize() > 0 ? bufferSize : Math.min(bufferSize, count - bytes);
+            // read data and integrity signatures
+            let srcBuffer = await this.#readStreamData(nBufferSize);
+            try {
+                let integrityHashes = null;
+                // if there are integrity hashes strip them and get the data chunks only
+                if (this.#integrity.getChunkSize() > 0) {
+                    // get the integrity signatures
+                    integrityHashes = this.#integrity.getHashes(srcBuffer);
+                    srcBuffer = this.#stripSignatures(srcBuffer, this.#integrity.getChunkSize());
+                }
+                let destBuffer = new Uint8Array(srcBuffer.length);
+                if (this.#integrity.useIntegrity() && integrityHashes && this.#header) {
+                    await this.#integrity.verifyHashes(integrityHashes, srcBuffer, pos == 0 && bytes == 0 ? this.#header?.getHeaderData() : null);
+                }
+                await this.#transformer.decryptData(srcBuffer, 0, destBuffer, 0, srcBuffer.length);
+                let len = Math.min(count - bytes, destBuffer.length);
+                this.#writeToBuffer(destBuffer, 0, buffer, bytes + offset, len);
+                bytes += len;
+                this.#transformer.syncCounter(await this.getPosition());
+            }
+            catch (ex) {
+                if (ex instanceof IntegrityException && this.#failSilently)
+                    return -1;
+                throw new IOException("Could not read from stream: ", ex);
+            }
+        }
+        return bytes;
     }
     /**
      * Encrypts the data from the buffer and writes the result to the baseStream.
@@ -430,36 +588,172 @@ export class AesStream extends RandomAccessStream {
      *
      */
     async write(buffer, offset, count) {
-        await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_init).call(this);
-        if (__classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() > 0 && await this.getPosition() % __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() != 0)
+        await this.#init();
+        if (this.#integrity.getChunkSize() > 0 && await this.getPosition() % this.#integrity.getChunkSize() != 0)
             throw new IOException("Error during write", new IntegrityException("All write operations should be aligned to the chunks size: "
-                + __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize()));
-        else if (__classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() == 0 && await this.getPosition() % AESCTRTransformer.BLOCK_SIZE != 0)
+                + this.#integrity.getChunkSize()));
+        else if (this.#integrity.getChunkSize() <= 0 && await this.getPosition() % AESCTRTransformer.BLOCK_SIZE != 0)
             throw new IOException("Error during write", new IntegrityException("All write operations should be aligned to the block size: "
                 + AESCTRTransformer.BLOCK_SIZE));
         // if there are not enough data in the buffer
         count = Math.min(count, buffer.length - offset);
         // if there
-        let bufferSize = __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_getNormalizedBufferSize).call(this, false);
+        let bufferSize = this.#getNormalizedBufferSize(false);
         let pos = 0;
         while (pos < count) {
             let nBufferSize = Math.min(bufferSize, count - pos);
-            let srcBuffer = __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_readBufferData).call(this, buffer, pos + offset, nBufferSize);
+            let srcBuffer = this.#readBufferData(buffer, pos + offset, nBufferSize);
             if (srcBuffer.length == 0)
                 break;
             let destBuffer = new Uint8Array(srcBuffer.length);
             try {
-                await __classPrivateFieldGet(this, _AesStream_transformer, "f").encryptData(srcBuffer, 0, destBuffer, 0, srcBuffer.length);
+                await this.#transformer.encryptData(srcBuffer, 0, destBuffer, 0, srcBuffer.length);
                 let integrityHashes = null;
-                if (__classPrivateFieldGet(this, _AesStream_integrity, "f").useIntegrity() && __classPrivateFieldGet(this, _AesStream_header, "f"))
-                    integrityHashes = await __classPrivateFieldGet(this, _AesStream_integrity, "f").generateHashes(destBuffer, await this.getPosition() == 0 ? __classPrivateFieldGet(this, _AesStream_header, "f").getHeaderData() : null);
-                pos += await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_writeToStream).call(this, destBuffer, this.getChunkSize(), integrityHashes);
-                __classPrivateFieldGet(this, _AesStream_transformer, "f").syncCounter(await this.getPosition());
+                if (this.#integrity.useIntegrity() && this.#header)
+                    integrityHashes = await this.#integrity.generateHashes(destBuffer, await this.getPosition() == 0 ? this.#header.getHeaderData() : null);
+                pos += await this.#writeToStream(destBuffer, this.getChunkSize(), integrityHashes);
+                this.#transformer.syncCounter(await this.getPosition());
             }
             catch (ex) {
                 throw new IOException("Could not write to stream: ", ex);
             }
         }
+    }
+    /**
+     * Get the aligned offset wrt the Chunk size if integrity is enabled otherwise
+     * wrt to the encryption block size. Use this method to align a position to the
+     * start of the block or chunk.
+     *
+     * @returns {Promise<number>} The offset
+     */
+    async #getAlignedOffset() {
+        let alignOffset;
+        if (this.#integrity.getChunkSize() > 0) {
+            alignOffset = (await this.getPosition() % this.#integrity.getChunkSize());
+        }
+        else {
+            alignOffset = (await this.getPosition() % AESCTRTransformer.BLOCK_SIZE);
+        }
+        return alignOffset;
+    }
+    /**
+     * Get the aligned buffer size wrt the Chunk size if integrity is enabled otherwise
+     * wrt to the encryption block size. Use this method to ensure that buffer sizes request
+     * via the API are aligned for read/writes and integrity processing.
+     *
+     * @returns {number} The buffer size
+     */
+    #getNormalizedBufferSize(includeHashes) {
+        let bufferSize = Integrity.DEFAULT_CHUNK_SIZE;
+        if (this.getChunkSize() > 0) {
+            // buffer size should be a multiple of the chunk size if integrity is enabled
+            let partSize = this.getChunkSize();
+            // if add the hash signatures
+            if (partSize < bufferSize) {
+                bufferSize = Math.floor(bufferSize / this.getChunkSize()) * this.getChunkSize();
+            }
+            else
+                bufferSize = partSize;
+            if (includeHashes)
+                bufferSize += Math.floor(bufferSize / this.getChunkSize()) * Generator.HASH_RESULT_LENGTH;
+        }
+        else {
+            // buffer size should also be a multiple of the AES block size
+            bufferSize = Math.floor(bufferSize / AESCTRTransformer.BLOCK_SIZE)
+                * AESCTRTransformer.BLOCK_SIZE;
+        }
+        return bufferSize;
+    }
+    /**
+     * Read the data from the buffer
+     *
+     * @param {Uint8Array} buffer The source buffer.
+     * @param {number} offset The offset to start reading the data.
+     * @param {number} count  The number of requested bytes to read.
+     * @returns {Uint8Array} The array with the data that were read.
+     */
+    #readBufferData(buffer, offset, count) {
+        let data = new Uint8Array(Math.min(count, buffer.length - offset));
+        for (let i = 0; i < data.length; i++)
+            data[i] = buffer[offset + i];
+        return data;
+    }
+    /**
+     * Read the data from the base stream into the buffer.
+     *
+     * @param {number} count The number of bytes to read.
+     * @returns {number} The number of bytes read.
+     * @throws IOException Thrown if there is an IO error.
+     */
+    async #readStreamData(count) {
+        let data = new Uint8Array(Math.min(count, await this.#baseStream.getLength() - await this.#baseStream.getPosition()));
+        let totalBytesRead = 0;
+        while (totalBytesRead < data.length) {
+            let bytesRead = await this.#baseStream.read(data, totalBytesRead, data.length - totalBytesRead);
+            if (bytesRead <= 0)
+                break;
+            totalBytesRead += bytesRead;
+        }
+        return data;
+    }
+    /**
+     * Write the buffer data to the destination buffer.
+     *
+     * @param {Uint8Array} srcBuffer  The source byte array.
+     * @param {number} srcOffset  The source byte offset.
+     * @param {Uint8Array} destBuffer  The source byte array.
+     * @param {number} destOffset The destination byte offset.
+     * @param {number} count      The number of bytes to write.
+     */
+    #writeToBuffer(srcBuffer, srcOffset, destBuffer, destOffset, count) {
+        for (let i = 0; i < count; i++)
+            destBuffer[destOffset + i] = srcBuffer[srcOffset + i];
+    }
+    /**
+     * Write data to the base stream.
+     *
+     * @param {Uint8Array} buffer    The buffer to read from.
+     * @param {number} chunkSize The chunk segment size to use when writing the buffer.
+     * @param {Uint8Array[]} hashes    The hash signature to write at the beginning of each chunk.
+     * @returns {number} The number of bytes written.
+     * @throws IOException Thrown if there is an IO error.
+     */
+    async #writeToStream(buffer, chunkSize, hashes) {
+        let pos = 0;
+        let chunk = 0;
+        if (chunkSize <= 0)
+            chunkSize = buffer.length;
+        while (pos < buffer.length) {
+            if (hashes) {
+                await this.#baseStream.write(hashes[chunk], 0, hashes[chunk].length);
+            }
+            let len = Math.min(chunkSize, buffer.length - pos);
+            await this.#baseStream.write(buffer, pos, len);
+            pos += len;
+            chunk++;
+        }
+        return pos;
+    }
+    /**
+     * Strip hash signatures from the buffer.
+     *
+     * @param {Uint8Array} buffer    The buffer.
+     * @param {number} chunkSize The chunk size.
+     * @returns {Uint8Array} The data without the hash signatures
+     */
+    #stripSignatures(buffer, chunkSize) {
+        let bytes = Math.floor(buffer.length / (chunkSize + Generator.HASH_RESULT_LENGTH)) * chunkSize;
+        if (buffer.length % (chunkSize + Generator.HASH_RESULT_LENGTH) != 0)
+            bytes += buffer.length % (chunkSize + Generator.HASH_RESULT_LENGTH) - Generator.HASH_RESULT_LENGTH;
+        let buff = new Uint8Array(bytes);
+        let index = 0;
+        for (let i = 0; i < buffer.length; i += chunkSize + Generator.HASH_RESULT_LENGTH) {
+            let nChunkSize = Math.min(chunkSize, buff.length - index);
+            for (let j = 0; j < nChunkSize; j++)
+                buff[index + j] = buffer[i + Generator.HASH_RESULT_LENGTH + j];
+            index += nChunkSize;
+        }
+        return buff;
     }
     /**
      * Get a native buffered stream to use with 3rd party libraries.
@@ -479,7 +773,7 @@ export class AesStream extends RandomAccessStream {
      * @returns {boolean} If integrity is enabled for this stream.
      */
     isIntegrityEnabled() {
-        return __classPrivateFieldGet(this, _AesStream_integrity, "f").useIntegrity();
+        return this.#integrity.useIntegrity();
     }
     /**
      * Get the encryption mode.
@@ -487,7 +781,7 @@ export class AesStream extends RandomAccessStream {
      * @returns {EncryptionMode} The encryption mode.
      */
     getEncryptionMode() {
-        return __classPrivateFieldGet(this, _AesStream_encryptionMode, "f");
+        return this.#encryptionMode;
     }
     /**
      * Get the allowed range write option. This can check if you can use random access write.
@@ -496,267 +790,14 @@ export class AesStream extends RandomAccessStream {
      * @returns {boolean} True if the stream allowed to seek and write.
      */
     isAllowRangeWrite() {
-        return __classPrivateFieldGet(this, _AesStream_allowRangeWrite, "f");
+        return this.#allowRangeWrite;
     }
     /**
      * Get the current transformer for this stream.
      * @returns {ISalmonCTRTransformer}
      */
     getTransformer() {
-        return __classPrivateFieldGet(this, _AesStream_transformer, "f");
+        return this.#transformer;
     }
 }
-_a = AesStream, _AesStream_header = new WeakMap(), _AesStream_encryptionMode = new WeakMap(), _AesStream_format = new WeakMap(), _AesStream_allowRangeWrite = new WeakMap(), _AesStream_failSilently = new WeakMap(), _AesStream_baseStream = new WeakMap(), _AesStream_transformer = new WeakMap(), _AesStream_integrity = new WeakMap(), _AesStream_key = new WeakMap(), _AesStream_nonce = new WeakMap(), _AesStream_hashKey = new WeakMap(), _AesStream_chunkSize = new WeakMap(), _AesStream_enableIntegrity = new WeakMap(), _AesStream_instances = new WeakSet(), _AesStream_init = 
-/**
- * Initialize the salmon stream.
- */
-async function _AesStream_init() {
-    // init only once
-    if (__classPrivateFieldGet(this, _AesStream_transformer, "f").getKey())
-        return;
-    __classPrivateFieldSet(this, _AesStream_header, await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_getOrCreateHeader).call(this, __classPrivateFieldGet(this, _AesStream_format, "f"), __classPrivateFieldGet(this, _AesStream_nonce, "f"), __classPrivateFieldGet(this, _AesStream_enableIntegrity, "f"), __classPrivateFieldGet(this, _AesStream_chunkSize, "f")), "f");
-    if (__classPrivateFieldGet(this, _AesStream_header, "f")) {
-        __classPrivateFieldSet(this, _AesStream_chunkSize, __classPrivateFieldGet(this, _AesStream_header, "f").getChunkSize(), "f");
-        __classPrivateFieldSet(this, _AesStream_nonce, __classPrivateFieldGet(this, _AesStream_header, "f").getNonce(), "f");
-    }
-    else {
-        __classPrivateFieldSet(this, _AesStream_chunkSize, 0, "f");
-    }
-    if (__classPrivateFieldGet(this, _AesStream_nonce, "f") == null)
-        throw new SecurityException("Nonce is missing");
-    __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_initIntegrity).call(this);
-    await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_initTransformer).call(this);
-    await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_initStream).call(this);
-}, _AesStream_getOrCreateHeader = async function _AesStream_getOrCreateHeader(format, nonce, integrity, chunkSize) {
-    if (format == EncryptionFormat.Salmon) {
-        if (__classPrivateFieldGet(this, _AesStream_encryptionMode, "f") == EncryptionMode.Encrypt) {
-            if (__classPrivateFieldGet(this, _AesStream_nonce, "f") == null)
-                throw new SecurityException("Nonce is missing");
-            if (integrity && chunkSize <= 0)
-                chunkSize = Integrity.DEFAULT_CHUNK_SIZE;
-            return await Header.writeHeader(__classPrivateFieldGet(this, _AesStream_baseStream, "f"), __classPrivateFieldGet(this, _AesStream_nonce, "f"), chunkSize);
-        }
-        return await Header.readHeaderData(__classPrivateFieldGet(this, _AesStream_baseStream, "f"));
-    }
-    return null;
-}, _AesStream_initTransformer = 
-/**
- * To create the AES CTR mode we use ECB for AES with No Padding.
- * Initailize the Counter to the initial vector provided.
- * For each data block we increase the Counter and apply the EAS encryption on the Counter.
- * The encrypted Counter then will be xor-ed with the actual data block.
- * Note: for typescript since its async and we cannot run it in the constructor we delay
- * until we run an opearation using the transformer.
- */
-async function _AesStream_initTransformer() {
-    if (__classPrivateFieldGet(this, _AesStream_key, "f") == null)
-        throw new SecurityException("Key is missing");
-    if (__classPrivateFieldGet(this, _AesStream_nonce, "f") == null)
-        throw new SecurityException("Nonce is missing");
-    __classPrivateFieldSet(this, _AesStream_transformer, TransformerFactory.create(__classPrivateFieldGet(_a, _a, "f", _AesStream_providerType)), "f");
-    await __classPrivateFieldGet(this, _AesStream_transformer, "f").init(__classPrivateFieldGet(this, _AesStream_key, "f"), __classPrivateFieldGet(this, _AesStream_nonce, "f"));
-    __classPrivateFieldGet(this, _AesStream_transformer, "f").resetCounter();
-}, _AesStream_initStream = 
-/**
- * Init the stream.
- *
- * @throws IOException Thrown if there is an IO error.
- */
-async function _AesStream_initStream() {
-    await this.setPosition(0);
-}, _AesStream_initIntegrity = function _AesStream_initIntegrity() {
-    __classPrivateFieldSet(this, _AesStream_integrity, new Integrity(__classPrivateFieldGet(this, _AesStream_enableIntegrity, "f"), __classPrivateFieldGet(this, _AesStream_hashKey, "f"), __classPrivateFieldGet(this, _AesStream_chunkSize, "f"), new HmacSHA256Provider(), Generator.HASH_RESULT_LENGTH), "f");
-}, _AesStream_getHeaderLength = function _AesStream_getHeaderLength() {
-    if (__classPrivateFieldGet(this, _AesStream_header, "f") == null)
-        return 0;
-    else
-        return __classPrivateFieldGet(this, _AesStream_header, "f").getHeaderData().length;
-}, _AesStream_setVirtualPosition = 
-/**
- * Set the virtual position of the stream.
- *
- * @param {number} value The new position
- * @throws IOException Thrown if there is an IO error.
- * @throws SalmonRangeExceededException Thrown if nonce has exceeded range
- */
-async function _AesStream_setVirtualPosition(value) {
-    await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_init).call(this);
-    // we skip the header bytes and any hash values we have if the file has integrity set
-    let totalHashBytes = __classPrivateFieldGet(this, _AesStream_integrity, "f").getHashDataLength(value, 0);
-    value += totalHashBytes + __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_getHeaderLength).call(this);
-    await __classPrivateFieldGet(this, _AesStream_baseStream, "f").setPosition(value);
-    __classPrivateFieldGet(this, _AesStream_transformer, "f").resetCounter();
-    __classPrivateFieldGet(this, _AesStream_transformer, "f").syncCounter(await this.getPosition());
-}, _AesStream_closeStreams = 
-/**
- * Close base stream
- */
-async function _AesStream_closeStreams() {
-    if (__classPrivateFieldGet(this, _AesStream_baseStream, "f")) {
-        if (await this.canWrite())
-            await __classPrivateFieldGet(this, _AesStream_baseStream, "f").flush();
-        await __classPrivateFieldGet(this, _AesStream_baseStream, "f").close();
-    }
-}, _AesStream_readFromStream = 
-/**
- * Decrypts the data from the baseStream and stores them in the buffer provided.
- * Use this only after you align the base stream to the chunk if integrity is enabled
- * or to the encryption block size.
- *
- * @param {Uint8Array} buffer The buffer that the data will be stored after decryption
- * @param {number} offset The start position on the buffer that data will be written.
- * @param {number} count  The requested count of the data bytes that should be decrypted
- * @returns {Promise<number>} The number of data bytes that were decrypted.
- * @throws IOException Thrown if stream is not aligned.
- */
-async function _AesStream_readFromStream(buffer, offset, count) {
-    var _b;
-    if (await this.getPosition() == await this.getLength())
-        return 0;
-    if (__classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() > 0 && await this.getPosition() % __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() != 0)
-        throw new IOException("All reads should be aligned to the chunks size: " + __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize());
-    else if (__classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() == 0 && await this.getPosition() % AESCTRTransformer.BLOCK_SIZE != 0)
-        throw new IOException("All reads should be aligned to the block size: " + AESCTRTransformer.BLOCK_SIZE);
-    let pos = await this.getPosition();
-    // if there are not enough data in the stream
-    count = Math.min(count, await this.getLength() - await this.getPosition());
-    // if there are not enough space in the buffer
-    count = Math.min(count, buffer.length - offset);
-    if (count <= 0)
-        return 0;
-    // make sure our buffer size is also aligned to the block or chunk
-    let bufferSize = __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_getNormalizedBufferSize).call(this, true);
-    let bytes = 0;
-    while (bytes < count) {
-        // if there is no integrity make sure we don't overread for performance.
-        let nBufferSize = this.getChunkSize() > 0 ? bufferSize : Math.min(bufferSize, count - bytes);
-        // read data and integrity signatures
-        let srcBuffer = await __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_readStreamData).call(this, nBufferSize);
-        try {
-            let integrityHashes = null;
-            // if there are integrity hashes strip them and get the data chunks only
-            if (__classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() > 0) {
-                // get the integrity signatures
-                integrityHashes = __classPrivateFieldGet(this, _AesStream_integrity, "f").getHashes(srcBuffer);
-                srcBuffer = __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_stripSignatures).call(this, srcBuffer, __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize());
-            }
-            let destBuffer = new Uint8Array(srcBuffer.length);
-            if (__classPrivateFieldGet(this, _AesStream_integrity, "f").useIntegrity() && integrityHashes && __classPrivateFieldGet(this, _AesStream_header, "f")) {
-                await __classPrivateFieldGet(this, _AesStream_integrity, "f").verifyHashes(integrityHashes, srcBuffer, pos == 0 && bytes == 0 ? (_b = __classPrivateFieldGet(this, _AesStream_header, "f")) === null || _b === void 0 ? void 0 : _b.getHeaderData() : null);
-            }
-            await __classPrivateFieldGet(this, _AesStream_transformer, "f").decryptData(srcBuffer, 0, destBuffer, 0, srcBuffer.length);
-            let len = Math.min(count - bytes, destBuffer.length);
-            __classPrivateFieldGet(this, _AesStream_instances, "m", _AesStream_writeToBuffer).call(this, destBuffer, 0, buffer, bytes + offset, len);
-            bytes += len;
-            __classPrivateFieldGet(this, _AesStream_transformer, "f").syncCounter(await this.getPosition());
-        }
-        catch (ex) {
-            if (ex instanceof IntegrityException && __classPrivateFieldGet(this, _AesStream_failSilently, "f"))
-                return -1;
-            throw new IOException("Could not read from stream: ", ex);
-        }
-    }
-    return bytes;
-}, _AesStream_getAlignedOffset = 
-/**
- * Get the aligned offset wrt the Chunk size if integrity is enabled otherwise
- * wrt to the encryption block size. Use this method to align a position to the
- * start of the block or chunk.
- *
- * @returns {Promise<number>} The offset
- */
-async function _AesStream_getAlignedOffset() {
-    let alignOffset;
-    if (__classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize() > 0) {
-        alignOffset = (await this.getPosition() % __classPrivateFieldGet(this, _AesStream_integrity, "f").getChunkSize());
-    }
-    else {
-        alignOffset = (await this.getPosition() % AESCTRTransformer.BLOCK_SIZE);
-    }
-    return alignOffset;
-}, _AesStream_getNormalizedBufferSize = function _AesStream_getNormalizedBufferSize(includeHashes) {
-    let bufferSize = Integrity.DEFAULT_CHUNK_SIZE;
-    if (this.getChunkSize() > 0) {
-        // buffer size should be a multiple of the chunk size if integrity is enabled
-        let partSize = this.getChunkSize();
-        // if add the hash signatures
-        if (partSize < bufferSize) {
-            bufferSize = Math.floor(bufferSize / this.getChunkSize()) * this.getChunkSize();
-        }
-        else
-            bufferSize = partSize;
-        if (includeHashes)
-            bufferSize += Math.floor(bufferSize / this.getChunkSize()) * Generator.HASH_RESULT_LENGTH;
-    }
-    else {
-        // buffer size should also be a multiple of the AES block size
-        bufferSize = Math.floor(bufferSize / AESCTRTransformer.BLOCK_SIZE)
-            * AESCTRTransformer.BLOCK_SIZE;
-    }
-    return bufferSize;
-}, _AesStream_readBufferData = function _AesStream_readBufferData(buffer, offset, count) {
-    let data = new Uint8Array(Math.min(count, buffer.length - offset));
-    for (let i = 0; i < data.length; i++)
-        data[i] = buffer[offset + i];
-    return data;
-}, _AesStream_readStreamData = 
-/**
- * Read the data from the base stream into the buffer.
- *
- * @param {number} count The number of bytes to read.
- * @returns {number} The number of bytes read.
- * @throws IOException Thrown if there is an IO error.
- */
-async function _AesStream_readStreamData(count) {
-    let data = new Uint8Array(Math.min(count, await __classPrivateFieldGet(this, _AesStream_baseStream, "f").getLength() - await __classPrivateFieldGet(this, _AesStream_baseStream, "f").getPosition()));
-    let totalBytesRead = 0;
-    while (totalBytesRead < data.length) {
-        let bytesRead = await __classPrivateFieldGet(this, _AesStream_baseStream, "f").read(data, totalBytesRead, data.length - totalBytesRead);
-        if (bytesRead <= 0)
-            break;
-        totalBytesRead += bytesRead;
-    }
-    return data;
-}, _AesStream_writeToBuffer = function _AesStream_writeToBuffer(srcBuffer, srcOffset, destBuffer, destOffset, count) {
-    for (let i = 0; i < count; i++)
-        destBuffer[destOffset + i] = srcBuffer[srcOffset + i];
-}, _AesStream_writeToStream = 
-/**
- * Write data to the base stream.
- *
- * @param {Uint8Array} buffer    The buffer to read from.
- * @param {number} chunkSize The chunk segment size to use when writing the buffer.
- * @param {Uint8Array[]} hashes    The hash signature to write at the beginning of each chunk.
- * @returns {number} The number of bytes written.
- * @throws IOException Thrown if there is an IO error.
- */
-async function _AesStream_writeToStream(buffer, chunkSize, hashes) {
-    let pos = 0;
-    let chunk = 0;
-    if (chunkSize <= 0)
-        chunkSize = buffer.length;
-    while (pos < buffer.length) {
-        if (hashes) {
-            await __classPrivateFieldGet(this, _AesStream_baseStream, "f").write(hashes[chunk], 0, hashes[chunk].length);
-        }
-        let len = Math.min(chunkSize, buffer.length - pos);
-        await __classPrivateFieldGet(this, _AesStream_baseStream, "f").write(buffer, pos, len);
-        pos += len;
-        chunk++;
-    }
-    return pos;
-}, _AesStream_stripSignatures = function _AesStream_stripSignatures(buffer, chunkSize) {
-    let bytes = Math.floor(buffer.length / (chunkSize + Generator.HASH_RESULT_LENGTH)) * chunkSize;
-    if (buffer.length % (chunkSize + Generator.HASH_RESULT_LENGTH) != 0)
-        bytes += buffer.length % (chunkSize + Generator.HASH_RESULT_LENGTH) - Generator.HASH_RESULT_LENGTH;
-    let buff = new Uint8Array(bytes);
-    let index = 0;
-    for (let i = 0; i < buffer.length; i += chunkSize + Generator.HASH_RESULT_LENGTH) {
-        let nChunkSize = Math.min(chunkSize, buff.length - index);
-        for (let j = 0; j < nChunkSize; j++)
-            buff[index + j] = buffer[i + Generator.HASH_RESULT_LENGTH + j];
-        index += nChunkSize;
-    }
-    return buff;
-};
-_AesStream_providerType = { value: ProviderType.Default };
+_a = AesStream;

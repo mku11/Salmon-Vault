@@ -26,4 +26,10 @@ export class URLUtils {
     static goToUrl(url) {
         window.open(url,'_blank');
     }
+
+    static getAbsoluteURL(url) {
+        var link = document.createElement("a");
+        link.href = url;
+        return link.href;
+    }
 }

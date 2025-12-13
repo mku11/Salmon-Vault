@@ -21,98 +21,83 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var _DriveKey_masterKey, _DriveKey_driveKey, _DriveKey_hashKey, _DriveKey_iterations;
 /**
  * Encryption keys and properties.
  */
 export class DriveKey {
-    constructor() {
-        _DriveKey_masterKey.set(this, null);
-        _DriveKey_driveKey.set(this, null);
-        _DriveKey_hashKey.set(this, null);
-        _DriveKey_iterations.set(this, 0);
-    }
+    #masterKey = null;
+    #driveKey = null;
+    #hashKey = null;
+    #iterations = 0;
     /**
      * Clear the properties from memory.
      */
     clear() {
-        if (__classPrivateFieldGet(this, _DriveKey_driveKey, "f"))
-            __classPrivateFieldGet(this, _DriveKey_driveKey, "f").fill(0);
-        __classPrivateFieldSet(this, _DriveKey_driveKey, null, "f");
-        if (__classPrivateFieldGet(this, _DriveKey_hashKey, "f"))
-            __classPrivateFieldGet(this, _DriveKey_hashKey, "f").fill(0);
-        __classPrivateFieldSet(this, _DriveKey_hashKey, null, "f");
-        if (__classPrivateFieldGet(this, _DriveKey_masterKey, "f"))
-            __classPrivateFieldGet(this, _DriveKey_masterKey, "f").fill(0);
-        __classPrivateFieldSet(this, _DriveKey_masterKey, null, "f");
-        __classPrivateFieldSet(this, _DriveKey_iterations, 0, "f");
+        if (this.#driveKey)
+            this.#driveKey.fill(0);
+        this.#driveKey = null;
+        if (this.#hashKey)
+            this.#hashKey.fill(0);
+        this.#hashKey = null;
+        if (this.#masterKey)
+            this.#masterKey.fill(0);
+        this.#masterKey = null;
+        this.#iterations = 0;
     }
     /**
      * Function returns the encryption key that will be used to encrypt/decrypt the files
      * @returns {Uint8Array | null} The drive key
      */
     getDriveKey() {
-        return __classPrivateFieldGet(this, _DriveKey_driveKey, "f");
+        return this.#driveKey;
     }
     /**
      * Function returns the hash key that will be used to sign the file chunks
      * @returns {Uint8Array | null} The hash key
      */
     getHashKey() {
-        return __classPrivateFieldGet(this, _DriveKey_hashKey, "f");
+        return this.#hashKey;
     }
     /**
      * Set the drive key.
      * @param {Uint8Array | null} driveKey The drive key
      */
     setDriveKey(driveKey) {
-        __classPrivateFieldSet(this, _DriveKey_driveKey, driveKey, "f");
+        this.#driveKey = driveKey;
     }
     /**
      * Set the hash key.
      * @param {Uint8Array | null} hashKey The hash key
      */
     setHashKey(hashKey) {
-        __classPrivateFieldSet(this, _DriveKey_hashKey, hashKey, "f");
+        this.#hashKey = hashKey;
     }
     /**
      * Get the master key.
      * @returns {Uint8Array | null} The master key
      */
     getMasterKey() {
-        return __classPrivateFieldGet(this, _DriveKey_masterKey, "f");
+        return this.#masterKey;
     }
     /**
      * Set the master key.
      * @param {Uint8Array | null} masterKey The master key
      */
     setMasterKey(masterKey) {
-        __classPrivateFieldSet(this, _DriveKey_masterKey, masterKey, "f");
+        this.#masterKey = masterKey;
     }
     /**
      * Get the number of iterations for the master key derivation.
      * @returns {number} The iterations
      */
     getIterations() {
-        return __classPrivateFieldGet(this, _DriveKey_iterations, "f");
+        return this.#iterations;
     }
     /**
      * Set the number of iterations for the master key derivation.
      * @param {number} iterations The iterations
      */
     setIterations(iterations) {
-        __classPrivateFieldSet(this, _DriveKey_iterations, iterations, "f");
+        this.#iterations = iterations;
     }
 }
-_DriveKey_masterKey = new WeakMap(), _DriveKey_driveKey = new WeakMap(), _DriveKey_hashKey = new WeakMap(), _DriveKey_iterations = new WeakMap();

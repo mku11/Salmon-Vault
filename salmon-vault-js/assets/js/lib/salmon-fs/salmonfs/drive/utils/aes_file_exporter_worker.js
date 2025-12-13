@@ -21,8 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { FileExporterWorker } from "../../../fs/drive/utils/file_exporter_worker.js";
-import { FileUtils } from "../../../fs/drive/utils/file_utils.js";
+import { Platform, PlatformType } from "../../../../simple-io/platform/platform.js";
+import { FileExporterWorker } from "../../../../simple-fs/fs/drive/utils/file_exporter_worker.js";
+import { FileUtils } from "../../../../simple-fs/fs/drive/utils/file_utils.js";
 import { AesFile } from "../../file/aes_file.js";
 /**
  * Web worker for parallel encrypted file export.
@@ -42,7 +43,7 @@ export class AesFileExporterWorker extends FileExporterWorker {
     }
 }
 let worker = new AesFileExporterWorker();
-if (typeof process === 'object') {
+if (Platform.getPlatform() == PlatformType.NodeJs) {
     const { parentPort } = await import("worker_threads");
     if (parentPort)
         parentPort.addListener('message', (event) => worker.receive(worker, event));

@@ -63,7 +63,7 @@ export class HttpDrive extends AesDrive {
      * When authorization fails.
      */
     onUnlockError() {
-        console.error("drive failed to unlock");
+        console.log("drive failed to unlock");
     }
     /**
      *

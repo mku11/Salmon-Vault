@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { IPropertyNotifier } from "../binding/iproperty_notifier.js";
+import { PropertyNotifier } from "../../lib/jbind/property_notifier.js";
 import { AesFileReadableStream } from "../../lib/salmon-fs/salmonfs/streams/aes_file_readable_stream.js";
 
 
-export class SalmonImageViewer extends IPropertyNotifier {
+export class SalmonImageViewer extends PropertyNotifier {
     imageStream;
     observers = {};
     

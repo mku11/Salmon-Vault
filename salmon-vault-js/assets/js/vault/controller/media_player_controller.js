@@ -22,30 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { SalmonWindow } from "../window/salmon_window.js";
-import { WindowUtils } from "../utils/window_utils.js";
-import { SalmonConfig } from "../config/salmon_config.js";
-import { Binding } from "../../common/binding/binding.js";
-import { StringProperty } from "../../common/binding/string_property.js";
-import { BooleanProperty } from "../../common/binding/boolean_property.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
+import { JBind } from "../../lib/jbind/jbind.js";
+import { StringProperty } from "../../lib/jbind/string_property.js";
+import { BooleanProperty } from "../../lib/jbind/boolean_property.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
-import { MemoryStream } from "../../lib/salmon-core/streams/memory_stream.js";
+import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
 import { AesFileReadableStream } from "../../lib/salmon-fs/salmonfs/streams/aes_file_readable_stream.js";
-import { HttpSyncClient } from "../../lib/salmon-fs/fs/file/http_sync_client.js";
-import { SalmonDialog } from "../dialog/salmon_dialog.js";
+import { HttpSyncClient } from "../../lib/simple-fs/fs/file/http_sync_client.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
+import { URLUtils } from "../../vault/utils/url_utils.js";
 
 export class MediaPlayerController {
     static MIN_FILE_STREAMING = 1 * 1024 * 1024;
-    static MEDIA_BUFFERS = 2;
+    static MEDIA_BUFFERS = 4;
     // make sure we use a large enough buffer for the MediaDataSource since some videos stall
-    static MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    static MEDIA_BUFFER_SIZE = 32 * 1024 * 1024;
     static MEDIA_BACKOFFSET = 256 * 1024;
     // increase the threads if you have more cpus available for parallel processing
     static mediaThreads = 1;
-    static modalURL = "media-player.html";
-
+    static contentURL = "media-player.html";
+    // set the correct worker path when using parallel operations
+    static workerPath = './assets/js/lib/salmon-fs/salmonfs/streams/aes_file_readable_stream_worker.js';
+    
     filePath;
-    modalWindow;
+    contentWindow;
     player;
     progressVisibility;
     url;
@@ -54,85 +55,79 @@ export class MediaPlayerController {
         setImage(playImage);
     }
 
-    setStage(modalWindow) {
-        this.modalWindow = modalWindow;
-        this.player = Binding.bind(this.modalWindow.getRoot(), 'media-player-video', 'src', new StringProperty());
-        this.progressVisibility = Binding.bind(this.modalWindow.getRoot(), 'media-progress', 'display', new BooleanProperty());
+    setStage(contentWindow) {
+        this.contentWindow = contentWindow;
+        this.player = JBind.bind(this.contentWindow.getWindowPanel(), 'media-player-video', 'src', new StringProperty());
+        this.progressVisibility = JBind.bind(this.contentWindow.getWindowPanel(), 'media-progress', 'display', new BooleanProperty());
     }
 
-    static openMediaPlayer(fileViewModel, owner) {
-        fetch(MediaPlayerController.modalURL).then(async (response) => {
-            let htmlText = await response.text();
-            let controller = new MediaPlayerController();
-            let modalWindow = await SalmonWindow.createWindow("Media Player", htmlText);
-            controller.setStage(modalWindow);
-            setTimeout(() => {
-                controller.load(fileViewModel);
-            });
-            WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
-            modalWindow.show();
-            modalWindow.onClose = () => controller.onClose(this);
+    static async openMediaPlayer(fileViewModel, owner) {
+        let controller = new MediaPlayerController();
+        let contentWindow = await JWindow.createWindowWithURL("Media Player", this.contentURL);
+        contentWindow.setResizable(true);
+        controller.setStage(contentWindow);
+        setTimeout(() => {
+            controller.load(fileViewModel);
         });
+        await contentWindow.show();
+        contentWindow.onClose = () => controller.onClose(this);
     }
 
     async load(fileItem) {
-        let file = fileItem.getSalmonFile();
+        let file = fileItem.getAesFile();
         try {
             this.filePath = file.getRealPath();
-			this.url = null;
-			let size = await file.getLength();
-            // set the correct worker path when using parallel operations
-            let workerPath = './assets/js/lib/salmon-fs/salmonfs/streams/aes_file_readable_stream_worker.js';
-			// if file is relative small just decrypt and load via a blob
-			if (size < MediaPlayerController.MIN_FILE_STREAMING) {
-				let stream = AesFileReadableStream.createFileReadableStream(file,
-					1, MediaPlayerController.MIN_FILE_STREAMING, 2, 0);
-                stream.setWorkerPath(workerPath);
-				let ms = new MemoryStream();
-				let reader = stream.getReader();
-				while (true) {
-					let buffer = await reader.read();
-					if (buffer.value == undefined || buffer.value.length == 0)
-						break;
-					await ms.write(buffer.value, 0, buffer.value.length);
-				}
-				reader.releaseLock();
-				await stream.cancel();
-				let blob = new Blob([ms.toArray().buffer]);
-				await ms.close();
-				this.url = URL.createObjectURL(blob);
-			} else {
-				var link = document.createElement("a");
-				link.href = "?path=" + encodeURIComponent(this.filePath);
-				this.url = link.href;
+            this.url = null;
+            let size = await file.getLength();
+            // if file is relative small just decrypt and load via a blob
+            if (size < MediaPlayerController.MIN_FILE_STREAMING) {
+                let stream = AesFileReadableStream.createFileReadableStream(file,
+                    1, MediaPlayerController.MIN_FILE_STREAMING, 2, 0);
+                stream.setWorkerPath(MediaPlayerController.workerPath);
+                let ms = new MemoryStream();
+                let reader = stream.getReader();
+                while (true) {
+                    let buffer = await reader.read();
+                    if (buffer.value == undefined || buffer.value.length == 0)
+                        break;
+                    await ms.write(buffer.value, 0, buffer.value.length);
+                }
+                reader.releaseLock();
+                await stream.cancel();
+                let blob = new Blob([ms.toArray().buffer]);
+                await ms.close();
+                this.url = URL.createObjectURL(blob);
+            } else {
+                // or we register the url via handler
+                this.url = URLUtils.getAbsoluteURL("?path=" + encodeURIComponent(this.filePath));
                 let realFile = file.getRealFile();
                 let servicePath = realFile.constructor.name === 'WSFile' ? realFile.getServicePath() : null;
                 let credentials = realFile.getCredentials();
                 let serviceUser = credentials?.getServiceUser();
                 let servicePassword = credentials?.getServicePassword();
-				await Handler.getInstance().register(this.url, {
-					fileHandle: realFile.getPath(),
-					fileClass: realFile.constructor.name,
-					key: file.getEncryptionKey(),
-					integrity: file.isIntegrityEnabled(),
-					hash_key: file.getHashKey(),
-					mimeType: "video/mp4",
-					// you can turn on the FileReadableStream which is better in caching content
-					// though parallelism is not available for service workers in the browser
-					useFileReadableStream: false,
-                    workerPath: workerPath,
+                await Handler.getInstance().register(this.url, {
+                    fileHandle: realFile.getPath(),
+                    fileClass: realFile.constructor.name,
+                    key: file.getEncryptionKey(),
+                    integrity: file.isIntegrityEnabled(),
+                    hash_key: file.getHashKey(),
+                    mimeType: "video/mp4",
+                    // you can turn on the FileReadableStream which is better in caching content
+                    // though parallelism is not available for service workers in the browser
+                    useFileReadableStream: false,
+                    workerPath: MediaPlayerController.workerPath,
                     servicePath: servicePath,
                     serviceUser: serviceUser,
                     servicePassword: servicePassword,
                     allowClearTextTraffic: HttpSyncClient.getAllowClearTextTraffic()
-				});
-			}
-			// set the video player to the content
-			this.player.set(this.url);
-			this.progressVisibility.set(false);
-		} catch (e) {
+                });
+            }
+            // set the video player to the content
+            this.player.set(this.url);
+            this.progressVisibility.set(false);
+        } catch (e) {
             console.error(e);
-			SalmonDialog.promptDialog("Error", e);
+            JDialog.promptDialog("Error", e);
         }
     }
 

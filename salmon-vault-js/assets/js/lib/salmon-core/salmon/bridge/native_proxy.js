@@ -21,45 +21,63 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _a, _NativeProxy_loaded, _NativeProxy_libraryPath, _NativeProxy_lib;
+import { Platform, PlatformType } from "../../../simple-io/platform/platform.js";
+import { salmon_init, salmon_expandKey, salmon_transform } from "./salmon.js";
 /**
  * Proxy class for use with windows native library.
  */
 export class NativeProxy {
+    static #loaded;
+    static #libraryPath = "salmon.dll";
+    static #lib;
+    static #init;
+    static #expandKey;
+    static #transform;
     /**
      *
      * @param {string} libraryPath The library path to the native salmon library
      */
     static setLibraryPath(libraryPath) {
-        __classPrivateFieldSet(_a, _a, libraryPath, "f", _NativeProxy_libraryPath);
+        NativeProxy.#libraryPath = libraryPath;
     }
     /**
      * Proxy Init the native code with AES implementation, and hash length options.
+     * Note: for nodejs this will load the native salmon library
+     * For the browser it will initialize the WebGPU equivalent.
      *
      * @param {number} aesImpl The implementation type see ProviderType
      */
-    init(aesImpl) {
-        this.loadLibrary();
-        __classPrivateFieldGet(_a, _a, "f", _NativeProxy_lib).init(aesImpl);
+    async init(aesImpl) {
+        await this.loadLibrary();
+        await NativeProxy.#init(aesImpl);
     }
     /**
      * Load the native library
      */
-    loadLibrary() {
-        if (__classPrivateFieldGet(_a, _a, "f", _NativeProxy_loaded))
+    async loadLibrary() {
+        if (NativeProxy.#loaded)
             return;
-        __classPrivateFieldSet(_a, _a, true, "f", _NativeProxy_loaded);
+        try {
+            if (Platform.getPlatform() == PlatformType.NodeJs) {
+                const koffi = await Platform.require('koffi');
+                NativeProxy.#lib = koffi.load(NativeProxy.#libraryPath);
+                NativeProxy.#init = NativeProxy.#lib.func('void salmon_init(int aesImplType)');
+                NativeProxy.#expandKey = NativeProxy.#lib.func('void salmon_expandKey(const unsigned char* key, unsigned char* expandedKey)');
+                NativeProxy.#transform = NativeProxy.#lib.func('int salmon_transform(' +
+                    'const unsigned char* expandedKey, unsigned char* counter,' +
+                    'const unsigned char *srcBuffer, int srcOffset,' +
+                    'unsigned char *destBuffer, int destOffset, int count)');
+            }
+            else {
+                NativeProxy.#init = salmon_init;
+                NativeProxy.#expandKey = salmon_expandKey;
+                NativeProxy.#transform = salmon_transform;
+            }
+        }
+        catch (ex) {
+            console.error(ex);
+        }
+        NativeProxy.#loaded = true;
     }
     /**
      * Proxy Key schedule algorithm for expanding the 32 byte key to 240 bytes required
@@ -68,7 +86,7 @@ export class NativeProxy {
      * @param {Uint8Array} expandedKey The expanded key
      */
     expandKey(key, expandedKey) {
-        throw new Error("Not supported");
+        NativeProxy.#expandKey(key, expandedKey);
     }
     /**
      * Transform the input byte array using AES-256 CTR mode
@@ -82,11 +100,7 @@ export class NativeProxy {
      * @param {number} count The number of bytes to transform
      * @returns {number} The number of bytes transformed
      */
-    transform(key, counter, srcBuffer, srcOffset, destBuffer, destOffset, count) {
-        throw new Error("Not supported");
+    async transform(key, counter, srcBuffer, srcOffset, destBuffer, destOffset, count) {
+        return await NativeProxy.#transform(key, counter, srcBuffer, srcOffset, destBuffer, destOffset, count);
     }
 }
-_a = NativeProxy;
-_NativeProxy_loaded = { value: void 0 };
-_NativeProxy_libraryPath = { value: void 0 };
-_NativeProxy_lib = { value: void 0 };

@@ -21,31 +21,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _AesDefaultTransformer_encSecretKey;
 import { SecurityException } from "../security_exception.js";
 import { AESCTRTransformer } from "./aes_ctr_transformer.js";
 /**
  * Salmon AES transformer based on the javax.crypto routines.
  */
 export class AesDefaultTransformer extends AESCTRTransformer {
-    constructor() {
-        super(...arguments);
-        /**
-         * Key spec for the initial nonce (counter).
-         */
-        _AesDefaultTransformer_encSecretKey.set(this, null);
-    }
+    /**
+     * Key spec for the initial nonce (counter).
+     */
+    #encSecretKey = null;
     /**
      * Initialize the default Java AES cipher transformer.
      * @param {Uint8Array} key The AES256 key to use.
@@ -55,7 +40,7 @@ export class AesDefaultTransformer extends AESCTRTransformer {
     async init(key, nonce) {
         await super.init(key, nonce);
         try {
-            __classPrivateFieldSet(this, _AesDefaultTransformer_encSecretKey, await crypto.subtle.importKey("raw", key, "AES-CTR", false, ["encrypt", "decrypt"]), "f");
+            this.#encSecretKey = await crypto.subtle.importKey("raw", key, "AES-CTR", false, ["encrypt", "decrypt"]);
         }
         catch (e) {
             throw new SecurityException("Could not init AES transformer", e);
@@ -72,7 +57,7 @@ export class AesDefaultTransformer extends AESCTRTransformer {
      * @throws SalmonSecurityException Thrown when error with security
      */
     async encryptData(srcBuffer, srcOffset, destBuffer, destOffset, count) {
-        if (__classPrivateFieldGet(this, _AesDefaultTransformer_encSecretKey, "f") == null)
+        if (this.#encSecretKey == null)
             throw new SecurityException("No key defined, run init first");
         try {
             let counter = this.getCounter();
@@ -80,7 +65,7 @@ export class AesDefaultTransformer extends AESCTRTransformer {
                 name: "AES-CTR",
                 counter: counter,
                 length: 64,
-            }, __classPrivateFieldGet(this, _AesDefaultTransformer_encSecretKey, "f"), srcBuffer));
+            }, this.#encSecretKey, srcBuffer));
             for (let i = 0; i < count; i++)
                 destBuffer[destOffset + i] = data[srcOffset + i];
             return data.length;
@@ -100,7 +85,7 @@ export class AesDefaultTransformer extends AESCTRTransformer {
      * @throws SalmonSecurityException Thrown when error with security
      */
     async decryptData(srcBuffer, srcOffset, destBuffer, destOffset, count) {
-        if (__classPrivateFieldGet(this, _AesDefaultTransformer_encSecretKey, "f") == null)
+        if (this.#encSecretKey == null)
             throw new SecurityException("No key defined, run init first");
         try {
             let counter = this.getCounter();
@@ -108,7 +93,7 @@ export class AesDefaultTransformer extends AESCTRTransformer {
                 name: "AES-CTR",
                 counter: counter,
                 length: 64,
-            }, __classPrivateFieldGet(this, _AesDefaultTransformer_encSecretKey, "f"), srcBuffer));
+            }, this.#encSecretKey, srcBuffer));
             for (let i = 0; i < count; i++)
                 destBuffer[destOffset + i] = data[srcOffset + i];
             return data.length;
@@ -118,4 +103,3 @@ export class AesDefaultTransformer extends AESCTRTransformer {
         }
     }
 }
-_AesDefaultTransformer_encSecretKey = new WeakMap();

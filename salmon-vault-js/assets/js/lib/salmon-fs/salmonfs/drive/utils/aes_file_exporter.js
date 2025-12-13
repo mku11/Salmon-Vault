@@ -22,10 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import { IntegrityException } from "../../../../salmon-core/salmon/integrity/integrity_exception.js";
-import { HttpSyncClient } from "../../../fs/file/http_sync_client.js";
-import { FileExporter } from "../../../fs/drive/utils/file_exporter.js";
+import { HttpSyncClient } from "../../../../simple-fs/fs/file/http_sync_client.js";
+import { FileExporter } from "../../../../simple-fs/fs/drive/utils/file_exporter.js";
 import { AuthException } from "../../auth/auth_exception.js";
-import { FileUtils } from "../../../fs/drive/utils/file_utils.js";
+import { FileUtils } from "../../../../simple-fs/fs/drive/utils/file_utils.js";
+import { Platform, PlatformType } from "../../../../simple-io/platform/platform.js";
 /**
  * Exports files from a drive.
  * Make sure you use setWorkerPath() with the correct worker script.
@@ -33,7 +34,6 @@ import { FileUtils } from "../../../fs/drive/utils/file_utils.js";
 export class AesFileExporter extends FileExporter {
     constructor(bufferSize, threads) {
         super();
-        super.setWorkerPath('./lib/salmon-fs/salmonfs/drive/utils/aes_file_exporter_worker.js');
         super.initialize(bufferSize, threads);
     }
     /**
@@ -43,10 +43,13 @@ export class AesFileExporter extends FileExporter {
      * @returns {Promise<number>} The minimum file part.
      */
     async getMinimumPartSize(sourceFile, targetFile) {
+        if (!this.getWorkerPath()) {
+            let workerPath = await Platform.getAbsolutePath("aes_file_exporter_worker.js", import.meta.url);
+            super.setWorkerPath(workerPath);
+        }
         // we force the whole content to use 1 thread if:
-        if (
-        // we are in the browser and the target is a local file (chromes crswap clash between writers)
-        targetFile.constructor.name === 'File' && typeof process !== 'object') {
+        if (targetFile.constructor.name === 'File' && Platform.getPlatform() == PlatformType.Browser) {
+            // we are in the browser and the target is a local file (chromes crswap clashes between writers)
             return await sourceFile.getLength();
         }
         return await sourceFile.getMinimumPartSize();
@@ -111,13 +114,13 @@ export class AesFileExporter extends FileExporter {
             realSourceFileHandle: realSourceFileHandle,
             realSourceFileType: realSourceFileType,
             realSourceServicePath: realSourceServicePath,
-            realSourceServiceUser: realSourceFileCredentials === null || realSourceFileCredentials === void 0 ? void 0 : realSourceFileCredentials.getServiceUser(),
-            realSourceServicePassword: realSourceFileCredentials === null || realSourceFileCredentials === void 0 ? void 0 : realSourceFileCredentials.getServicePassword(),
+            realSourceServiceUser: realSourceFileCredentials?.getServiceUser(),
+            realSourceServicePassword: realSourceFileCredentials?.getServicePassword(),
             realTargetFileHandle: realTargetFileHandle,
             realTargetFileType: realTargetFileType,
             realTargetServicePath: realTargetServicePath,
-            realTargetServiceUser: realTargetFileCredentials === null || realTargetFileCredentials === void 0 ? void 0 : realTargetFileCredentials.getServiceUser(),
-            realTargetServicePassword: realTargetFileCredentials === null || realTargetFileCredentials === void 0 ? void 0 : realTargetFileCredentials.getServicePassword(),
+            realTargetServiceUser: realTargetFileCredentials?.getServiceUser(),
+            realTargetServicePassword: realTargetFileCredentials?.getServicePassword(),
             start: start, length: length,
             key: sourceFileToExport.getEncryptionKey(),
             integrity: integrity,

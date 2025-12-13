@@ -21,18 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _a, _AesNativeTransformer_nativeProxy, _AesNativeTransformer_implType;
 import { SecurityException } from "../security_exception.js";
 import { NativeProxy } from "../bridge/native_proxy.js";
 import { AESCTRTransformer } from "./aes_ctr_transformer.js";
@@ -41,33 +29,35 @@ import { AESCTRTransformer } from "./aes_ctr_transformer.js";
  * native transformer.
  */
 export class AesNativeTransformer extends AESCTRTransformer {
+    static #nativeProxy = new NativeProxy();
     /**
      * The native proxy to use for loading libraries for different platforms and operating systems.
      * @param {INativeProxy} proxy The proxy.
      */
     static setNativeProxy(proxy) {
-        __classPrivateFieldSet(_a, _a, proxy, "f", _AesNativeTransformer_nativeProxy);
+        AesNativeTransformer.#nativeProxy = proxy;
     }
     /**
      * The current proxy used for loading native library.
      * @returns {INativeProxy} The proxy.
      */
     static getNativeProxy() {
-        return __classPrivateFieldGet(_a, _a, "f", _AesNativeTransformer_nativeProxy);
+        return AesNativeTransformer.#nativeProxy;
     }
+    #implType;
     /**
      *
      * @returns {number} The native implementation type see ProviderType enum
      */
     getImplType() {
-        return __classPrivateFieldGet(this, _AesNativeTransformer_implType, "f");
+        return this.#implType;
     }
     /**
      *
      * @param {number} implType The native implementation type see ProviderType enum
      */
     setImplType(implType) {
-        __classPrivateFieldSet(this, _AesNativeTransformer_implType, implType, "f");
+        this.#implType = implType;
     }
     /**
      * Construct a SalmonNativeTransformer for using the native aes c library
@@ -75,8 +65,7 @@ export class AesNativeTransformer extends AESCTRTransformer {
      */
     constructor(implType) {
         super();
-        _AesNativeTransformer_implType.set(this, void 0);
-        __classPrivateFieldSet(this, _AesNativeTransformer_implType, implType, "f");
+        this.#implType = implType;
     }
     /**
      * Initialize the native Aes intrinsics transformer.
@@ -85,9 +74,9 @@ export class AesNativeTransformer extends AESCTRTransformer {
      * @throws SalmonSecurityException Thrown when error with security
      */
     async init(key, nonce) {
-        _a.getNativeProxy().init(__classPrivateFieldGet(this, _AesNativeTransformer_implType, "f"));
+        await AesNativeTransformer.getNativeProxy().init(this.#implType);
         let expandedKey = new Uint8Array(AESCTRTransformer.EXPANDED_KEY_SIZE);
-        _a.getNativeProxy().expandKey(key, expandedKey);
+        AesNativeTransformer.getNativeProxy().expandKey(key, expandedKey);
         this.setExpandedKey(expandedKey);
         await super.init(key, nonce);
     }
@@ -107,7 +96,7 @@ export class AesNativeTransformer extends AESCTRTransformer {
             throw new SecurityException("No key found, run init first");
         if (ctr == null)
             throw new SecurityException("No counter found, run init first");
-        return __classPrivateFieldGet(_a, _a, "f", _AesNativeTransformer_nativeProxy).transform(key, ctr, srcBuffer, srcOffset, destBuffer, destOffset, count);
+        return await AesNativeTransformer.#nativeProxy.transform(key, ctr, srcBuffer, srcOffset, destBuffer, destOffset, count);
     }
     /**
      * Decrypt the data.
@@ -125,8 +114,6 @@ export class AesNativeTransformer extends AESCTRTransformer {
             throw new SecurityException("No key found, run init first");
         if (ctr == null)
             throw new SecurityException("No counter found, run init first");
-        return __classPrivateFieldGet(_a, _a, "f", _AesNativeTransformer_nativeProxy).transform(key, ctr, srcBuffer, srcOffset, destBuffer, destOffset, count);
+        return await AesNativeTransformer.#nativeProxy.transform(key, ctr, srcBuffer, srcOffset, destBuffer, destOffset, count);
     }
 }
-_a = AesNativeTransformer, _AesNativeTransformer_implType = new WeakMap();
-_AesNativeTransformer_nativeProxy = { value: new NativeProxy() };

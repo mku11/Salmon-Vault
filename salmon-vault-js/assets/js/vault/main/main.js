@@ -23,20 +23,42 @@ SOFTWARE.
 */
 
 import { MainController } from "../controller/main_controller.js";
-import { WindowUtils } from "../utils/window_utils.js";
+import { JWindow } from "../../lib/jwin/assets/js/jwindow.js";
 import { SalmonConfig } from "../config/salmon_config.js";
-import { HttpSyncClient } from "../../lib/salmon-fs/fs/file/http_sync_client.js";
+import { HttpSyncClient } from "../../lib/simple-fs/fs/file/http_sync_client.js";
+import { setDebugConsole } from "../../common/utils/debug_utils.js";
+import { Handler } from "../../lib/salmon-fs/service/handler.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
+import { WebGPU } from "../../lib/salmon-core/salmon/bridge/webgpu.js";
 
-addEventListener("load", (e) => {
+addEventListener("load", async (e) => {
+    const DEBUG = false;
+    // worker path should be at the root of the site
+    const workerPath = 'service-worker.js';
+
+    function setupDebug() {
+        let debugConsole = document.getElementById("debug-console");
+        let debugConsoleContainer = document.getElementById("debug-console-container");
+        debugConsoleContainer.style.display = DEBUG ? "flex" : "none";
+        setDebugConsole(debugConsole);
+    }
+
+    async function registerServiceWorker() {
+        Handler.getInstance().setWorkerPath(workerPath);
+        try {
+            await Handler.getInstance().register();
+        } catch (ex) {
+            JDialog.promptDialog("Error", ex);
+        }
+    }
+
+    setupDebug();
+    registerServiceWorker();
+
     console.log("Starting Salmon Vault");
-    HttpSyncClient.setAllowClearTextTraffic(false); // use only for demo and testing purposes
-    WindowUtils.setDefaultIconPath(SalmonConfig.APP_ICON);
-    window.mainController = new MainController();
-    window.mainController.initialize();
-    window.mainController.setWindow();
-	if(document.salmonStartUp) {
-		console.log("found startup");
-		document.salmonStartUp();
-	}
+    HttpSyncClient.setAllowClearTextTraffic(false); // enable only for demo and testing purposes
+    WebGPU.enable(false); // enable only for demo and testing purposes
+    JWindow.setDefaultIconPath(SalmonConfig.APP_ICON);
+    MainController.openMainWindow(window);
 });
 

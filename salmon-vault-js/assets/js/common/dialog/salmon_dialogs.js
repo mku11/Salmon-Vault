@@ -27,28 +27,28 @@ import { IFileDialogService } from "../services/ifile_dialog_service.js";
 import { SalmonSettings } from "../model/salmon_settings.js";
 import { SalmonVaultManager } from "../model/salmon_vault_manager.js";
 import { AesDrive } from "../../lib/salmon-fs/salmonfs/drive/aes_drive.js";
-import { Credentials } from "../../lib/salmon-fs/fs/file/credentials.js";
-import { SalmonDialog } from "../../vault/dialog/salmon_dialog.js";
+import { Credentials } from "../../lib/simple-fs/fs/file/credentials.js";
+import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 import { SalmonConfig } from "../../vault/config/salmon_config.js";
 import { URLUtils } from "../../vault/utils/url_utils.js";
-import { FileUtils } from "../../lib/salmon-fs/fs/drive/utils/file_utils.js";
+import { FileUtils } from "../../lib/simple-fs/fs/drive/utils/file_utils.js";
 import { IHttpFileService } from "../../common/services/ihttp_file_service.js";
 import { IWSFileService } from "../../common/services/iws_file_service.js";
 
 export class SalmonDialogs {
     static promptPassword(onSubmit) {
-        SalmonDialog.promptEdit("Vault", "Password", async (password, option) => {
+        JDialog.promptEdit("Vault", "Password", async (password, option) => {
             if (onSubmit)
                 onSubmit(password);
         }, "", false, false, true, null);
     }
 
     static promptSetPassword(onPasswordChanged) {
-        SalmonDialog.promptEdit("Password", "Type new password", (password, option) => {
+        JDialog.promptEdit("Password", "Type new password", (password, option) => {
             if (password != null) {
-                SalmonDialog.promptEdit("Password", "Retype password", (npassword, nOption) => {
+                JDialog.promptEdit("Password", "Retype password", (npassword, nOption) => {
                     if (npassword != password) {
-                        SalmonDialog.promptDialog("Vault", "Passwords do not match", "Cancel");
+                        JDialog.promptDialog("Vault", "Passwords do not match", "Cancel");
                     } else {
                         if (onPasswordChanged != null)
                             onPasswordChanged(password);
@@ -77,10 +77,10 @@ export class SalmonDialogs {
             filename, filter, SalmonSettings.getInstance().getVaultLocation(), async (file) => {
                 try {
                     await SalmonVaultManager.getInstance().getDrive().importAuthFile(file);
-                    SalmonDialog.promptDialog("Auth", "Device is now Authorized");
+                    JDialog.promptDialog("Auth", "Device is now Authorized");
                 } catch (ex) {
                     console.error(ex);
-                    SalmonDialog.promptDialog("Auth", "Could Not Import Auth: " + ex);
+                    JDialog.promptDialog("Auth", "Could Not Import Auth: " + ex);
                 }
             }, SalmonVaultManager.REQUEST_IMPORT_AUTH_FILE);
     }
@@ -88,7 +88,7 @@ export class SalmonDialogs {
     static promptExportAuth() {
         if(!SalmonDialogs.isDriveLoaded())
             return;
-        SalmonDialog.promptEdit("Export Auth File",
+        JDialog.promptEdit("Export Auth File",
             "Enter the Auth ID for the device you want to authorize",
             (targetAuthId, option) => {
                 let filename = AesDrive.getDefaultAuthConfigFilename();
@@ -99,10 +99,10 @@ export class SalmonDialogs {
                     filename, filter, SalmonSettings.getInstance().getVaultLocation(), async (fileResult) => {
                         try {
                             await SalmonVaultManager.getInstance().getDrive().exportAuthFile(targetAuthId, fileResult);
-                            SalmonDialog.promptDialog("Auth", "Auth File Exported");
+                            JDialog.promptDialog("Auth", "Auth File Exported");
                         } catch (ex) {
                             console.error(ex);
-                            SalmonDialog.promptDialog("Auth", "Could Not Export Auth: " + ex);
+                            JDialog.promptDialog("Auth", "Could Not Export Auth: " + ex);
                         }
                     }, SalmonVaultManager.REQUEST_EXPORT_AUTH_FILE);
             }, "", false, false, false, null);
@@ -111,16 +111,16 @@ export class SalmonDialogs {
     static promptRevokeAuth() {
         if(!SalmonDialogs.isDriveLoaded())
             return;
-        SalmonDialog.promptDialog("Revoke Auth",
+        JDialog.promptDialog("Revoke Auth",
             "Revoke Auth for this drive? You will still be able to decrypt and view your files but you won't be able to import any more files in this drive.",
             "Ok",
             () => {
                 try {
                     SalmonVaultManager.getInstance().getDrive().revokeAuthorization();
-                    SalmonDialog.promptDialog("Action", "Revoke Auth Successful");
+                    JDialog.promptDialog("Action", "Revoke Auth Successful");
                 } catch (e) {
                     console.error(e);
-                    SalmonDialog.promptDialog("Action", "Could Not Revoke Auth: " + e);
+                    JDialog.promptDialog("Action", "Could Not Revoke Auth: " + e);
                 }
             },
             "Cancel", null);
@@ -132,25 +132,25 @@ export class SalmonDialogs {
 
         try {
             let driveId = await SalmonVaultManager.getInstance().getDrive().getAuthId();
-            SalmonDialog.promptEdit("Auth", "Salmon Auth App ID",
+            JDialog.promptEdit("Auth", "Salmon Auth App ID",
                 null, driveId, false, true, false, null);
         } catch (ex) {
-            SalmonDialog.promptDialog("Error", ex);
+            JDialog.promptDialog("Error", ex);
         }
     }
 
     static async showProperties(item) {
         try {
-            SalmonDialog.promptDialog("Properties", await SalmonVaultManager.getInstance().getFileProperties(item));
+            JDialog.promptDialog("Properties", await SalmonVaultManager.getInstance().getFileProperties(item));
         } catch (exception) {
-            SalmonDialog.promptDialog("Properties", "Could not get file properties: "
+            JDialog.promptDialog("Properties", "Could not get file properties: "
                 + exception);
             console.error(exception);
         }
     }
 
     static promptSequenceReset(resetSequencer) {
-        SalmonDialog.promptDialog("Warning", "The nonce sequencer file seems to be tampered.\n" +
+        JDialog.promptDialog("Warning", "The nonce sequencer file seems to be tampered.\n" +
             "This could be a sign of a malicious attack. " +
             "The recommended action is to press Reset to de-authorize all drives.\n" +
             "Otherwise only if you know what you're doing press Continue.",
@@ -165,7 +165,7 @@ export class SalmonDialogs {
     static promptDelete() {
         if(!SalmonDialogs.isDriveLoaded())
             return;
-        SalmonDialog.promptDialog(
+        JDialog.promptDialog(
             "Delete", "Delete " + SalmonVaultManager.getInstance().getSelectedFiles().size + " item(s)?",
             "Ok",
             () => SalmonVaultManager.getInstance().deleteSelectedFiles(),
@@ -173,7 +173,7 @@ export class SalmonDialogs {
     }
 
     static promptExit() {
-        SalmonDialog.promptDialog("Exit",
+        JDialog.promptDialog("Exit",
             "Exit App?",
             "Ok",
             () => {
@@ -183,27 +183,27 @@ export class SalmonDialogs {
     }
 
     static promptAnotherProcessRunning() {
-        SalmonDialog.promptDialog("File Search", "Another process is running");
+        JDialog.promptDialog("File Search", "Another process is running");
     }
 
     static promptSearch() {
         if(!SalmonDialogs.isDriveLoaded())
             return;
 
-        SalmonDialog.promptEdit("Search", "Keywords",
+        JDialog.promptEdit("Search", "Keywords",
             async (value, isChecked) => {
                 await SalmonVaultManager.getInstance().search(value, isChecked);
             }, "", false, false, false, "Any Term");
     }
 
     static promptAbout() {
-        SalmonDialog.promptDialog("About", SalmonConfig.APP_NAME
+        JDialog.promptDialog("About", SalmonConfig.APP_NAME
             + " v" + SalmonConfig.getVersion() + "\n" + SalmonConfig.ABOUT_TEXT,
             "Project Website", () => {
                 try {
                     URLUtils.goToUrl(SalmonConfig.SourceCodeURL);
                 } catch (ex) {
-                    SalmonDialog.promptDialog("Error", "Could not open Url: "
+                    JDialog.promptDialog("Error", "Could not open Url: "
                         + SalmonConfig.SourceCodeURL + ex);
                 }
             }, "Ok", null);
@@ -212,7 +212,7 @@ export class SalmonDialogs {
     
     static promptCreateVault() {
         let vaultTypes = ["Local", "Web Service"];
-        SalmonDialog.promptSingleValue("Vault Type", vaultTypes, -1,
+        JDialog.promptSingleValue("Vault Type", vaultTypes, -1,
                 (which) =>
                 {
                     switch (which) {
@@ -228,7 +228,7 @@ export class SalmonDialogs {
     }
 
     static promptCreateLocalVault() {
-        ServiceLocator.getInstance().resolve(IFileDialogService).pickFolder("Select the vault",
+        ServiceLocator.getInstance().resolve(IFileDialogService).openFolder("Select the vault",
             SalmonSettings.getInstance().getVaultLocation(), (file) => {
                 SalmonDialogs.promptSetPassword(async (pass) => {
                     SalmonVaultManager.getInstance().createVault(file, pass);
@@ -239,13 +239,13 @@ export class SalmonDialogs {
     }
 
     static promptCreateWSVault() {
-        SalmonDialog.promptCredentialsEdit("Open Web Service",
+        JDialog.promptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 ["Web Service URL", "User name", "Password"],
                 ["", "", ""],
                 [false, false, true],
                 (texts) => {
-                    SalmonDialog.promptEdit("Create Vault",
+                    JDialog.promptEdit("Create Vault",
                             "Type in the file path for the vault",
                             (path, isChecked) => {
                                 let dir = ServiceLocator.getInstance().resolve(IWSFileService)
@@ -255,13 +255,13 @@ export class SalmonDialogs {
                                 {
                                     SalmonVaultManager.getInstance().createVault(dir, pass);
                                 });
-                            }, "/tv3", false, false, false, null);
+                            }, "", false, false, false, null);
                 });
     }
 
     static promptOpenVault() {
         let vaultTypes = ["Local", "HTTP", "Web Service"];
-        SalmonDialog.promptSingleValue("Vault Type", vaultTypes, -1,
+        JDialog.promptSingleValue("Vault Type", vaultTypes, -1,
                 (which) =>
                 {
                     switch (which) {
@@ -280,7 +280,7 @@ export class SalmonDialogs {
     }
     
     static promptOpenLocalVault() {
-        ServiceLocator.getInstance().resolve(IFileDialogService).pickFolder("Select the vault",
+        ServiceLocator.getInstance().resolve(IFileDialogService).openFolder("Select the vault",
             SalmonSettings.getInstance().getVaultLocation(),
             (dir) => {
                 SalmonDialogs.promptPassword(async (password) => {
@@ -292,7 +292,7 @@ export class SalmonDialogs {
     }
     
     static promptOpenHttpVault() {
-        SalmonDialog.promptCredentialsEdit("Open HTTP Vault",
+        JDialog.promptCredentialsEdit("Open HTTP Vault",
                 "Type in the URL for the HTTP Service",
                 ["URL", "User name", "Password"],
                 ["", "", ""],
@@ -312,13 +312,13 @@ export class SalmonDialogs {
     }
 
     static promptOpenWSVault() {
-        SalmonDialog.promptCredentialsEdit("Open Web Service",
+        JDialog.promptCredentialsEdit("Open Web Service",
                 "Type in the credentials for the Web Service",
                 ["Web Service URL", "User name", "Password"],
                 ["", "", ""],
                 [false, false, true],
                 (texts) => {
-                    SalmonDialog.promptEdit("Open Vault",
+                    JDialog.promptEdit("Open Vault",
                             "Type in the file path for the vault",
                             (path, isChecked) => {
                                 let dir = ServiceLocator.getInstance().resolve(IWSFileService)
@@ -327,7 +327,7 @@ export class SalmonDialogs {
                                 SalmonDialogs.promptPassword((password) => {
                                     SalmonVaultManager.getInstance().openVault(dir, password);
                                 });
-                            }, "/tv3", false, false, false, null);
+                            }, "", false, false, false, null);
                 });
     }
 
@@ -351,7 +351,7 @@ export class SalmonDialogs {
         if(!SalmonDialogs.isDriveLoaded())
             return;
 
-        SalmonDialog.promptEdit("Create Folder",
+        JDialog.promptEdit("Create Folder",
             "Folder Name",
             async (folderName, isChecked) => {
                 SalmonVaultManager.getInstance().createDirectory(folderName);
@@ -361,7 +361,7 @@ export class SalmonDialogs {
     static promptNewFile() {
         if (!SalmonDialogs.isDriveLoaded())
             return;
-        SalmonDialog.promptEdit("Create File",
+        JDialog.promptEdit("Create File",
                 "File Name",
                 (folderName, isChecked) =>
                 {
@@ -378,7 +378,7 @@ export class SalmonDialogs {
         }
 
         try {
-            SalmonDialog.promptEdit("Rename",
+            JDialog.promptEdit("Rename",
                 "New filename",
                 async (newFilename, isChecked) => {
                     if (newFilename == null)
@@ -388,7 +388,7 @@ export class SalmonDialogs {
                     } catch (exception) {
                         console.error(exception);
                         if (!SalmonVaultManager.getInstance().handleException(exception)) {
-                            SalmonDialog.promptDialog("Error", exception);
+                            JDialog.promptDialog("Error", exception);
                         }
                     }
                 }, currentFilename, true, false, false, null);
@@ -399,7 +399,7 @@ export class SalmonDialogs {
 
     static isDriveLoaded() {
         if (SalmonVaultManager.getInstance().getDrive() == null) {
-            SalmonDialog.promptDialog("Error", "No Drive Loaded");
+            JDialog.promptDialog("Error", "No Drive Loaded");
             return false;
         }
         return true;
@@ -413,21 +413,21 @@ export class SalmonDialogs {
      */
     static promptExportFolder(text, requestCode, deleteSource) {
         if (!deleteSource) {
-            promptExport(text, requestCode, deleteSource);
+            SalmonDialogs.promptExport(text, requestCode, deleteSource);
             return;
         }
 
         if (!SalmonDialogs.isDriveLoaded())
             return;
         let itemsString = "item(s)?";
-        for (file of SalmonVaultManager.getInstance().getSelectedFiles()) {
+        for (let file of SalmonVaultManager.getInstance().getSelectedFiles()) {
             if (file.isDirectory()) {
                 itemsString = "item(s) and subfolders?";
                 break;
             }
         }
-        SalmonDialog.promptDialog(
-                "Export", "Export " + (deleteSource ? "and delete " : "") + SalmonVaultManager.getInstance().getSelectedFiles().size() + " " + itemsString,
+        JDialog.promptDialog(
+                "Export", "Export " + (deleteSource ? "and delete " : "") + SalmonVaultManager.getInstance().getSelectedFiles().size + " " + itemsString,
                 "Ok",
                 () => {
                     SalmonDialogs.promptExport(text, requestCode, deleteSource);
@@ -445,7 +445,7 @@ export class SalmonDialogs {
     static promptExport(text, requestCode, deleteSource) {
         if (!SalmonDialogs.isDriveLoaded())
             return;
-        ServiceLocator.getInstance().resolve(IFileDialogService.class).openFolder(text,
+        ServiceLocator.getInstance().resolve(IFileDialogService).openFolder(text,
                 SalmonSettings.getInstance().getLastExportDir(), (obj) =>
                 {
                     try {
@@ -455,7 +455,7 @@ export class SalmonDialogs {
                         SalmonSettings.getInstance().setLastExportDir(folder.getPath());
                         SalmonVaultManager.getInstance().exportSelectedFiles(folder, deleteSource);
                     } catch (e) {
-                        SalmonDialog.promptDialog("Error", "Could not export folder: " + e);
+                        JDialog.promptDialog("Error", "Could not export folder: " + e);
                     }
                 }, requestCode);
     }

@@ -1,10 +1,5 @@
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _AesServiceWorker_instances, _a, _AesServiceWorker_getResponse;
-/*"../../../salmon-core
+var _a;
+/*
 MIT License
 
 Copyright (c) 2021 Max Kas
@@ -27,16 +22,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { ReadableStreamWrapper } from "../../../salmon-core/streams/readable_stream_wrapper.js";
-import { HttpSyncClient } from "../../fs/file/http_sync_client.js";
+import { ReadableStreamWrapper } from "../../../simple-io/streams/readable_stream_wrapper.js";
+import { HttpSyncClient } from "../../../simple-fs/fs/file/http_sync_client.js";
 import { AesFile } from "../file/aes_file.js";
 import { AesFileReadableStream } from "../streams/aes_file_readable_stream.js";
-import { FileUtils } from "../../fs/drive/utils/file_utils.js";
+import { FileUtils } from "../../../simple-fs/fs/drive/utils/file_utils.js";
 export class AesServiceWorker {
-    constructor() {
-        _AesServiceWorker_instances.add(this);
-        this.requests = {};
-    }
+    static BUFFERS = 4;
+    static BUFFER_SIZE = 4 * 1024 * 1024;
+    // Web workers are not available inside a service worker see: https://github.com/whatwg/html/issues/411
+    static THREADS = 1;
+    static BACK_OFFSET = 256 * 1024;
+    requests = {};
     getPosition(headers) {
         let position = 0;
         if (headers.has('range')) {
@@ -45,6 +42,44 @@ export class AesServiceWorker {
                 position = parseInt(range.split("=")[1].split("-")[0]);
         }
         return position;
+    }
+    async #getResponse(request) {
+        let position = this.getPosition(request.headers);
+        let params = this.requests[request.url];
+        if (params.allowClearTextTraffic)
+            HttpSyncClient.setAllowClearTextTraffic(true);
+        let file = await FileUtils.getInstance(params.fileClass, params.fileHandle, params.servicePath, params.serviceUser, params.servicePassword);
+        let aesFile = new AesFile(file);
+        aesFile.setEncryptionKey(params.key);
+        await aesFile.setVerifyIntegrity(params.integrity, params.hash_key);
+        let stream;
+        if (params.useFileReadableStream) {
+            stream = AesFileReadableStream.createFileReadableStream(aesFile, _a.BUFFERS, _a.BUFFER_SIZE, _a.THREADS, _a.BACK_OFFSET);
+            stream.setWorkerPath(params.workerPath);
+            await stream.setPositionStart(position);
+            stream.reset();
+            await stream.skip(0);
+        }
+        else {
+            let encStream = await aesFile.getInputStream();
+            stream = ReadableStreamWrapper.createReadableStream(encStream);
+            await stream.reset();
+            await stream.skip(position);
+        }
+        let streamSize = await aesFile.getLength() - position;
+        let headers = new Headers();
+        let contentLength = await aesFile.getLength();
+        headers.append("Content-Length", (streamSize) + "");
+        // if position is position or zero we always set the byte range and set the response status to 206
+        // to force html elements to stream the contents. 
+        let status = position == null ? 200 : 206;
+        if (position >= 0)
+            headers.append("Content-Range", "bytes " + position + "-" + (position + streamSize - 1) + "/" + contentLength);
+        headers.append("Content-Type", params.mimeType);
+        return new Response(stream, {
+            headers: headers,
+            status: status
+        });
     }
     registerRequest(path, params) {
         this.requests[path] = params;
@@ -67,53 +102,11 @@ export class AesServiceWorker {
         let url = event.request.url;
         if (url in this.requests) {
             return event.respondWith(new Promise(async (resolve, reject) => {
-                let response = await __classPrivateFieldGet(this, _AesServiceWorker_instances, "m", _AesServiceWorker_getResponse).call(this, event.request);
+                let response = await this.#getResponse(event.request);
                 resolve(response);
             }));
         }
         return event.response;
     }
 }
-_a = AesServiceWorker, _AesServiceWorker_instances = new WeakSet(), _AesServiceWorker_getResponse = async function _AesServiceWorker_getResponse(request) {
-    let position = this.getPosition(request.headers);
-    let params = this.requests[request.url];
-    if (params.allowClearTextTraffic)
-        HttpSyncClient.setAllowClearTextTraffic(true);
-    let file = await FileUtils.getInstance(params.fileClass, params.fileHandle, params.servicePath, params.serviceUser, params.servicePassword);
-    let aesFile = new AesFile(file);
-    aesFile.setEncryptionKey(params.key);
-    await aesFile.setVerifyIntegrity(params.integrity, params.hash_key);
-    let stream;
-    if (params.useFileReadableStream) {
-        stream = AesFileReadableStream.createFileReadableStream(aesFile, _a.BUFFERS, _a.BUFFER_SIZE, _a.THREADS, _a.BACK_OFFSET);
-        stream.setWorkerPath(params.workerPath);
-        await stream.setPositionStart(position);
-        stream.reset();
-        await stream.skip(0);
-    }
-    else {
-        let encStream = await aesFile.getInputStream();
-        stream = ReadableStreamWrapper.createReadableStream(encStream);
-        await stream.reset();
-        await stream.skip(position);
-    }
-    let streamSize = await aesFile.getLength() - position;
-    let headers = new Headers();
-    let contentLength = await aesFile.getLength();
-    headers.append("Content-Length", (streamSize) + "");
-    // if position is position or zero we always set the byte range and set the response status to 206
-    // to force html elements to stream the contents. 
-    let status = position == null ? 200 : 206;
-    if (position >= 0)
-        headers.append("Content-Range", "bytes " + position + "-" + (position + streamSize - 1) + "/" + contentLength);
-    headers.append("Content-Type", params.mimeType);
-    return new Response(stream, {
-        headers: headers,
-        status: status
-    });
-};
-AesServiceWorker.BUFFERS = 4;
-AesServiceWorker.BUFFER_SIZE = 4 * 1024 * 1024;
-// Web workers are not available inside a service worker see: https://github.com/whatwg/html/issues/411
-AesServiceWorker.THREADS = 1;
-AesServiceWorker.BACK_OFFSET = 256 * 1024;
+_a = AesServiceWorker;

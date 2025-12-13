@@ -21,20 +21,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { HttpSyncClient } from "../../fs/file/http_sync_client.js";
+import { Platform, PlatformType } from "../../../simple-io/platform/platform.js";
+import { HttpSyncClient } from "../../../simple-fs/fs/file/http_sync_client.js";
 import { AesFile } from "../file/aes_file.js";
-import { fillBufferPart } from "../../../salmon-core/streams/readable_stream_wrapper.js";
-import { Buffer } from "../../../salmon-core/streams/buffer.js";
-import { FileUtils } from "../../fs/drive/utils/file_utils.js";
+import { fillBufferPart } from "../../../simple-io/streams/readable_stream_wrapper.js";
+import { Buffer } from "../../../simple-io/streams/buffer.js";
+import { FileUtils } from "../../../simple-fs/fs/drive/utils/file_utils.js";
 let stream = null;
 let cacheBuffer = null;
 let stopped = [false];
 async function receive(event) {
-    if (event.message = 'start')
-        await startRead(event);
-    else if (event.message = 'stop')
+    let params = Platform.getPlatform() == PlatformType.NodeJs ?
+        event : event.data;
+    if (params.message == 'start')
+        await startRead(params);
+    else if (params.message == 'stop')
         stopRead();
-    else if (event.message = 'close')
+    else if (params.message == 'close')
         await close();
 }
 function stopRead() {
@@ -46,9 +49,8 @@ async function close() {
     if (cacheBuffer)
         cacheBuffer.clear();
 }
-async function startRead(event) {
+async function startRead(params) {
     try {
-        let params = typeof process === 'object' ? event : event.data;
         if (params.allowClearTextTraffic)
             HttpSyncClient.setAllowClearTextTraffic(true);
         let chunkBytesRead = 0;
@@ -70,7 +72,7 @@ async function startRead(event) {
             cacheBuffer: cacheBuffer.getData(),
             start: params.start
         };
-        if (typeof process === 'object') {
+        if (Platform.getPlatform() == PlatformType.NodeJs) {
             const { parentPort } = await import("worker_threads");
             if (parentPort) {
                 parentPort.postMessage(msgComplete);
@@ -84,7 +86,7 @@ async function startRead(event) {
         let type = ex.getCause != undefined ? ex.getCause().constructor.name : ex.constructor.name;
         let exMsg = ex.getCause != undefined ? ex.getCause() : ex;
         let msgError = { message: 'error', error: exMsg, type: type };
-        if (typeof process === 'object') {
+        if (Platform.getPlatform() == PlatformType.NodeJs) {
             const { parentPort } = await import("worker_threads");
             if (parentPort) {
                 parentPort.postMessage(msgError);
@@ -94,7 +96,7 @@ async function startRead(event) {
             postMessage(msgError);
     }
 }
-if (typeof process === 'object') {
+if (Platform.getPlatform() == PlatformType.NodeJs) {
     const { parentPort } = await import("worker_threads");
     if (parentPort)
         parentPort.addListener('message', receive);

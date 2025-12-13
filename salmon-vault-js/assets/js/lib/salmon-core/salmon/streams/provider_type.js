@@ -26,7 +26,8 @@ SOFTWARE.
  *
  * @see #Default
  * @see #AesIntrinsics
- * @see #TinyAES
+ * @see #Aes
+ * @see #AesGPU
  */
 export var ProviderType;
 (function (ProviderType) {
