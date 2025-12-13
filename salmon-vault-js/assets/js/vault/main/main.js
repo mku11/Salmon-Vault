@@ -60,12 +60,14 @@ addEventListener("load", async (e) => {
 
     console.log("Starting Salmon Vault");
     HttpSyncClient.setAllowClearTextTraffic(false); // enable only for demo and testing purposes
-    WebGPU.enable(false); // enable only for demo and testing purposes
+    WebGPU.enable(true); // enable only for demo and testing purposes
     JWindow.setDefaultIconPath(SalmonConfig.APP_ICON);
     MainController.openMainWindow(window);
 	
+	
 	setTimeout(async ()=> {
 		// initialize demo
+		JDialog.promptDialog("Salmon Vault", "This version is enabled to optionally use the WebGPU for demonstration purposes, check the settings. Using WebGPU for encryption might NOT be secure so do NOT use this demo for PRODUCTION. See Salmon-Vault releases for downloads");
 		let urlRemote = "https://mku11.github.io/Salmon-Vault/vault";
 		let url = urlRemote;
 		let dir = ServiceLocator.getInstance().resolve(IHttpFileService).getFile(url);
