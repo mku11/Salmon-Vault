@@ -318,7 +318,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: salmon-vault-dotnet-android
-        path: |
-          output\dotnet-android\project\Salmon.Vault.Net.Android\bin\Release\net9.0-android36\*.apk
-          !output\dotnet-android\project\Salmon.Vault.Net.Android\bin\Release\net9.0-android36\*-Signed.apk
+        path: output\dotnet-android\project\Salmon.Vault.Net.Android\bin\Release\net9.0-android36\*.apk
 
