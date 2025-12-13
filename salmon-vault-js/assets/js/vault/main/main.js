@@ -30,6 +30,9 @@ import { setDebugConsole } from "../../common/utils/debug_utils.js";
 import { Handler } from "../../lib/salmon-fs/service/handler.js";
 import { JDialog } from "../../lib/jwin/assets/js/jdialog.js";
 import { WebGPU } from "../../lib/salmon-core/salmon/bridge/webgpu.js";
+import { ServiceLocator } from "../../common/services/service_locator.js";
+import { IHttpFileService } from "../../common/services/ihttp_file_service.js";
+import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
 
 addEventListener("load", async (e) => {
     const DEBUG = false;
@@ -60,5 +63,14 @@ addEventListener("load", async (e) => {
     WebGPU.enable(false); // enable only for demo and testing purposes
     JWindow.setDefaultIconPath(SalmonConfig.APP_ICON);
     MainController.openMainWindow(window);
+	
+	setTimeout(async ()=> {
+		// initialize demo
+		let urlRemote = "https://mku11.github.io/Salmon-Vault/vault";
+		let url = urlRemote;
+		let dir = ServiceLocator.getInstance().resolve(IHttpFileService).getFile(url);
+		let password = "test";
+		await SalmonVaultManager.getInstance().openVault(dir, password);
+	}, 3000);
 });
 
