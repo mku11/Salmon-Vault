@@ -148,9 +148,9 @@ jobs:
       with:
         ref: ${{ github.ref }}
     - if: runner.os == 'Windows'
-      name: Get submodules on Windows
+      name: Setup on Windows
       shell: cmd
-      run: cd ./scripts/misc && init_gitmodules.bat
+      run: setup.bat
     
     # Toolchains and Build envs
     - if: runner.os == 'Windows'
