@@ -71,6 +71,6 @@ addEventListener("load", async (e) => {
 		let dir = ServiceLocator.getInstance().resolve(IHttpFileService).getFile(url);
 		let password = "test";
 		await SalmonVaultManager.getInstance().openVault(dir, password);
-	}, 3000);
+	}, 2000);
 });
 
