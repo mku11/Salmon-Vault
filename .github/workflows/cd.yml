@@ -128,8 +128,65 @@ jobs:
       with:
         name: salmon-java-macos-aarch64
         path: output/javafx
-        
+      
 
+  android_build_matrix:
+    strategy:
+      matrix:
+        java_version: [11]
+        os: [windows-latest]
+    name: build.android.java${{ matrix.java_version }}. ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read 
+    steps:
+    
+    # Git
+    - name: Checkout sources
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref }}
+    - if: runner.os == 'Windows'
+      name: Setup on Windows
+      shell: cmd
+      run: setup.bat
+    
+    # Toolchains and Build envs
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: ${{ matrix.java_version }}
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v5
+    
+    # Caches
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    # Gradle Build Android App
+    - if: runner.os == 'Windows'
+      name: Build Android App
+      shell: cmd
+      run: cd .\android\project && gradlew.bat assemble -x test -i
+    
+    # Upload Android App
+    - if: runner.os == 'Windows'
+      name: Upload Android App
+      uses: actions/upload-artifact@v4
+      with:
+        name: salmon-android
+        path: |
+          android\project\app\build\outputs\apk\release\*.apk
+        
+        
   # WPF
   wpf_build_matrix:
     strategy:
@@ -189,7 +246,7 @@ jobs:
     - if: runner.os == 'Windows'
       name: Package WPF App
       shell: cmd
-      run: cd .\wpf\project && package.bat
+      run: cd .\wpf\project\Salmon.Vault.WPF && package.bat
     
     # Upload WPF App
     - if: runner.os == 'Windows'
@@ -198,3 +255,68 @@ jobs:
       with:
         name: salmon-java-macos-aarch64
         path: output/wpf
+        
+        
+  # .NET Android
+  dotnet_android_build_matrix:
+    strategy:
+      matrix:
+        dotnet_version: [9.0.x]
+        os: [windows-latest]
+    name: build.dotnet${{ matrix.dotnet_version }}.${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read 
+    steps:
+    
+    # Git
+    - name: Checkout sources
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref }}
+    - if: runner.os == 'Windows'
+      name: Setup on Windows
+      shell: cmd
+      run: setup.bat
+    
+    # Toolchains and Build envs
+    - if: runner.os == 'Windows'
+      name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v2
+    - if: runner.os == 'Windows'
+      name: Setup .NET
+      uses: actions/setup-dotnet@v4
+    - if: runner.os == 'Windows'
+      name: Install Android Workload
+      run: dotnet workload install android
+    - name: Setup Nuget
+      uses: nuget/setup-nuget@v2
+      
+    # Caches
+    - name: Cache Nuget packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.vcxproj*', '**/*.csproj', '**/packages.config') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+      
+    # MSBuild Build
+    - if: runner.os == 'Windows'
+      name: Restore .NET dependencies
+      shell: cmd
+      run: cd .\dotnet-android\project && msbuild -t:restore /property:Configuration=Release
+    - if: runner.os == 'Windows'
+      name: Build .NET Android App on Windows
+      shell: cmd
+      run: cd .\dotnet-android\project && msbuild /property:Configuration=Release
+       
+    # Upload .NET Android App
+    - if: ${{ matrix.os == 'windows-latest' }}
+      name: Upload .NET Nuget Packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: salmon-dotnet
+        path: output\dotnet-android\project\Salmon.Vault.Net.Android\bin\Debug\net9.0-android36\*.apk
+
