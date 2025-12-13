@@ -4,7 +4,7 @@ Encrypt your passwords, text, images, audio, video, pdf, and other files in Salm
 Salmon Vault works on Android, Windows, Linux, MacOS, and most popular browsers (limited features). Powered by [Salmon-AES-CTR](https://github.com/mku11/Salmon-AES-CTR) encryption library.
 
 [![License: MIT](https://img.shields.io/github/license/mku11/Salmon-Vault.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.0.0-blue)](https://mku11.github.io/Salmon-Vault/downloads.html)
+[![Version](https://img.shields.io/badge/version-3.0.1-blue)](https://mku11.github.io/Salmon-Vault/downloads.html)
 [![GitHub Releases](https://img.shields.io/github/downloads/mku11/Salmon-Vault/latest/total?logo=github)](https://github.com/mku11/Salmon-Vault/releases)
 
 
