@@ -30,10 +30,13 @@ println "ARCH: ${System.getProperty("os.arch")}"
 
 if (os.isLinux()) {
     project.ext.set('os', 'linux')
+	project.ext.set('salmonOS', 'linux')
 } else if (os.isWindows()) {
     project.ext.set('os', 'win')
+	project.ext.set('salmonOS', 'win')
 } else if (os.isMacOsX()) {
-    project.ext.set('os', 'macos')
+    project.ext.set('os', 'mac')
+	project.ext.set('salmonOS', 'macos')
 }
 
 if (System.getProperty("os.arch").equals("amd64") || System.getProperty("os.arch").equals("x86_64")) {
@@ -63,7 +66,7 @@ repositories {
         url uri(salmonLibsPath + "salmon-java")
     }
     maven {
-        url uri(salmonLibsPath + "salmon-java-${project.os}-${project.arch}")
+        url uri(salmonLibsPath + "salmon-java-${project.salmonOS}-${project.arch}")
     }
     mavenCentral()
 }
@@ -83,8 +86,8 @@ build.dependsOn unzipNative
 classes.dependsOn unzipNative
 
 // we copy the gcc native libs for aarch64 since we don't have maven packages for that arch
-project.ext.set('salmonNativeLibPath', project.salmonLibsPath + '/salmon-gcc-' + project.os + '-'
-+ project.arch + '/salmon-gcc-' + project.os + '-' + project.arch + '.' + project.salmonLibVersion + '/lib')
+project.ext.set('salmonNativeLibPath', project.salmonLibsPath + '/salmon-gcc-' + project.salmonOS + '-'
++ project.arch + '/salmon-gcc-' + project.salmonOS + '-' + project.arch + '.' + project.salmonLibVersion + '/lib')
 println "salmonNativeLibPath: ${project.salmonNativeLibPath}"
 tasks.register('copyNativeLibs', Sync) {
     from file(project.salmonNativeLibPath)
@@ -102,8 +105,8 @@ dependencies {
     
 	// we don't have a maven package for aarch64 so we use the gcc compiled libraries
 	if(project.arch != 'aarch64') {
-		implementation("com.mku.salmon:salmon-native:${salmonLibVersion}:${project.os}-${project.arch}")
-		nativeImplementation("com.mku.salmon:salmon-native:${salmonLibVersion}:${project.os}-${project.arch}")
+		implementation("com.mku.salmon:salmon-native:${salmonLibVersion}:${project.salmonOS}-${project.arch}")
+		nativeImplementation("com.mku.salmon:salmon-native:${salmonLibVersion}:${project.salmonOS}-${project.arch}")
 	}
 
     implementation 'net.java.dev.jna:jna:5.13.0'
