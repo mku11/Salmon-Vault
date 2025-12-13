@@ -42,6 +42,19 @@ if (System.getProperty("os.arch").equals("amd64") || System.getProperty("os.arch
     project.ext.set('arch', 'aarch64')
 }
 
+sourceSets {
+    main {
+        java {
+            main.java.srcDirs += '../src'
+            main.java.srcDirs += '../../java-common/src'
+            main.java.srcDirs += '../../java-win-common/src'
+        }
+    }
+    main.resources.srcDirs += '../res'
+    main.resources.srcDirs += '../../common/common-res'
+}
+
+// maven local repository, make sure you run setup.bat/setup.sh from the root folder
 project.ext.set('salmonLibsPath', '../../libs/salmon/')
 
 repositories {
@@ -55,22 +68,8 @@ repositories {
     mavenCentral()
 }
 
-// path to download the native libraries
+// unzipping the native library that come from maven native packages
 project.ext.set('nativeLibsDir', "$buildDir/libs/natives")
-
-sourceSets {
-    main {
-        java {
-            main.java.srcDirs += '../src'
-            main.java.srcDirs += '../../java-common/src'
-            main.java.srcDirs += '../../java-win-common/src'
-        }
-    }
-    main.resources.srcDirs += '../res'
-    main.resources.srcDirs += '../../common/common-res'
-}
-
-// unzipping the native library
 configurations {
     nativeImplementation
 }
@@ -83,14 +82,29 @@ task unzipNative(type: Sync) {
 build.dependsOn unzipNative
 classes.dependsOn unzipNative
 
+// we copy the gcc native libs for aarch64 since we don't have maven packages for that arch
+project.ext.set('salmonNativeLibPath', project.salmonLibsPath + '/salmon-gcc-' + project.os + '-'
++ project.arch + '/salmon-gcc-' + project.os + '-' + project.arch + '.' + project.salmonLibVersion + '/lib')
+println "salmonNativeLibPath: ${project.salmonNativeLibPath}"
+tasks.register('copyNativeLibs', Sync) {
+    from file(project.salmonNativeLibPath)
+	into file(project.nativeLibsDir + '/lib')
+}
+build.dependsOn copyNativeLibs
+classes.dependsOn copyNativeLibs
+
 dependencies {
 
     // salmon libs:
     implementation("com.mku.salmon:salmon-core:${salmonLibVersion}")
     implementation("com.mku.salmon:salmon-fs:${salmonLibVersion}")
     implementation("com.mku.salmon:salmon-win:${salmonLibVersion}")
-    implementation("com.mku.salmon:salmon-native:${salmonLibVersion}:${project.os}-${project.arch}")
-    nativeImplementation("com.mku.salmon:salmon-native:${salmonLibVersion}:${project.os}-${project.arch}")
+    
+	// we don't have a maven package for aarch64 so we use the gcc compiled libraries
+	if(project.arch != 'aarch64') {
+		implementation("com.mku.salmon:salmon-native:${salmonLibVersion}:${project.os}-${project.arch}")
+		nativeImplementation("com.mku.salmon:salmon-native:${salmonLibVersion}:${project.os}-${project.arch}")
+	}
 
     implementation 'net.java.dev.jna:jna:5.13.0'
 
@@ -124,7 +138,7 @@ ext {
     libs = "./libs/libs"
 }
 
-task copyDependencies(type: Copy) {
+task copyDependencies(type: Sync) {
     from(configurations.default) {
         exclude("javafx*.jar")
         exclude("salmon*.jar")
@@ -133,7 +147,7 @@ task copyDependencies(type: Copy) {
 }
 build.dependsOn copyDependencies
 
-task copySalmonDependencies(type: Copy) {
+task copySalmonDependencies(type: Sync) {
     from(configurations.default) {
         include("salmon*.jar")
     }
@@ -141,7 +155,7 @@ task copySalmonDependencies(type: Copy) {
 }
 build.dependsOn copySalmonDependencies
 
-task copyJavaFxDependencies(type: Copy) {
+task copyJavaFxDependencies(type: Sync) {
     from(configurations.default) {
         include("javafx*.jar")
     }
