@@ -184,7 +184,7 @@ jobs:
     - if: ${{ matrix.os == 'windows-latest' }}
       name: Rename Android App
       shell: cmd
-      run: cd android\project\app\build\outputs\apk\release && ren app-release-unsigned.apk salmon-vault-android-unsigned.${{ github.ref_name }}.apk
+      run: cd .\android\project\app\build\outputs\apk\release && ren app-release-unsigned.apk salmon-vault-android-unsigned.${{ github.ref_name }}.apk
       
     # Upload Android App
     - if: runner.os == 'Windows'
@@ -192,7 +192,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: salmon-vault-android
-        path: android/project/app/build/outputs/apk/release/*.apk
+        path: ./android/project/app/build/outputs/apk/release/*.apk
         
     # Release
     - if: github.ref_type == 'tag'
@@ -200,7 +200,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         draft: true
-        files: android/project/app/build/outputs/apk/release/salmon-vault-android-unsigned.${{ github.ref_name }}.apk
+        files: ./android/project/app/build/outputs/apk/release/salmon-vault-android-unsigned.${{ github.ref_name }}.apk
         
         
   # WPF
@@ -341,7 +341,7 @@ jobs:
     - if: ${{ matrix.os == 'windows-latest' }}
       name: Rename .NET Android App
       shell: cmd
-      run: cd output\dotnet-android\project\Salmon.Vault.Net.Android\bin\Release\net9.0-android36 && ren com.mku.salmon.vault.net.android.apk salmon-vault-dotnet-android-unsigned.${{ github.ref_name }}.apk
+      run: cd .\dotnet-android\project\Salmon.Vault.Net.Android\bin\Release\net9.0-android36 && ren com.mku.salmon.vault.net.android.apk salmon-vault-dotnet-android-unsigned.${{ github.ref_name }}.apk
       
     # Upload .NET Android App
     - if: ${{ matrix.os == 'windows-latest' }}
@@ -349,7 +349,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: salmon-vault-dotnet-android
-        path: output/dotnet-android/project/Salmon.Vault.Net.Android/bin/Release/net9.0-android36/*.apk
+        path: ./dotnet-android/project/Salmon.Vault.Net.Android/bin/Release/net9.0-android36/*.apk
     
     # Release
     - if: github.ref_type == 'tag'
@@ -357,7 +357,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         draft: true
-        files: output/dotnet-android/project/Salmon.Vault.Net.Android/bin/Release/net9.0-android36/salmon-vault-dotnet-android-unsigned.${{ github.ref_name }}.apk
+        files: ./dotnet-android/project/Salmon.Vault.Net.Android/bin/Release/net9.0-android36/salmon-vault-dotnet-android-unsigned.${{ github.ref_name }}.apk
 
   # JavaScript
   js_build_matrix:
@@ -388,7 +388,7 @@ jobs:
     - if: ${{ matrix.os == 'ubuntu-latest' }}
       name: Rename JavaScript App
       shell: bash
-      run: cd ./output/javascript && mv salmon-vault-js.zip salmon-vault-js.${{ github.ref_name }}.apk
+      run: cd ./output/javascript && mv salmon-vault-js.zip salmon-vault-js.${{ github.ref_name }}.zip
       
     # Upload JavaScript App
     - if: ${{ matrix.os == 'ubuntu-latest' }}
@@ -404,4 +404,4 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         draft: true
-        files: ./output/javascript/salmon-vault-js.${{ github.ref_name }}.apk
+        files: ./output/javascript/salmon-vault-js.${{ github.ref_name }}.zip
