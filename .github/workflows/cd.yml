@@ -133,7 +133,6 @@ jobs:
     - if: github.ref_type == 'tag'
       name: Release
       uses: softprops/action-gh-release@v2
-      if: github.ref_type == 'tag'
       with:
         draft: true
         files: output/javafx/*
@@ -203,7 +202,6 @@ jobs:
     - if: github.ref_type == 'tag'
       name: Release
       uses: softprops/action-gh-release@v2
-      if: github.ref_type == 'tag'
       with:
         draft: true
         files: android/project/app/build/outputs/apk/release/salmon-vault-android-unsinged.${{ github.ref_name }}.apk
@@ -288,7 +286,6 @@ jobs:
     - if: github.ref_type == 'tag'
       name: Release
       uses: softprops/action-gh-release@v2
-      if: github.ref_type == 'tag'
       with:
         draft: true
         files: ./output/wpf/salmon-vault-wpf-win-x86_64.${{ github.ref_name }}.zip
@@ -366,7 +363,6 @@ jobs:
     - if: github.ref_type == 'tag'
       name: Release
       uses: softprops/action-gh-release@v2
-      if: github.ref_type == 'tag'
       with:
         draft: true
         files: output/dotnet-android/project/Salmon.Vault.Net.Android/bin/Release/salmon-vault-dotnet-android-unsigned.${{ github.ref_name }}.apk
