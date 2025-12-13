@@ -67,7 +67,7 @@ addEventListener("load", async (e) => {
 	
 	setTimeout(async ()=> {
 		// initialize demo
-		JDialog.promptDialog("Salmon Vault", "This version is enabled to optionally use the WebGPU for demonstration purposes, check the settings. Using WebGPU for encryption might NOT be secure so do NOT use this demo for PRODUCTION. See Salmon-Vault releases for downloads");
+		JDialog.promptDialog("Salmon Vault", "This version is enabled to optionally use WebGPU features for demonstration purposes, check the application settings. Using WebGPU for encryption might NOT be secure so do NOT use this demo for PRODUCTION. See Salmon-Vault releases for downloads.");
 		let urlRemote = "https://mku11.github.io/Salmon-Vault/vault";
 		let url = urlRemote;
 		let dir = ServiceLocator.getInstance().resolve(IHttpFileService).getFile(url);
