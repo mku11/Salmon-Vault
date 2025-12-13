@@ -41,7 +41,7 @@ Salmon Vault app is offered on several different platforms:
 [**Downloads**](https://github.com/mku11/Salmon-Vault/releases)
 
 ![alt text](https://github.com/mku11/Salmon-Vault/blob/main/screenshots/Screenshot.png)  
-[**Live Web Demo**](https://mku11.github.io/Salmon-Vault/demo.html)    
+[**Live Web Demo**](https://mku11.github.io/Salmon-Vault/salmon-vault-js)    
 Demo Vault contents are licensed under [Content License](https://mku11.github.io/Salmon-Vault/vault/content_license.txt) Copyright by Blender Foundation | www.bigbuckbunny.org  
 
 ---
