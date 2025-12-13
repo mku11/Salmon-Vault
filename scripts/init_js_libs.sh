@@ -18,6 +18,8 @@ SIMPLE_FS_LIB=$SALMON_LIB/$SIMPLE_FS.js.$SIMPLE_FS_VERSION
 SALMON_CORE_LIB=$SALMON_LIB/$SALMON_CORE.js.$SALMON_LIB_VERSION
 SALMON_FS_LIB=$SALMON_LIB/$SALMON_FS.js.$SALMON_LIB_VERSION
 
+mkdir -p ../js/src/assets/js/lib/
+
 cp -rf $SIMPLE_IO_LIB/* ../js/src/assets/js/lib/
 cp -rf $SIMPLE_FS_LIB/* ../js/src/assets/js/lib/
 cp -rf $SALMON_CORE_LIB/* ../js/src/assets/js/lib/
