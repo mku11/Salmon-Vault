@@ -120,13 +120,13 @@ jobs:
       name: Upload JavaFx MacOS x64 Packages
       uses: actions/upload-artifact@v4
       with:
-        name: salmon-java-macos-x86_64
+        name: salmon-vault-javafx-macos-x86_64
         path: output/javafx
     - if: ${{ matrix.os == 'macos-latest' }}
       name: Upload JavaFx MacOS aarch64 Packages
       uses: actions/upload-artifact@v4
       with:
-        name: salmon-java-macos-aarch64
+        name: salmon-vault-javafx-macos-aarch64
         path: output/javafx
       
 
@@ -182,7 +182,7 @@ jobs:
       name: Upload Android App
       uses: actions/upload-artifact@v4
       with:
-        name: salmon-android
+        name: salmon-vault-android
         path: |
           android\project\app\build\outputs\apk\release\*.apk
         
@@ -253,7 +253,7 @@ jobs:
       name: Upload WPF App
       uses: actions/upload-artifact@v4
       with:
-        name: salmon-java-macos-aarch64
+        name: salmon-vault-wpf
         path: output/wpf
         
         
@@ -263,7 +263,7 @@ jobs:
       matrix:
         dotnet_version: [9.0.x]
         os: [windows-latest]
-    name: build.dotnet${{ matrix.dotnet_version }}.${{ matrix.os }}
+    name: build.android.dotnet.${{ matrix.dotnet_version }}.${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read 
@@ -317,6 +317,8 @@ jobs:
       name: Upload .NET Nuget Packages
       uses: actions/upload-artifact@v4
       with:
-        name: salmon-dotnet
-        path: output\dotnet-android\project\Salmon.Vault.Net.Android\bin\Debug\net9.0-android36\*.apk
+        name: salmon-vault-dotnet-android
+        path: |
+          output\dotnet-android\project\Salmon.Vault.Net.Android\bin\Release\net9.0-android36\*.apk
+          !output\dotnet-android\project\Salmon.Vault.Net.Android\bin\Release\net9.0-android36\*-Signed.apk
 
