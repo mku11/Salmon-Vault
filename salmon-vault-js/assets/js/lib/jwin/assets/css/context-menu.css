@@ -1,0 +1,41 @@
+.jcontext-menu {
+  transform: none !important;
+}
+
+.jcontext-menu-container {
+  font-family: Garamond, serif;
+}
+
+.jcontext-menu-container a {
+  font-size: 12pt;
+  color: white;
+  text-align: center;
+  padding: 8pt 8pt;
+  text-decoration: none;
+}
+
+.jcontext-menu-container a:hover {
+  background-color: rgb(113, 111, 126);
+}
+
+.jcontext-menu-content {
+  min-width: 160pt;
+  z-index: 3;
+}
+
+.jcontext-menu-content a {
+  padding: 6pt;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.jcontext-menu {
+  min-width: 200pt;
+}
+
+.jcontext-menu-item-image {
+  width: 20px;
+  height: 20px;
+  padding-right: 6pt;
+}

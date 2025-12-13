@@ -1,0 +1,47 @@
+.jwindow-content {
+    background-color: #2d3343FF;
+    color: white;
+}
+
+.jwindow-close:hover {
+    background: white;
+    background-color: #2d3343AA;
+}
+
+.jdialog-button {
+    background: white;
+    background-color: #2d3343;
+    color: white;
+}
+
+.jdialog-button:hover {
+    background: white;
+    background-color: #485167bb;
+}
+
+.jdialog-input {
+    background: white;
+    background-color: #485167bb;
+    color: white;
+}
+
+.jmenu-container {
+    background-color: white;
+    background-image: linear-gradient(to bottom, #2d3343BB, #3b435b);
+}
+
+.jmenu-container a:hover,
+.jmenu-dropdown:hover .menu-dropbtn,
+.jmenu-dropbtn:focus {
+    background: white;
+    background-color: #2d3343AA;
+}
+
+.jmenu-dropdown-content {
+    border-end-start-radius: 4pt;
+    border-end-end-radius: 4pt;
+}
+
+.jmenu-dropdown-content a {
+    color: white;
+}

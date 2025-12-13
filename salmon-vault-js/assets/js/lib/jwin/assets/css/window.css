@@ -1,0 +1,52 @@
+.jwindow-panel {
+  display: none;
+  position: absolute;
+  overflow: hidden;
+  min-width: 300pt;
+  background-color: #2d3343FF;
+  margin: 2pt;
+  padding: 4pt;
+  border: 2pt solid #888;
+  border-radius: 8pt;
+}
+
+.jwindow-title-bar {
+  background-color: #41485d;
+  padding: 2pt;
+  border-top-left-radius: 4pt;
+  border-top-right-radius: 4pt;
+}
+
+.jwindow-icon {
+  width: 20pt;
+  vertical-align: middle;
+  height: 20pt;
+}
+
+.jwindow-title {
+  padding-left: 4px;
+  display: table-cell;
+}
+
+.jwindow-title-container {
+  vertical-align: middle;
+}
+
+.jwindow-close {
+  vertical-align: middle;
+  display: table-cell;
+  float: right;
+  font-size: 18pt;
+  font-weight: bold;
+  margin-right: 4pt;
+}
+
+.jwindow-close:hover,
+.jwindow-close:focus {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.jwindow-close-disabled {
+  pointer-events: none;
+}
