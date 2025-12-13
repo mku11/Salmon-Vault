@@ -128,3 +128,73 @@ jobs:
       with:
         name: salmon-java-macos-aarch64
         path: output/javafx
+        
+
+  # WPF
+  wpf_build_matrix:
+    strategy:
+      matrix:
+        dotnet_version: [9.0.x]
+        os: [windows-latest]
+    name: build.dotnet${{ matrix.dotnet_version }}.${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read 
+    steps:
+    
+    # Git
+    - name: Checkout sources
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref }}
+    - if: runner.os == 'Windows'
+      name: Get submodules on Windows
+      shell: cmd
+      run: cd ./scripts/misc && init_gitmodules.bat
+    
+    # Toolchains and Build envs
+    - if: runner.os == 'Windows'
+      name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v2
+    - name: Setup Nuget
+      uses: nuget/setup-nuget@v2
+      
+    # Caches
+    - name: Cache Nuget packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.vcxproj*', '**/*.csproj', '**/packages.config') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+            
+    # MSBuild Build
+    - if: runner.os == 'Windows'
+      name: Restore NuGet Packages
+      shell: cmd
+      run: cd .\wpf\project && msbuild -t:restore /property:Configuration=Release
+    - if: runner.os == 'Windows'
+      name: Build WPF App on Windows
+      shell: cmd
+      run: cd .\wpf\project && msbuild /property:Configuration=Release
+    
+    # Publish WPF App
+    - if: runner.os == 'Windows'
+      name: Publish WPF App
+      shell: cmd
+      run: cd .\wpf\project && msbuild /t:publish /p:PublishProfile=Properties\PublishProfiles\FolderProfile.pubxml /p:Configuration=Release
+    
+    # Package WPF App
+    - if: runner.os == 'Windows'
+      name: Package WPF App
+      shell: cmd
+      run: cd .\wpf\project && package.bat
+    
+    # Upload WPF App
+    - if: runner.os == 'Windows'
+      name: Upload WPF App
+      uses: actions/upload-artifact@v4
+      with:
+        name: salmon-java-macos-aarch64
+        path: output/wpf
