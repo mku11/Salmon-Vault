@@ -26,8 +26,6 @@ jobs:
         os: [windows-latest,ubuntu-latest,ubuntu-24.04-arm,macos-15-intel,macos-latest]
     name: build.javafx.${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read 
     steps:
     
     # Git
@@ -144,8 +142,6 @@ jobs:
         os: [windows-latest]
     name: build.android.java${{ matrix.java_version }}. ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read 
     steps:
     
     # Git
@@ -215,8 +211,6 @@ jobs:
         os: [windows-latest]
     name: build.dotnet${{ matrix.dotnet_version }}.${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read 
     steps:
     
     # Git
@@ -298,8 +292,6 @@ jobs:
         os: [windows-latest]
     name: build.android.dotnet.${{ matrix.dotnet_version }}.${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read 
     steps:
     
     # Git
