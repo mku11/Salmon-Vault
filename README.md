@@ -18,7 +18,7 @@ Salmon Vault works on Android, Windows, Linux, MacOS, and most popular browsers 
 * Built-in Media Player for encrypted audio and video.
 * Built-in PDF Viewer (WPF, JavaFx only)
 * Support for remote readonly drives with HTTPS.
-* Support for remote read/write drives with Salmon Web Service.
+* Support for remote read/write drives with WebFS.
 * Support for Salmon Win protected nonce sequencer service (Win 10+ only).
 * File sharing and editing with external apps and easy re-import.
 * Authorized devices that can import new files.
@@ -27,6 +27,7 @@ Salmon Vault works on Android, Windows, Linux, MacOS, and most popular browsers 
 * AES-256 CTR Mode with HMAC-256 integrity (authentication).
 * AES CPU acceleration (Android, Windows, Linux, MacOS)
 * AES GPU acceleration (Windows, Linux, MacOS)
+* AES WebGPU acceleration (experimental, DO NOT use in production!)
 
 ## Platforms
 Salmon Vault app is offered on several different platforms:  
