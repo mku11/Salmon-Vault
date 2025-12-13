@@ -128,7 +128,15 @@ jobs:
       with:
         name: salmon-vault-javafx-macos-aarch64
         path: output/javafx
-      
+        
+    # Release
+    - if: github.ref_type == 'tag'
+      name: Release
+      uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
+      with:
+        draft: true
+        files: output/javafx/*
 
   android_build_matrix:
     strategy:
@@ -177,14 +185,28 @@ jobs:
       shell: cmd
       run: cd .\android\project && gradlew.bat assemble -x test -i
     
+    # Rename Android App
+    - if: ${{ matrix.os == 'windows-latest' }}
+      name: Rename Android App
+      shell: cmd
+      run: cd android\project\app\build\outputs\apk\release && ren app-release-unsigned.apk salmon-vault-android-unsinged.${{ github.ref_name }}.apk
+      
     # Upload Android App
     - if: runner.os == 'Windows'
       name: Upload Android App
       uses: actions/upload-artifact@v4
       with:
         name: salmon-vault-android
-        path: |
-          android\project\app\build\outputs\apk\release\*.apk
+        path: android/project/app/build/outputs/apk/release/*.apk
+        
+    # Release
+    - if: github.ref_type == 'tag'
+      name: Release
+      uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
+      with:
+        draft: true
+        files: android/project/app/build/outputs/apk/release/salmon-vault-android-unsinged.${{ github.ref_name }}.apk
         
         
   # WPF
@@ -248,6 +270,12 @@ jobs:
       shell: cmd
       run: cd .\wpf\project\Salmon.Vault.WPF && package.bat
     
+    # Rename WPF App
+    - if: ${{ matrix.os == 'windows-latest' }}
+      name: Rename WPF App
+      shell: cmd
+      run: cd .\output\wpf && ren salmon-vault-wpf.zip salmon-vault-wpf-win-x86_64.${{ github.ref_name }}.zip
+      
     # Upload WPF App
     - if: runner.os == 'Windows'
       name: Upload WPF App
@@ -255,7 +283,15 @@ jobs:
       with:
         name: salmon-vault-wpf
         path: output/wpf
-        
+     
+    # Release
+    - if: github.ref_type == 'tag'
+      name: Release
+      uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
+      with:
+        draft: true
+        files: ./output/wpf/salmon-vault-wpf-win-x86_64.${{ github.ref_name }}.zip
         
   # .NET Android
   dotnet_android_build_matrix:
@@ -311,12 +347,26 @@ jobs:
       name: Build .NET Android App on Windows
       shell: cmd
       run: cd .\dotnet-android\project && msbuild /property:Configuration=Release
-       
+
+    # Rename .NET Android App
+    - if: ${{ matrix.os == 'windows-latest' }}
+      name: Rename .NET Android App
+      shell: cmd
+      run: cd output\dotnet-android\project\Salmon.Vault.Net.Android\bin\Release && ren com.mku.salmon.vault.net.android.apk salmon-vault-dotnet-android-unsigned.${{ github.ref_name }}.apk
+      
     # Upload .NET Android App
     - if: ${{ matrix.os == 'windows-latest' }}
-      name: Upload .NET Nuget Packages
+      name: Upload .NET Android App
       uses: actions/upload-artifact@v4
       with:
         name: salmon-vault-dotnet-android
-        path: output\dotnet-android\project\Salmon.Vault.Net.Android\bin\Release\net9.0-android36\*.apk
-
+        path: output/dotnet-android/project/Salmon.Vault.Net.Android/bin/Release/*.apk
+    
+    # Release
+    - if: github.ref_type == 'tag'
+      name: Release
+      uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
+      with:
+        draft: true
+        files: output/dotnet-android/project/Salmon.Vault.Net.Android/bin/Release/salmon-vault-dotnet-android-unsigned.${{ github.ref_name }}.apk
