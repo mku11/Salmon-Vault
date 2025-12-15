@@ -9,6 +9,7 @@ version '3.0.1'
 ext {
     junitVersion = '5.9.1'
     salmonLibVersion = '3.0.3'
+    javaFxVersion = '17.0.6'
 }
 
 sourceCompatibility = '11'
@@ -41,8 +42,10 @@ if (os.isLinux()) {
 
 if (System.getProperty("os.arch").equals("amd64") || System.getProperty("os.arch").equals("x86_64")) {
     project.ext.set('arch', 'x86_64')
+	project.ext.set('javaFxSuffix', "${project.os}")
 } else if (System.getProperty("os.arch").equals("aarch64")) {
     project.ext.set('arch', 'aarch64')
+	project.ext.set('javaFxSuffix', "${project.os}-${project.arch}")
 }
 
 sourceSets {
@@ -117,13 +120,13 @@ dependencies {
     implementation 'org.jcodec:jcodec:0.2.5'
     implementation 'org.jcodec:jcodec-javase:0.2.5'
 
-    implementation("org.openjfx:javafx-base:17.0.15:${project.os}")
-    implementation("org.openjfx:javafx-graphics:17.0.15:${project.os}")
-    implementation("org.openjfx:javafx-media:17.0.15:${project.os}")
-    implementation("org.openjfx:javafx-web:17.0.15:${project.os}")
-    implementation("org.openjfx:javafx-fxml:17.0.15:${project.os}")
-    implementation("org.openjfx:javafx-swing:17.0.15:${project.os}")
-    implementation("org.openjfx:javafx-controls:17.0.15:${project.os}")
+    implementation("org.openjfx:javafx-base:${project.javaFxVersion}:${project.javaFxSuffix}")
+    implementation("org.openjfx:javafx-graphics:${project.javaFxVersion}:${project.javaFxSuffix}")
+    implementation("org.openjfx:javafx-media:${project.javaFxVersion}:${project.javaFxSuffix}")
+    implementation("org.openjfx:javafx-web:${project.javaFxVersion}:${project.javaFxSuffix}")
+    implementation("org.openjfx:javafx-fxml:${project.javaFxVersion}:${project.javaFxSuffix}")
+    implementation("org.openjfx:javafx-swing:${project.javaFxVersion}:${project.javaFxSuffix}")
+    implementation("org.openjfx:javafx-controls:${project.javaFxVersion}:${project.javaFxSuffix}")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
