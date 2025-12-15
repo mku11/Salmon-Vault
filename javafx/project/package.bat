@@ -1,7 +1,7 @@
 @echo ON
 set CURRDIR=%CD%
 
-set VERSION=3.0.1
+set VERSION=3.0.2
 
 :: Salmon Vault javascript
 set OUTPUT_ROOT=..\..\output
