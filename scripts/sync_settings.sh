@@ -176,3 +176,22 @@ SUBST="VERSION=$SALMON_VAULT_VERSION"
 DIR=../js/project
 sed -i -e "s/$PATTERN/$SUBST/g" $DIR/package.sh
 
+PATTERN="^set SALMON_LIB_VERSION=[^/]*"
+SUBST="set SALMON_LIB_VERSION=$SALMON_VERSION"
+DIR=../scripts
+sed -i -e "s/$PATTERN/$SUBST/g" $DIR/get_salmon_libs.bat
+
+PATTERN="^SALMON_LIB_VERSION=[^/]*"
+SUBST="SALMON_LIB_VERSION=$SALMON_VERSION"
+DIR=../scripts
+sed -i -e "s/$PATTERN/$SUBST/g" $DIR/get_salmon_libs.sh
+
+PATTERN="^set SALMON_LIB_VERSION=[^/]*"
+SUBST="set SALMON_LIB_VERSION=$SALMON_VERSION"
+DIR=../scripts
+sed -i -e "s/$PATTERN/$SUBST/g" $DIR/init_js_libs.bat
+
+PATTERN="^SALMON_LIB_VERSION=[^/]*"
+SUBST="SALMON_LIB_VERSION=$SALMON_VERSION"
+DIR=../scripts
+sed -i -e "s/$PATTERN/$SUBST/g" $DIR/init_js_libs.sh
