@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
           package="com.mku.salmon.vault.net.android"
-          android:versionCode="302"
-          android:versionName="3.0.2">
+          android:versionCode="303"
+          android:versionName="3.0.3">
 
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36"/>

@@ -4,11 +4,11 @@ plugins {
 }
 
 group 'com.mku.salmon.vault'
-version '3.0.2'
+version '3.0.3'
 
 ext {
     junitVersion = '5.9.1'
-    salmonLibVersion = '3.0.3'
+    salmonLibVersion = '3.0.4'
     javaFxVersion = '17.0.6'
 }
 

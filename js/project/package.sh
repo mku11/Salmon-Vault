@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION=3.0.2
+VERSION=3.0.3
 
 # Salmon Vault javascript
 OUTPUT_ROOT=../../output

@@ -8,8 +8,8 @@
 		<ApplicationIcon>logo_48x48.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>false</ImplicitUsings>
-		<Version>3.0.2</Version>
-		<SalmonVersion>3.0.3</SalmonVersion>
+		<Version>3.0.3</Version>
+		<SalmonVersion>3.0.4</SalmonVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
