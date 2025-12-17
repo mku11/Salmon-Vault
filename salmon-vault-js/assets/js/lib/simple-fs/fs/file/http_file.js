@@ -312,6 +312,7 @@ export class HttpFile {
     }
     #setDefaultHeaders(headers) {
         headers.append("Cache", "no-store");
-        headers.append("Connection", "close");
+        // some servers use compression for all mime types if it's a small file so we retrieve the correct file length
+        headers.append("Accept-Encoding", "identity");
     }
 }
