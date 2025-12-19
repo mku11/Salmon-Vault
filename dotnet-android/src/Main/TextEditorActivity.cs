@@ -198,6 +198,7 @@ public class TextEditorActivity : AppCompatActivity {
     private void Load() {
         Task.Run(()=> {
             try {
+				file.SetVerifyIntegrity(checkIntegrity);
                 String contents = textEditor.GetTextContent(file);
                 String filename = file.Name;
                 WindowUtils.RunOnMainThread(() => {
@@ -212,7 +213,7 @@ public class TextEditorActivity : AppCompatActivity {
 
     private void OnSave() {
         Task.Run(() => {
-        AesFile oldFile = file;
+			AesFile oldFile = file;
             file = textEditor.OnSave(file, editText.Text.ToString());
             int index = SalmonVaultManager.Instance.FileItemList.IndexOf(oldFile);
             if (index >= 0) {
