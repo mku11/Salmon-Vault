@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+using Mku.SalmonFS.File;
 using Salmon.Vault.Model;
 using System.ComponentModel;
 using System.Windows.Media;
