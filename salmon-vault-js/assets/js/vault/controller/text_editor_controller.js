@@ -37,6 +37,7 @@ export class TextEditorController {
     static contentURL = "text-editor.html";
     static searchWidgetUrl = "text-search-widget.html";
     static iconsUrl = "assets/images/common-res/icons";
+	static checkIntegrity = true;
 
     /**
      * The content window
@@ -116,7 +117,9 @@ export class TextEditorController {
         this.item = item;
         let content;
         try {
-            content = await this.getTextContent(this.item.getAesFile());
+			let file = this.item.getAesFile();
+			await file.setVerifyIntegrity(TextEditorController.checkIntegrity);
+            content = await this.getTextContent(file);
             this.contentArea.set(content);
             this.showTaskMessage("File loaded");
             setTimeout(() => {

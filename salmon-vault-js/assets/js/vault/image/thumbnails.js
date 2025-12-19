@@ -29,6 +29,7 @@ import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
  * Utility class that generates thumbnails for encrypted salmon files
  */
 export class Thumbnails {
+	static checkIntegrity = true;
     static TMP_THUMB_DIR = "tmp";
     static TMP_VIDEO_THUMB_MAX_SIZE = 3 * 1024 * 1024;
     static TMP_GIF_THUMB_MAX_SIZE = 1 * 1024 * 1024;
@@ -60,6 +61,7 @@ export class Thumbnails {
      * @returns {Promise<>}
      */
     static async getVideoThumbnail(salmonFile, position = 3) {
+		await salmonFile.setVerifyIntegrity(Thumbnails.checkIntegrity);
         let blob = await Thumbnails.#getVideoTmpBlob(salmonFile);
         let imageUrl = Thumbnails.createObjectURL(blob);
         return new Promise((resolve, reject) => {
@@ -284,6 +286,7 @@ export class Thumbnails {
         let blob = null;
         let ms = null;
         try {
+			await file.setVerifyIntegrity(Thumbnails.checkIntegrity);
             stream = await file.getInputStream();
             ms = new MemoryStream();
             await stream.copyTo(ms);
