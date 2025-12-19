@@ -32,7 +32,7 @@ import { Handler } from "../../lib/salmon-fs/service/handler.js";
 
 export class PdfViewerController {
     static contentURL = "pdf-viewer.html";
-	static checkIntegrity = true;
+	static checkIntegrity = false; // disable integrity because github is reporting wrong content-length for http files
     iframe;
     contentWindow;
     viewer;

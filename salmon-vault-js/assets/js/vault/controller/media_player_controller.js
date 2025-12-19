@@ -44,7 +44,7 @@ export class MediaPlayerController {
     static contentURL = "media-player.html";
     // set the correct worker path when using parallel operations
     static workerPath = './assets/js/lib/salmon-fs/salmonfs/streams/aes_file_readable_stream_worker.js';
-	static checkIntegrity = true;
+	static checkIntegrity = false; // disable integrity because github is reporting wrong content-length for http files
     
     filePath;
     contentWindow;

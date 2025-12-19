@@ -29,7 +29,7 @@ import { MemoryStream } from "../../lib/simple-io/streams/memory_stream.js";
  * Utility class that generates thumbnails for encrypted salmon files
  */
 export class Thumbnails {
-	static checkIntegrity = true;
+	static checkIntegrity = false; // disable integrity because github is reporting wrong content-length for http files
     static TMP_THUMB_DIR = "tmp";
     static TMP_VIDEO_THUMB_MAX_SIZE = 3 * 1024 * 1024;
     static TMP_GIF_THUMB_MAX_SIZE = 1 * 1024 * 1024;

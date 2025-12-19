@@ -37,7 +37,7 @@ export class TextEditorController {
     static contentURL = "text-editor.html";
     static searchWidgetUrl = "text-search-widget.html";
     static iconsUrl = "assets/images/common-res/icons";
-	static checkIntegrity = true;
+	static checkIntegrity = false; // disable integrity because github is reporting wrong content-length for http files
 
     /**
      * The content window

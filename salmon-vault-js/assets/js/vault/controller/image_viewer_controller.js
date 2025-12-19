@@ -33,7 +33,7 @@ import { Handler } from "../../lib/salmon-fs/service/handler.js";
 
 export class ImageViewerController {
     static contentURL = "image-viewer.html";
-	static checkIntegrity = true;
+	static checkIntegrity = false; // disable integrity because github is reporting wrong content-length for http files;
     image;
     contentWindow;
     viewer;
