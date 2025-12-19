@@ -33,7 +33,7 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.22000.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 		<DefaultLanguage>en-US</DefaultLanguage>
-		<SalmonVersion>3.0.5</SalmonVersion>
+		<SalmonVersion>3.0.4</SalmonVersion>
 		<Version>$(ApplicationVersion)</Version>
 	</PropertyGroup>
 

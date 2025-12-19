@@ -2,7 +2,7 @@
 set CURRDIR=%CD%
 
 set DEPS_DIR=..\libs\
-set SALMON_LIB_VERSION=3.0.5
+set SALMON_LIB_VERSION=3.0.4
 :: if you use a snapshot append -SNAPSHOT to this variable
 set SALMON_LIB_BINARY_VERSION=%SALMON_LIB_VERSION%
 
