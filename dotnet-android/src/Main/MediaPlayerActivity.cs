@@ -88,7 +88,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     private bool looping;
     private float speed = 1.0f;
     private int old_x = 0;
-	private static boolean checkIntegrity = true;
+	private static bool checkIntegrity = true;
 
     public static void SetMediaFiles(int position, AesFile[] mediaFiles)
     {

@@ -57,7 +57,7 @@ public class TextEditorActivity : AppCompatActivity {
     private string searchString = "";
 
     private int searchIndex = -1;
-	private static boolean checkIntegrity = true;
+	private static bool checkIntegrity = true;
 
     public static void SetTextFile(AesFile file) {
         TextEditorActivity.file = file;

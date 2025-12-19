@@ -64,7 +64,7 @@ public class ContentViewerViewModel : INotifyPropertyChanged
     {
         item = fileItem;
         AesFile file = item.GetAesFile();
-		file.setVerifyIntegrity(ContentViewerViewModel.checkIntegrity);
+		file.SetVerifyIntegrity(ContentViewerViewModel.checkIntegrity);
         contentViewer.Load(file);
     }
 

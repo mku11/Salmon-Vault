@@ -66,7 +66,7 @@ public class WebViewerActivity : AppCompatActivity
     private TextView mTitle;
     private readonly object swipeObj = new object();
 	
-	private static boolean checkIntegrity = true;
+	private static bool checkIntegrity = true;
 
     public static void SetContentFiles(int position, AesFile[] salmonFiles)
     {
