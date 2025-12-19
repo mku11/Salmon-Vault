@@ -65,11 +65,17 @@ public class WebViewerActivity : AppCompatActivity
     private BufferedInputStream stream;
     private TextView mTitle;
     private readonly object swipeObj = new object();
+	
+	private static boolean checkIntegrity = true;
 
     public static void SetContentFiles(int position, AesFile[] salmonFiles)
     {
         pos = position;
         fileList = salmonFiles;
+    }
+	
+	public static void SetCheckIntegrity(bool checkIntegrity) {
+        WebViewerActivity.checkIntegrity = checkIntegrity;
     }
 
     public void LoadContentAsync()
@@ -113,6 +119,7 @@ public class WebViewerActivity : AppCompatActivity
 
         try
         {
+			file.SetVerifyIntegrity(checkIntegrity);
             AesStream encStream = file.GetInputStream();
 
             // in order for the webview not to crash we suppress Exceptions

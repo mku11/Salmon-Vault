@@ -32,6 +32,7 @@ import { Handler } from "../../lib/salmon-fs/service/handler.js";
 
 export class PdfViewerController {
     static contentURL = "pdf-viewer.html";
+	static checkIntegrity = true;
     iframe;
     contentWindow;
     viewer;
@@ -60,7 +61,9 @@ export class PdfViewerController {
 
     async load(fileViewModel) {
         try {
-            let stream = await fileViewModel.getAesFile().getInputStream();
+			let file = fileViewModel.getAesFile();
+			await file.setVerifyIntegrity(PdfViewerController.checkIntegrity);
+            let stream = await file.getInputStream();
             let ms = new MemoryStream();
             await stream.copyTo(ms);
             await stream.close();

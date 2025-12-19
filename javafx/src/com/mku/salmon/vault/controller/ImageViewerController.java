@@ -29,6 +29,8 @@ import com.mku.salmon.vault.model.SalmonSettings;
 import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
+import com.mku.salmonfs.file.AesFile;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
@@ -46,6 +48,7 @@ import java.io.IOException;
 
 public class ImageViewerController {
     private static final int ENC_BUFFER_SIZE = 128 * 1024;
+	private static boolean checkIntegrity = true;
 
     public ImageView imageView;
     private Stage stage;
@@ -108,11 +111,13 @@ public class ImageViewerController {
         });
     }
 
-    private void load(SalmonFileViewModel file) {
+    private void load(SalmonFileViewModel item) {
         if (viewer == null)
             viewer = new SalmonImageViewer();
         try {
-            viewer.load(file.getAesFile());
+			AesFile file = item.getAesFile();
+			file.setVerifyIntegrity(checkIntegrity);
+            viewer.load(file);
             BufferedInputStream stream = new BufferedInputStream(viewer.getImageStream(), ENC_BUFFER_SIZE);
             Image image = new Image(stream);
             imageView.setPreserveRatio(true);

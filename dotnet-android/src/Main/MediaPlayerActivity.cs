@@ -51,10 +51,10 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
 {
     private static readonly string TAG = nameof(MediaPlayerActivity);
 
-    private static readonly int MEDIA_BUFFERS = 4;
+    private static readonly int MEDIA_BUFFERS = 2;
 
     // make sure we use a large enough buffer for the MediaDataSource since some videos stall
-    private static readonly int MEDIA_BUFFER_SIZE = 32 * 1024 * 1024;
+    private static readonly int MEDIA_BUFFER_SIZE = 8 * 1024 * 1024;
 
     private static readonly int MEDIA_BACKOFFSET = 256 * 1024;
 
@@ -88,6 +88,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
     private bool looping;
     private float speed = 1.0f;
     private int old_x = 0;
+	private static boolean checkIntegrity = true;
 
     public static void SetMediaFiles(int position, AesFile[] mediaFiles)
     {
@@ -95,6 +96,10 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         videos = mediaFiles;
     }
 
+    public static void SetCheckIntegrity(bool checkIntegrity) {
+        MediaPlayerActivity.checkIntegrity = checkIntegrity;
+    }
+	
     protected void SetMediaThreads(int threads)
     {
         mediaThreads = threads;
@@ -213,6 +218,7 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
         {
             try
             {
+				file.SetVerifyIntegrity(checkIntegrity);
                 source = new AesMediaDataSource(file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, mediaThreads, MEDIA_BACKOFFSET);
 				source.OnError = (String message) => 
 				{

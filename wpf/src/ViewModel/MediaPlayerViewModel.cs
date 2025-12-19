@@ -42,10 +42,11 @@ namespace Salmon.Vault.ViewModel;
 
 public class MediaPlayerViewModel : INotifyPropertyChanged
 {
-    private static readonly int MEDIA_BUFFERS = 4;
-    private static readonly int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    private static readonly int MEDIA_BUFFERS = 2;
+    private static readonly int MEDIA_BUFFER_SIZE = 8 * 1024 * 1024;
     private static readonly int MEDIA_THREADS = 4;
     private static readonly int MEDIA_BACK_OFFSET = 256 * 1024;
+	private static bool checkIntegrity = true;
 
     private SalmonFileViewModel item;
 
@@ -261,6 +262,7 @@ public class MediaPlayerViewModel : INotifyPropertyChanged
             Console.Error.WriteLine(e);
         }
 
+		file.SetVerifyIntegrity(MediaPlayerViewModel.checkIntegrity);
         stream = new AesFileInputStream(file, MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, MEDIA_THREADS, MEDIA_BACK_OFFSET);
         OpenMedia(stream, MEDIA_BUFFER_SIZE);
         StartTimer();

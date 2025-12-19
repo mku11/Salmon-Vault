@@ -35,15 +35,16 @@ import { URLUtils } from "../../vault/utils/url_utils.js";
 
 export class MediaPlayerController {
     static MIN_FILE_STREAMING = 1 * 1024 * 1024;
-    static MEDIA_BUFFERS = 4;
+    static MEDIA_BUFFERS = 2;
     // make sure we use a large enough buffer for the MediaDataSource since some videos stall
-    static MEDIA_BUFFER_SIZE = 32 * 1024 * 1024;
+    static MEDIA_BUFFER_SIZE = 8 * 1024 * 1024;
     static MEDIA_BACKOFFSET = 256 * 1024;
     // increase the threads if you have more cpus available for parallel processing
     static mediaThreads = 1;
     static contentURL = "media-player.html";
     // set the correct worker path when using parallel operations
     static workerPath = './assets/js/lib/salmon-fs/salmonfs/streams/aes_file_readable_stream_worker.js';
+	static checkIntegrity = true;
     
     filePath;
     contentWindow;
@@ -76,6 +77,7 @@ export class MediaPlayerController {
     async load(fileItem) {
         let file = fileItem.getAesFile();
         try {
+			await file.setVerifyIntegrity(MediaPlayerController.checkIntegrity);
             this.filePath = file.getRealPath();
             this.url = null;
             let size = await file.getLength();

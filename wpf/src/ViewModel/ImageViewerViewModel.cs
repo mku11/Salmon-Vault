@@ -31,6 +31,7 @@ namespace Salmon.Vault.ViewModel;
 
 public class ImageViewerViewModel : INotifyPropertyChanged
 {
+	private static bool checkIntegrity = true;
     public event PropertyChangedEventHandler PropertyChanged;
     private SalmonImageViewer viewer;
 
@@ -51,9 +52,11 @@ public class ImageViewerViewModel : INotifyPropertyChanged
         viewer = new SalmonImageViewer();
     }
 
-    public void Load(SalmonFileViewModel file)
+    public void Load(SalmonFileViewModel item)
     {
-        viewer.Load(file.GetAesFile());
+		AesFile file = item.GetAesFile();
+		file.setVerifyIntegrity(ImageViewerViewModel.checkIntegrity);
+        viewer.Load(file);
         BitmapImage imageSource = new BitmapImage();
         imageSource.BeginInit();
         imageSource.StreamSource = viewer.ImageStream;

@@ -49,18 +49,24 @@ public class Thumbnails
     private static readonly int MEDIA_THREADS = 1;
 	
     private static Random random = new Random(DateTime.Now.Millisecond);
+	private static bool checkIntegrity = true;
 
 	public static Bitmap GetVideoThumbnail(AesFile file, long ms)
 	{
         return getVideoThumbnailRetriever(file, ms);
     }
 
+    public static void SetCheckIntegrity(bool checkIntegrity) {
+        Thumbnails.checkIntegrity = checkIntegrity;
+    }
+	
     public static Bitmap getVideoThumbnailRetriever(AesFile file, long ms)
     {
         MediaMetadataRetriever retriever = null;
         Bitmap bitmap = null;
         try
         {
+			file.SetVerifyIntegrity(Thumbnails.checkIntegrity);
             retriever = new MediaMetadataRetriever();
 			AesMediaDataSource source = new AesMediaDataSource(file,
                     MEDIA_BUFFERS, MEDIA_BUFFER_SIZE, MEDIA_THREADS, MEDIA_BACKOFFSET);
@@ -127,6 +133,7 @@ public class Thumbnails
         Bitmap bitmap = null;
         try
         {
+			salmonFile.SetVerifyIntegrity(Thumbnails.checkIntegrity);
             string ext = FileUtils.GetExtensionFromFileName(salmonFile.Name).ToLower();
             if (ext.Equals("gif") && salmonFile.Length > TMP_GIF_THUMB_MAX_SIZE)
                 stream = new System.IO.BufferedStream(GetTempStream(salmonFile, TMP_GIF_THUMB_MAX_SIZE), BUFFER_SIZE);

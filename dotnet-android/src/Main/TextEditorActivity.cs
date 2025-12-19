@@ -57,11 +57,16 @@ public class TextEditorActivity : AppCompatActivity {
     private string searchString = "";
 
     private int searchIndex = -1;
+	private static boolean checkIntegrity = true;
 
     public static void SetTextFile(AesFile file) {
         TextEditorActivity.file = file;
     }
 
+    public static void SetCheckIntegrity(bool checkIntegrity) {
+        TextEditorActivity.checkIntegrity = checkIntegrity;
+    }
+	
     protected override void OnCreate(Bundle bundle) {
         base.OnCreate(bundle);
         SetupWindow();

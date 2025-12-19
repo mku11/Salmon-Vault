@@ -73,6 +73,7 @@ public class Thumbnails {
     private static final HashMap<AesFile, AesSeekableByteChannel> byteChannels = new HashMap<>();
 
     private static final LinkedBlockingDeque<ThumbnailTask> tasks = new LinkedBlockingDeque<>();
+	private static boolean checkIntegrity = true;
 
     private static class ThumbnailTask {
         AesFile file;
@@ -112,7 +113,7 @@ public class Thumbnails {
         if(cache.containsKey(key)) {
             return cache.get(key);
         }
-
+		salmonFile.setVerifyIntegrity(Thumbnails.checkIntegrity);
         AesSeekableByteChannel byteChannel = byteChannels.getOrDefault(salmonFile, null);
         if (byteChannel == null) {
             byteChannel = new AesSeekableByteChannel(salmonFile);
@@ -330,6 +331,7 @@ public class Thumbnails {
         Image image = null;
         try {
             String ext = FileUtils.getExtensionFromFileName(file.getName()).toLowerCase();
+			file.setVerifyIntegrity(Thumbnails.checkIntegrity);
             if (MimeUtils.isImage(file.getName())) {
                 if (ext.equals("gif") && file.getLength() > TMP_GIF_THUMB_MAX_SIZE)
                     stream = new BufferedInputStream(new InputStreamWrapper(getTempStream(file, TMP_GIF_THUMB_MAX_SIZE)), BUFFER_SIZE);

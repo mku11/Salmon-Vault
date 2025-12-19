@@ -32,6 +32,7 @@ public class ContentViewerViewModel : INotifyPropertyChanged
 {
     private SalmonFileViewModel item;
     private SalmonContentViewer contentViewer;
+	private static bool checkIntegrity = true;
 
     private string _source;
     public string Source
@@ -63,6 +64,7 @@ public class ContentViewerViewModel : INotifyPropertyChanged
     {
         item = fileItem;
         AesFile file = item.GetAesFile();
+		file.setVerifyIntegrity(ContentViewerViewModel.checkIntegrity);
         contentViewer.Load(file);
     }
 

@@ -50,10 +50,10 @@ public class MediaPlayerActivity : AppCompatActivity, ISurfaceHolderCallback
 {
     private static readonly string TAG = nameof(MediaPlayerActivity);
 
-    private static readonly int MEDIA_BUFFERS = 3;
+    private static readonly int MEDIA_BUFFERS = 2;
 
     // make sure we use a large enough buffer for the MediaDataSource since some videos stall
-    private static readonly int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
+    private static readonly int MEDIA_BUFFER_SIZE = 8 * 1024 * 1024;
 
     private static readonly int MEDIA_BACKOFFSET = 256 * 1024;
 

@@ -57,6 +57,7 @@ public class Thumbnails
     private static readonly OrderedDictionary cache = new OrderedDictionary();
     private static int cacheSize;
     private static object _lock = new object();
+	private static bool checkIntegrity = true;
 
     /// <summary>
     /// Returns a bitmap thumbnail from an encrypted file
@@ -309,6 +310,7 @@ public class Thumbnails
         try
         {
             string ext = FileUtils.GetExtensionFromFileName(file.Name).ToLower();
+			file.SetVerifyIntegrity(Thumbnails.checkIntegrity);
             if (ext.Equals("gif") && file.RealFile.Length > TMP_GIF_THUMB_MAX_SIZE)
             {
                 stream = GetTempStream(file, TMP_GIF_THUMB_MAX_SIZE);

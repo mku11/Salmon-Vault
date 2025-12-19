@@ -73,7 +73,7 @@ public class WebViewerActivity extends AppCompatActivity {
     private final Object swipeObj = new Object();
 
     private static final ExecutorService executor = Executors.newFixedThreadPool(2);
-    private static boolean checkIntegrity;
+    private static boolean checkIntegrity = true;
 
     public static void setContentFiles(int position, AesFile[] salmonFiles) {
         pos = position;

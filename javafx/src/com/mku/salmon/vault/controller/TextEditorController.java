@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class TextEditorController {
+	private static boolean checkIntegrity = true;
 
     private Stage stage;
     private SalmonFileViewModel item;
@@ -111,6 +112,7 @@ public class TextEditorController {
 
     private String getTextContent(AesFile file) throws Exception {
         AesStream stream = file.getInputStream();
+		file.setVerifyIntegrity(checkIntegrity);
         MemoryStream ms = new MemoryStream();
         stream.copyTo(ms);
         stream.close();

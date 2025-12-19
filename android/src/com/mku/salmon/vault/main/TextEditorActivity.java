@@ -64,11 +64,16 @@ public class TextEditorActivity extends AppCompatActivity {
     private String searchString = "";
 
     private int searchIndex = -1;
+	private static boolean checkIntegrity = true;
 
     public static void setTextFile(AesFile file) {
         TextEditorActivity.file = file;
     }
 
+    public static void setCheckIntegrity(boolean checkIntegrity) {
+        TextEditorActivity.checkIntegrity = checkIntegrity;
+    }
+	
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
@@ -203,6 +208,7 @@ public class TextEditorActivity extends AppCompatActivity {
     private void load() {
         executor.execute(() -> {
             try {
+				file.setVerifyIntegrity(checkIntegrity);
                 String contents = textEditor.getTextContent(file);
                 String filename = file.getName();
                 WindowUtils.runOnMainThread(() -> {

@@ -61,7 +61,7 @@ public class Thumbnails {
     private static final int THRESHOLD_SEEK = 30;
 
     private static Random random = new Random(System.currentTimeMillis());
-    private static boolean checkIntegrity;
+    private static boolean checkIntegrity = true;
 
     /**
      * Returns a bitmap thumbnail from an encrypted file

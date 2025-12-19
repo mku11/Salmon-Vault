@@ -59,6 +59,7 @@ public class ContentViewerController {
     private WebEngine webEngine;
     private AesStreamHandler handler;
     private String url;
+	private static boolean checkIntegrity = true;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -107,8 +108,9 @@ public class ContentViewerController {
     private void load(SalmonFileViewModel item) {
         AesFile file = item.getAesFile();
         try {
+			file.setVerifyIntegrity(checkIntegrity);
             webEngine = webView.getEngine();
-            Path path = new File(item.getAesFile().getName()).toPath();
+            Path path = new File(file.getName()).toPath();
             String mimeType = Files.probeContentType(path);
             if (handler == null) {
                 handler = AesStreamHandler.getInstance();

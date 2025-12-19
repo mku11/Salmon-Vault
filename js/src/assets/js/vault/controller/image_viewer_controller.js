@@ -33,6 +33,7 @@ import { Handler } from "../../lib/salmon-fs/service/handler.js";
 
 export class ImageViewerController {
     static contentURL = "image-viewer.html";
+	static checkIntegrity = true;
     image;
     contentWindow;
     viewer;
@@ -61,8 +62,10 @@ export class ImageViewerController {
         if (this.viewer == null)
             this.viewer = new SalmonImageViewer();
         try {
-            this.viewer.load(fileViewModel.getAesFile());
-            let stream = await fileViewModel.getAesFile().getInputStream();
+			let file = fileViewModel.getAesFile();
+			await file.setVerifyIntegrity(ImageViewerController.checkIntegrity);
+            this.viewer.load(file);
+            let stream = await file.getInputStream();
             let ms = new MemoryStream();
             await stream.copyTo(ms);
             await stream.close();

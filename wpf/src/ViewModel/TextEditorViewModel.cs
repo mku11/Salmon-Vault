@@ -45,6 +45,7 @@ public class TextEditorViewModel : INotifyPropertyChanged
     public PromptSearchDialog PromptSearch;
 
     private int currentCaretPosition = 0;
+	private static bool checkIntegrity = true;
 		
     private string _contentArea;
     public string ContentArea
@@ -180,7 +181,9 @@ public class TextEditorViewModel : INotifyPropertyChanged
         item = fileItem;
         try
         {
-            string content = editor.GetTextContent(fileItem.GetAesFile());
+			AesFile file = fileItem.GetAesFile();
+			file.SetVerifyIntegrity(TextEditorViewModel.checkIntegrity);
+            string content = editor.GetTextContent(file);
             ContentArea = content;
             ShowTaskMessage("File loaded");
             WindowUtils.RunOnMainThread(() =>

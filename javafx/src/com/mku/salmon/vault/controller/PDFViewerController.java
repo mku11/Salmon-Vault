@@ -27,6 +27,8 @@ import com.mku.salmon.vault.dialog.SalmonDialog;
 import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
+import com.mku.salmonfs.file.AesFile;
+
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
@@ -39,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class PDFViewerController {
+	private static boolean checkIntegrity = true;
 
     public static void openPDFViewer(SalmonFileViewModel file, Stage owner) throws IOException {
         SwingController swingController = new SwingController();
@@ -59,10 +62,12 @@ public class PDFViewerController {
         });
     }
 
-    private static void load(SwingController swingController, SalmonFileViewModel file) {
+    private static void load(SwingController swingController, SalmonFileViewModel item) {
         try {
-            InputStream stream = file.getAesFile().getInputStream().asReadStream();
-            swingController.openDocument(stream, "Encrypted", file.getAesFile().getName());
+			AesFile file = item.getAesFile();
+			file.setVerifyIntegrity(checkIntegrity);
+            InputStream stream = file.getInputStream().asReadStream();
+            swingController.openDocument(stream, "Encrypted", file.getName());
         } catch (Exception e) {
             e.printStackTrace();
             new SalmonDialog(Alert.AlertType.ERROR, "Could not load PDF: " + e.getMessage()).show();
