@@ -56,7 +56,7 @@ public class ImageViewerViewModel : INotifyPropertyChanged
     public void Load(SalmonFileViewModel item)
     {
 		AesFile file = item.GetAesFile();
-		file.setVerifyIntegrity(ImageViewerViewModel.checkIntegrity);
+		file.SetVerifyIntegrity(ImageViewerViewModel.checkIntegrity);
         viewer.Load(file);
         BitmapImage imageSource = new BitmapImage();
         imageSource.BeginInit();
