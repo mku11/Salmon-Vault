@@ -5,8 +5,8 @@
 		<OutputType>Exe</OutputType>
 		<ImplicitUsings>false</ImplicitUsings>
 		<ApplicationId>com.mku.salmon.vault.net.android</ApplicationId>
-		<ApplicationVersion>303</ApplicationVersion>
-		<ApplicationDisplayVersion>3.0.3</ApplicationDisplayVersion>
+		<ApplicationVersion>304</ApplicationVersion>
+		<ApplicationDisplayVersion>3.0.4</ApplicationDisplayVersion>
 		<!-- WORKAROUND: ListeneableFuture see: https://github.com/dotnet/maui/issues/6022
     and: https://github.com/xamarin/AndroidX/issues/535 -->
 		<XamarinGoogleGuavaListenableFutureOptOut>true</XamarinGoogleGuavaListenableFutureOptOut>
