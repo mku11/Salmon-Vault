@@ -77,6 +77,16 @@ public class SalmonVaultManager implements IPropertyNotifier {
     private boolean promptExitOnBack;
     private AesDrive drive;
 
+    public boolean isEnableIntegrity() {
+        return enableIntegrity;
+    }
+
+    public void setEnableIntegrity(boolean enableIntegrity) {
+        this.enableIntegrity = enableIntegrity;
+    }
+
+    private boolean enableIntegrity = true;
+
     public AesDrive getDrive() {
         return this.drive;
     }
@@ -844,7 +854,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
             try {
                 FileCommander.BatchExportOptions exportOptions = new FileCommander.BatchExportOptions();
                 exportOptions.deleteSource = deleteSource;
-                exportOptions.integrity = true;
+                exportOptions.integrity = enableIntegrity;
                 exportOptions.autoRename = IFile.autoRename;
                 exportOptions.onProgressChanged = (taskProgress) ->
                 {
@@ -936,7 +946,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
                 if (autorename)
                     importOptions.autoRename = IFile.autoRename;
                 importOptions.deleteSource = deleteSource;
-                importOptions.integrity = true;
+                importOptions.integrity = enableIntegrity;
                 importOptions.onProgressChanged = (taskProgress) ->
                 {
                     try {
