@@ -81,8 +81,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
     private static final int MEDIA_BUFFER_SIZE = 4 * 1024 * 1024;
     private static final int MEDIA_BACKOFFSET = 256 * 1024;
     private static final int MEDIA_THREADS = 1;
-
-    private final boolean displayItems = true;
+    private boolean displayItems = true;
     private final List<AesFile> items;
     private final LayoutInflater inflater;
     private final Function<Integer, Boolean> itemClicked;
@@ -153,6 +152,10 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
         propertyChanged(this, "SelectedFiles");
     }
 
+    public void setDisplayItems(boolean value) {
+        this.displayItems = value;
+    }
+
     public void stop() {
         tasks.clear();
         unobservePropertyChanges();
@@ -208,7 +211,7 @@ public class FileAdapter extends RecyclerView.Adapter implements IPropertyNotifi
             });
             if (viewHolder.salmonFile.isDirectory() && displayItems)
                 items = viewHolder.salmonFile.getChildrenCount() + " " + activity.getString(R.string.Items);
-            else
+            else if(viewHolder.salmonFile.isFile())
                 size = viewHolder.salmonFile.getRealFile().getLength();
             date = viewHolder.salmonFile.getLastDateModified();
 
