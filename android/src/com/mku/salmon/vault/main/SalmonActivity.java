@@ -49,6 +49,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.mku.android.fs.file.AndroidFile;
 import com.mku.android.fs.file.AndroidFileSystem;
+import com.mku.android.salmonfs.drive.AndroidDrive;
 import com.mku.fs.drive.utils.FileUtils;
 import com.mku.fs.file.HttpSyncClient;
 import com.mku.fs.file.IFile;
@@ -220,6 +221,9 @@ public class SalmonActivity extends AppCompatActivity {
                 updateFileAdapter();
                 adapter.selectAll(false);
                 adapter.setMultiSelect(false);
+                // if it is a remote drive we disable the item count to reduce network calls
+                if(!(manager.getDrive() instanceof AndroidDrive))
+                    adapter.setDisplayItems(false);
             } else if (propertyName.equals("CurrentItem")) {
                 selectItem(manager.getCurrentItem());
             } else if (propertyName.equals("SelectedFiles")) {

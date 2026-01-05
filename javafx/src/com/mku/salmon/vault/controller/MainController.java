@@ -237,6 +237,9 @@ public class MainController {
         if (propertyName.equals("FileItemList")) {
             updateFileViewModels();
             Thumbnails.enableAnimation(true);
+            // if it is a remote drive we disable the item count to reduce network calls
+            if(!(manager.getDrive() instanceof AndroidDrive))
+                adapter.setDisplayItems(false);
             sortTable();
         } else if (propertyName.equals("CurrentItem")) {
             selectItem(manager.getCurrentItem());
