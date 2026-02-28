@@ -138,7 +138,7 @@ public class SalmonVaultManager implements IPropertyNotifier {
         SalmonVaultManager.threads = threads;
     }
 
-    private List<AesFile> fileItemList;
+    private List<AesFile> fileItemList = new ArrayList<>();
 
     public List<AesFile> getFileItemList() {
         return fileItemList;
