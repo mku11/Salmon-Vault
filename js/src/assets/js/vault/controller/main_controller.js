@@ -47,6 +47,7 @@ import { IMediaPlayerService } from "../../common/services/imedia_player_service
 import { JsMediaPlayerService } from "../services/js_media_player_service.js";
 import { SalmonDialogs } from "../../common/dialog/salmon_dialogs.js";
 import { SalmonVaultManager } from "../../common/model/salmon_vault_manager.js";
+import { Drive } from "../../lib/salmon-fs/salmonfs/drive/drive.js";
 import { SalmonFileViewModel } from "../viewmodel/salmon_file_view_model.js";
 import { FileUtils } from "../../lib/simple-fs/fs/drive/utils/file_utils.js";
 import { ImageViewerController } from "./image_viewer_controller.js";
@@ -235,6 +236,10 @@ export class MainController {
 
     managerPropertyChanged(owner, propertyName, self) {
         if (propertyName == "FileItemList") {
+			if(!(self.manager.getDrive() instanceof Drive))
+				SalmonFileViewModel.setDisplayItems(false);
+			else
+				SalmonFileViewModel.setDisplayItems(true);
             self.updateFileViewModels();
         } else if (propertyName == "CurrentItem") {
             setTimeout(() =>self.selectItem(self.manager.getCurrentItem()));

@@ -31,11 +31,12 @@ export class SalmonFileViewModel extends PropertyNotifier {
     static #IMAGE_SIZE = 128;
     static THUMBNAIL_MAX_STEPS = 10;
     static VIDEO_THUMBNAIL_MSECS = 3000;
+    static animationViewModel = null;
+	static displayItems = true;
 
     animate = false;
-    static animationViewModel = null;
-
     salmonFile;
+	
     observers = {};
     getObservers() {
         return this.observers;
@@ -46,7 +47,7 @@ export class SalmonFileViewModel extends PropertyNotifier {
         this.salmonFile = salmonFile;
     }
 	
-    static setDisplayItems(boolean value) {
+    static setDisplayItems(value) {
         SalmonFileViewModel.displayItems = value;
     }
 
