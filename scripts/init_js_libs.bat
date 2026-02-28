@@ -4,7 +4,7 @@ set CURRDIR=%CD%
 :: Salmon Libs
 set SIMPLE_IO_VERSION=1.0.2
 set SIMPLE_FS_VERSION=1.0.2
-set SALMON_LIB_VERSION=3.0.5
+set SALMON_LIB_VERSION=3.0.6
 
 set SIMPLE_IO=simple-io
 set SIMPLE_FS=simple-fs

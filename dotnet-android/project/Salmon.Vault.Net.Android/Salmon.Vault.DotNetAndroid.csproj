@@ -10,7 +10,7 @@
 		<!-- WORKAROUND: ListeneableFuture see: https://github.com/dotnet/maui/issues/6022
     and: https://github.com/xamarin/AndroidX/issues/535 -->
 		<XamarinGoogleGuavaListenableFutureOptOut>true</XamarinGoogleGuavaListenableFutureOptOut>
-		<SalmonVersion>3.0.5</SalmonVersion>
+		<SalmonVersion>3.0.6</SalmonVersion>
 		<Version>$(ApplicationVersion)</Version>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

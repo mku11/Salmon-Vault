@@ -3,7 +3,7 @@
 CURRDIR=$(pwd)
 
 DEPS_DIR=../libs/
-SALMON_LIB_VERSION=3.0.5
+SALMON_LIB_VERSION=3.0.6
 # if you use a snapshot append -SNAPSHOT to this variable
 SALMON_LIB_BINARY_VERSION=$SALMON_LIB_VERSION
 
