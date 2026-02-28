@@ -4,13 +4,8 @@ project: https://github.com/mku11/Salmon-AES-CTR
 license: MIT License https://github.com/mku11/Salmon-AES-CTR/blob/main/LICENSE
 
 Run:
-Make sure you have Java and JavaFX installed on your machine you can download it from:
-https://openjfx.io/
-Set environment variable JAVAFX_HOME to the path that JavaFx is installed in your machine.
-If you use windows you can set the variable in the start.bat script or start.sh for MacOS and linux.
-For mac and linux users you will need to provide executable permissions to start.sh on the command line:
-chmod u+x start.sh
-Then run start.sh to start Salmon Vault
+For windows double click start.bat
+For linux and macos start.sh
 
 Open source projects included:
 Java Native Access
@@ -36,7 +31,8 @@ license: https://uxwing.com/license/
 Build
 To build the app you will need:  
 1. Intellij IDEA.
-2. Gradle
+2. Java 11 (Java 17 will not work with the Media Player)
+3. Gradle
 
 Run the build task from gradle instead of the Intellij IDEA. This will include the native library.
 Alternatively you can build from the command line:
