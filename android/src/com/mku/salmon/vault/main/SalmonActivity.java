@@ -224,6 +224,8 @@ public class SalmonActivity extends AppCompatActivity {
                 // if it is a remote drive we disable the item count to reduce network calls
                 if(!(manager.getDrive() instanceof AndroidDrive))
                     adapter.setDisplayItems(false);
+				else
+					adapter.setDisplayItems(true);
             } else if (propertyName.equals("CurrentItem")) {
                 selectItem(manager.getCurrentItem());
             } else if (propertyName.equals("SelectedFiles")) {

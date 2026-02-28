@@ -45,6 +45,10 @@ export class SalmonFileViewModel extends PropertyNotifier {
         super();
         this.salmonFile = salmonFile;
     }
+	
+    static setDisplayItems(boolean value) {
+        SalmonFileViewModel.displayItems = value;
+    }
 
     #_image = null;
     get image() {
@@ -194,10 +198,11 @@ export class SalmonFileViewModel extends PropertyNotifier {
     async getSizeText() {
         if (!await this.salmonFile.isDirectory())
             return ByteUtils.getBytes(await (this.salmonFile.getRealFile()).getLength(), 2);
-        else {
+        else if (SalmonFileViewModel.displayItems) {
             let items = await this.salmonFile.getChildrenCount();
             return items + " item" + (items == 1 ? "" : "s");
         }
+		return "";
     }
 
     getAesFile() {

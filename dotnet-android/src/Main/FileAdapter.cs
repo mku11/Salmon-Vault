@@ -132,6 +132,10 @@ public class FileAdapter : RecyclerView.Adapter, INotifyPropertyChanged
         PropertyChanged(this, new PropertyChangedEventArgs("SelectedFiles"));
     }
 
+    public void SetDisplayItems(bool value) {
+        this.displayItems = value;
+    }
+
     public void Stop()
     {
         tasks.Clear();

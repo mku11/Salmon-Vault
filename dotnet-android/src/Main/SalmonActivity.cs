@@ -218,6 +218,11 @@ public class SalmonActivity : AppCompatActivity
 
                 adapter.SelectAll(false);
                 adapter.SetMultiSelect(false);
+				// if it is a remote drive we disable the item count to reduce network calls
+                if(manager.getDrive().GetType() != typeof(AndroidDrive))
+                    adapter.SetDisplayItems(false);
+				else
+					adapter.SetDisplayItems(true);
             }
             else if (e.PropertyName == "CurrentItem")
             {

@@ -39,6 +39,7 @@ import com.mku.salmon.vault.utils.TaskQueueUtils;
 import com.mku.salmon.vault.utils.WindowUtils;
 import com.mku.salmon.vault.utils.FileTypes;
 import com.mku.salmon.vault.viewmodel.SalmonFileViewModel;
+import com.mku.salmonfs.drive.Drive;
 import com.mku.salmonfs.drive.utils.AesFileComparators;
 import com.mku.salmonfs.file.AesFile;
 import javafx.application.Platform;
@@ -238,8 +239,10 @@ public class MainController {
             updateFileViewModels();
             Thumbnails.enableAnimation(true);
             // if it is a remote drive we disable the item count to reduce network calls
-            if(!(manager.getDrive() instanceof AndroidDrive))
-                adapter.setDisplayItems(false);
+            if(!(manager.getDrive() instanceof Drive))
+                SalmonFileViewModel.setDisplayItems(false);
+            else
+                SalmonFileViewModel.setDisplayItems(true);
             sortTable();
         } else if (propertyName.equals("CurrentItem")) {
             selectItem(manager.getCurrentItem());
