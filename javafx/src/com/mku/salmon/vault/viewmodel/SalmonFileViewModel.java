@@ -57,15 +57,18 @@ public class SalmonFileViewModel {
     private final SimpleStringProperty type = new SimpleStringProperty();
     private final SimpleStringProperty size = new SimpleStringProperty();
     private final SimpleStringProperty path = new SimpleStringProperty();
-
     private AesFile salmonFile;
+    private boolean animate = false;
+    private static boolean displayItems = true;
+    private static SalmonFileViewModel animationViewModel;
 
     public SalmonFileViewModel(AesFile salmonFile) {
         this.salmonFile = salmonFile;
     }
 
-    private boolean animate = false;
-    private static SalmonFileViewModel animationViewModel;
+    public static void setDisplayItems(boolean value) {
+        SalmonFileViewModel.displayItems = value;
+    }
 
     @FXML
     public SimpleObjectProperty<ImageView> imageProperty() {
@@ -159,10 +162,11 @@ public class SalmonFileViewModel {
     private String getSizeText() {
         if (!salmonFile.isDirectory())
             return ByteUtils.getBytes(salmonFile.getRealFile().getLength(), 2);
-        else {
+        else if (displayItems) {
             int items = salmonFile.getChildrenCount();
             return items + " item" + (items == 1 ? "" : "s");
         }
+        return "";
     }
 
     public AesFile getAesFile() {
