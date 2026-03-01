@@ -59,6 +59,7 @@ using Mku.FS.Drive.Utils;
 using Mku.Android.FS.File;
 using Mku.FS.File;
 using Mku.SalmonFS.Drive;
+using Mku.Android.SalmonFS.Drive;
 using Mku.SalmonFS.Auth;
 using Mku.SalmonFS.Drive.Utils;
 using AndroidX.Core.Widget;
@@ -219,7 +220,7 @@ public class SalmonActivity : AppCompatActivity
                 adapter.SelectAll(false);
                 adapter.SetMultiSelect(false);
 				// if it is a remote drive we disable the item count to reduce network calls
-                if(manager.getDrive().GetType() != typeof(AndroidDrive))
+                if(manager.Drive != null && manager.Drive.GetType() != typeof(AndroidDrive))
                     adapter.SetDisplayItems(false);
 				else
 					adapter.SetDisplayItems(true);
